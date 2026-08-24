@@ -1,0 +1,822 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="mobile-check-in-launcher check-in-page">
+        <header v-if="headerHtml || isBackShown" class="check-in-panel page-header">
+            <h1 v-if="headerHtml" class="mobile-check-in-launcher-header" v-html="headerHtml"></h1>
+
+            <RockButton v-if="isBackShown"
+                        btnType="default"
+                        btnSize="sm"
+                        class="back-button"
+                        :disabled="isPageChromeDisabled"
+                        @click="onBackClick">
+                <i class="ti ti-chevron-left"></i>
+            </RockButton>
+        </header>
+
+        <section ref="pageBodyElement" class="page-body">
+            <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning" v-html="errorMessage" />
+
+            <div v-else-if="state === LauncherState.Identify"
+                 class="check-in-panel mobile-check-in-launcher-message"
+                 v-html="identifyYouPromptHtml"></div>
+
+            <div v-else-if="state === LauncherState.LocationPrompt"
+                 class="check-in-panel mobile-check-in-launcher-message"
+                 v-html="allowLocationPromptHtml"></div>
+
+            <div v-else-if="state === LauncherState.LocationProgress"
+                 class="check-in-panel mobile-check-in-launcher-message"
+                 v-html="locationProgressHtml"></div>
+
+            <div v-else-if="state === LauncherState.CampusSelect" class="check-in-panel">
+                <div class="mobile-check-in-launcher-message">
+                    Please select a campus to let us know where you are:
+                </div>
+
+                <div class="button-list">
+                    <RockButton v-for="(campus, index) in campusDeviceItems"
+                                :key="campus.value ?? ''"
+                                :btnType="index === 0 ? BtnType.Primary : BtnType.Default"
+                                autoDisable
+                                @click="onCampusClick(campus.value ?? '')">
+                        <span class="title">{{ campus.text }}</span>
+                    </RockButton>
+                </div>
+            </div>
+
+            <template v-else-if="state === LauncherState.WelcomeBack">
+                <div class="check-in-panel mobile-check-in-launcher-message" v-html="availabilityMessageHtml"></div>
+
+                <NotificationBox v-if="noPeopleMessageHtml" :alertType="AlertType.Warning" v-html="noPeopleMessageHtml" />
+
+                <LabelQrCode v-if="qrCodeImageUrl" :imageUrl="qrCodeImageUrl" />
+            </template>
+
+            <CheckInFlow v-else-if="state === LauncherState.CheckInFlow && checkInSession"
+                         :session="checkInSession"
+                         :hasPreviousStep="previousSessions.length > 0"
+                         :qrCodeImageUrl="qrCodeImageUrl"
+                         @update="onSessionUpdate"
+                         @updateActions="onFlowActionsUpdate"
+                         @updateBack="onFlowBackUpdate"
+                         @restart="onRestartClick" />
+
+            <div v-else-if="state === LauncherState.NoServices"
+                 class="check-in-panel mobile-check-in-launcher-message"
+                 v-html="availabilityMessageHtml"></div>
+
+            <div v-else-if="state === LauncherState.Message"
+                 class="check-in-panel mobile-check-in-launcher-message"
+                 v-html="messageHtml"></div>
+        </section>
+
+        <footer v-if="actions.length" class="check-in-panel page-footer">
+            <div class="actions">
+                <RockButton v-for="action in actions"
+                            :key="action.key"
+                            :btnType="action.type"
+                            :class="[action.class, { 'mobile-check-in-launcher-full-width-action': action.isFullWidthAllowed }]"
+                            :disabled="action.disabled || isPageChromeDisabled"
+                            autoDisable
+                            @click="onActionClick(action)">
+                    {{ action.title }}
+                </RockButton>
+            </div>
+        </footer>
+    </div>
+</template>
+
+<style>
+/*
+    The kiosk sizes its page to the device so the body scrolls between a pinned
+    header and footer. Nested in a page zone rather than owning the window, the
+    block supplies its own height for that column to resolve against, and asks a
+    zone that pins its own height to stand down.
+*/
+.mobile-check-in-launcher.check-in-page {
+    width: auto;
+    height: 100dvh;
+}
+
+@media (max-width: 480px) {
+    .body-content:has(.mobile-check-in-launcher) {
+        height: auto;
+    }
+}
+
+/*
+    The kiosk's header grows its logo to fill the bar, which is what pushes the
+    navigation to the right. The heading takes that role here, and the auto
+    margin keeps the back button right-aligned when no header text is set.
+*/
+.mobile-check-in-launcher .page-header .mobile-check-in-launcher-header {
+    flex-grow: 1;
+    margin: 0;
+    color: var(--color-interface-stronger);
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-semibold);
+}
+
+.mobile-check-in-launcher .page-header .back-button {
+    margin-left: auto;
+}
+
+/*
+    The kiosk lays attendance cards three across and runs its footer actions in
+    a row aligned right, both sized for a display. On a phone that leaves a card
+    about a third of the screen wide and an action that overruns the edge.
+*/
+@media (max-width: 767px) {
+    .mobile-check-in-launcher.check-in-page .attendance-card {
+        width: 100%;
+    }
+}
+
+/*
+    A screen renders its messages block whether or not it has any to show, and
+    the kiosk drops only the padding of an empty one, leaving its 80px top
+    margin as dead space. That margin separates the messages from the cards
+    above them, so it also goes when there are no cards.
+*/
+.mobile-check-in-launcher.check-in-page .messages:empty,
+.mobile-check-in-launcher.check-in-page .attendances:empty + .messages {
+    margin-top: 0;
+}
+
+/*
+    The kiosk steps its type up at 576px and 768px but never down, so a footer
+    action reads at 28px and every option title at 22px on a phone. Both step
+    down to what the kiosk itself gives its Next button at this width, keeping
+    the action above the option title and the title above its subtitle.
+*/
+@media (max-width: 767px) {
+    .mobile-check-in-launcher.check-in-page .actions .btn.btn-primary {
+        font-size: var(--font-size-regular);
+    }
+
+    .mobile-check-in-launcher.check-in-page .btn .title {
+        font-size: var(--font-size-h5);
+    }
+}
+
+/*
+    Every option label is held on one line and ellipsized, which a display
+    absorbs and a phone does not: an area or group named in full runs out of
+    room well before it runs out of meaning.
+*/
+@media (max-width: 767px) {
+    .mobile-check-in-launcher.check-in-page .btn .title,
+    .mobile-check-in-launcher.check-in-page .btn .subtitle {
+        white-space: normal;
+        text-align: left;
+    }
+
+    /*
+        Fixed rather than minimum, so a wrapped label would spill out of it,
+        and no vertical padding, since a single centered line never reached
+        the edges of a locked height. The kiosk sets both through six classes,
+        so the override matches that selector rather than the button alone.
+    */
+    .mobile-check-in-launcher.check-in-page .check-in-panel .body .button-list .btn.btn-primary.ability-level-button {
+        height: auto;
+        min-height: 82px;
+        padding-top: var(--spacing-medium);
+        padding-bottom: var(--spacing-medium);
+    }
+}
+
+/*
+    An attendee row is a flex row of checkbox, photo, name and any already
+    chosen opportunities, sized for a display. Narrowed to a phone the name is
+    held on one line and clipped, the photo is squeezed out of round, and the
+    Change button claims a third of the row.
+*/
+@media (max-width: 767px) {
+
+    /*
+        A zero flex basis keeps the name from deciding whether the row wraps:
+        the title always shares the first line, wrapping its own text when
+        long, and only the message below ever moves to another line.
+    */
+    .mobile-check-in-launcher.check-in-page .attendee-button .title {
+        min-width: 0;
+        flex-basis: 0;
+        white-space: normal;
+    }
+
+    .mobile-check-in-launcher.check-in-page .attendee-button .opportunity {
+        flex-wrap: wrap;
+    }
+
+    .mobile-check-in-launcher.check-in-page .attendee-button .avatar {
+        flex-shrink: 0;
+    }
+
+    .mobile-check-in-launcher.check-in-page .attendee-button .change-selection-button {
+        flex-shrink: 0;
+        padding-right: var(--spacing-xsmall);
+        padding-left: var(--spacing-xsmall);
+        font-size: var(--font-size-small);
+    }
+
+    .mobile-check-in-launcher.check-in-page .btn.attendee-button {
+        flex-wrap: wrap;
+    }
+
+    /*
+        The full basis sends the message to its own line on every row rather
+        than letting it crush the name on rows where the two cannot share.
+        The left margin restores the first-child indent the wrap forfeits.
+    */
+    .mobile-check-in-launcher.check-in-page .attendee-button .message {
+        flex-basis: 100%;
+        margin-top: 0;
+        margin-left: var(--spacing-large);
+    }
+}
+
+.mobile-check-in-launcher.check-in-page .page-footer .actions {
+    justify-content: space-between;
+}
+
+.mobile-check-in-launcher.check-in-page .page-footer .actions .btn {
+    white-space: normal;
+}
+
+/*
+    Only an action flagged as full-width fills the bar when alone, so a lone
+    escape action such as Cancel keeps its natural width and never reads as
+    the step's primary action. Two or more actions are pushed apart instead.
+*/
+.mobile-check-in-launcher.check-in-page .page-footer .actions .mobile-check-in-launcher-full-width-action:only-child {
+    flex-grow: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref, shallowRef, watch } from "vue";
+    import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
+    import { KioskButton, Screen } from "./CheckInKiosk/types.partial";
+    import CheckInFlow from "./MobileCheckInLauncher/checkInFlow.partial.obs";
+    import { createCheckInHttpAdapter } from "./MobileCheckInLauncher/checkInHttpAdapter.partial";
+    import LabelQrCode from "./MobileCheckInLauncher/labelQrCode.partial.obs";
+    import { LauncherAction, LauncherState, NavigationUrlKey } from "./MobileCheckInLauncher/types.partial";
+    import { getCurrentPosition } from "./MobileCheckInLauncher/utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { Guid } from "@Obsidian/Types";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { KioskAvailabilityBag } from "@Obsidian/ViewModels/Blocks/CheckIn/MobileCheckInLauncher/kioskAvailabilityBag";
+    import { KioskResolutionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/MobileCheckInLauncher/kioskResolutionBag";
+    import { MobileCheckInLauncherInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/MobileCheckInLauncher/mobileCheckInLauncherInitializationBox";
+    import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<MobileCheckInLauncherInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    // #region Values
+
+    const headerHtml = ref<string>(config.headerHtml ?? "");
+    const errorMessage = ref<string>(config.errorMessage ?? "");
+
+    const identifyYouPromptHtml = ref<string>(config.identifyYouPromptHtml ?? "");
+    const loginPageUrl = ref<string>(config.navigationUrls?.[NavigationUrlKey.LoginPage] ?? "");
+    const phoneIdentificationPageUrl = ref<string>(config.navigationUrls?.[NavigationUrlKey.PhoneIdentificationPage] ?? "");
+
+    const isLocationServicesDisabled = ref<boolean>(config.isLocationServicesDisabled);
+    const allowLocationPromptHtml = ref<string>(config.allowLocationPromptHtml ?? "");
+    const locationProgressHtml = ref<string>(config.locationProgressHtml ?? "");
+    const campusDeviceItems = ref<ListItemBag[]>(config.campusDeviceItems ?? []);
+
+    const messageHtml = ref<string>(config.messageHtml ?? "");
+    const isTryAgainShown = ref<boolean>(false);
+
+    /** Whether a check-in has been completed on this device recently. */
+    const isCheckInCompleted = ref<boolean>(config.isCheckInCompleted);
+
+    /** The code covering every check-in completed on this device recently. */
+    const qrCodeImageUrl = ref<string>(config.qrCodeImageUrl ?? "");
+
+    const availabilityMessageHtml = ref<string>("");
+    const availability = ref<KioskAvailabilityBag | null>(null);
+
+    /** The message shown when nobody in the family is eligible to check in. */
+    const noPeopleMessageHtml = ref<string>("");
+
+    /**
+     * The session is immutable and replaced wholesale, so it needs no deep
+     * reactivity.
+     */
+    const checkInSession = shallowRef<CheckInSession | null>(null);
+
+    /** The sessions behind the current one, newest last, which Back unwinds. */
+    const previousSessions = shallowRef<CheckInSession[]>([]);
+
+    /**
+     * The attendee whose selections the flow is currently gathering, so the
+     * flow moving on to another attendee can be noticed.
+     */
+    let currentFlowAttendeeId: string | undefined | null;
+
+    /**
+     * Whether the flow has staged attendance it has not confirmed. Reported by
+     * the HTTP adapter rather than read off the session, because sessions are
+     * immutable clones and Back restores one from before the save.
+     */
+    let isPendingAttendanceStaged: boolean = false;
+
+    const kiosk = ref<CheckInItemBag | null>(null);
+    const state = ref<LauncherState>(getInitialState());
+
+    const flowActions = ref<LauncherAction[]>([]);
+    const isFlowBackShown = ref<boolean>(false);
+    const isActionProcessing = ref<boolean>(false);
+
+    /**
+     * Whether a check-in request is outstanding. The imported screens run
+     * their own calls, so a footer action is not the only thing Back can
+     * interrupt.
+     */
+    const isFlowRequestInFlight = ref<boolean>(false);
+    const pageBodyElement = ref<HTMLElement>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * The label for the action that starts check-in, which reads as adding to
+     * a check-in once one has been completed.
+     */
+    const checkInActionTitle = computed((): string => {
+        return isCheckInCompleted.value ? "Check In Additional Individuals" : "Check In";
+    });
+
+    /**
+     * The buttons for the page footer. Every state feeds the same one, so the
+     * action stays put as the individual moves through check-in.
+     */
+    const actions = computed((): LauncherAction[] => {
+        if (errorMessage.value) {
+            return [];
+        }
+
+        switch (state.value) {
+            case LauncherState.Identify:
+                return [
+                    ...phoneIdentificationPageUrl.value
+                        ? [buildAction("Phone Lookup", "phoneLookup", "primary", onPhoneLookupClick, true)]
+                        : [],
+                    ...loginPageUrl.value
+                        ? [buildAction("Log In", "login", "default", onLoginClick, true)]
+                        : []
+                ];
+
+            case LauncherState.LocationPrompt:
+                return [buildAction("Next", "next", "primary", resolveKioskByLocation, true)];
+
+            case LauncherState.WelcomeBack:
+                return [buildAction(checkInActionTitle.value, "checkIn", "primary", onCheckInClick, true)];
+
+            case LauncherState.NoServices:
+                return [buildAction("Try Again", "tryAgain", "primary", onRecheckAvailabilityClick, true)];
+
+            case LauncherState.Message:
+                return isTryAgainShown.value
+                    ? [buildAction("Try Again", "tryAgain", "primary", onTryAgainClick, true)]
+                    : [];
+
+            case LauncherState.CheckInFlow:
+                return isCancelShown.value
+                    ? [buildAction("Cancel", "cancel", "default", onRestartClick), ...flowActions.value]
+                    : flowActions.value;
+
+            default:
+                return [];
+        }
+    });
+
+    /** Whether the page header offers a way back to the previous step. */
+    const isBackShown = computed((): boolean => {
+        return state.value === LauncherState.CheckInFlow && isFlowBackShown.value;
+    });
+
+    /**
+     * Whether the header and footer actions are unavailable, which they are
+     * for as long as anything the individual started is still running. Acting
+     * on the flow mid-request moves it out from under the response.
+     */
+    const isPageChromeDisabled = computed((): boolean => {
+        return isActionProcessing.value || isFlowRequestInFlight.value;
+    });
+
+    /**
+     * Whether the page header offers a way out of the flow. The success screen
+     * is excluded because its own action already starts a new check-in.
+     */
+    const isCancelShown = computed((): boolean => {
+        return state.value === LauncherState.CheckInFlow
+            && checkInSession.value?.currentScreen !== Screen.Success;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Builds one of the page footer buttons.
+     */
+    function buildAction(title: string, key: string, type: LauncherAction["type"], handler: () => void | Promise<void>, isFullWidthAllowed: boolean = false): LauncherAction {
+        return {
+            title,
+            key,
+            type,
+            disabled: false,
+            handler,
+            isFullWidthAllowed
+        };
+    }
+
+    /**
+     * Gets the screen to show on load, whose content the server has already
+     * prepared.
+     */
+    function getInitialState(): LauncherState {
+        if (!config.isIndividualIdentified) {
+            return LauncherState.Identify;
+        }
+
+        if (config.messageHtml) {
+            return LauncherState.Message;
+        }
+
+        if (config.isLocationServicesDisabled) {
+            return LauncherState.CampusSelect;
+        }
+
+        return config.isLocationApprovalRemembered
+            ? LauncherState.LocationProgress
+            : LauncherState.LocationPrompt;
+    }
+
+    /**
+     * Matches the kiosk whose geo-fence contains the individual's current
+     * location.
+     */
+    async function resolveKioskByLocation(): Promise<void> {
+        state.value = LauncherState.LocationProgress;
+
+        const { position, isPermissionDenied } = await getCurrentPosition();
+
+        if (!position) {
+            // Retrying a blocked permission cannot succeed, since the
+            // browser will not prompt again.
+            showMessage(config.unableToDetermineLocationHtml ?? "", !isPermissionDenied);
+            return;
+        }
+
+        const result = await invokeBlockAction<KioskResolutionBag>("GetKioskByLocation", {
+            latitude: Number(position.coords.latitude.toFixed(4)),
+            longitude: Number(position.coords.longitude.toFixed(4))
+        });
+
+        showResolution(result.isSuccess ? result.data : null, result.errorMessage);
+    }
+
+    /**
+     * Shows the screen for a resolution, which either matched a kiosk or
+     * explains why it could not.
+     */
+    function showResolution(resolution: KioskResolutionBag | null | undefined, failureMessage: string | null | undefined): void {
+        if (!resolution) {
+            showMessage(failureMessage || "Check-in is not available right now.", true);
+            return;
+        }
+
+        if (!resolution.kiosk || !resolution.availability) {
+            showMessage(resolution.messageHtml ?? "", true);
+            return;
+        }
+
+        kiosk.value = resolution.kiosk;
+        showAvailability(resolution.availability);
+    }
+
+    /**
+     * Replaces the check-in flow with a message, offering to start over only
+     * when doing so could produce a different outcome.
+     */
+    function showMessage(html: string, isRetryable: boolean): void {
+        messageHtml.value = html;
+        isTryAgainShown.value = isRetryable;
+        state.value = LauncherState.Message;
+    }
+
+    /**
+     * Shows either the welcome back screen or the no services screen, depending
+     * on whether check-in is open at the matched kiosk.
+     */
+    function showAvailability(kioskAvailability: KioskAvailabilityBag): void {
+        availability.value = kioskAvailability;
+        availabilityMessageHtml.value = kioskAvailability.messageHtml ?? "";
+        noPeopleMessageHtml.value = "";
+        state.value = kioskAvailability.isCheckInAvailable
+            ? LauncherState.WelcomeBack
+            : LauncherState.NoServices;
+    }
+
+    /**
+     * Records the completed check-in and gets the code covering it, which the
+     * server widens to every session this device has recently checked in under.
+     */
+    async function recordCompletedCheckIn(sessionGuid: Guid): Promise<void> {
+        const result = await invokeBlockAction<string>("RecordCompletedCheckIn", { sessionGuid });
+
+        if (!result.isSuccess) {
+            // The check-in itself is already saved, and the confirmation on
+            // screen is the most that can be offered without the code.
+            console.error(`Mobile check-in could not produce the label QR code. ${result.errorMessage}`);
+            return;
+        }
+
+        qrCodeImageUrl.value = result.data ?? "";
+    }
+
+    /**
+     * Discards the attendance a family check-in staged but never confirmed.
+     */
+    async function discardPendingAttendance(): Promise<void> {
+        const sessionGuid = checkInSession.value?.sessionGuid;
+
+        if (!isPendingAttendanceStaged || !sessionGuid) {
+            return;
+        }
+
+        isPendingAttendanceStaged = false;
+
+        const result = await invokeBlockAction("DeletePendingAttendance", { sessionGuid });
+
+        if (!result.isSuccess) {
+            console.error(`Mobile check-in could not discard the abandoned check-in. ${result.errorMessage}`);
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Runs the action behind a page footer button.
+     */
+    async function onActionClick(action: KioskButton): Promise<void> {
+        if (!action.handler) {
+            return;
+        }
+
+        try {
+            isActionProcessing.value = true;
+
+            const result = action.handler();
+
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+        finally {
+            isActionProcessing.value = false;
+        }
+    }
+
+    /**
+     * Takes the buttons the check-in flow asked the page footer to show.
+     */
+    function onFlowActionsUpdate(flowActionList: LauncherAction[]): void {
+        flowActions.value = flowActionList;
+    }
+
+    /**
+     * Takes whether the check-in flow has a step to return to.
+     */
+    function onFlowBackUpdate(isShown: boolean): void {
+        isFlowBackShown.value = isShown;
+    }
+
+    /**
+     * Hands off to the phone identification page, which returns here afterward.
+     */
+    function onPhoneLookupClick(): void {
+        window.location.href = phoneIdentificationPageUrl.value;
+    }
+
+    /**
+     * Hands off to the log in page, which returns here afterward.
+     */
+    function onLoginClick(): void {
+        window.location.href = loginPageUrl.value;
+    }
+
+    /**
+     * Matches the kiosk serving the campus the individual picked.
+     */
+    async function onCampusClick(deviceIdKey: string): Promise<void> {
+        const result = await invokeBlockAction<KioskResolutionBag>("GetKioskByDevice", {
+            deviceIdKey
+        });
+
+        showResolution(result.isSuccess ? result.data : null, result.errorMessage);
+    }
+
+    /**
+     * Loads the family members who can be checked in at the matched kiosk.
+     */
+    async function onCheckInClick(): Promise<void> {
+        const configuration = availability.value?.configuration;
+
+        if (!configuration) {
+            showMessage("Check-in is not available right now.", true);
+            return;
+        }
+
+        try {
+            const sessionOptions = {
+                areAllSchedulesSelectedAutomatically: config.areAllSchedulesSelectedAutomatically
+            };
+
+            const httpAdapter = createCheckInHttpAdapter(invokeBlockAction, {
+                onPendingAttendanceChanged: isStaged => {
+                    isPendingAttendanceStaged = isStaged;
+                },
+
+                onBusyChanged: isBusy => {
+                    isFlowRequestInFlight.value = isBusy;
+                }
+            });
+
+            const session = await new CheckInSession(configuration, httpAdapter, sessionOptions)
+                .withFamily(config.familyIdKey ?? "");
+
+            const familyAttendees = session.attendees ?? [];
+
+            // The kiosk is still the right one and check-in is still open, so
+            // the welcome back state stays up and the action can be taken again.
+            if (familyAttendees.every(a => a.isUnavailable)) {
+                noPeopleMessageHtml.value = config.noPeopleMessageHtml ?? "";
+                return;
+            }
+
+            // The flow starts at its welcome screen, which routes to a family
+            // search the launcher does not have. Entering at family select
+            // needs everything a search would have left behind: the family
+            // itself, and the search treated as having found it, which the
+            // save step refuses to run without.
+            const familySession = new CheckInSession(session, {
+                currentScreen: Screen.FamilySelect,
+                families: [{
+                    id: config.familyIdKey,
+                    name: config.familyName
+                }],
+                searchType: FamilySearchMode.FamilyId,
+                searchTerm: config.familyIdKey ?? ""
+            });
+
+            currentFlowAttendeeId = undefined;
+            isPendingAttendanceStaged = false;
+            checkInSession.value = await familySession.withNextScreen();
+            state.value = LauncherState.CheckInFlow;
+        }
+        catch (error) {
+            showMessage(error instanceof Error ? error.message : "Check-in could not be started.", true);
+        }
+    }
+
+    /**
+     * Shows the screen the check-in flow moved to, keeping the one it left so
+     * it can be returned to.
+     */
+    async function onSessionUpdate(session: CheckInSession): Promise<void> {
+        if (checkInSession.value) {
+            previousSessions.value = [...previousSessions.value, checkInSession.value];
+        }
+
+        // Once attendance exists, moving on to another attendee makes the
+        // earlier steps final. Unwinding to a saved attendee and picking a
+        // different location would add a second pending record beside the
+        // first rather than replacing it, so the stack is emptied instead.
+        const attendeeId = session.getCurrentAttendee()?.person?.id;
+
+        if (isPendingAttendanceStaged && currentFlowAttendeeId !== attendeeId) {
+            previousSessions.value = [];
+        }
+
+        currentFlowAttendeeId = attendeeId;
+        checkInSession.value = session;
+
+        if (session.currentScreen === Screen.Success) {
+            isPendingAttendanceStaged = false;
+            isCheckInCompleted.value = true;
+
+            await recordCompletedCheckIn(session.sessionGuid);
+        }
+    }
+
+    /**
+     * Returns to the step before the current one.
+     */
+    function onBackClick(): void {
+        const previous = previousSessions.value[previousSessions.value.length - 1];
+
+        if (!previous) {
+            return;
+        }
+
+        previousSessions.value = previousSessions.value.slice(0, -1);
+        checkInSession.value = previous;
+    }
+
+    /**
+     * Discards the finished flow and re-checks the kiosk so another check-in
+     * can start.
+     */
+    async function onRestartClick(): Promise<void> {
+        // A family check-in stages each attendee as pending. Anything still
+        // pending here belongs to a check-in that was never confirmed, so it
+        // is discarded rather than left for the individual to find later.
+        await discardPendingAttendance();
+
+        checkInSession.value = null;
+        previousSessions.value = [];
+
+        await onRecheckAvailabilityClick();
+    }
+
+    /**
+     * Checks again whether check-in has opened at the matched kiosk.
+     */
+    async function onRecheckAvailabilityClick(): Promise<void> {
+        const result = await invokeBlockAction<KioskAvailabilityBag>("GetKioskAvailability", {
+            kioskIdKey: kiosk.value?.id ?? ""
+        });
+
+        if (!result.isSuccess || !result.data) {
+            showMessage(result.errorMessage || "Check-in is not available right now.", true);
+            return;
+        }
+
+        showAvailability(result.data);
+    }
+
+    /**
+     * Starts the kiosk match over after it could not be completed.
+     */
+    async function onTryAgainClick(): Promise<void> {
+        if (isLocationServicesDisabled.value) {
+            state.value = LauncherState.CampusSelect;
+            return;
+        }
+
+        await resolveKioskByLocation();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // The page body keeps the scroll position of the screen it is leaving, so
+    // a long list tapped at the bottom would open the next screen mid-scroll.
+    // The session is watched rather than its screen, because consecutive
+    // steps can share one screen value while showing new choices, such as the
+    // next schedule's or the next attendee's location select.
+    watch([state, checkInSession], () => {
+        pageBodyElement.value?.scrollTo({ top: 0 });
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // The page's theme is decided before this block runs, so a configured
+        // theme the page is not already in is reached by loading it again.
+        if (config.themeRedirectUrl) {
+            window.location.replace(config.themeRedirectUrl);
+            return;
+        }
+
+        // Approval was granted on a previous visit, so no prompt is needed
+        // first.
+        if (state.value === LauncherState.LocationProgress) {
+            resolveKioskByLocation();
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
