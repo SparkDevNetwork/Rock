@@ -382,6 +382,7 @@
     import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Enumerable } from "@Obsidian/Utility/linq";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ConnectorBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/connectorBag";
     import { MetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/metricsBag";
@@ -493,11 +494,11 @@
             },
             dueSoon: {
                 value: state?.totalDueSoon ?? 0,
-                color: "var(--color-warning-strong)"
+                color: "var(--color-caution-primary)"
             },
             overdue: {
                 value: state?.totalOverdue ?? 0,
-                color: "var(--color-danger-strong)"
+                color: "var(--color-negative-primary)"
             }
         };
     });
@@ -547,9 +548,9 @@
         const state = requestState.value;
 
         return [
-            { label: "On Track", data: [state?.totalOnTrack ?? 0], color: "var(--color-success-strong)" },
-            { label: "Due Soon", data: [state?.totalDueSoon ?? 0], color: "#F59E0B" },
-            { label: "Overdue", data: [state?.totalOverdue ?? 0], color: "#EF4444" },
+            { label: "On Track", data: [state?.totalOnTrack ?? 0], color: "var(--color-positive-primary)" },
+            { label: "Due Soon", data: [state?.totalDueSoon ?? 0], color: "var(--color-caution-primary)" },
+            { label: "Overdue", data: [state?.totalOverdue ?? 0], color: "var(--color-negative-primary)" },
         ];
     });
 
@@ -573,7 +574,7 @@
                         .withIndex()
                         .select<number | null>(([_, i]) => i === index ? f.count : null)
                         .toArray(),
-                    color: getTimelineColor(index)
+                    color: getCssVariableValue("--color-metric-primary")
                 };
             })
             .toArray();
@@ -603,11 +604,6 @@
     // #endregion Computed Values
 
     // #region Functions
-
-    function getTimelineColor(index: number): string {
-        const colors = ["#2C5282", "#3182CE", "#90CDF4"];
-        return colors[index % colors.length];
-    }
 
     function wrapByWords(text: string, lineSize: number): string | string[] {
         if (text.length <= lineSize) {

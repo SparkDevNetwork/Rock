@@ -468,6 +468,16 @@ namespace Rock.Model
                 {
                     return true;
                 }
+                else if ( PreSaveState == EntityContextState.Modified )
+                {
+                    // Archiving or restoring a group member changes whether they are
+                    // considered part of the group, so clients monitoring group
+                    // membership need to know about it just like an add or a delete.
+                    // No other modifications send real-time messages.
+                    var previousIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
+
+                    return previousIsArchived != Entity.IsArchived;
+                }
 
                 return false;
             }

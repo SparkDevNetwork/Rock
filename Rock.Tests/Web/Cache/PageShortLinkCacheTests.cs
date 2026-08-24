@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Cms;
-using Rock.Data;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
@@ -18,7 +17,7 @@ namespace Rock.Tests.Web.Cache
     /// </summary>
     /// <seealso cref="PageShortLinkCache"/>
     [TestClass]
-    public class PageShortLinkCacheTests : MockDatabaseTestsBase
+    public class PageShortLinkCacheTests
     {
         #region GetCurrentUrl
 
@@ -27,8 +26,8 @@ namespace Rock.Tests.Web.Cache
         {
             var expectedUrl = "https://www.rockrms.com";
 
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var pageShortLink = new PageShortLink
             {
                 Id = 1,
@@ -36,14 +35,11 @@ namespace Rock.Tests.Web.Cache
                 Url = expectedUrl,
             };
 
-            rockContextMock.Object.Set<PageShortLink>().Add( pageShortLink );
+            rockContext.Set<PageShortLink>().Add( pageShortLink );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContextMock.Object );
+            var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContext );
 
-                Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
-            }
+            Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContext ) );
         }
 
         [TestMethod]
@@ -63,8 +59,8 @@ namespace Rock.Tests.Web.Cache
                 }
             };
 
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var pageShortLink = new PageShortLink
             {
                 Id = 1,
@@ -74,14 +70,11 @@ namespace Rock.Tests.Web.Cache
 
             pageShortLink.SetScheduleData( scheduleData );
 
-            rockContextMock.Object.Set<PageShortLink>().Add( pageShortLink );
+            rockContext.Set<PageShortLink>().Add( pageShortLink );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContextMock.Object );
+            var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContext );
 
-                Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
-            }
+            Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContext ) );
         }
 
         [TestMethod]
@@ -102,8 +95,8 @@ namespace Rock.Tests.Web.Cache
                 }
             };
 
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var pageShortLink = new PageShortLink
             {
                 Id = 1,
@@ -113,14 +106,11 @@ namespace Rock.Tests.Web.Cache
 
             pageShortLink.SetScheduleData( scheduleData );
 
-            rockContextMock.Object.Set<PageShortLink>().Add( pageShortLink );
+            rockContext.Set<PageShortLink>().Add( pageShortLink );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContextMock.Object );
+            var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContext );
 
-                Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
-            }
+            Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContext ) );
         }
 
         private string GetScheduleContentForNow()

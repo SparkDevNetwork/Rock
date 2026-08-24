@@ -2305,6 +2305,40 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
             } );
         }
 
+        /// <summary>
+        /// Applying the filter to a Friday returns the previous Sunday if the week starts on a Sunday.
+        /// </summary>
+        [TestMethod]
+        public void SundayDate_InputDateIsFriday_YieldsNextSunday()
+        {
+            // This filter returns the Sunday associated with the current week.
+            // Rock considers Sunday to be the last day of the week by default, so any other day should return a future date.
+            TestHelper.AssertTemplateOutputDate( "3-May-2020",
+                                      "{{ '1-May-2020' | SundayDate }}" );
+        }
+
+        /// <summary>
+        /// Applying the filter to a Sunday returns the same day.
+        /// </summary>
+        [TestMethod]
+        public void SundayDate_InputDateIsSunday_YieldsSameDay()
+        {
+            TestHelper.AssertTemplateOutputDate( "3-May-2020",
+                                      "{{ '3-May-2020' | SundayDate }}" );
+        }
+
+        /// <summary>
+        /// Applying the filter to the 'Now' keyword yields the Sunday of the current week.
+        /// </summary>
+        [TestMethod]
+        public void SundayDate_InputParameterIsNow_YieldsNextSunday()
+        {
+            var nextSunday = RockDateTime.Now.SundayDate();
+
+            TestHelper.AssertTemplateOutputDate( nextSunday,
+                                      "{{ 'Now' | SundayDate }}" );
+        }
+
         #endregion
 
     }

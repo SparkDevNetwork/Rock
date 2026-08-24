@@ -11,6 +11,7 @@ using Moq;
 
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
+using Rock.Configuration;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
@@ -19,7 +20,7 @@ using Rock.ViewModels.CheckIn.Labels;
 namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 {
     [TestClass]
-    public class ZplLabelRendererTests : MockDatabaseTestsBase
+    public class ZplLabelRendererTests
     {
         #region BeginLabel
 
@@ -2971,7 +2972,8 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         {
             var expectedPattern = new Regex( @"\^FD1234\^FS" );
 
-            var rockContext = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var sampleSearchKey = new PersonSearchKey
             {
                 PersonAlias = new PersonAlias
@@ -2986,14 +2988,14 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 Id = 2
             };
 
-            rockContext.Object.Set<PersonSearchKey>().Add( sampleSearchKey );
+            rockContext.Set<PersonSearchKey>().Add( sampleSearchKey );
 
             var request = new PrintLabelRequest
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
-                RockContext = rockContext.Object
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext ),
+                RockContext = rockContext
             };
 
             var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
@@ -3030,7 +3032,8 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteBarcodeField_WithAlternateIdAndNullSearchValue_DoesNotEmitField()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var sampleSearchKey = new PersonSearchKey
             {
                 PersonAlias = new PersonAlias
@@ -3045,14 +3048,14 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 Id = 2
             };
 
-            rockContext.Object.Set<PersonSearchKey>().Add( sampleSearchKey );
+            rockContext.Set<PersonSearchKey>().Add( sampleSearchKey );
 
             var request = new PrintLabelRequest
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
-                RockContext = rockContext.Object
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext ),
+                RockContext = rockContext
             };
 
             var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
@@ -3089,7 +3092,8 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteBarcodeField_WithMissingAlternateId_DoesNotEmitField()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var person = new Person
             {
                 Id = 2
@@ -3099,8 +3103,8 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
-                RockContext = rockContext.Object
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext ),
+                RockContext = rockContext
             };
 
             var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )

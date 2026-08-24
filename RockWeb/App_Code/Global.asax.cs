@@ -1102,6 +1102,17 @@ namespace RockWeb
         /// <param name="ex">The ex.</param>
         private void LogAndSendNotification( Exception ex )
         {
+            var isExpectedRedirectAbort = ex is ThreadAbortException
+                && HttpContext.Current?.Items["Rock:ExpectedRedirectAbort"] as bool? == true;
+
+            if ( isExpectedRedirectAbort )
+            {
+                // This is an expected exception that happens when Redirect()
+                // is called as it immediately ends the request which causes
+                // the thread to be aborted.
+                return;
+            }
+
             int? pageId = ( Context.Items["Rock:PageId"] ?? string.Empty ).ToString().AsIntegerOrNull();
             int? siteId = ( Context.Items["Rock:SiteId"] ?? string.Empty ).ToString().AsIntegerOrNull();
 

@@ -42,7 +42,7 @@ namespace Rock.Tests.Lava.Blocks
                 Guid = new Guid( "B715C9F7-1E5B-4F8A-BDCD-9C3B2E1F0A6B" ),
             };
 
-            using ( var rockApp = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var rockApp = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = rockApp.App.CreateRockContext();
 
@@ -50,6 +50,8 @@ namespace Rock.Tests.Lava.Blocks
                 rockContext.Set<Campus>().Add( campus );
 
                 var engines = LavaUnitTestHelper.CurrentInstance.CreateActiveTestEngines();
+
+                Assert.IsNotEmpty( engines, "No active Lava engines were created." );
 
                 foreach ( var engine in engines )
                 {

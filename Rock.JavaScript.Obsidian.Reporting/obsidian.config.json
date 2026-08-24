@@ -1,0 +1,9 @@
+{
+    "source": "src",
+    "destination": "../RockWeb/Obsidian/Reporting",
+    "copy": true,
+    "staticFiles": {
+        "includeExtensions": [
+        ]
+    }
+}

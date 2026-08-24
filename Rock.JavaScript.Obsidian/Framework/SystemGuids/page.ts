@@ -531,6 +531,11 @@ export const Page = {
      */
     ContentItemDetail: "ABF26679-1051-4F4F-8A67-5958E5BF71F8",
     /**
+     * Gets the Content Item Metrics page guid
+     * ParentPage: Content Channel Detail
+     */
+    ContentItemMetrics: "B917B620-C172-4E52-9695-917E3833DB09",
+    /**
      * Gets the Content Type Detail page guid
      * ParentPage: Content Channel Types
      */

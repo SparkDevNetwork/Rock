@@ -1887,7 +1887,7 @@ namespace Rock.AI.Agent
                 propertyExpression,
                 lowerParameter,
                 upperParameter,
-                isRequired: false,
+                isRequired: true,
                 lowerParameterExpression: lowerParameterExpression,
                 upperParameterExpression: upperParameterExpression );
         }

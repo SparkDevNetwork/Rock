@@ -260,6 +260,22 @@ namespace Rock.Net
         /// <inheritdoc/>
         public void RedirectToUrl( string url, bool permanent = false )
         {
+            /*
+                8/19/26 - CLAUDE
+
+                Response.Redirect uses Thread.Abort to short-circuit the page so no other
+                block on the page can render sensitive data after a security redirect. That
+                abort surfaces as a ThreadAbortException, which is expected control flow, not
+                a fault. We flag the request here so the global error handler can skip logging
+                that specific expected exception.
+
+                Reason: Silence the expected ThreadAbortException from intentional redirects.
+            */
+            if ( HttpContext.Current != null )
+            {
+                HttpContext.Current.Items["Rock:ExpectedRedirectAbort"] = true;
+            }
+
             if ( permanent )
             {
                 _page.Response.RedirectPermanent( url );

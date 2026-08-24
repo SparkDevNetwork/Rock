@@ -41,7 +41,7 @@ namespace Rock.ViewModels.Blocks.Crm.ConflictProfile
         public double Percentage { get; set; }
 
         /// <summary>
-        /// Gets or sets the hex color used for this item in the results chart.
+        /// Gets or sets the CSS custom property (e.g. "--color-metric-primary") used for this item in the results chart.
         /// </summary>
         public string ChartColor { get; set; }
     }

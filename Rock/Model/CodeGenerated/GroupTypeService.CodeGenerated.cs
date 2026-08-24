@@ -230,6 +230,7 @@ namespace Rock.Model
             target.IsConcurrentCheckInPrevented = source.IsConcurrentCheckInPrevented;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsLeavingChatChannelAllowed = source.IsLeavingChatChannelAllowed;
+            target.IsMeetingStyleEnabled = source.IsMeetingStyleEnabled;
             target.IsPeerNetworkEnabled = source.IsPeerNetworkEnabled;
             target.IsSchedulingEnabled = source.IsSchedulingEnabled;
             target.IsSystem = source.IsSystem;

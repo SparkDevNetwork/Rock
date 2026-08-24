@@ -27,7 +27,7 @@ namespace Rock.Tests.Configuration.ConnectedServices
     /// Tests for <see cref="ConnectedServicesProvider"/>.
     /// </summary>
     [TestClass]
-    public class ConnectedServicesProviderTests : MockDatabaseTestsBase
+    public class ConnectedServicesProviderTests
     {
         #region Constants
 
@@ -65,7 +65,7 @@ namespace Rock.Tests.Configuration.ConnectedServices
         /// <param name="deploymentEnvironment">The deployment environment the provider should report itself as running in. Defaults to <see cref="DeploymentEnvironment.Production"/> so normal tests exercise the production code path.</param>
         private static TestContext CreateTestContext( DeploymentEnvironment deploymentEnvironment = DeploymentEnvironment.Production )
         {
-            var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            var scope = TestHelper.CreateScopedRockApp();
 
             // Pre-seed empty attribute rows for every system-setting key the
             // provider (or the legacy Rock Store) will write to. This keeps
@@ -101,7 +101,7 @@ namespace Rock.Tests.Configuration.ConnectedServices
         /// <param name="exception">The exception the handler will raise on every request. Defaults to a bare <see cref="HttpRequestException"/>.</param>
         private static IDisposable CreateBrokenNetworkScope( out ConnectedServicesProvider provider, Exception exception = null )
         {
-            var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            var scope = TestHelper.CreateScopedRockApp();
 
             PrimeSystemSettingKeys(
                 SystemSetting.CONNECTED_SERVICES_AUTH,

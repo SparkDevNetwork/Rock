@@ -93,6 +93,7 @@
     import { BarSeries, PieSeries } from "@Obsidian/Core/Controls/chart";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ConflictProfileInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/ConflictProfile/conflictProfileInitializationBox";
     import { AssessmentResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/ConflictProfile/assessmentResponseBag";
@@ -170,7 +171,7 @@
     const modeChartSeries = computed<BarSeries[]>(() => [{
         label: "Score",
         data: modes.value.map(m => m.percentage),
-        color: modes.value.map(m => m.chartColor ?? "")
+        color: modes.value.map(m => getCssVariableValue(m.chartColor ?? "", m.chartColor ?? ""))
     }]);
 
     /** The labels for the themes pie chart. */
@@ -180,7 +181,7 @@
     const themeChartSeries = computed<PieSeries[]>(() => [{
         label: "Score",
         data: themes.value.map(t => t.percentage),
-        colors: themes.value.map(t => t.chartColor ?? "")
+        colors: themes.value.map(t => getCssVariableValue(t.chartColor ?? "", t.chartColor ?? ""))
     }]);
 
     /** True if the individual is allowed to retake the completed test. */

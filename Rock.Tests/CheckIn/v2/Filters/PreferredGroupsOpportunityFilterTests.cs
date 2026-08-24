@@ -6,6 +6,7 @@ using Moq;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
@@ -19,7 +20,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
     /// </summary>
     /// <seealso cref="PreferredGroupsOpportunityFilter"/>
     [TestClass]
-    public class PreferredGroupsFilterTests : MockDatabaseTestsBase
+    public class PreferredGroupsFilterTests
     {
         #region IsGroupValid Tests
 
@@ -30,8 +31,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var secondGroupId = 20;
             int locationId = 30;
 
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var filter = CreateFilter( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var filter = CreateFilter( rockContext );
             var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, false, locationId );
             var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
 
@@ -64,8 +66,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var secondGroupId = 20;
             int locationId = 30;
 
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var filter = CreateFilter( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var filter = CreateFilter( rockContext );
             var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
             var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
 
@@ -99,8 +102,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var secondGroupId = 20;
             int locationId = 30;
 
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var filter = CreateFilter( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var filter = CreateFilter( rockContext );
             var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
             var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
 
@@ -133,8 +137,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var secondGroupId = 20;
             int locationId = 30;
 
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var filter = CreateFilter( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var filter = CreateFilter( rockContext );
             var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
             var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, true, locationId );
 

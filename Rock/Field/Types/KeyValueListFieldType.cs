@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 #if WEBFORMS
 using System.Web;
 using System.Web.UI;
@@ -42,6 +43,35 @@ namespace Rock.Field.Types
     {
         private const string VALUES_KEY = "values";
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
+
+        /*
+            08/24/2026 - NA
+
+            The stored KeyValueList value uses "|" between key/value pairs and "^"
+            between each key and value. KeyValueList also inherits from ValueList,
+            whose serialized hidden-field format is a comma-separated,
+            URI-encoded RockSerializableList.
+
+            KeyValueList.Encode therefore escapes all three reserved characters:
+            "^", "|", and ",". Escaping "^" and "|" prevents user-entered content
+            from colliding with KeyValueList's own delimiters. Escaping "," preserves
+            compatibility with the base ValueList serialization format and prevents
+            a literal comma in a key or value from being interpreted as an item
+            separator by WebForms rendering, the client-side hidden-field format,
+            or other code paths that treat the value as a ValueList string.
+
+            This matches the long-standing behavior of the WebForms KeyValueList
+            control (see KeyValueList.Encode). It is also important because downstream
+            consumers such as RockWeb/Webhooks/LaunchWorkflow.ashx read the raw
+            stored value and resolve it as Lava or use it as plain text. Full
+            HttpUtility.UrlEncode would additionally encode characters such as '{',
+            '}', and space, producing values like "%7b%7b+RawBody+%7d%7d" that will
+            not resolve as Lava templates.
+
+            Reason: Keep the Obsidian save path aligned with the WebForms save path
+                    so downstream consumers receive the same content shape.
+        */
+        private static readonly Regex _delimiterEncodeExpression = new Regex( "[\\^\\|\\,]" );
 
         #region Configuration
 
@@ -201,8 +231,27 @@ namespace Rock.Field.Types
                     .ToList();
             }
 
-            return values.Select( v => $"{HttpUtility.UrlEncode( v.Key )}^{HttpUtility.UrlEncode( v.Value )}" )
+            return values.Select( v => $"{EncodeDelimiters( v.Key )}^{EncodeDelimiters( v.Value )}" )
                 .JoinStrings( "|" );
+        }
+
+        /// <summary>
+        /// Encodes only the delimiter characters ('^', '|', ',') so that a key or
+        /// value can safely participate in the "|"-delimited list of "key^value"
+        /// pairs used by this field type. Other characters (such as '{', '}', and
+        /// whitespace) are intentionally left unencoded so downstream consumers
+        /// that read the raw stored value see the original template text.
+        /// </summary>
+        /// <param name="value">The key or value to encode.</param>
+        /// <returns>The value with only the delimiter characters percent-encoded.</returns>
+        private static string EncodeDelimiters( string value )
+        {
+            if ( value == null )
+            {
+                return string.Empty;
+            }
+
+            return _delimiterEncodeExpression.Replace( value, m => $"%{( byte ) m.Value[0]:X2}" );
         }
 
         #endregion

@@ -173,11 +173,13 @@
     import PieChart from "@Obsidian/Controls/pieChart.obs";
     import BarChart from "@Obsidian/Controls/barChart.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { InsightsInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/Insights/insightsInitializationBox";
     import { InsightsChartDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/Insights/insightsChartDataBag";
     import { ChartBag } from "@Obsidian/ViewModels/Reporting/chartBag";
     import { BarSeries, PieSeries } from "@Obsidian/Core/Controls/chart";
     import { BarSeriesBag } from "@Obsidian/ViewModels/Reporting/BarChart/barSeriesBag";
+    import { PieSeriesBag } from "@Obsidian/ViewModels/Reporting/PieChart/pieSeriesBag";
 
     // #region Values
 
@@ -253,7 +255,7 @@
                 bag.insightCategory === "Demographics" &&
                 bag.insightSubcategory === "ConnectionStatus"
             ) ?? {};
-            connectionStatusChartBag = connectionStatusChartDataBag.chartBag as ChartBag;
+            connectionStatusChartBag = resolveSeriesColors(connectionStatusChartDataBag.chartBag as ChartBag);
             connectionStatusChartBarSeries = connectionStatusChartBag.seriesBags as BarSeries[];
         }
         if (blockProperties.isAgeShown) {
@@ -261,7 +263,7 @@
                 bag.insightCategory === "Demographics" &&
                 bag.insightSubcategory === "Age"
             ) ?? {};
-            ageChartBag = ageChartDataBag.chartBag as ChartBag;
+            ageChartBag = resolveSeriesColors(ageChartDataBag.chartBag as ChartBag);
             ageChartBarSeries = ageChartBag.seriesBags as BarSeries[];
 
             // Special Chart Sorting
@@ -272,7 +274,7 @@
                 bag.insightCategory === "Demographics" &&
                 bag.insightSubcategory === "MaritalStatus"
             ) ?? {};
-            maritalStatusChartBag = maritalStatusChartDataBag.chartBag as ChartBag;
+            maritalStatusChartBag = resolveSeriesColors(maritalStatusChartDataBag.chartBag as ChartBag);
             maritalStatusChartBarSeries = maritalStatusChartBag.seriesBags as BarSeries[];
 
             // Special Chart Sorting
@@ -283,7 +285,7 @@
                 bag.insightCategory === "Demographics" &&
                 bag.insightSubcategory === "Gender"
             ) ?? {};
-            genderChartBag = genderChartDataBag.chartBag as ChartBag;
+            genderChartBag = resolveSeriesColors(genderChartDataBag.chartBag as ChartBag);
             genderChartPieSeries = genderChartBag.seriesBags as PieSeries[];
 
             // No special sorting, already in order
@@ -293,7 +295,7 @@
                 bag.insightCategory === "Demographics" &&
                 bag.insightSubcategory === "Race"
             ) ?? {};
-            raceChartBag = raceChartDataBag.chartBag as ChartBag;
+            raceChartBag = resolveSeriesColors(raceChartDataBag.chartBag as ChartBag);
             raceChartPieSeries = raceChartBag.seriesBags as PieSeries[];
         }
         if (blockProperties.isEthnicityShown) {
@@ -301,7 +303,7 @@
                 bag.insightCategory === "Demographics" &&
                 bag.insightSubcategory === "Ethnicity"
             ) ?? {};
-            ethnicityChartBag = ethnicityChartDataBag.chartBag as ChartBag;
+            ethnicityChartBag = resolveSeriesColors(ethnicityChartDataBag.chartBag as ChartBag);
             ethnicityChartPieSeries = ethnicityChartBag.seriesBags as PieSeries[];
         }
     }
@@ -312,7 +314,7 @@
                 bag.insightCategory === "InformationStatistics" &&
                 bag.insightSubcategory === "InformationCompleteness"
             ) ?? {};
-            informationCompletenessChartBag = informationCompletenessChartDataBag.chartBag as ChartBag;
+            informationCompletenessChartBag = resolveSeriesColors(informationCompletenessChartDataBag.chartBag as ChartBag);
             informationCompletenessChartBarSeries = informationCompletenessChartBag.seriesBags as BarSeries[];
         }
         if (blockProperties.isPercentageOfIndividualsWithAssessmentsShown) {
@@ -320,7 +322,7 @@
                 bag.insightCategory === "InformationStatistics" &&
                 bag.insightSubcategory === "ActiveIndividualsWithAssessments"
             ) ?? {};
-            activeIndividualsWithAssessmentsChartBag = activeIndividualsWithAssessmentsChartDataBag.chartBag as ChartBag;
+            activeIndividualsWithAssessmentsChartBag = resolveSeriesColors(activeIndividualsWithAssessmentsChartDataBag.chartBag as ChartBag);
             activeIndividualsWithAssessmentsChartBarSeries = activeIndividualsWithAssessmentsChartBag.seriesBags as BarSeries[];
         }
         if (blockProperties.isRecordStatusesShown) {
@@ -328,7 +330,7 @@
                 bag.insightCategory === "InformationStatistics" &&
                 bag.insightSubcategory === "RecordStatuses"
             ) ?? {};
-            recordStatusesChartBag = recordStatusesChartDataBag.chartBag as ChartBag;
+            recordStatusesChartBag = resolveSeriesColors(recordStatusesChartDataBag.chartBag as ChartBag);
             recordStatusesChartPieSeries = recordStatusesChartBag.seriesBags as PieSeries[];
         }
     }
@@ -370,6 +372,28 @@
     }
 
     /**
+     * Resolves the CSS variable names supplied by the server (e.g. "--color-metric-primary")
+     * into their literal computed colors, since Chart.js draws to a canvas and can't resolve
+     * CSS custom properties on its own.
+     *
+     * @param {ChartBag} chartBag - The ChartBag to modify.
+     * @returns {ChartBag} The modified ChartBag with resolved series colors.
+     */
+    function resolveSeriesColors(chartBag: ChartBag): ChartBag {
+        chartBag.seriesBags?.forEach((seriesBag: BarSeriesBag & PieSeriesBag) => {
+            if (Array.isArray(seriesBag.color)) {
+                seriesBag.color = seriesBag.color.map(c => getCssVariableValue(c, c));
+            }
+
+            if (Array.isArray(seriesBag.colors)) {
+                seriesBag.colors = seriesBag.colors.map(c => getCssVariableValue(c, c));
+            }
+        });
+
+        return chartBag;
+    }
+
+    /**
      * Moves the "Unknown" label and its corresponding data point to the end of the ChartBag.
      *
      * @param {ChartBag} chartBag - The ChartBag to modify.
@@ -383,20 +407,32 @@
                 const [unknownLabel] = chartBag.labels.splice(unknownLabelIndex, 1);
                 chartBag.labels.push(unknownLabel);
 
-                // Move the corresponding data point in each series to the end of the data array
+                // Move the corresponding data point and color in each series to the end,
+                // in lockstep with the label move above, so color stays aligned by index
+                // with label/data at every position (not just the final one). The pushed
+                // color value doesn't matter here; it's reset below regardless of where it lands.
                 chartBag.seriesBags.forEach((seriesBag: BarSeriesBag) => {
                     if (seriesBag.data && seriesBag.data.length > unknownLabelIndex) {
                         const [unknownData] = seriesBag.data.splice(unknownLabelIndex, 1);
                         seriesBag.data.push(unknownData);
                     }
-                });
 
-                // Change the color for "Unknown", which is now the last label,
-                // to the appropriate color for each series
-                const labelsLength = chartBag.labels.length;
+                    if (seriesBag.color && seriesBag.color.length > unknownLabelIndex) {
+                        const [unknownColor] = seriesBag.color.splice(unknownLabelIndex, 1);
+                        seriesBag.color.push(unknownColor);
+                    }
+                });
+            }
+
+            // Force "Unknown"'s color to neutral wherever it ends up, regardless of whether
+            // a move was needed above. This is the single source of truth for this chart's
+            // "Unknown" bucket color, so it doesn't depend on the server having colored it
+            // correctly, or on this function's move branch having run.
+            const finalUnknownIndex = chartBag.labels.findIndex(label => label.toLowerCase() === "unknown");
+            if (finalUnknownIndex > -1) {
                 chartBag.seriesBags.forEach((seriesBag: BarSeriesBag) => {
-                    if (seriesBag.color && seriesBag.color.length > 0) {
-                        seriesBag.color[labelsLength - 1] = "#E7E5E4";
+                    if (seriesBag.color && seriesBag.color.length > finalUnknownIndex) {
+                        seriesBag.color[finalUnknownIndex] = getCssVariableValue("--color-neutral-primary", "#E7E5E4");
                     }
                 });
             }
@@ -448,11 +484,18 @@
                 const [singleLabel] = updatedChartBag.labels.splice(singleLabelIndex, 1);
                 updatedChartBag.labels.unshift(singleLabel);
 
-                // Move the corresponding data point in each series to the start of the data array
+                // Move the corresponding data point and color in each series to the start,
+                // in lockstep with the label move above, so color stays aligned by index
+                // with label/data at every position.
                 updatedChartBag.seriesBags.forEach((seriesBag: BarSeriesBag) => {
                     if (seriesBag.data && seriesBag.data.length > singleLabelIndex) {
                         const [singleData] = seriesBag.data.splice(singleLabelIndex, 1);
                         seriesBag.data.unshift(singleData);
+                    }
+
+                    if (seriesBag.color && seriesBag.color.length > singleLabelIndex) {
+                        const [singleColor] = seriesBag.color.splice(singleLabelIndex, 1);
+                        seriesBag.color.unshift(singleColor);
                     }
                 });
             }

@@ -277,6 +277,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.LeaderToLeaderRelationshipMultiplierOverride = source.LeaderToLeaderRelationshipMultiplierOverride;
             target.LeaderToNonLeaderRelationshipMultiplierOverride = source.LeaderToNonLeaderRelationshipMultiplierOverride;
+            target.MeetingStyle = source.MeetingStyle;
             target.Name = source.Name;
             target.NonLeaderToLeaderRelationshipMultiplierOverride = source.NonLeaderToLeaderRelationshipMultiplierOverride;
             target.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;
