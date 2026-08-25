@@ -1,0 +1,30 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isShown" title="Restore Archived Member">
+        <!-- TODO: Restore prompt message from the Save response, with Restore (primary),
+             Don't Restore, and Cancel buttons per conversion plan §9.7. -->
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const isShown = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+</script>

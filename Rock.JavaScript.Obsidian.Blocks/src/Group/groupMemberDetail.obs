@@ -1,0 +1,144 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
+
+    <RockForm v-else v-model:submit="submitForm" @submit="onSave">
+        <Panel type="block"
+               :title="panelTitle"
+               :titleIconCssClass="panelIconCssClass">
+
+            <template #headerActions>
+                <!-- TODO: Archived + Added HighlightLabels, Communicate and Move header buttons, ellipsis menu with Audit Details modal. -->
+            </template>
+
+            <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+            <NotificationBox v-if="successMessage" alertType="success">{{ successMessage }}</NotificationBox>
+
+            <ContentSectionContainer :sidebar="false">
+                <ContentSection disableCollapse>
+                    <!-- TODO: PersonPicker (add mode) / static person display with linked registrations (edit mode),
+                         Role dropdown with sync lock, inline requirement alerts + Refresh Requirements below Role,
+                         Member Status radios, and Note per conversion plan §9.2. -->
+                </ContentSection>
+
+                <ContentSection title="Attributes" icon="ti ti-list-details">
+                    <!-- TODO: Group Member Attributes stack (editable + viewable) and Group Member Assignment
+                         Attributes stack (sign-up mode only) per conversion plan §9.3. Render the whole section
+                         only when either stack has attributes. -->
+                </ContentSection>
+
+                <ContentSection v-if="options.isSchedulingEnabled" title="Scheduling" icon="ti ti-calendar" isCollapsed>
+                    <!-- TODO: Schedule Settings stack (Schedule Template, Schedule Start Date required when a
+                         template is set) and Assignment Preferences stack (grid + add/edit/delete) per conversion
+                         plan §9.4. -->
+                </ContentSection>
+
+                <ContentSection title="Communication" icon="ti ti-message" isCollapsed>
+                    <!-- TODO: Preferences stack (Communication Preference radios) and Notifications & Reminders
+                         stack (Group Leaders Notified checkbox, Email Reminder Lead Time (Days) number box) per
+                         conversion plan §9.5. -->
+                </ContentSection>
+
+                <ContentSection title="Administration" icon="ti ti-settings" isCollapsed>
+                    <!-- TODO: Required Signed Documents stack (warning alert + Send/Resend button pending Open
+                         Decision A + Signed Document uploader) and Chat Settings stack (Chat Muted, Chat Banned)
+                         per conversion plan §9.6. -->
+                </ContentSection>
+            </ContentSectionContainer>
+
+            <template #footerActions>
+                <RockButton :btnType="BtnType.Primary" @click="onStartSubmitForm">Save</RockButton>
+                <RockButton v-if="options.isSaveThenAddShown" :btnType="BtnType.Link" @click="onSaveThenAdd">Save Then Add</RockButton>
+                <RockButton :btnType="BtnType.Link" @click="onCancel">Cancel</RockButton>
+            </template>
+        </Panel>
+    </RockForm>
+
+    <AssignmentPreferenceModal v-model="isAssignmentModalShown" />
+    <RestoreArchivedModal v-model="isRestoreModalShown" />
+    <MoveGroupMemberModal v-model="isMoveModalShown" />
+    <QuickCommunicationModal v-model="isCommunicationModalShown" />
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import AssignmentPreferenceModal from "./GroupMemberDetail/assignmentPreferenceModal.partial.obs";
+    import RestoreArchivedModal from "./GroupMemberDetail/restoreArchivedModal.partial.obs";
+    import MoveGroupMemberModal from "./GroupMemberDetail/moveGroupMemberModal.partial.obs";
+    import QuickCommunicationModal from "./GroupMemberDetail/quickCommunicationModal.partial.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberBag";
+    import { GroupMemberDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberDetailOptionsBag";
+
+    const config = useConfigurationValues<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>();
+
+    // #region Values
+
+    const blockError = ref(config.errorMessage ?? "");
+    const errorMessage = ref("");
+    const successMessage = ref("");
+    const submitForm = ref(false);
+
+    const groupMemberBag = ref(config.entity ?? ({} as GroupMemberBag));
+    const options = ref(config.options ?? ({} as GroupMemberDetailOptionsBag));
+
+    const isAssignmentModalShown = ref(false);
+    const isRestoreModalShown = ref(false);
+    const isMoveModalShown = ref(false);
+    const isCommunicationModalShown = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const panelTitle = computed((): string => {
+        // TODO: Person full name, or "Add {GroupTerm} {GroupMemberTerm}" in add mode.
+        return groupMemberBag.value.person?.text ?? "Group Member Detail";
+    });
+
+    const panelIconCssClass = computed((): string => {
+        return options.value.groupIconCssClass || "ti ti-user";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Starts the RockForm submit so validation runs before onSave.
+     */
+    function onStartSubmitForm(): void {
+        submitForm.value = true;
+    }
+
+    /**
+     * Saves the group member via the Save block action.
+     */
+    async function onSave(): Promise<void> {
+        // TODO: Invoke the Save block action and handle navigation, validation errors, and the restore prompt.
+    }
+
+    /**
+     * Saves the group member, then reloads the page in add mode.
+     */
+    async function onSaveThenAdd(): Promise<void> {
+        // TODO: Save, then full page reload with GroupMemberId=0 and carried parameters.
+    }
+
+    /**
+     * Cancels editing and navigates back to the parent page or returnUrl.
+     */
+    function onCancel(): void {
+        // TODO: Navigate to returnUrl or the parent page URL.
+    }
+
+    // #endregion Event Handlers
+</script>
