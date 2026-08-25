@@ -39,8 +39,8 @@ namespace Rock.Workflow.Action
 
     [CustomDropdownListField( "Method", "HTTP method to use when making requests.", "GET,POST,PUT,DELETE,PATCH", true, "GET", "", 0 )]
     [TextField( "URL", "Sets the BaseUrl property for requests made by this client instance  <span class='tip tip-lava'></span>", true, key: "Url", order: 1, AllowHtml = true, AllowLava = true )]
-    [KeyValueListField( "Parameters", "The parameters to send with request. <span class='tip tip-lava'></span>", false, "", "Parameters", "", order: 2 )]
-    [KeyValueListField( "Headers", "The key value pairs to add in the http header. <span class='tip tip-lava'></span>", false, "", "Headers", "", order: 3 )]
+    [KeyValueListField( "Parameters", "The parameters to send with request. <span class='tip tip-lava'></span>", false, "", "Parameters", "", order: 2, AllowLava = true )]
+    [KeyValueListField( "Headers", "The key value pairs to add in the http header. <span class='tip tip-lava'></span>", false, "", "Headers", "", order: 3, AllowLava = true )]
     [TextField( "Basic Auth UserName", "The user name for basic http authentication.", false, "", "", 4 )]
     [TextField( "Basic Auth Password", "The password for basic http authentication.", false, "", "", 5, isPassword: true )]
     [EnumField( "Request Content Type", "", typeof( RequestContentType ), true, "0", order: 6 )]
