@@ -279,6 +279,24 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The name suggests a schedule definition, but the value is a Schedule guid resolved through ScheduleService.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the Schedule table, not its id or idKey and not an iCalendar string. Only one value is stored, so a comma separated list is not valid here. Despite the name, this stores a reference to a saved schedule rather than the schedule definition it lets a person build.",
+                Instructions = "To find the correct value, read the schedules and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

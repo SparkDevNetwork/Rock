@@ -15,18 +15,26 @@
 // </copyright>
 
 using System;
+using System.ClientModel;
+using System.ClientModel.Primitives;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+
+using OpenAI;
 
 using Rock.Configuration;
 using Rock.Configuration.ConnectedServices;
 using Rock.Configuration.ConnectedServices.RockIntelligence;
 using Rock.Enums.AI.Agent;
+using Rock.Net;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Providers;
@@ -81,11 +89,31 @@ internal class RockIntelligenceProvider : AgentProviderComponent
         var url = settings?.Url;
         var apiKey = settings?.ApiKey;
 
+        /*
+            Resolved through DI rather than constructed here so the attribution
+            policy can read the agent details belonging to this kernel. Registered
+            with TryAdd because AddChatCompletion is called once per model role and
+            every role shares the same endpoint and key.
+        */
+        serviceCollection.TryAddSingleton( serviceProvider =>
+        {
+            var clientOptions = new OpenAIClientOptions
+            {
+                Endpoint = new Uri( url )
+            };
+
+            var agentContext = serviceProvider.GetRequiredService<AgentRequestContext>();
+
+            clientOptions.AddPolicy( new AgentAttributionPolicy( agentContext ), PipelinePosition.PerCall );
+
+            return new OpenAIClient( new ApiKeyCredential( apiKey ), clientOptions );
+        } );
+
+        // A null client tells the connector to resolve one from the service provider.
         serviceCollection.AddOpenAIChatCompletion(
             serviceId: GetServiceKeyForRole( role ),
             modelId: GetModelName( role, settings ),
-            endpoint: new Uri( url ),
-            apiKey: apiKey );
+            openAIClient: null );
     }
 
     /// <inheritdoc/>
@@ -151,12 +179,87 @@ internal class RockIntelligenceProvider : AgentProviderComponent
     }
 
     /// <inheritdoc/>
-    public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings()
+    public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings( AgentRequestContext agentRequestContext )
     {
         return new OpenAIPromptExecutionSettings()
         {
+            // From the agent's own context rather than the ambient request context.
+            // The latter is an AsyncLocal and is already gone by the time a completion
+            // runs, so it read as null for a signed in person. Still null conditional,
+            // because an anonymous request is legitimate here.
+            User = agentRequestContext?.CurrentPerson?.PrimaryAliasGuid is Guid personAliasGuid
+                ? personAliasGuid.ToString( "D" )
+                : null,
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             ReasoningEffort = "low"
         };
     }
+
+    #region Support Classes
+
+    /// <summary>
+    /// Adds attribution headers to every outgoing request so the upstream
+    /// service can identify which Rock agent made the call.
+    /// </summary>
+    private class AgentAttributionPolicy : PipelinePolicy
+    {
+        /// <summary>
+        /// Prefix for the referer header. The agent identifier is appended to it.
+        /// </summary>
+        private const string RefererBase = "https://www.rockrms.com/agent/";
+
+        /// <summary>
+        /// The agent context for the kernel that owns this policy.
+        /// </summary>
+        private readonly AgentRequestContext _agentContext;
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="AgentAttributionPolicy"/> class.
+        /// </summary>
+        /// <param name="agentContext">The context describing the agent making the request.</param>
+        public AgentAttributionPolicy( AgentRequestContext agentContext )
+        {
+            _agentContext = agentContext;
+        }
+
+        /// <inheritdoc/>
+        public override void Process( PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex )
+        {
+            SetAttributionHeaders( message );
+
+            ProcessNext( message, pipeline, currentIndex );
+        }
+
+        /// <inheritdoc/>
+        public override ValueTask ProcessAsync( PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex )
+        {
+            SetAttributionHeaders( message );
+
+            return ProcessNextAsync( message, pipeline, currentIndex );
+        }
+
+        /// <summary>
+        /// Writes the attribution headers onto the outgoing request. Both values
+        /// are derived from the agent identifier so that no staff authored text is
+        /// sent to the upstream service.
+        /// </summary>
+        /// <param name="message">The message about to be sent.</param>
+        private void SetAttributionHeaders( PipelineMessage message )
+        {
+            var agentGuid = _agentContext?.AgentGuid;
+
+            if ( message.Request == null || !agentGuid.HasValue )
+            {
+                return;
+            }
+
+            var identifier = agentGuid.Value.ToString( "D" );
+
+            // Set replaces any existing value, so there is no separate remove step.
+            message.Request.Headers.Set( "HTTP-Referer", $"{RefererBase}{identifier}" );
+            message.Request.Headers.Set( "X-Title", identifier );
+        }
+    }
+
+    #endregion
 }

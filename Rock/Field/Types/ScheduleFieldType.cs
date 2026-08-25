@@ -186,6 +186,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the Schedule table, not its id or idKey and not an iCalendar string. Only one value is stored, so a comma separated list is not valid here. The recurrence pattern lives on the Schedule record rather than in this value.",
+                Instructions = "To find the correct value, read the schedules and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -35,6 +35,23 @@ namespace Rock.Field.Types
     {
         #region Methods
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. These are rows in a table that a caller can look up, and
+            // reading them here would cost a query for every attribute described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the InteractionChannel table, separated by commas. This is the channel, not one of its components.",
+                Instructions = "To find the correct values, read the interaction channels and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the list source.
         /// </summary>

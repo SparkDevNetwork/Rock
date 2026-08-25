@@ -299,6 +299,28 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var definedType = DefinedTypeCache.Get( privateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ).AsInteger() );
+
+            if ( definedType == null )
+            {
+                return null;
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = $"Two guids separated by a comma, each identifying a DefinedValue from the '{definedType.Name}' defined type, the lower bound first. Both sides are needed for the range to be read, so this is not the field type to use for an open ended range.",
+                Instructions = $"To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey}."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -230,6 +230,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two guids separated by a pipe, the StepProgram first and the StepStatus second, as in a1|b2. A single guid with no pipe is read as the status alone with no program, which is the opposite of the order the two appear in when both are present.",
+                Instructions = "The program guid comes from the StepProgram table and the status guid from the StepStatus rows belonging to that program."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

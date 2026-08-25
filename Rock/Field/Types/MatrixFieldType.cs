@@ -527,6 +527,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the AttributeMatrix table, not its id or idKey. Only one value is stored, so a comma separated list is not valid here. The matrix rows themselves live on that record rather than in this value.",
+                Instructions = "A value here points at a matrix that already exists, created from the attribute matrix template this field is configured against. It is not the template guid."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -294,6 +294,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A number from 0 to 100 giving the percentage of the media that was watched, not a reference to the media itself. Which media element this relates to comes from the field's configuration rather than from the value."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -35,6 +35,26 @@ namespace Rock.Field.Types
     public class RegistryEntryFieldType : FieldType
     {
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Three parts, and the editor refuses anything that is not exactly three,
+        /// returning without setting a thing. So a value with a part missing is not
+        /// partially loaded and not rejected with a message, it simply does not
+        /// appear, which is why the count is stated as plainly as the order.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Three whole numbers separated by commas, in the order volume, page, line, as in 12,204,7. This records where an entry sits in a physical register, so it is used for things like sacraments and steps. All three commas positions must be present even when a part is unknown, because a value that does not split into exactly three parts is ignored rather than partially read; leave the unknown part empty, as in 12,,7. A part that is not a whole number is dropped and comes back empty."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

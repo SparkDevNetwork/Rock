@@ -128,6 +128,28 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Adds what this field type expects to the shared description of a
+        /// binary file reference. The guid alone does not say which files make sense
+        /// here, and the wrong kind of file saves without complaint.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var hints = base.GetFieldHints( privateConfigurationValues );
+
+            if ( hints != null )
+            {
+                hints.ValueFormat += " This field type pins the binary file type to Check-in Label rather than taking it from configuration, so only a check-in label belongs here. The picker enforces that, but a value written directly is not checked.";
+            }
+
+            return hints;
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

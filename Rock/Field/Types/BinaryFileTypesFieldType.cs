@@ -34,6 +34,23 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BINARY_FILE_TYPES )]
     public class BinaryFileTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. These are rows in a table that a caller can look up, and
+            // reading them here would cost a query for every attribute described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the BinaryFileType table, separated by commas. This is the kind of file, such as Person Image or Check-in Label, not a file itself.",
+                Instructions = "To find the correct values, read the binary file types and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the list source.
         /// </summary>

@@ -238,6 +238,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Three guids joined by pipes, in the order GroupType.Guid|Group.Guid|GroupTypeRole.Guid. All three parts are required and the order is fixed.",
+                Instructions = "To find the correct value, look up the group, then take its group type guid, its own guid, and the guid of the role within that group type."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 

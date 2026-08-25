@@ -541,6 +541,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the GroupMember table, separated by commas. This identifies a person's membership in a specific group, not the person, so it is never a Person or PersonAlias guid.",
+                Instructions = "To find the correct values, read the group members of the group this setting is configured against and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

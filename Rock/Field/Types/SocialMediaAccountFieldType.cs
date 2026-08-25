@@ -245,6 +245,34 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The displayed value is a full profile link, but what is stored is only the
+        /// part after the configured base url. Said explicitly because the display and
+        /// the storage differ, and a caller copying the link stores the base url twice.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var baseUrl = privateConfigurationValues.GetValueOrNull( BASEURL );
+
+            var valueFormat = "The account name or handle on its own, not a full profile url. Rock builds the link by appending this to the base url configured on the field.";
+
+            if ( baseUrl.IsNotNullOrWhiteSpace() )
+            {
+                valueFormat += $" The base url here is '{baseUrl}', so store only what would follow it.";
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = valueFormat
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

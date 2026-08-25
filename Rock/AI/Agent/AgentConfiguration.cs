@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.Data;
@@ -35,6 +36,13 @@ namespace Rock.AI.Agent
         /// Gets the unique identifier for this AI agent configuration.
         /// </summary>
         public int AgentId { get; }
+
+        /// <summary>
+        /// Gets the unique identifier of the <see cref="Model.AIAgent"/> that this
+        /// configuration was built from. This is <c>null</c> when the configuration
+        /// was created without a backing agent, such as in tests.
+        /// </summary>
+        public Guid? AgentGuid { get; }
 
         /// <inheritdoc cref="Model.AIAgent.AgentType"/>
         public AgentType AgentType { get; }
@@ -83,6 +91,7 @@ namespace Rock.AI.Agent
         internal AgentConfiguration( AIAgentCache agent, List<SkillConfiguration> skills, AgentProviderComponent provider )
         {
             AgentId = agent.Id;
+            AgentGuid = agent.Guid;
             AgentType = agent.AgentType;
             AudienceType = agent.AudienceType;
             Instructions = agent.Instructions ?? string.Empty;
