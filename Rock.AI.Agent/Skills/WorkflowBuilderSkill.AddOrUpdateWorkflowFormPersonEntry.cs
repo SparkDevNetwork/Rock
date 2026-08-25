@@ -58,7 +58,7 @@ internal sealed partial class WorkflowBuilderSkill
     /// </remarks>
     [Description( "Turns on the person entry block of a user entry form, or updates its settings. Person entry collects a real person, matching or creating the record, rather than collecting plain attribute values." )]
     [AgentPurpose( "Configures a form to collect a person record rather than loose text fields." )]
-    [AgentUsage( "Turning person entry on requires personAttributeIdKey and connectionStatusDefinedValueIdKey, and requires spouseAttributeIdKey as well whenever spouseOption is not Hidden. There is no default connection status, so ask which one new people should be given rather than guessing. Every parameter merges, so send only what is changing." )]
+    [AgentUsage( "personAttributeIdKey is required when turning person entry on, because without it the matched person is collected and then unreachable. Every parameter merges, so send only what is changing." )]
     [AgentToolPrerequisite( "Call GetWorkflowTypeConfiguration to determine the actionTypeIdKey and the workflow attributes the person, spouse, and family can be written to." )]
     [AgentToolGuid( "3E7B1A4C-5D26-4F98-9C03-8B41D5E6720F" )]
     public AgentToolResult AddOrUpdateWorkflowFormPersonEntry(
