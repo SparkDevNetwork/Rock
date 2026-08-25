@@ -41,7 +41,6 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.KEY_VALUE_LIST )]
     public class KeyValueListFieldType : ValueListFieldType, IEntityReferenceFieldType
     {
-        private const string VALUES_KEY = "values";
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
 
         /*
@@ -446,7 +445,7 @@ namespace Rock.Field.Types
             tbKeyPrompt.Help = "The text to display as a prompt in the key textbox.";
 
             var cbDisplayValueFirst = new RockCheckBox();
-            controls.Insert( 5, cbDisplayValueFirst );
+            controls.Insert( 6, cbDisplayValueFirst );
             cbDisplayValueFirst.Label = "Display Value First";
             cbDisplayValueFirst.Help = "Reverses the display order of the key and the value.";
 
@@ -490,9 +489,15 @@ namespace Rock.Field.Types
                 {
                     configurationValues["allowhtml"].Value = ( ( RockCheckBox ) controls[4] ).Checked.ToString();
                 }
-                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox )
+
+                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox cbAllowLava )
                 {
-                    configurationValues["displayvaluefirst"].Value = ( ( RockCheckBox ) controls[5] ).Checked.ToString();
+                    configurationValues["allowlava"].Value = cbAllowLava.Checked.ToString();
+                }
+
+                if ( controls.Count > 6 && controls[6] != null && controls[6] is RockCheckBox )
+                {
+                    configurationValues["displayvaluefirst"].Value = ( ( RockCheckBox ) controls[6] ).Checked.ToString();
                 }
             }
 
@@ -529,9 +534,15 @@ namespace Rock.Field.Types
                 {
                     ( ( RockCheckBox ) controls[4] ).Checked = configurationValues["allowhtml"].Value.AsBoolean();
                 }
-                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox && configurationValues.ContainsKey( "displayvaluefirst" ) )
+
+                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox cbAllowLava && configurationValues.ContainsKey( "allowlava" ) )
                 {
-                    ( ( RockCheckBox ) controls[5] ).Checked = configurationValues["displayvaluefirst"].Value.AsBoolean();
+                    cbAllowLava.Checked = configurationValues["allowlava"].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 6 && controls[6] != null && controls[6] is RockCheckBox && configurationValues.ContainsKey( "displayvaluefirst" ) )
+                {
+                    ( ( RockCheckBox ) controls[6] ).Checked = configurationValues["displayvaluefirst"].Value.AsBoolean();
                 }
             }
         }

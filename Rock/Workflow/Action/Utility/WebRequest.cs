@@ -54,11 +54,13 @@ namespace Rock.Workflow.Action
         Description = "The parameters to send with request. <span class='tip tip-lava'></span>",
         IsRequired = false,
         KeyPrompt = "Parameters",
+        AllowLava = true,
         Order = 2 )]
     [KeyValueListField( "Headers",
         Description = "The key value pairs to add in the http header. <span class='tip tip-lava'></span>",
         IsRequired = false,
         KeyPrompt = "Headers",
+        AllowLava = true,
         Order = 3 )]
     [TextField( "Basic Auth UserName",
         Description = "The user name for basic http authentication.",

@@ -120,6 +120,7 @@ export const ConfigurationComponent = defineComponent({
         const labelPrompt = ref("");
         const definedType = ref("");
         const allowHtml = ref(false);
+        const allowLava = ref(false);
 
         const definedTypeOptions = computed((): ListItemBag[] => {
             try {
@@ -151,12 +152,14 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationKey.DefinedType] = definedType.value ?? "";
             newValue[ConfigurationKey.CustomValues] = internalCustomValues.value ?? "";
             newValue[ConfigurationKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
+            newValue[ConfigurationKey.AllowLava] = asTrueFalseOrNull(allowLava.value) ?? "False";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationKey.ValuePrompt] !== (props.modelValue[ConfigurationKey.ValuePrompt] ?? "")
                 || newValue[ConfigurationKey.DefinedType] !== (props.modelValue[ConfigurationKey.DefinedType] ?? "")
                 || newValue[ConfigurationKey.CustomValues] !== (props.modelValue[ConfigurationKey.CustomValues] ?? "")
-                || newValue[ConfigurationKey.AllowHtml] !== (props.modelValue[ConfigurationKey.AllowHtml] ?? "False");
+                || newValue[ConfigurationKey.AllowHtml] !== (props.modelValue[ConfigurationKey.AllowHtml] ?? "False")
+                || newValue[ConfigurationKey.AllowLava] !== (props.modelValue[ConfigurationKey.AllowLava] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -188,6 +191,7 @@ export const ConfigurationComponent = defineComponent({
             customValues.value = props.modelValue[ConfigurationKey.CustomValues] ?? "";
             internalCustomValues.value = customValues.value;
             allowHtml.value = asBooleanOrNull(props.modelValue[ConfigurationKey.AllowHtml]) ?? false;
+            allowLava.value = asBooleanOrNull(props.modelValue[ConfigurationKey.AllowLava]) ?? false;
         }, {
             immediate: true
         });
@@ -203,9 +207,11 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes in properties that only require a local UI update.
         watch(labelPrompt, () => maybeUpdateConfiguration(ConfigurationKey.ValuePrompt, labelPrompt.value ?? ""));
         watch(allowHtml, () => maybeUpdateConfiguration(ConfigurationKey.AllowHtml, asTrueFalseOrNull(allowHtml.value) ?? "False"));
+        watch(allowLava, () => maybeUpdateConfiguration(ConfigurationKey.AllowLava, asTrueFalseOrNull(allowLava.value) ?? "False"));
 
         return {
             allowHtml,
+            allowLava,
             definedType,
             definedTypeOptions,
             labelPrompt,
@@ -233,7 +239,11 @@ export const ConfigurationComponent = defineComponent({
 
     <CheckBox v-model="allowHtml"
         label="Allow HTML"
-        help="Allow HTML content in values." />
+        help="Controls whether server should allow HTML in this field or not. This can often be a security risk so use with caution." />
+
+    <CheckBox v-model="allowLava"
+        label="Allow Lava"
+        help="Controls whether server should allow Lava in this field or not. This can often be a security risk so use with caution." />
 </div>
 `
 });
