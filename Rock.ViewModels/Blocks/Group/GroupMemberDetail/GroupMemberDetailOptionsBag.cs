@@ -203,6 +203,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public string WorkflowEntryPageValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the requirement calculation error details, one
+        /// "{type}: {error}" per line. Null when every calculation
+        /// succeeded.
+        /// </summary>
+        public string RequirementCalculationErrors { get; set; }
+
+        /// <summary>
         /// Gets or sets the group's unique identifier, used by requirement
         /// REST endpoints.
         /// </summary>

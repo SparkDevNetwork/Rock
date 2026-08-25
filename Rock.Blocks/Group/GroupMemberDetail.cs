@@ -392,10 +392,169 @@ namespace Rock.Blocks.Group
 
             SetRoleOptions( options, entity, groupType );
             SetViewableAttributes( options, entity, isReadOnly );
-
-            // TODO: Requirement alerts, guids, and requirement settings per conversion plan §7.13 (step 5).
+            SetRequirementOptions( options, entity, groupType );
 
             return options;
+        }
+
+        /// <summary>
+        /// Sets the group requirement options: the requirement block
+        /// settings, the identifiers used by requirement plumbing, and the
+        /// inline alert bags for the member's current requirement statuses.
+        /// </summary>
+        /// <param name="options">The options bag to populate.</param>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <param name="groupType">The group's group type cache.</param>
+        private void SetRequirementOptions( GroupMemberDetailOptionsBag options, GroupMember entity, GroupTypeCache groupType )
+        {
+            var group = entity.Group;
+
+            options.AreRequirementsHidden = GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBoolean();
+            options.IsRequirementSummaryHidden = GetAttributeValue( AttributeKey.IsSummaryHidden ).AsBoolean();
+            options.WorkflowEntryPageValue = GetAttributeValue( AttributeKey.WorkflowEntryPage );
+            options.HasGroupRequirements = group.GetGroupRequirements( RockContext ).Any();
+            options.RequirementAlerts = new List<GroupMemberRequirementAlertBag>();
+
+            if ( !options.HasGroupRequirements )
+            {
+                return;
+            }
+
+            options.GroupGuid = group.Guid;
+            options.GroupRoleGuid = groupType.Roles.FirstOrDefault( r => r.Id == entity.GroupRoleId )?.Guid;
+            options.GroupMemberGuid = entity.Id != 0 ? entity.Guid : ( Guid? ) null;
+            options.PersonGuid = entity.Person?.Guid;
+
+            // Interaction stays disabled until the member is saved and unchanged, since requirement writes need a member record.
+            options.IsRequirementInteractionDisabled = entity.Id == 0 || entity.IsNewOrChangedGroupMember( RockContext );
+
+            // Don't check or show requirements until a person is selected.
+            if ( entity.PersonId == 0 )
+            {
+                return;
+            }
+
+            // Recalculating here also saves the results, so only do it for an existing, unchanged member.
+            if ( GetAttributeValue( AttributeKey.AreRequirementsRefreshedOnLoad ).AsBoolean()
+                && entity.Id != 0
+                && !entity.IsNewOrChangedGroupMember( RockContext ) )
+            {
+                entity.CalculateRequirements( RockContext, true );
+            }
+
+            options.RequirementAlerts = GetRequirementAlerts( entity, entity.GroupRoleId, out var calculationErrors );
+            options.RequirementCalculationErrors = calculationErrors;
+        }
+
+        /// <summary>
+        /// Gets the inline requirement alerts for the member's requirement
+        /// statuses against the selected role. Only statuses the current
+        /// person may view are included; Not Applicable and Error statuses
+        /// never render (errors surface through the calculation errors
+        /// text instead).
+        /// </summary>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <param name="selectedRoleId">The currently selected role identifier.</param>
+        /// <param name="calculationErrors">The calculation error details, or null when every calculation succeeded.</param>
+        /// <returns>The requirement alert bags.</returns>
+        private List<GroupMemberRequirementAlertBag> GetRequirementAlerts( GroupMember entity, int selectedRoleId, out string calculationErrors )
+        {
+            calculationErrors = null;
+
+            List<GroupRequirementStatus> statusList = null;
+
+            // Use the stored requirement results when the member's saved role matches the
+            // selected role; otherwise calculate on demand for the person and role.
+            // Materialized immediately so later enumeration cannot re-run the calculations.
+            if ( entity.Id != 0 && entity.GroupRoleId == selectedRoleId )
+            {
+                statusList = entity.GetGroupRequirementsStatuses( RockContext )?.ToList();
+            }
+
+            if ( statusList?.Any() != true && entity.PersonId != 0 )
+            {
+                statusList = entity.Group.PersonMeetsGroupRequirements( RockContext, entity.PersonId, selectedRoleId )?.ToList();
+            }
+
+            if ( statusList == null || !statusList.Any() )
+            {
+                return new List<GroupMemberRequirementAlertBag>();
+            }
+
+            var requirementsWithErrors = statusList
+                .Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.Error )
+                .ToList();
+
+            if ( requirementsWithErrors.Any() )
+            {
+                calculationErrors = requirementsWithErrors
+                    .Select( s => $"{s.GroupRequirement.GroupRequirementType.Name}: {s.CalculationException?.Message}" )
+                    .ToList()
+                    .AsDelimited( Environment.NewLine );
+            }
+
+            var isSummaryHidden = GetAttributeValue( AttributeKey.IsSummaryHidden ).AsBoolean();
+            var isLeader = IsCurrentPersonLeaderOfGroup( entity.GroupId );
+
+            // Order matches the WebForms container: uncategorized types first, then by category name, then by type name.
+            var visibleStatuses = statusList
+                .Where( s =>
+                    s.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable
+                    && s.MeetsGroupRequirement != MeetsGroupRequirement.Error
+                    && s.GroupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .OrderBy( s => s.GroupRequirement.GroupRequirementType.CategoryId.HasValue )
+                .ThenBy( s => s.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? s.GroupRequirement.GroupRequirementType.Category.Name : string.Empty )
+                .ThenBy( s => s.GroupRequirement.GroupRequirementType.Name )
+                .ToList();
+
+            var memberRequirementIds = visibleStatuses
+                .Where( s => s.GroupMemberRequirementId.HasValue )
+                .Select( s => s.GroupMemberRequirementId.Value )
+                .ToList();
+
+            var memberRequirementGuidsById = memberRequirementIds.Any()
+                ? new GroupMemberRequirementService( RockContext ).Queryable().AsNoTracking()
+                    .Where( r => memberRequirementIds.Contains( r.Id ) )
+                    .Select( r => new { r.Id, r.Guid } )
+                    .ToList()
+                    .ToDictionary( r => r.Id, r => r.Guid )
+                : new Dictionary<int, Guid>();
+
+            return visibleStatuses
+                .Select( s => new GroupMemberRequirementAlertBag
+                {
+                    Title = s.GroupRequirement.GroupRequirementType.Name,
+                    Summary = isSummaryHidden ? string.Empty : s.GroupRequirement.GroupRequirementType.Summary,
+                    MeetsGroupRequirement = s.MeetsGroupRequirement,
+                    TypeIconCssClass = s.GroupRequirement.GroupRequirementType.IconCssClass,
+                    CanOverride = s.MeetsGroupRequirement != MeetsGroupRequirement.Meets
+                        && ( ( s.GroupRequirement.AllowLeadersToOverride && isLeader )
+                            || s.GroupRequirement.GroupRequirementType.IsAuthorized( Authorization.OVERRIDE, RequestContext.CurrentPerson ) ),
+                    GroupRequirementGuid = s.GroupRequirement.Guid,
+                    GroupMemberRequirementGuid = s.GroupMemberRequirementId.HasValue && memberRequirementGuidsById.ContainsKey( s.GroupMemberRequirementId.Value )
+                        ? memberRequirementGuidsById[s.GroupMemberRequirementId.Value]
+                        : ( Guid? ) null
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines whether the current person holds a leader role in the
+        /// group, which can grant requirement override rights.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns><c>true</c> if the current person is a leader of the group.</returns>
+        private bool IsCurrentPersonLeaderOfGroup( int groupId )
+        {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return false;
+            }
+
+            return new GroupMemberService( RockContext ).GetByGroupId( groupId )
+                .Where( m => m.GroupRole.IsLeader )
+                .Select( m => m.PersonId )
+                .Contains( RequestContext.CurrentPerson.Id );
         }
 
         /// <summary>

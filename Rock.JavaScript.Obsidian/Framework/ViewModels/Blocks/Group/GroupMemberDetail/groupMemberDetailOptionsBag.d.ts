@@ -170,6 +170,13 @@ export type GroupMemberDetailOptionsBag = {
     requirementAlerts?: GroupMemberRequirementAlertBag[] | null;
 
     /**
+     * Gets or sets the requirement calculation error details, one
+     * "{type}: {error}" per line. Null when every calculation
+     * succeeded.
+     */
+    requirementCalculationErrors?: string | null;
+
+    /**
      * Gets or sets the group roles available for selection. Roles used
      * by Group Sync are excluded unless the member already holds one.
      */
