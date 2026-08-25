@@ -58,14 +58,13 @@ internal class RockIntelligenceProvider : AgentProviderComponent
     /// <returns>The name of the model to use when processing the request.</returns>
     private string GetModelName( ModelServiceRole role, Settings settings )
     {
-        if ( role == ModelServiceRole.Default )
+        if ( role == ModelServiceRole.Medium )
         {
-            var model = settings?.Models?.FirstOrDefault( m => m.Type == AIModel.GeneralType );
-
-            if ( model != null )
-            {
-                return model.Id;
-            }
+            return settings?.Models?.FirstOrDefault( m => m.Type == AIModel.GeneralType )?.Id;
+        }
+        else if ( role == ModelServiceRole.High )
+        {
+            return settings?.Models?.FirstOrDefault( m => m.Type == AIModel.HighType )?.Id;
         }
 
         return null;
