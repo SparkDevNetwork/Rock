@@ -258,7 +258,7 @@ namespace Rock.Blocks.Group
 
             box.Entity = GetEntityBagForEdit( entity );
             box.Options = GetBoxOptions( entity, isReadOnly, editModeMessage );
-            box.NavigationUrls = GetBoxNavigationUrls();
+            box.NavigationUrls = GetBoxNavigationUrls( entity );
 
             if ( IsSignUpMode )
             {
@@ -839,15 +839,46 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Gets the navigation URLs required by the client.
+        /// Gets the navigation URLs required by the client. Save and Cancel
+        /// both go to the returnUrl page parameter when present, otherwise
+        /// to the parent page.
         /// </summary>
+        /// <param name="entity">The group member being viewed or edited.</param>
         /// <returns>A dictionary of key and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
+        private Dictionary<string, string> GetBoxNavigationUrls( GroupMember entity )
         {
-            // TODO: Parent page URL carrying GroupId, CampusId, and sign-up parameters per conversion plan §7.14.
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                // The client is responsible for making this redirect-safe.
+                return new Dictionary<string, string>
+                {
+                    [NavigationUrlKey.ParentPage] = returnUrl
+                };
+            }
+
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.GroupId] = entity.GroupId.ToString()
+            };
+
+            // CampusId rides along for the Campus Team feature's pages.
+            if ( CampusId.HasValue )
+            {
+                queryParams[PageParameterKey.CampusId] = CampusId.Value.ToString();
+            }
+
+            // Sign-up mode sends the occurrence identifiers back to the attendee list.
+            if ( IsSignUpMode )
+            {
+                queryParams[PageParameterKey.LocationId] = LocationId.Value.ToString();
+                queryParams[PageParameterKey.ScheduleId] = ScheduleId.Value.ToString();
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams )
             };
         }
 
@@ -1091,10 +1122,61 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            // TODO: Member name crumb, optionally prefixed with the group name per the IncludeGroupNameInBreadcrumb setting.
+            var key = pageReference.GetPageParameter( PageParameterKey.GroupMemberId );
+
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return new BreadCrumbResult { BreadCrumbs = new List<IBreadCrumb>() };
+            }
+
+            var id = key.AsIntegerOrNull();
+            var guid = key.AsGuidOrNull();
+            var isAddPath = ( id.HasValue && id.Value == 0 )
+                || ( guid.HasValue && guid.Value == Guid.Empty );
+
+            if ( isAddPath )
+            {
+                var addCrumb = new BreadCrumbLink( "New Group Member", new PageReference( pageReference.PageId, 0 ) );
+                return new BreadCrumbResult { BreadCrumbs = new List<IBreadCrumb> { addCrumb } };
+            }
+
+            var info = new GroupMemberService( RockContext ).GetSelect( key, gm => new
+            {
+                gm.Id,
+                GroupName = gm.Group.Name,
+                PersonName = gm.Person.NickName + " " + gm.Person.LastName
+            } );
+
+            if ( info == null )
+            {
+                return new BreadCrumbResult { BreadCrumbs = new List<IBreadCrumb>() };
+            }
+
+            var breadCrumbs = new List<IBreadCrumb>();
+
+            // Sign-up mode is computed from the page reference since breadcrumbs
+            // can be built outside a normal block request.
+            var locationId = pageReference.GetPageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
+            var scheduleKey = pageReference.GetPageParameter( PageParameterKey.ScheduleId );
+            var scheduleId = scheduleKey.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( scheduleKey );
+            var isSignUpMode = locationId.ToIntSafe() > 0 && scheduleId.ToIntSafe() > 0;
+
+            // The group name crumb replaces the WebForms session-history hack (Locked Decision #2).
+            if ( !isSignUpMode && GetAttributeValue( AttributeKey.IncludeGroupNameInBreadcrumb ).AsBoolean( true ) )
+            {
+                breadCrumbs.Add( new BreadCrumbLink( info.GroupName ) );
+            }
+
+            var pageParameters = new Dictionary<string, string>
+            {
+                [PageParameterKey.GroupMemberId] = Rock.Utility.IdHasher.Instance.GetHash( info.Id )
+            };
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            breadCrumbs.Add( new BreadCrumbLink( info.PersonName, breadCrumbPageRef ) );
+
             return new BreadCrumbResult
             {
-                BreadCrumbs = new List<IBreadCrumb>()
+                BreadCrumbs = breadCrumbs
             };
         }
 
