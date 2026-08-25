@@ -10,71 +10,26 @@
             </div>
             <div class="panel-body">
 
-                <h1 class="mt-0">Store Configuration</h1>
-
                 <p>
-                    In order for us to get the store ready for your first download
-                    we need to do a bit of configuration. The first step is to match
-                    your Rock install to a registered organization so we can remember
-                    your purchases.
+                    To get the most out of Rock, link your organization to a registered
+                    Spark Development Network account.
                 </p>
 
-                <asp:Panel ID="pnlAuthenicate" runat="server">
-                    <div class="alert alert-info">
-                        <strong>Which Password?</strong> Use the username and password below that you created
-                        on the <a href="https://www.rockrms.com">Rock RMS website</a>.
-                    </div>
+                <p>
+                    To do this you will be directed to the Spark Development Network website
+                    where you will be asked to log in and authorize Rock to access your
+                    organization.
+                </p>
 
-                    <Rock:RockTextBox ID="txtUsername" runat="server" Label="Rock RMS Username" />
-                    <Rock:RockTextBox ID="txtPassword" TextMode="Password" runat="server" Label="Rock RMS Password" />
+                <asp:Panel ID="pnlStart" runat="server">
+                    <Rock:NotificationBox ID="nbStartError" runat="server" NotificationBoxType="Warning" />
 
-                    <div class="actions">
-                        <asp:Button ID="btnRetrieveOrganization" CssClass="btn btn-primary" runat="server" OnClick="btnRetrieveOrganization_Click" Text="Retrieve Organization" />
-                    </div>
-
+                    <asp:Button ID="btnStart" CssClass="btn btn-primary" runat="server" OnClick="btnStart_Click" Text="Link Organization" />
                 </asp:Panel>
 
-                <asp:Panel ID="pnlSelectOrganization" runat="server" Visible="false">
-
-                    <div class="alert alert-info">
-                        <strong>Success!</strong> We found multiple organizations tied to your account. Select the organization Rock should
-                        use for remembering purchases.
-                    </div>
-
-                    <Rock:RockRadioButtonList ID="rblOrganizations" AutoPostBack="true" OnSelectedIndexChanged="rblOrganizations_SelectedIndexChanged" runat="server"></Rock:RockRadioButtonList>
-
-                    <div class="margin-t-md">
-                        <asp:Button ID="btnSelectOrganization" runat="server" CssClass="btn btn-primary" Text="Select Organization" OnClick="btnSelectOrganization_Click" Enabled="false" />
-                        <asp:Button ID="btnSelectOrganizationCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnSelectOrganizationCancel_Click" />
-                    </div>
+                <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
+                    <Rock:NotificationBox ID="nbLinkSuccess" runat="server" NotificationBoxType="Success" />
                 </asp:Panel>
-
-                <asp:Panel ID="pnlAverageWeeklyAttendance" runat="server" Visible="false">
-                    <div class="alert alert-info">
-                        <p><strong>Confirm:</strong>
-                        Please confirm the size of your organization below. This will update your organization size on the Spark server which impacts your suggested donation
-                        amount and the relative pricing of Rock Shop plugins.</p>
-                        <br />
-                        <p>Rock runs on integrity so we rely on the information below being accurate.</p>
-                    </div>
-
-                    <Rock:NumberBox runat="server" ID="nbAverageWeeklyAttendance" Label="Average Weekend Attendance" Required="true" NumberType="Integer" />
-
-                    <div class="actions">
-                        <asp:Button ID="btnSaveAttendance" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveAttendance_Click" />
-                    </div>
-
-                </asp:Panel>
-
-                <asp:Panel ID="pnlComplete" runat="server" Visible="false">
-                    <asp:Literal ID="lCompleteMessage" runat="server" />
-
-                    <div class="actions">
-                        <asp:Button ID="btnContinue" runat="server" CssClass="btn btn-primary" Text="Continue" OnClick="btnContinue_Click" />
-                    </div>
-                </asp:Panel>
-
-                <asp:Literal ID="lMessages" runat="server" />
             </div>
 
         </asp:Panel>

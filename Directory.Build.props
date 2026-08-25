@@ -9,8 +9,8 @@
 
   <!-- Versioning information -->
   <PropertyGroup>
-    <Version>19.3.4</Version>
-    <InformationalVersion>Rock McKinley 19.3</InformationalVersion>
+    <Version>19.4.4</Version>
+    <InformationalVersion>Rock McKinley 19.4</InformationalVersion>
 
     <FileVersion>$(Version)</FileVersion>
     <Description>Rock RMS Core Assembly. Rock RMS is a community supported open-source Church Management System that provides innovative features to churches of all sizes.</Description>

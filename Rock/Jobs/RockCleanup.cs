@@ -23,7 +23,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 
@@ -35,6 +37,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Configuration.ConnectedServices;
 using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
@@ -360,6 +363,8 @@ namespace Rock.Jobs
             RunCleanupTask( "delete expired short links", () => DeleteExpiredShortLinks() );
 
             RunCleanupTask( "update schedule dates", () => UpdateScheduleDates() );
+
+            RunCleanupTask( "connected services manifest", () => RefreshConnectedServicesManifest() );
 
             /*
              * 21-APR-2022 DMV
@@ -3748,6 +3753,43 @@ SET @UpdatedCampusCount = @CampusCount;
         private int UpdateScheduleDates()
         {
             return ScheduleService.UpdateScheduleDates( true, CancellationToken.None );
+        }
+
+        /// <summary>
+        /// Refreshes the cached connected services manifest from the Spark
+        /// API so bundle changes propagate to Rock without an administrator
+        /// having to manually refresh from the Connected Services block.
+        /// Any automatic bundle replacements happen as a side effect of the
+        /// refresh.
+        /// </summary>
+        /// <returns>1 if the manifest was refreshed, 0 if skipped because the organization is not linked.</returns>
+        private int RefreshConnectedServicesManifest()
+        {
+            var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+
+            // Skip silently for Rock instances that have never linked to
+            // Spark. UpdateManifestAsync would throw otherwise and add
+            // noise to every nightly cleanup summary on those instances.
+            if ( !provider.IsOrganizationLinked() )
+            {
+                return 0;
+            }
+
+            try
+            {
+                provider.UpdateManifestAsync( CancellationToken.None ).GetAwaiter().GetResult();
+            }
+            catch ( HttpRequestException ex ) when ( ex.InnerException != null )
+            {
+                // Surface the underlying network/DNS/TLS exception so the
+                // job summary shows an actionable message rather than
+                // HttpRequestException's generic wrapper text. Use
+                // ExceptionDispatchInfo so the inner exception's original
+                // stack trace is preserved for diagnostics.
+                ExceptionDispatchInfo.Capture( ex.InnerException ).Throw();
+            }
+
+            return 1;
         }
 
         /// <summary>

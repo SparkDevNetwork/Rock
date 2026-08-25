@@ -1,0 +1,246 @@
+<template>
+    <Panel title="Spark Connected Services"
+           type="block"
+           :headerSecondaryActions="headerSecondaryActions">
+        <template #headerActions>
+            <span v-if="manifestLastRefreshedText" class="label label-default">{{ manifestLastRefreshedText }}</span>
+        </template>
+
+        <p>Your ministry does more than manage data. Spark Connected Services lets you extend Rock RMS with the additional tools your organization needs, without adding to your team's workload. Connect Rock to the services your church needs, all working directly within Rock, so your data stays in one place and your team doesn't have to learn a new system or juggle logins.</p>
+
+        <p>The result: fewer manual tasks, cleaner data, and more time for what matters most, ministry.</p>
+
+        <NotificationBox v-if="config.errorTitle || config.errorDescription"
+                         alertType="warning">
+            <p v-if="config.errorTitle"><strong>{{ config.errorTitle }}</strong></p>
+            <p v-if="config.errorDescription">{{ config.errorDescription }}</p>
+        </NotificationBox>
+
+        <NotificationBox v-else-if="config.isOrganizationInvalid"
+                         alertType="warning">
+            <p><strong>Organization Not Linked</strong></p>
+            <p>Your organization isn't linked to the Spark Development Network community portal yet.</p>
+            <p>
+                <a class="btn btn-default btm-sm"
+                   :href="linkOrganizationUrl">
+                    Link your organization to continue.
+                </a>
+            </p>
+        </NotificationBox>
+
+        <template v-else>
+            <h4>Payment Method</h4>
+
+            <NotificationBox v-if="!config.creditCardSummary?.isCardOnFile"
+                             alertType="warning">
+                <p><strong>Credit Card Required</strong></p>
+                <p>Services are billed monthly based on usage. A credit card is required to get started and can also be used for Rock Shop purchases.</p>
+                <p>
+                    <a :href="changeCardUrl"
+                       class="btn btn-default btn-sm"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Add Card
+                    </a>
+                </p>
+            </NotificationBox>
+
+            <NotificationBox v-else-if="config.creditCardSummary?.isCardExpired"
+                             alertType="danger">
+                <p><strong>Payment Method Expired</strong></p>
+                <p>Your payment method has expired. Update it now to avoid service interruption.</p>
+                <p>
+                    <a :href="changeCardUrl"
+                       class="btn btn-default btn-sm"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Change Card
+                    </a>
+                </p>
+            </NotificationBox>
+
+            <DisplayCard v-else
+                         iconCssClass="ti ti-credit-card"
+                         :iconLabelType="creditCardLabelType"
+                         :title="creditCardTitle"
+                         :description="creditCardDescription">
+                <template #rightMiddleSection>
+                    <div style="display: flex; gap: var(--spacing-medium); align-items: center; justify-content: space-between; width: 100%;">
+                        <div>
+                            <span v-if="config.creditCardSummary?.isCardExpired"
+                                  class="badge badge-danger">
+                                Card Expired
+                            </span>
+
+                            <span v-else-if="config.creditCardSummary?.isCardExpiringSoon">
+                                <span class="badge badge-warning">
+                                    Card Expiring Soon
+                                </span>
+                            </span>
+                        </div>
+
+                        <a :href="changeCardUrl"
+                           class="text-info"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            Change Card
+                        </a>
+                    </div>
+                </template>
+            </DisplayCard>
+
+            <h4>Services</h4>
+
+            <RockIntelligence v-if="isRockIntelligenceVisible"
+                              v-model:configuration="rockIntelligenceConfiguration" />
+        </template>
+    </Panel>
+</template>
+
+<style>
+.spark-connected-services .service-code-details {
+    display: flex;
+    gap: var(--spacing-large);
+    align-items: center;
+    margin-left: auto;
+}
+
+.spark-connected-services .service-code-details .btn-link {
+    padding: 0;
+    color: var(--color-info-strong);
+}
+
+.spark-connected-services .service-actions {
+    display: flex;
+    margin: calc(0px - var(--spacing-large));
+    margin-top: 0;
+    border-top: 1px solid var(--color-interface-soft);
+    padding: var(--spacing-medium) var(--spacing-large);
+    justify-content: space-between;
+    align-items: center;
+}
+</style>
+
+<script setup lang="ts">
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockIntelligence from "./SparkConnectedServices/rockIntelligence.partial.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { computed, ref } from "vue";
+    import { InitializationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/initializationBag";
+    import { RefreshManifestResponseBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/refreshManifestResponseBag";
+    import { padLeft } from "@Obsidian/Utility/stringUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+
+    const config = useConfigurationValues<InitializationBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const rockIntelligenceConfiguration = ref(config.rockIntelligence ?? null);
+    const linkOrganizationUrl = `/link-organization?returnUrl=${encodeURIComponent(window.location.href)}`;
+    const manifestLastRefreshedDateTime = ref(config.manifestLastRefreshedDateTime ?? null);
+    const isManifestRefreshing = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (!config.isOrganizationInvalid && !config.errorTitle) {
+            actions.push({
+                type: "default",
+                title: "Refresh Configuration",
+                iconCssClass: "ti ti-reload",
+                disabled: isManifestRefreshing.value,
+                handler: onRefreshManifestClick,
+            });
+        }
+
+        return actions;
+    });
+
+    const creditCardLabelType = computed((): "info" | "default" | "danger" => {
+        if (!config.creditCardSummary?.isCardOnFile) {
+            return "default";
+        }
+        else if (config.creditCardSummary?.isCardExpired) {
+            return "danger";
+        }
+
+        return "info";
+    });
+
+    const creditCardTitle = computed((): string => {
+        if (!config.creditCardSummary?.isCardOnFile) {
+            return "No Credit Card On File";
+        }
+
+        return `${config.creditCardSummary?.cardType} ending in ${config.creditCardSummary?.lastFourDigits}`;
+    });
+
+    const creditCardDescription = computed((): string => {
+        if (!config.creditCardSummary?.isCardOnFile) {
+            return "Please add a credit card to continue.";
+        }
+
+        return `Expires ${padLeft(config.creditCardSummary?.expirationMonth?.toString(), 2, "0")}/${config.creditCardSummary?.expirationYear}`;
+    });
+
+    const changeCardUrl = computed((): string => {
+        return `https://community.rockrms.com/organizations/${config.organizationIdentifier}/settings/billing`;
+    });
+
+    const manifestLastRefreshedText = computed((): string => {
+        if (!manifestLastRefreshedDateTime.value) {
+            return "";
+        }
+
+        // The server returns an ISO 8601 string already converted to the
+        // organization's time zone. Parse and format for display.
+        const parsed = RockDateTime.parseISO(manifestLastRefreshedDateTime.value);
+
+        if (!parsed) {
+            return "";
+        }
+
+        return "Last Refreshed " + parsed.toLocaleString({
+            dateStyle: "medium",
+            timeStyle: "short"
+        });
+    });
+
+    const isCreditCardValid = computed((): boolean => {
+        return !!config.creditCardSummary?.isCardOnFile && !config.creditCardSummary?.isCardExpired;
+    });
+
+    const isRockIntelligenceVisible = computed((): boolean => {
+        return isCreditCardValid.value || !!rockIntelligenceConfiguration.value;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onRefreshManifestClick(): Promise<void> {
+        isManifestRefreshing.value = true;
+
+        const result = await invokeBlockAction<RefreshManifestResponseBag>("RefreshManifest");
+
+        if (result.isSuccess && result.data) {
+            window.location.reload();
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred trying to refresh the connected services manifest.");
+        }
+
+        isManifestRefreshing.value = false;
+    }
+
+    // #endregion
+</script>

@@ -34,7 +34,7 @@ namespace Rock.Data
     /// a queryable of any type and it will simply ignore the security aspect.
     /// </summary>
     /// <typeparam name="T">The type of object to be returned in the results.</typeparam>
-    internal class CursorPaginator<T>
+    public sealed class CursorPaginator<T>
         where T : class
     {
         #region Constants

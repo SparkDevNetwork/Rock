@@ -4,7 +4,10 @@
 // Table of Content
 //  + Base Style
 //  + Light Section
+//  + Content Section Nav
 //  + Content Section Container
+//  + Mobile Adjustments
+//  + Print
 // =============================================================
 
 
@@ -400,3 +403,22 @@
 }
 
 // ======================== END MOBILE ADJUSTMENTS =======================
+
+// ======================== PRINT ========================
+
+/*
+    7/30/26 - CLAUDE
+
+    The nav has nothing to act on once printed. It was already absent by
+    accident, since the print page box (~740px) falls under the mobile
+    breakpoint above, but stating it keeps that from silently flipping.
+
+    Reason: Hide the section nav when printing, deliberately.
+*/
+@media print {
+    .contentsection-nav {
+        display: none;
+    }
+}
+
+// ======================== END PRINT ========================

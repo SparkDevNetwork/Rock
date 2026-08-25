@@ -30,7 +30,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// Result model for a person's profile.
     /// </summary>
-    internal class EntityResultBase
+    public class EntityResultBase
     {
         #region Fields
 
@@ -67,16 +67,6 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Gets or sets the date and time that the entity was last modified.
         /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person who created the entity.
-        /// </summary>
-        public PersonResult CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person who last modified the entity.
-        /// </summary>
-        public PersonResult ModifiedByPerson { get; set; }
 
         /// <summary>
         /// Attribute values of the entity.

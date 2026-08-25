@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Web.Configuration;
 
+using Rock.Enums.Configuration;
+
 namespace Rock.Configuration
 {
     /// <summary>
@@ -60,6 +62,7 @@ namespace Rock.Configuration
             AzureSignalRAccessKey = GetValue( "AzureSignalRAccessKey" )?.ToStringSafe();
             SparkApiUrl = GetValue( "SparkApiUrl" )?.ToStringSafe();
             NodeName = GetValue( "NodeName" )?.ToStringSafe();
+            DeploymentEnvironment = GetValue( "DeploymentEnvironment" )?.ConvertToEnumOrNull<DeploymentEnvironment>() ?? DeploymentEnvironment.Production;
 
             // Load old password keys.
             var oldPasswordKeys = new List<string>();

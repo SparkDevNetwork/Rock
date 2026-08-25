@@ -108,10 +108,32 @@ namespace RockWeb.Blocks.Administration
                 if ( entityId.IsNotNullOrWhiteSpace() && entityId != "0" )
                 {
                     iSecured = Rock.Reflection.GetIEntityForEntityType( type, entityId ) as ISecured;
-                }
 
-                if ( iSecured == null )
+                    /*
+                        08/13/2026 - NA
+
+                        A specific entity was requested but could not be resolved. Do NOT fall
+                        back to securing the entity type itself. Rules saved against the entity
+                        type are written with EntityId = 0, and Model<T>.ParentAuthority returns
+                        a new T() (Id 0) for every saved instance, so _that_ fallback would silently
+                        rewrite the default security for EVERY entity of the type. An unresolvable
+                        key is an error, not a request for the default.
+
+                        [The most common way to hit this is opening the security modal on a
+                        newly-added row in a detail block (for example a Group Type Attribute)
+                        before the parent form has been saved: the row has a client-generated
+                        guid that does not yet exist in the database.]
+
+                        Reason: An unresolvable EntityId was clobbering entity-type default security.
+                    */
+                    if ( iSecured == null )
+                    {
+                        nbMessage.Text = "Item not found. Please ensure the item is saved before setting the security.";
+                    }
+                }
+                else
                 {
+                    // No specific entity was requested; secure the entity type itself (its defaults).
                     iSecured = ( ISecured ) Activator.CreateInstance( type );
                 }
 
@@ -204,7 +226,13 @@ namespace RockWeb.Blocks.Administration
                 }
                 else
                 {
-                    nbMessage.Text = "The item you are trying to secure does not exist or does not implement ISecured.";
+                    // Preserve the more-specific message set earlier by the "specific entity
+                    // requested but not resolved" branch. Only set the generic message here
+                    // when nothing more helpful has already been surfaced.
+                    if ( string.IsNullOrWhiteSpace( nbMessage.Text ) )
+                    {
+                        nbMessage.Text = "The item you are trying to secure does not exist or does not implement ISecured.";
+                    }
                 }
             }
             else

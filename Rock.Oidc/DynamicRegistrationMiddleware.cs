@@ -94,7 +94,7 @@ namespace Rock.Oidc
                 };
 
                 context.Response.ContentType = "application/json";
-                context.Response.Write( string.Format( ProtectedResourceTemplate, hostUri, resourceUriBuilder.Uri ) );
+                context.Response.Write( string.Format( ProtectedResourceTemplate, hostUri.ToString().RemoveTrailingForwardslash(), resourceUriBuilder.Uri ) );
 
                 return;
             }

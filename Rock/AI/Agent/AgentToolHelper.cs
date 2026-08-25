@@ -43,7 +43,7 @@ namespace Rock.AI.Agent
     /// requests. This includes retrieving entities, updating properties,
     /// and managing bulk error responses.
     /// </summary>
-    internal class AgentToolHelper
+    public sealed class AgentToolHelper
     {
         #region Constants
 

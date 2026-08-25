@@ -390,7 +390,8 @@
     display: flex;
     border-radius: var(--rounded-large);
     height: 24px;
-    line-height: 1em;
+    overflow: hidden;
+    line-height: 1.5em;
     align-items: center;
     padding: 0 var(--spacing-xsmall) 0 var(--spacing-small);
     gap: var(--spacing-xsmall);
@@ -398,10 +399,17 @@
 
   .anchor-type {
     font-weight: var(--font-weight-semibold);
+    text-wrap: nowrap;
 
     &::after {
       content: ":";
     }
+  }
+
+  .anchor-text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: nowrap;
   }
 
   .anchor-clear {

@@ -1,0 +1,87 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Adds the Spark Connected Services page and block.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 308, "19.4" )]
+    public class AddConnectedServices : Migration
+    {
+        /// <inheritdoc/>
+        public override void Up()
+        {
+            // Add the /link-organization route to the existing Link
+            // Organization page.
+            RockMigrationHelper.AddOrUpdatePageRoute(
+                SystemGuid.Page.LINK_ORGANIZATION,
+                "link-organization",
+                "42c6994a-76e0-48e1-87a3-a011e238b906" );
+
+            // Add the new Spark Connect Services page.
+            RockMigrationHelper.AddPage(
+                SystemGuid.Page.SYSTEM_SETTINGS,
+                SystemGuid.Layout.FULL_WIDTH_INTERNAL_SITE,
+                "Spark Connect Services",
+                string.Empty,
+                SystemGuid.Page.SPARK_CONNECTED_SERVICES );
+
+            RockMigrationHelper.AddOrUpdatePageRoute(
+                SystemGuid.Page.SPARK_CONNECTED_SERVICES,
+                "admin/settings/spark-connected-services",
+                "49213723-3711-4ecd-866a-f15a85e2cbaf" );
+
+            RockMigrationHelper.UpdatePageIcon(
+                SystemGuid.Page.SPARK_CONNECTED_SERVICES,
+                "ti ti-affiliate" );
+
+            // Add the new Spark Connected Services block type.
+            RockMigrationHelper.AddOrUpdateEntityType(
+                "Rock.Blocks.Administration.SparkConnectedServices",
+                "af86a425-26ab-4254-b525-46d007d4b97e",
+                false,
+                false );
+
+            RockMigrationHelper.AddOrUpdateEntityBlockType(
+                "Spark Connected Services",
+                "Configures the connected services provided by Spark for use in Rock.",
+                "Rock.Blocks.Administration.SparkConnectedServices",
+                "Administration",
+                "4dfa65ad-ba8e-4634-baa2-6cf300987822" );
+
+            // Add the Spark Connected Services block to the Spark Connected
+            // Services page.
+            RockMigrationHelper.AddBlock(
+                SystemGuid.Page.SPARK_CONNECTED_SERVICES,
+                null,
+                "4dfa65ad-ba8e-4634-baa2-6cf300987822",
+                "Spark Connected Services",
+                "Main",
+                string.Empty,
+                string.Empty,
+                0,
+                "1a8035c5-7e04-407f-a486-ae193bbd13f7" );
+        }
+
+        /// <inheritdoc/>
+        public override void Down()
+        {
+        }
+    }
+}

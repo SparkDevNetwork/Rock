@@ -112,16 +112,24 @@ namespace Rock.Model
             if ( includeActivities )
             {
                 var activityService = new LearningClassActivityService( rockContext );
-                var activities = activityService.Queryable().Where( c => c.LearningClassId == learningClass.Id ).ToList();
+                var activities = activityService.Queryable()
+                    .Include( a => a.LearningActivity )
+                    .Where( c => c.LearningClassId == learningClass.Id )
+                    .ToList();
 
                 foreach ( var activity in activities )
                 {
                     var newActivity = activity.CloneWithoutIdentity();
                     newActivity.LearningClassId = newLearningClass.Id;
+
+                    // Clone the LearningActivity so the copied class owns its content independently.
+                    newActivity.LearningActivity = activity.LearningActivity.CloneWithoutIdentity();
+
                     activityService.Add( newActivity );
                     activity.LoadAttributes();
                     newActivity.LoadAttributes();
                     newActivity.CopyAttributesFrom( activity );
+                    newActivities.Add( newActivity );
                 }
             }
 
