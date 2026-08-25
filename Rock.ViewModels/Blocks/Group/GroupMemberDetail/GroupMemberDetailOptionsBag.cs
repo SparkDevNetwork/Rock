@@ -247,6 +247,18 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         /// </summary>
         public Dictionary<string, PublicAttributeBag> AssignmentAttributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the assignment attributes the current person may
+        /// view but not edit. Only populated in sign-up mode.
+        /// </summary>
+        public Dictionary<string, PublicAttributeBag> ViewableAssignmentAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the formatted values for the viewable assignment
+        /// attributes.
+        /// </summary>
+        public Dictionary<string, string> ViewableAssignmentAttributeValues { get; set; }
+
         #endregion Attributes
     }
 }

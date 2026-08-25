@@ -197,6 +197,18 @@ export type GroupMemberDetailOptionsBag = {
     statusItems?: ListItemBag[] | null;
 
     /**
+     * Gets or sets the assignment attributes the current person may
+     * view but not edit. Only populated in sign-up mode.
+     */
+    viewableAssignmentAttributes?: Record<string, PublicAttributeBag> | null;
+
+    /**
+     * Gets or sets the formatted values for the viewable assignment
+     * attributes.
+     */
+    viewableAssignmentAttributeValues?: Record<string, string> | null;
+
+    /**
      * Gets or sets the group member attributes the current person may
      * view but not edit.
      */

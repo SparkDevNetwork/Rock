@@ -80,6 +80,7 @@
 
     const config = useConfigurationValues<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>();
 
+    console.log('config:', config);
     // #region Values
 
     const blockError = ref(config.errorMessage ?? "");

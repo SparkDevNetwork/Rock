@@ -15,10 +15,14 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
 
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Security;
@@ -179,6 +183,12 @@ namespace Rock.Blocks.Group
 
         #endregion Keys
 
+        #region Fields
+
+        private const string NoLocationPreference = "No Location Preference";
+
+        #endregion Fields
+
         #region Properties
 
         /// <summary>
@@ -229,28 +239,47 @@ namespace Rock.Blocks.Group
                 return box;
             }
 
-            var isReadOnly = !IsAuthorizedToEdit( entity.Group );
-            var editModeMessage = isReadOnly
-                ? EditModeMessage.ReadOnlyEditActionNotAllowed( Model.Group.FriendlyTypeName )
-                : string.Empty;
+            var isReadOnly = GetIsReadOnly( entity );
+            string editModeMessage;
 
             // System members are always read-only, regardless of authorization.
             if ( entity.IsSystem )
             {
-                isReadOnly = true;
                 editModeMessage = EditModeMessage.ReadOnlySystem( Model.Group.FriendlyTypeName );
+            }
+            else
+            {
+                editModeMessage = isReadOnly
+                    ? EditModeMessage.ReadOnlyEditActionNotAllowed( Model.Group.FriendlyTypeName )
+                    : string.Empty;
             }
 
             box.IsEditable = !isReadOnly;
 
-            // TODO: Full bag population per conversion plan §7.
             box.Entity = GetEntityBagForEdit( entity );
             box.Options = GetBoxOptions( entity, isReadOnly, editModeMessage );
             box.NavigationUrls = GetBoxNavigationUrls();
 
+            if ( IsSignUpMode )
+            {
+                SetSignUpAssignmentAttributes( box.Entity, box.Options, entity, isReadOnly );
+            }
+
             PrepareDetailBox( box, entity );
 
             return box;
+        }
+
+        /// <summary>
+        /// Determines whether the form is read-only for the current person,
+        /// either from failing the edit authorization or the member being a
+        /// system record.
+        /// </summary>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <returns><c>true</c> if the form is read-only.</returns>
+        private bool GetIsReadOnly( GroupMember entity )
+        {
+            return entity.IsSystem || !IsAuthorizedToEdit( entity.Group );
         }
 
         /// <inheritdoc/>
@@ -328,11 +357,326 @@ namespace Rock.Blocks.Group
         /// <returns>The options bag.</returns>
         private GroupMemberDetailOptionsBag GetBoxOptions( GroupMember entity, bool isReadOnly, string editModeMessage )
         {
-            // TODO: Populate roles, statuses, scheduling, requirements, and visibility flags per conversion plan §7.
-            return new GroupMemberDetailOptionsBag
+            var group = entity.Group;
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+            var isNewMember = entity.Id == 0;
+
+            var options = new GroupMemberDetailOptionsBag
             {
-                EditModeMessage = editModeMessage
+                EditModeMessage = editModeMessage,
+                IsSignUpMode = IsSignUpMode,
+
+                // Header state.
+                GroupTerm = groupType.GroupTerm,
+                GroupMemberTerm = groupType.GroupMemberTerm,
+                GroupIconCssClass = groupType.IconCssClass.IsNotNullOrWhiteSpace() ? groupType.IconCssClass : "ti ti-user",
+                AddedDateText = entity.DateTimeAdded.HasValue ? $"Added: {entity.DateTimeAdded.Value.ToShortDateString()}" : string.Empty,
+                IsArchived = entity.IsArchived,
+                IsSaveThenAddShown = isNewMember && !isReadOnly,
+                IsMoveButtonShown = !isNewMember && !isReadOnly && GetAttributeValue( AttributeKey.ShowMoveToOtherGroup ).AsBoolean( true ),
+                IsCommunicationButtonShown = !isNewMember && GetAttributeValue( AttributeKey.EnableCommunications ).AsBoolean( true ),
+                IsNotifiedShown = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
+
+                // Form options.
+                StatusItems = typeof( GroupMemberStatus ).ToEnumListItemBag(),
+                CommunicationPreferenceItems = GetCommunicationPreferenceItems(),
+                AreChatPreferencesShown = ChatHelper.IsChatEnabled && group.GetIsChatEnabled(),
+
+                // Scheduling.
+                IsSchedulingEnabled = groupType.IsSchedulingEnabled && !IsSignUpMode,
+                ScheduleTemplateItems = GetScheduleTemplateItems( groupType.Id ),
+
+                LinkedRegistrations = GetLinkedRegistrations( entity ),
+                SignatureDocument = GetSignatureDocumentStatus( entity )
             };
+
+            SetRoleOptions( options, entity, groupType );
+            SetViewableAttributes( options, entity, isReadOnly );
+
+            // TODO: Requirement alerts, guids, and requirement settings per conversion plan §7.13 (step 5).
+
+            return options;
+        }
+
+        /// <summary>
+        /// Gets the communication preference radio options.
+        /// </summary>
+        /// <returns>The communication preference items.</returns>
+        private List<ListItemBag> GetCommunicationPreferenceItems()
+        {
+            return new List<ListItemBag>
+            {
+                new ListItemBag { Value = ( ( int ) CommunicationType.RecipientPreference ).ToString(), Text = "No Preference" },
+                new ListItemBag { Value = ( ( int ) CommunicationType.Email ).ToString(), Text = "Email" },
+                new ListItemBag { Value = ( ( int ) CommunicationType.SMS ).ToString(), Text = "SMS" }
+            };
+        }
+
+        /// <summary>
+        /// Gets the schedule templates available for the group's group type.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns>The schedule template items.</returns>
+        private List<ListItemBag> GetScheduleTemplateItems( int groupTypeId )
+        {
+            return new GroupMemberScheduleTemplateService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( t => !t.GroupTypeId.HasValue || t.GroupTypeId == groupTypeId )
+                .OrderBy( t => t.Name )
+                .Select( t => new { t.Id, t.Name } )
+                .ToList()
+                .Select( t => new ListItemBag { Value = t.Id.ToString(), Text = t.Name } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Sets the role options, excluding or locking roles controlled by
+        /// Group Sync. The message doubles as the role field's tooltip in
+        /// both the locked and the roles-removed cases.
+        /// </summary>
+        /// <param name="options">The options bag to populate.</param>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <param name="groupType">The group's group type cache.</param>
+        private void SetRoleOptions( GroupMemberDetailOptionsBag options, GroupMember entity, GroupTypeCache groupType )
+        {
+            var syncedRoleIds = new GroupSyncService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( s => s.GroupId == entity.GroupId )
+                .Select( s => s.GroupTypeRoleId )
+                .ToList();
+
+            var roles = groupType.Roles.OrderBy( r => r.Order ).ToList();
+
+            if ( syncedRoleIds.Any() )
+            {
+                if ( syncedRoleIds.Contains( entity.GroupRoleId ) && entity.Id != 0 )
+                {
+                    options.IsRoleLockedBySync = true;
+                    options.RoleLockedMessage = "Role selection disabled because this member was added to this role automatically by Group Sync.";
+                }
+                else
+                {
+                    roles = roles.Where( r => !syncedRoleIds.Contains( r.Id ) ).ToList();
+                    options.RoleLockedMessage = "Roles used for Group Sync cannot be used for manual additions and so are not being displayed.";
+                }
+            }
+
+            options.RoleItems = roles
+                .Select( r => new ListItemBag { Value = r.Id.ToString(), Text = r.Name } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the registrations linked to the group member. Text is the
+        /// registration instance name, value is the registration page URL.
+        /// </summary>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <returns>The linked registration items.</returns>
+        private List<ListItemBag> GetLinkedRegistrations( GroupMember entity )
+        {
+            if ( entity.Id == 0 )
+            {
+                return new List<ListItemBag>();
+            }
+
+            var registrations = new RegistrationRegistrantService( RockContext )
+                .Queryable().AsNoTracking()
+                .Where( r =>
+                    r.Registration != null &&
+                    r.Registration.RegistrationInstance != null &&
+                    r.GroupMemberId.HasValue &&
+                    r.GroupMemberId.Value == entity.Id )
+                .Select( r => new
+                {
+                    r.Registration.Id,
+                    r.Registration.RegistrationInstance.Name
+                } )
+                .ToList();
+
+            return registrations
+                .Select( r => new ListItemBag
+                {
+                    Text = r.Name,
+                    Value = this.GetLinkedPageUrl( AttributeKey.RegistrationPage, new Dictionary<string, string>
+                    {
+                        [PageParameterKey.RegistrationId] = r.Id.ToString()
+                    } )
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the required signature document state, or null when the
+        /// group has no required signature document template. The warning
+        /// alert state is only set when no signed document exists yet.
+        /// </summary>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <returns>A <see cref="SignatureDocumentStatusBag"/>, or null.</returns>
+        private SignatureDocumentStatusBag GetSignatureDocumentStatus( GroupMember entity )
+        {
+            var template = entity.Group.RequiredSignatureDocumentTemplate;
+
+            if ( template == null )
+            {
+                return null;
+            }
+
+            var statusBag = new SignatureDocumentStatusBag
+            {
+                UploaderLabel = template.Name,
+                BinaryFileTypeGuid = template.BinaryFileType?.Guid
+            };
+
+            // No person means nothing to warn about yet (still adding).
+            if ( entity.Person == null )
+            {
+                return statusBag;
+            }
+
+            var documents = new SignatureDocumentService( RockContext )
+                .Queryable().AsNoTracking()
+                .Where( d =>
+                    d.SignatureDocumentTemplateId == template.Id &&
+                    d.AppliesToPersonAlias.PersonId == entity.PersonId )
+                .Select( d => new
+                {
+                    d.Status,
+                    d.LastInviteDate
+                } )
+                .ToList();
+
+            if ( documents.Any( d => d.Status == SignatureDocumentStatus.Signed ) )
+            {
+                return statusBag;
+            }
+
+            statusBag.IsRequired = true;
+
+            var lastSent = documents.Any( d => d.Status == SignatureDocumentStatus.Sent )
+                ? documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.LastInviteDate )
+                : null;
+
+            if ( lastSent.HasValue )
+            {
+                statusBag.ButtonText = "Resend Signature Request";
+                statusBag.Message = $"A signed {template.Name} document has not yet been received for {entity.Person.NickName}. The last request was sent {lastSent.Value.ToElapsedString()}.";
+            }
+            else
+            {
+                statusBag.ButtonText = "Send Signature Request";
+                statusBag.Message = $"The required {template.Name} document has not yet been sent to {entity.Person.NickName} for signing.";
+            }
+
+            return statusBag;
+        }
+
+        /// <summary>
+        /// Gets the attribute keys the current person may edit. Group
+        /// ADMINISTRATE grants every attribute, otherwise per-attribute
+        /// EDIT authorization applies, and a read-only form grants none.
+        /// </summary>
+        /// <param name="attributedEntity">The entity whose attributes are being split.</param>
+        /// <param name="group">The group used for the ADMINISTRATE check.</param>
+        /// <param name="isReadOnly">Whether the form is read-only for the current person.</param>
+        /// <returns>The editable attribute keys.</returns>
+        private List<string> GetEditableAttributeKeys( IHasAttributes attributedEntity, Model.Group group, bool isReadOnly )
+        {
+            if ( isReadOnly )
+            {
+                return new List<string>();
+            }
+
+            if ( group.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return attributedEntity.Attributes.Select( a => a.Key ).ToList();
+            }
+
+            return attributedEntity.Attributes
+                .Where( a => a.Value.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                .Select( a => a.Key )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the attribute keys the current person may view but not
+        /// edit. Group ADMINISTRATE grants every non-editable attribute,
+        /// otherwise per-attribute VIEW authorization applies.
+        /// </summary>
+        /// <param name="attributedEntity">The entity whose attributes are being split.</param>
+        /// <param name="group">The group used for the ADMINISTRATE check.</param>
+        /// <param name="editableKeys">The already-editable keys to exclude.</param>
+        /// <returns>The viewable attribute keys.</returns>
+        private List<string> GetViewableAttributeKeys( IHasAttributes attributedEntity, Model.Group group, List<string> editableKeys )
+        {
+            if ( group.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return attributedEntity.Attributes
+                    .Where( a => !editableKeys.Contains( a.Key ) )
+                    .Select( a => a.Key )
+                    .ToList();
+            }
+
+            return attributedEntity.Attributes
+                .Where( a => !editableKeys.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .Select( a => a.Key )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Sets the read-only group member attributes on the options bag.
+        /// </summary>
+        /// <param name="options">The options bag to populate.</param>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <param name="isReadOnly">Whether the form is read-only for the current person.</param>
+        private void SetViewableAttributes( GroupMemberDetailOptionsBag options, GroupMember entity, bool isReadOnly )
+        {
+            var editableKeys = GetEditableAttributeKeys( entity, entity.Group, isReadOnly );
+            var viewableKeys = GetViewableAttributeKeys( entity, entity.Group, editableKeys );
+
+            // Borrow a bag so the standard helper produces the client-shaped view attributes.
+            var holder = new GroupMemberBag();
+            holder.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => viewableKeys.Contains( a.Key ) );
+
+            options.ViewableAttributes = holder.Attributes;
+            options.ViewableAttributeValues = holder.AttributeValues;
+        }
+
+        /// <summary>
+        /// Sets the sign-up assignment attributes on the entity bag and
+        /// options bag from the GroupMemberAssignment matching the sign-up
+        /// location and schedule, or a new assignment when none exists.
+        /// </summary>
+        /// <param name="bag">The entity bag to receive the editable values.</param>
+        /// <param name="options">The options bag to receive the attribute definitions.</param>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <param name="isReadOnly">Whether the form is read-only for the current person.</param>
+        private void SetSignUpAssignmentAttributes( GroupMemberBag bag, GroupMemberDetailOptionsBag options, GroupMember entity, bool isReadOnly )
+        {
+            var groupMemberId = entity.Id;
+            var assignment = new GroupMemberAssignmentService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .FirstOrDefault( a =>
+                    a.GroupMemberId == groupMemberId
+                    && a.LocationId == LocationId.Value
+                    && a.ScheduleId == ScheduleId.Value )
+                ?? new GroupMemberAssignment { GroupId = entity.GroupId };
+
+            assignment.LoadAttributes( RockContext );
+
+            var editableKeys = GetEditableAttributeKeys( assignment, entity.Group, isReadOnly );
+            var viewableKeys = GetViewableAttributeKeys( assignment, entity.Group, editableKeys );
+
+            var editHolder = new GroupMemberBag();
+            editHolder.LoadAttributesAndValuesForPublicEdit( assignment, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => editableKeys.Contains( a.Key ) );
+            options.AssignmentAttributes = editHolder.Attributes;
+            bag.AssignmentAttributeValues = editHolder.AttributeValues;
+
+            var viewHolder = new GroupMemberBag();
+            viewHolder.LoadAttributesAndValuesForPublicView( assignment, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => viewableKeys.Contains( a.Key ) );
+            options.ViewableAssignmentAttributes = viewHolder.Attributes;
+            options.ViewableAssignmentAttributeValues = viewHolder.AttributeValues;
         }
 
         /// <summary>
@@ -406,11 +750,138 @@ namespace Rock.Blocks.Group
             }
 
             var bag = GetCommonEntityBag( entity );
+            var isReadOnly = GetIsReadOnly( entity );
+            var groupType = GroupTypeCache.Get( entity.Group.GroupTypeId );
 
-            // TODO: SignedDocument, ScheduleAssignments, and sign-up AssignmentAttributeValues per conversion plan §7 (step 4).
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
+            bag.SignedDocument = GetLatestSignedDocumentFile( entity );
+
+            if ( groupType.IsSchedulingEnabled && !IsSignUpMode )
+            {
+                bag.ScheduleAssignments = GetScheduleAssignments( entity );
+            }
+
+            // Security is applied through the filter, which also honors the group ADMINISTRATE override.
+            var editableKeys = GetEditableAttributeKeys( entity, entity.Group, isReadOnly );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => editableKeys.Contains( a.Key ) );
 
             return bag;
+        }
+
+        /// <summary>
+        /// Gets the most recently signed document's binary file for the
+        /// group's required signature document template, for the manual
+        /// signed document uploader.
+        /// </summary>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <returns>The binary file reference, or null.</returns>
+        private ListItemBag GetLatestSignedDocumentFile( GroupMember entity )
+        {
+            var templateId = entity.Group.RequiredSignatureDocumentTemplateId;
+
+            if ( !templateId.HasValue || entity.Id == 0 )
+            {
+                return null;
+            }
+
+            var binaryFile = new SignatureDocumentService( RockContext )
+                .Queryable().AsNoTracking()
+                .Where( d =>
+                    d.SignatureDocumentTemplateId == templateId.Value &&
+                    d.AppliesToPersonAlias != null &&
+                    d.AppliesToPersonAlias.PersonId == entity.PersonId &&
+                    d.LastStatusDate.HasValue &&
+                    d.Status == SignatureDocumentStatus.Signed &&
+                    d.BinaryFile != null )
+                .OrderByDescending( d => d.LastStatusDate.Value )
+                .Select( d => new
+                {
+                    d.BinaryFile.Guid,
+                    d.BinaryFile.FileName
+                } )
+                .FirstOrDefault();
+
+            if ( binaryFile == null )
+            {
+                return null;
+            }
+
+            return new ListItemBag
+            {
+                Value = binaryFile.Guid.ToString(),
+                Text = binaryFile.FileName
+            };
+        }
+
+        /// <summary>
+        /// Gets the member's schedule and location assignment preferences,
+        /// excluding orphaned assignments whose location or schedule is no
+        /// longer configured on the group. Ordering happens client-side.
+        /// </summary>
+        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <returns>The assignment rows.</returns>
+        private List<GroupScheduleAssignmentBag> GetScheduleAssignments( GroupMember entity )
+        {
+            if ( entity.Id == 0 )
+            {
+                return new List<GroupScheduleAssignmentBag>();
+            }
+
+            // Base the next start date on the start of the week so schedules order consistently.
+            var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
+            var groupMemberId = entity.Id;
+
+            var groupLocationQuery = new GroupLocationService( RockContext )
+                .Queryable()
+                .Where( gl => gl.GroupId == entity.GroupId );
+
+            return new GroupMemberAssignmentService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a =>
+                    a.GroupMemberId == groupMemberId
+                    && (
+                        !a.LocationId.HasValue
+                        || groupLocationQuery.Any( gl => gl.LocationId == a.LocationId && gl.Schedules.Any( s => s.Id == a.ScheduleId ) )
+                    ) )
+                .Include( a => a.Schedule )
+                .Include( a => a.Location )
+                .ToList()
+                .Select( a => new GroupScheduleAssignmentBag
+                {
+                    Guid = a.Guid,
+                    ScheduleId = a.ScheduleId.Value,
+                    LocationId = a.LocationId,
+                    ScheduleName = a.Schedule.Name,
+                    FormattedScheduleName = GetFormattedScheduleForListing( a.Schedule.Name, a.Schedule.StartTimeOfDay ),
+                    LocationName = a.LocationId.HasValue ? a.Location.ToString( true ) : NoLocationPreference,
+                    ScheduleOrder = a.Schedule.Order,
+                    ScheduleNextStartDateTime = a.Schedule.GetNextStartDateTime( occurrenceDate )?.ToRockDateTimeOffset()
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Formats a schedule for listing per the Schedule List Format
+        /// block setting: by time, by name, or both.
+        /// </summary>
+        /// <param name="scheduleName">The schedule's name.</param>
+        /// <param name="startTimeOfDay">The schedule's start time of day.</param>
+        /// <returns>The formatted schedule text.</returns>
+        private string GetFormattedScheduleForListing( string scheduleName, TimeSpan startTimeOfDay )
+        {
+            var scheduleListFormat = GetAttributeValue( AttributeKey.ScheduleListFormat ).AsInteger();
+
+            if ( scheduleListFormat == 1 )
+            {
+                return startTimeOfDay.ToTimeString();
+            }
+
+            if ( scheduleListFormat == 2 )
+            {
+                return scheduleName;
+            }
+
+            return $"{startTimeOfDay.ToTimeString()} {scheduleName}";
         }
 
         /// <inheritdoc/>
