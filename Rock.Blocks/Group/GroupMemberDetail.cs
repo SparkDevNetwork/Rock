@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Group.GroupMemberDetail;
 using Rock.ViewModels.Utility;
@@ -177,6 +179,33 @@ namespace Rock.Blocks.Group
 
         #endregion Keys
 
+        #region Properties
+
+        /// <summary>
+        /// The campus identifier page parameter, carried through to
+        /// navigation URLs.
+        /// </summary>
+        private int? CampusId => PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+        /// <summary>
+        /// The sign-up project location identifier page parameter.
+        /// </summary>
+        private int? LocationId => PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
+
+        /// <summary>
+        /// The sign-up project schedule identifier page parameter.
+        /// </summary>
+        private int? ScheduleId => PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull()
+            ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ScheduleId ) );
+
+        /// <summary>
+        /// Sign-up mode is active when both a location and a schedule are
+        /// supplied, as when reached from a Sign-Up project's attendee list.
+        /// </summary>
+        private bool IsSignUpMode => LocationId.ToIntSafe() > 0 && ScheduleId.ToIntSafe() > 0;
+
+        #endregion Properties
+
         #region Methods
 
         /// <inheritdoc/>
@@ -185,11 +214,41 @@ namespace Rock.Blocks.Group
             var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>();
             var entity = GetInitialEntity();
 
-            // TODO: Guard states, authorization, and full bag population per conversion plan §7.
+            if ( entity == null )
+            {
+                // A lookup was attempted when a non-zero GroupMemberId parameter was supplied, even as an IdKey or Guid.
+                var groupMemberKey = PageParameter( PageParameterKey.GroupMemberId );
+                var isLookupAttempt = groupMemberKey.IsNotNullOrWhiteSpace() && groupMemberKey.AsIntegerOrNull() != 0;
+
+                box.ErrorMessage = isLookupAttempt
+                    ? "Group Member not found. Group Member may have been moved to another group or deleted."
+                    : "An incorrect querystring parameter was used. A valid GroupMemberId or GroupId parameter is required.";
+
+                PrepareDetailBox( box, entity );
+
+                return box;
+            }
+
+            var isReadOnly = !IsAuthorizedToEdit( entity.Group );
+            var editModeMessage = isReadOnly
+                ? EditModeMessage.ReadOnlyEditActionNotAllowed( Model.Group.FriendlyTypeName )
+                : string.Empty;
+
+            // System members are always read-only, regardless of authorization.
+            if ( entity.IsSystem )
+            {
+                isReadOnly = true;
+                editModeMessage = EditModeMessage.ReadOnlySystem( Model.Group.FriendlyTypeName );
+            }
+
+            box.IsEditable = !isReadOnly;
+
+            // TODO: Full bag population per conversion plan §7.
             box.Entity = GetEntityBagForEdit( entity );
-            box.Options = GetBoxOptions( entity );
+            box.Options = GetBoxOptions( entity, isReadOnly, editModeMessage );
             box.NavigationUrls = GetBoxNavigationUrls();
-            box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<GroupMember>();
+
+            PrepareDetailBox( box, entity );
 
             return box;
         }
@@ -197,8 +256,66 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         protected override GroupMember GetInitialEntity()
         {
-            // TODO: Apply new-member defaults (group, default role, active status, date added) per conversion plan §7.2.
-            return GetInitialEntity<GroupMember, GroupMemberService>( RockContext, PageParameterKey.GroupMemberId );
+            var entity = GetInitialEntity<GroupMember, GroupMemberService>( RockContext, PageParameterKey.GroupMemberId );
+
+            if ( entity != null && entity.Id == 0 )
+            {
+                entity = ApplyNewGroupMemberDefaultValues( entity );
+            }
+
+            return entity;
+        }
+
+        /// <summary>
+        /// Applies default values to a new <see cref="GroupMember"/> from
+        /// the GroupId page parameter. Returns null when no valid group was
+        /// supplied, since a member cannot be added without one.
+        /// </summary>
+        /// <param name="entity">The new group member entity.</param>
+        /// <returns>The defaulted entity, or null when the group is missing.</returns>
+        private GroupMember ApplyNewGroupMemberDefaultValues( GroupMember entity )
+        {
+            var groupKey = PageParameter( PageParameterKey.GroupId );
+            var group = groupKey.IsNotNullOrWhiteSpace()
+                ? new GroupService( RockContext ).Get( groupKey, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+
+            if ( group == null )
+            {
+                return null;
+            }
+
+            entity.GroupId = group.Id;
+            entity.Group = group;
+            entity.GroupRoleId = GroupTypeCache.Get( group.GroupTypeId )?.DefaultGroupRoleId ?? 0;
+            entity.GroupMemberStatus = GroupMemberStatus.Active;
+            entity.DateTimeAdded = RockDateTime.Now;
+
+            return entity;
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to edit the
+        /// group member. Edit rights come from block EDIT, group EDIT,
+        /// group MANAGE_MEMBERS, or, in sign-up mode only, group SCHEDULE.
+        /// </summary>
+        /// <param name="group">The group the member belongs to.</param>
+        /// <returns><c>true</c> if the current person may edit the member.</returns>
+        private bool IsAuthorizedToEdit( Model.Group group )
+        {
+            if ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return true;
+            }
+
+            if ( group == null )
+            {
+                return false;
+            }
+
+            return group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, RequestContext.CurrentPerson )
+                || ( IsSignUpMode && group.IsAuthorized( Authorization.SCHEDULE, RequestContext.CurrentPerson ) );
         }
 
         /// <summary>
@@ -206,11 +323,16 @@ namespace Rock.Blocks.Group
         /// to render the block.
         /// </summary>
         /// <param name="entity">The group member being viewed or edited.</param>
+        /// <param name="isReadOnly">Whether the form is read-only for the current person.</param>
+        /// <param name="editModeMessage">The message explaining why the form is read-only.</param>
         /// <returns>The options bag.</returns>
-        private GroupMemberDetailOptionsBag GetBoxOptions( GroupMember entity )
+        private GroupMemberDetailOptionsBag GetBoxOptions( GroupMember entity, bool isReadOnly, string editModeMessage )
         {
             // TODO: Populate roles, statuses, scheduling, requirements, and visibility flags per conversion plan §7.
-            return new GroupMemberDetailOptionsBag();
+            return new GroupMemberDetailOptionsBag
+            {
+                EditModeMessage = editModeMessage
+            };
         }
 
         /// <summary>
@@ -238,23 +360,57 @@ namespace Rock.Blocks.Group
                 return null;
             }
 
-            // TODO: Populate the bag from the entity per conversion plan §4.
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( RockContext );
+            }
+
             return new GroupMemberBag
             {
-                IdKey = entity.IdKey
+                IdKey = entity.IdKey,
+                Person = entity.Person?.PrimaryAlias.ToListItemBag(),
+                GroupRoleId = entity.GroupRoleId,
+                GroupMemberStatus = entity.GroupMemberStatus,
+                Note = entity.Note,
+                CommunicationPreference = ( Rock.Enums.Communication.CommunicationType ) entity.CommunicationPreference,
+                IsNotified = entity.IsNotified,
+                IsChatMuted = entity.IsChatMuted,
+                IsChatBanned = entity.IsChatBanned,
+                ScheduleTemplateId = entity.ScheduleTemplateId,
+                ScheduleStartDate = entity.ScheduleStartDate?.ToRockDateTimeOffset(),
+                ScheduleReminderEmailOffsetDays = entity.ScheduleReminderEmailOffsetDays
             };
         }
 
         /// <inheritdoc/>
         protected override GroupMemberBag GetEntityBagForView( GroupMember entity )
         {
-            return GetCommonEntityBag( entity );
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetCommonEntityBag( entity );
+
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
+
+            return bag;
         }
 
         /// <inheritdoc/>
         protected override GroupMemberBag GetEntityBagForEdit( GroupMember entity )
         {
-            return GetCommonEntityBag( entity );
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetCommonEntityBag( entity );
+
+            // TODO: SignedDocument, ScheduleAssignments, and sign-up AssignmentAttributeValues per conversion plan §7 (step 4).
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
+
+            return bag;
         }
 
         /// <inheritdoc/>
@@ -281,6 +437,7 @@ namespace Rock.Blocks.Group
             }
             else
             {
+                // TODO: The add path must resolve the group before the authorization check below can grant group-level rights.
                 entity = new GroupMember();
                 entityService.Add( entity );
             }
@@ -291,7 +448,13 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
-            // TODO: Enforce the full edit authorization matrix (block EDIT, group EDIT, MANAGE_MEMBERS, sign-up SCHEDULE) per conversion plan §3.
+            // System members are read-only, so no action may edit them.
+            if ( entity.IsSystem || !IsAuthorizedToEdit( entity.Group ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {GroupMember.FriendlyTypeName}." );
+                return false;
+            }
+
             return true;
         }
 
