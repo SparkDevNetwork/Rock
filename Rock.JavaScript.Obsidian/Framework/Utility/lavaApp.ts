@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { inject } from "vue";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { doApiCall } from "./http";
 
@@ -49,23 +50,28 @@ export type LavaApp = {
  * @param endpointSlug The slug of the endpoint to call.
  * @param data The values to send. Query parameters for GET, the request body for POST.
  * @param options The options that change how the call is made.
+ * @param parentTrace The page-render traceparent, sent so the call links to the page view's trace.
  *
  * @returns The result of the call, in the same shape a block action returns.
  */
-async function invokeEndpoint<T>(applicationSlug: string, endpointSlug: string, data?: Record<string, unknown>, options?: LavaAppInvokeOptions): Promise<HttpResult<T>> {
+async function invokeEndpoint<T>(applicationSlug: string, endpointSlug: string, data?: Record<string, unknown>, options?: LavaAppInvokeOptions, parentTrace?: string | null): Promise<HttpResult<T>> {
     const method = options?.method ?? "POST";
     const url = `/api/v2/lava-app/${routeVersion}/${applicationSlug}/${endpointSlug}`;
+
+    const headers: Record<string, string> = {
+        [crossSiteForgeryHeaderKey]: "true"
+    };
+
+    if (parentTrace) {
+        headers["traceparent"] = parentTrace;
+    }
 
     const result = await doApiCall<T>(
         method,
         url,
         method === "GET" ? data : undefined,
         method === "GET" ? undefined : data,
-        {
-            headers: {
-                [crossSiteForgeryHeaderKey]: "true"
-            }
-        });
+        { headers });
 
     // An endpoint whose content type is still text/html arrives as a string even
     // when its template emits JSON, so parse it rather than handing the caller
@@ -95,6 +101,11 @@ async function invokeEndpoint<T>(applicationSlug: string, endpointSlug: string, 
  * Binds a Lava application so its endpoints can be invoked by name, much like
  * invoking a block action.
  *
+ * Must be called during component setup: it injects the hosting block's
+ * page-render trace so every invocation links back to the page view in
+ * observability. Outside a block tree the trace is simply absent and calls
+ * still work.
+ *
  * @param applicationSlug The slug of the Lava application to bind.
  *
  * @returns An object whose invoke function calls the application's endpoints.
@@ -104,9 +115,11 @@ async function invokeEndpoint<T>(applicationSlug: string, endpointSlug: string, 
  * const summary = await lavaApp.invoke<SummaryBag>("summary");
  */
 export function useLavaApp(applicationSlug: string): LavaApp {
+    const parentTrace = inject<string | null>("blockParentTrace", null);
+
     return {
         invoke: <T>(endpointSlug: string, data?: Record<string, unknown>, options?: LavaAppInvokeOptions): Promise<HttpResult<T>> => {
-            return invokeEndpoint<T>(applicationSlug, endpointSlug, data, options);
+            return invokeEndpoint<T>(applicationSlug, endpointSlug, data, options, parentTrace);
         }
     };
 }

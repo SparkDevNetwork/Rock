@@ -210,6 +210,18 @@ Three small changes to existing Lava application infrastructure:
 
 `lavaApp.ts` ships as framework code deliberately, so a fix reaches components already compiled and stored in the database.
 
+#### Observability for Lava endpoint calls (2026-08-24 meeting)
+
+Rock already has an established two-sided pattern for tracing browser-initiated calls, and the Lava endpoint path has half of it.
+
+**Server side, built.** `LavaAppController.SetupObservability` ([LavaAppController.cs:355](Rock.Rest/v2/LavaAppController.cs:355)) renames the request's root activity to `LavaEndpoint: {endpoint} | {application}` and tags it with `rock.lava_endpoint` and `rock.lava_application`, so endpoint traffic is identifiable in the trace viewer. It carries a private copy of `GetRootActivity` with an engineering note calling it temporary until `ObservabilityHelper.GetRootActivity` ([ObservabilityHelper.cs:390](Rock/Observability/ObservabilityHelper.cs:390), currently `internal`) can be made public. Decided 2026-08-24: the copy stays; it is five lines and promoting the helper to public is a bigger API commitment than the duplication warrants.
+
+**Client side, the gap.** The established pattern is the W3C `traceparent` header. During page render, `RockBlockType` stamps a traceparent string into each block's config bag ([RockBlockType.cs:555](Rock/Blocks/RockBlockType.cs:555)); `rockBlock.partial.ts` sends it as the `traceparent` header on every block action call ([rockBlock.partial.ts:236](Rock.JavaScript.Obsidian/Framework/Templates/rockBlock.partial.ts:236)); and the `RockGateway` HttpModule parses the incoming header into an `ActivityLink` ([RockGateway.cs:471](Rock/Web/HttpModules/RockGateway.cs:471)), linking the browser request back to the page-render trace. `RockGateway` sees every request, including `/api/v2/lava-app/...`, so the server needs nothing new. But `useLavaApp` sends no `traceparent`, so a vibe component's data calls appear as unlinked root traces instead of joining the page view that triggered them.
+
+**Requirement.** `useLavaApp` invocations MUST send the `traceparent` header the same way block actions do, so a component's endpoint calls link to the page trace.
+
+**How the utility obtains the trace (decided 2026-08-24).** `parentTrace` lives on `ObsidianBlockConfigBag`, which `rockBlock.partial.ts` holds as a prop and does not expose: it provides only `configurationValues`, `blockActionUrl`, and the invoke functions to descendants. `rockBlock.partial.ts` additionally provides the traceparent string (for example `provide("blockParentTrace", ...)`), and `useLavaApp` injects it when called during component setup. Custom components mount inside the host block's tree, so injection reaches them, and every other framework utility gains access for free. Cost: `useLavaApp` becomes setup-only, which it effectively already is by convention. The alternative, taking the traceparent as an explicit option threaded by the caller, was rejected: authored components have no path to the value either, so it only relocates the problem.
+
 ### Layer 6: Agent skills
 
 Three `AgentSkillComponent` subclasses. They compose by handing off identifiers: Cms returns a block `IdKey`, CustomComponent writes against it, LavaApplication feeds it.
@@ -391,6 +403,20 @@ Control APIs and build patterns come from the Spark-curated Rock knowledge base:
 
 **Both agents now reach it through core's `CommunityKnowledgeBaseSkill`**, attached by the seeding migration, so control discovery is a first-party tool call on either transport and no client has to connect a second MCP server. The original design's two-server composition (the client connecting knowledge.rockrms.com alongside Rock) still works but is no longer required, and the skills' usage guidance names the in-Rock tools.
 
+**The Coding Guide topic comes first (2026-08-24 meeting).** Both agents' instructions MUST direct the model to consult the Coding Guide topic in the Rock Community Knowledgebase for coding conventions and component patterns before reasoning from its own knowledge or searching anywhere else. The reference MUST be deliberately vague: name the topic ("the Coding Guide topic in the community knowledge base") and tell the model to find it through the knowledge base tools it already has (`GetKnowledgeBaseOverview` lists the curated topics, then the topic and article tools read into it). The instructions MUST NOT pin an exact path, URL, or article id, so a future restructure of the knowledge base does not silently break the seeded instruction text. This lands as instruction-text edits to both seeded `AIAgent` rows in the migration; because agent rows are create-only, instances that already seeded the agents pick it up only by re-running the seeding or editing the agent by hand.
+
+### Design lock-in
+
+Testing with vague, admin-realistic prompts ("build me something nice for our serving teams") showed the agent struggling to pick the right UI patterns and knowledge base lookups: with no concrete design intent, control research is a guess. The fix locks the design in before building.
+
+An MCP tool cannot present suggestions to a user; tools return data to the model and the model decides what to present. So the behavior lives in instructions and the suggestion content lives in the knowledge base, with a static fallback:
+
+- **Behavior (instructions, both agents).** A new Design Lock-In section: when the user has not described the appearance concretely, present a short menu of named design archetypes with a one-line plain-English description each, ask them to pick one or describe their own, and do not build until one is locked in. The picked archetype then drives the control lookups (it names the composing controls to research). This composes with, not replaces, the existing "pick defaults, state them, and produce a first version they can react to" behavior: archetype first, fast first version second, because an administrator reacts better to something rendered than to a description.
+- **Content (community knowledge base).** A Spark-curated Design Patterns topic: one entry per archetype naming it, describing when to use it, and listing the controls that compose it. The instructions direct the agent to read that topic through the tools it already has and present its options, under the same deliberately-vague reference rule as the Coding Guide (topic by name, never a pinned path).
+- **Fallback.** The instructions carry a thin inline menu (roughly five archetypes: stat-card dashboard with a chart, filterable table, card grid, list-detail, multi-step form) used when the Design Patterns topic does not exist or the knowledge base tools fail, mirroring the honest-degradation rule from layer 9.
+
+The knowledge base topic is outside this repository; see Open Questions.
+
 ## Security Model
 
 **The trust boundary is authoring, not execution.** Authored code runs in the visitor's browser as the visitor, with their cookie and their permissions. Nothing sandboxes it. It can call anything that person could call from their browser console, and nothing more.
@@ -442,6 +468,7 @@ Things that fail silently, in rough order of how much time they cost.
 1. **Lava application security.** The tools create applications with no rules and do not set any. Likely fix: take the intended audience as a parameter and write the matching `EXECUTE_VIEW` `Auth` rows at creation. `AddOrUpdateLavaApplication` (the layer 6 revision) is the natural home for that parameter once it exists. Until then the tools must not claim security is handled.
 2. **No compile circuit breaker.** If a compile ever does kill something, nothing records it, so a retrying client repeats it.
 3. **No version history.** Repeated saves overwrite `Source`; audit columns record who, never what.
+4. **Who adds the Design Patterns topic to the community knowledge base.** The design lock-in section depends on a Spark-curated topic that this repository cannot ship. Until it exists, the instructions' inline fallback menu is the whole experience. Needs an owner on the Spark side.
 
 ## Considered but Rejected
 

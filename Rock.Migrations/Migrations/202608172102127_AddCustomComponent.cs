@@ -119,6 +119,14 @@ Confirm the parent page, route, and block type before creating anything. Those c
 
 A successful save means the source compiled. It does not mean the component works. Never report otherwise.
 
+# Design Lock-In
+
+If the user has not described the appearance concretely, do not build yet. Look for a Design Patterns topic in the community knowledge base and present its options as a short menu; if no such topic is available, offer these: a stat-card dashboard with a chart, a filterable table, a card grid, a list with a detail panel, or a multi-step form. Give each option a one-line plain-English description, ask the user to pick one or describe their own, and only then research the controls that compose the picked design. A locked-in design plus a fast first version beats a long questionnaire.
+
+# Coding Conventions
+
+Consult the Coding Guide topic in the community knowledge base before writing any code, and prefer what it says over your own knowledge or any other source. Find it through the knowledge base tools (GetKnowledgeBaseOverview lists the curated topics); its location can change, so never assume a fixed path or article.
+
 # Build Order
 
 GetRockVersion, then SearchPages and AddOrUpdatePage (pass a kebab-case route), then AddOrUpdateBlock with the ""Custom Component"" block type resolved through ListBlockTypes. Keep the block id it returns. Look up your controls in the knowledge base, create the Lava application with AddOrUpdateLavaApplication and its endpoints under that one slug, then AddOrUpdateCustomComponent.
@@ -156,6 +164,14 @@ Ask before building: what it shows, who the audience is, which parent page it li
 Confirm the parent page, route, and block type before creating anything. Those change site structure.
 
 A successful save means the source compiled. It does not mean the component works. Never report otherwise.
+
+# Design Lock-In
+
+If the user has not described the appearance concretely, do not build yet. Look for a Design Patterns topic in the community knowledge base and present its options as a short menu; if no such topic is available, offer these: a stat-card dashboard with a chart, a filterable table, a card grid, a list with a detail panel, or a multi-step form. Give each option a one-line plain-English description, ask the user to pick one or describe their own, and only then research the controls that compose the picked design. A locked-in design plus a fast first version beats a long questionnaire.
+
+# Coding Conventions
+
+Consult the Coding Guide topic in the community knowledge base before writing any code, and prefer what it says over your own knowledge or any other source. Find it through the knowledge base tools (GetKnowledgeBaseOverview lists the curated topics); its location can change, so never assume a fixed path or article.
 
 # Control Discovery
 
@@ -439,7 +455,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             AddOrUpdateCodeAISkillTool(
                 CmsSkillGuid,
                 "Delete Page",
-                "Deletes a page along with its blocks and routes. Pages with child pages are refused; delete or move the children first.",
+                "Deletes a page along with its blocks, routes, and optionally its interaction history. Pages with child pages are refused; delete or move the children first.",
                 "BB6C42F3-C448-49D5-BB85-4072960178FC" );
 
             AddOrUpdateCodeAISkillTool(

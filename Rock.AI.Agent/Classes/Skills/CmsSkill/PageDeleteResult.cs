@@ -35,4 +35,10 @@ internal class PageDeleteResult
     /// How many blocks were removed along with the page.
     /// </summary>
     public int DeletedBlockCount { get; set; }
+
+    /// <summary>
+    /// Whether a background task was queued to delete the page's interaction
+    /// history. The cleanup runs asynchronously and may take a while to finish.
+    /// </summary>
+    public bool IsInteractionDeleteQueued { get; set; }
 }

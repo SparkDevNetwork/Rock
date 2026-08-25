@@ -120,13 +120,15 @@ public AgentToolResult AddOrUpdateBlock(
 - `zone` defaults to `Main` on add, matching today's behavior.
 - The return payload keeps `IdKey` as the value the Custom Component skill's `AddOrUpdateCustomComponent` consumes.
 
-**`DeletePage( string pageIdKey )`** (new). Deletes a page along with its blocks and routes, following the authorization-only delete shape the shipped skills use (`DeleteNote`, `DeleteStep`, `DeletePrayerRequest`): per-entity security decides what is deletable, not who created the record.
+**`DeletePage( string pageIdKey, bool deleteInteractions = true )`** (new, revised per the 2026-08-24 meeting). Deletes a page along with its blocks and routes, following the authorization-only delete shape the shipped skills use (`DeleteNote`, `DeleteStep`, `DeletePrayerRequest`): per-entity security decides what is deletable, not who created the record.
 
 - Requires `Authorization.ADMINISTRATE` on the page through `PageCache`, and carries administrator-only tool security like the other mutating tools.
 - The page MUST have no child pages. Children cascade with the parent in the database, so without this guard one tool call could silently delete an entire subtree; refusing forces deliberate bottom-up deletion where each page is named one call at a time.
 - Blocks and routes cascade with the page, matching the admin Pages block.
 - Flushes the parent page's cache so navigation updates, and publishes `PageRouteWasUpdatedMessage` when the page had routes.
-- The tool's usage annotations MUST tell the model deletes are permanent, to confirm the exact page with the user, and never to delete a page the user did not name explicitly. With no provenance gate, instruction-level caution and the ADMINISTRATE check are the whole safety story.
+- **Interactions.** Page-view interactions do not cascade: the page's `InteractionComponent` rows and their interactions reference the page by loose `EntityId`, so a bare delete orphans them and no cleanup job reclaims them. The admin Pages block already solves this: its delete action ([Pages.cs:346](Rock.Blocks/Administration/Pages.cs:346)) takes a `deleteInteractions` flag and, when set, sends `DeleteInteractions.Message` ([DeleteInteractions.cs](Rock/Tasks/DeleteInteractions.cs)), a background bus task that bulk-deletes the page's interactions in chunks and then removes its components. `DeletePage` MUST take the same optional `deleteInteractions` parameter and send the same message after a successful save, keyed by the captured `PageId` and `SiteId` (the task deliberately takes raw ids because the page is gone by the time it runs). The parameter defaults to `true`, matching the admin Pages block, whose confirmation modal pre-checks "Delete any interactions for this page". The usage annotations (below) still require the agent to ask the user, so the default only decides what happens if the model omits the parameter, and omitting it then matches what an administrator gets by accepting the modal as-is.
+- **Confirmation.** The tool's usage annotations MUST require the agent to, before calling: (1) present a warning that spells out the destructive, permanent nature of the delete and exactly what goes with it (the page, its blocks, its routes, and its interaction history when `deleteInteractions` is set), (2) name the exact page being deleted, and (3) obtain the user's explicit confirmation. The annotations MUST also forbid deleting a page the user did not name explicitly, and MUST tell the agent to ask the user whether interaction history should be deleted too rather than choosing silently. With no provenance gate, instruction-level caution and the ADMINISTRATE check are the whole safety story.
+- **Site references (gap found while reviewing the built tool).** The admin block nulls a site's `DefaultPageId`, `LoginPageId`, and `RegistrationPageId` (and their route ids) before deleting a page the site points at; the built tool does not, so deleting such a page fails on the FK. The tool MUST refuse instead of silently clearing: a site losing its default or login page is a bigger decision than the agent should make as a side effect. Refuse with an error naming the site and the role the page plays. (Decided 2026-08-24.)
 
 **`DeleteBlock( string blockIdKey )`** (new). Deletes a block from its page, layout, or site.
 
@@ -272,6 +274,16 @@ Added after phases 1 through 5 shipped, so it is written as its own phase.
 24. Add the same-site layout validation to `AddOrUpdatePage`, erroring with a pointer at `ListLayouts` filtered by the page's site.
 25. Migration: one more seeded tool row and `EnabledTools` entry (thirteen total).
 26. Verify: `ListLayouts` with a `siteIdKey` returns only that site's layouts; `AddOrUpdatePage` with a layout from another site errors rather than moving the page.
+
+### Phase 8: DeletePage revisions from the 2026-08-24 meeting
+
+Phase 6 shipped `DeletePage` without interaction handling and with a one-line confirm instruction. This phase brings it up to the revised behavior above.
+
+27. Add the `deleteInteractions` parameter (default `true`, matching the admin UI's pre-checked checkbox) and send `DeleteInteractions.Message` with the captured `PageId` and `SiteId` after `SaveChangesIfNoErrors` succeeds, mirroring [Pages.cs:398](Rock.Blocks/Administration/Pages.cs:398).
+28. Extend the return payload (`PageDeleteResult`) with whether an interaction delete was queued, so the agent can tell the user the history cleanup runs in the background.
+29. Rewrite the `[AgentUsage]` annotation per the Confirmation requirement: explicit destructive-nature warning, exact page named, explicit user confirmation, and an explicit ask about interaction history.
+30. Add the site-reference refusal: if any site's default, login, or registration page is the target, error with the site name and the role instead of deleting.
+31. Verify: delete a page with interactions and `deleteInteractions: true`, confirm the `InteractionComponent` rows and interactions are gone after the bus task runs; repeat with `false` and confirm they remain; attempt to delete a site's login page and confirm the refusal.
 
 ## Open Questions
 
