@@ -1,0 +1,398 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="panel panel-block">
+        <div class="panel-heading">
+            <h1 class="panel-title">People En Route</h1>
+        </div>
+
+        <div class="panel-body en-route-filters">
+            <GroupPicker v-model="selectedGroups"
+                         label="Groups"
+                         :multiple="true"
+                         :includedGroupTypeGuids="checkinAreaGroupTypeGuids" />
+
+            <small v-if="isAlwaysShowChildGroups">Child Groups Included</small>
+            <CheckBox v-if="!isAlwaysShowChildGroups"
+                      v-model="includeChildGroups"
+                      label=""
+                      text="Include Child Groups" />
+
+            <DropDownList v-model="selectedScheduleValues"
+                          label="Schedules"
+                          :items="availableSchedules"
+                          :multiple="true"
+                          :showBlankItem="false"
+                          :enhanceForLongLists="true" />
+
+            <TextBox v-model="searchText"
+                     label="Search by Name"
+                     :inputClasses="'js-search'"
+                     @keydown.enter="onSearchEnter">
+                <template #inputGroupPrepend>
+                    <span class="input-group-addon"><i class="ti ti-search"></i></span>
+                </template>
+            </TextBox>
+
+            <div class="actions margin-t-md">
+                <button type="button"
+                        class="filter btn btn-outline-primary text-primary btn-xs mr-2"
+                        @click="onApplyFilter">Apply Filter</button>
+                <button type="button"
+                        class="filter-clear btn btn-default btn-xs"
+                        @click="onClearFilter">Clear Filter</button>
+            </div>
+        </div>
+
+        <div class="en-route-list">
+            <Grid :definition="gridDefinition"
+                  :data="gridDataSource"
+                  stickyHeader
+                  keyField="personGuid"
+                  itemTerm="Person"
+                  :isTitleHidden="true"
+                  :disablePaging="true"
+                  :showExport="false"
+                  :showMergeTemplate="false"
+                  :showLaunchWorkflow="false"
+                  :isFooterHidden="true"
+                  light>
+
+                <Column name="photo"
+                        title=""
+                        :filter="undefined"
+                        visiblePriority="sm"
+                        width="76px">
+                    <template #format="{ row }">
+                        <div v-html="(row as AttendeeRow).photoImageTag"></div>
+                    </template>
+                </Column>
+
+                <Column name="fullName"
+                        field="fullName"
+                        title="Name"
+                        :filter="textValueFilter"
+                        :filterValue="getNameFilterValue"
+                        :quickFilterValue="getNameFilterValue"
+                        :sortValue="getNameSortValue"
+                        visiblePriority="xs">
+                    <template #format="{ row }">
+                        <div>
+                            <span class="checkin-person-name">{{ (row as AttendeeRow).fullName }}</span>
+                            <div v-if="(row as AttendeeRow).parentNames"
+                                 class="parent-name small text-muted text-wrap">
+                                {{ (row as AttendeeRow).parentNames }}
+                            </div>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column name="groupName"
+                        field="groupName"
+                        title="Group"
+                        :filter="textValueFilter"
+                        :filterValue="getGroupFilterValue"
+                        :quickFilterValue="getGroupFilterValue"
+                        visiblePriority="xs">
+                    <template #format="{ row }">
+                        <div>
+                            <div class="group-name">{{ (row as AttendeeRow).groupName }}</div>
+                            <div v-if="(row as AttendeeRow).groupPath"
+                                 class="small text-muted text-wrap">
+                                {{ (row as AttendeeRow).groupPath }}
+                            </div>
+                        </div>
+                    </template>
+                </Column>
+
+                <TextColumn name="serviceTimes"
+                            field="serviceTimes"
+                            title="Service Times"
+                            :filter="textValueFilter"
+                            visiblePriority="sm" />
+
+                <TextColumn name="roomName"
+                            field="roomName"
+                            title="Room"
+                            :filter="textValueFilter"
+                            visiblePriority="xs" />
+
+                <ButtonColumn name="actions"
+                              title=""
+                              width="62"
+                              iconClass="ti ti-transfer"
+                              tooltip="Move Person"
+                              :onClick="onMovePersonButtonClick"
+                              visiblePriority="xs"
+                              headerClass="grid-columncommand d-print-none"
+                              itemClass="d-print-none" />
+
+            </Grid>
+        </div>
+    </div>
+
+    <MovePersonModal v-model="isMovePersonVisible"
+                     :options="movePersonOptions"
+                     :onSave="onMovePersonSave"
+                     :onAttendanceChanged="onMovePersonAttendanceChanged" />
+</template>
+
+<style scoped>
+/* Light grids drop the .grid-striped class but rows still carry
+   grid-row-even, so re-apply zebra striping by coloring the cells of even
+   rows. The background must be set on .grid-cell (not .grid-row) because
+   each cell paints its own background. */
+.en-route-list :deep(.grid-row.grid-row-even .grid-cell) {
+    background-color: var(--color-interface-softer);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import MovePersonModal from "./EnRoute/movePersonModal.partial.obs";
+    import { AttendeeRow } from "./EnRoute/types.partial";
+    import Grid, { ButtonColumn, Column, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EnRouteGridDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/EnRoute/enRouteGridDataBag";
+    import { EnRouteMovePersonOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/EnRoute/enRouteMovePersonOptionsBag";
+    import { EnRouteMovePersonRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/EnRoute/enRouteMovePersonRequestBag";
+    import { EnRouteMovePersonResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/EnRoute/enRouteMovePersonResponseBag";
+    import { EnRouteOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/EnRoute/enRouteOptionsBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    const config = useConfigurationValues<ListBlockBox<EnRouteOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDefinition = computed(() => config.gridDefinition ?? undefined);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+
+    // Filter state seeded from the server options (cookie values).
+    const availableSchedules = ref<ListItemBag[]>(config.options?.availableSchedules ?? []);
+    const selectedScheduleValues = ref<string[]>(
+        (config.options?.selectedScheduleIds ?? []).map(id => String(id))
+    );
+    const selectedGroups = ref<ListItemBag | ListItemBag[] | null>(
+        config.options?.selectedGroups ?? null
+    );
+    const checkinAreaGroupTypeGuids = ref<Guid[]>(
+        (config.options?.checkinAreaGroupTypeGuids ?? []) as Guid[]
+    );
+    const includeChildGroups = ref<boolean>(config.options?.isIncludeChildGroups ?? false);
+    const isAlwaysShowChildGroups = ref<boolean>(config.options?.isAlwaysShowChildGroups ?? false);
+    const searchText = ref<string>("");
+
+    // Move Person modal state.
+    const isMovePersonVisible = ref(false);
+    const movePersonOptions = ref<EnRouteMovePersonOptionsBag | null>(null);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Combined search value for the Name column quick filter and grid-wide
+     * filter. Matches on full name.
+     */
+    function getNameFilterValue(row: Record<string, unknown>): string {
+        const r = row as AttendeeRow;
+        return r.fullName ?? "";
+    }
+
+    /**
+     * Sort value for the Name column: nick name then last name,
+     * matching the server-side sort order.
+     */
+    function getNameSortValue(row: Record<string, unknown>): string {
+        const r = row as AttendeeRow;
+        return `${r.nickName ?? ""} ${r.lastName ?? ""}`;
+    }
+
+    /**
+     * Combined search value for the Group column. Ensures the column filter
+     * and the grid-wide quick filter match either the group name or the
+     * group type path shown underneath it.
+     */
+    function getGroupFilterValue(row: Record<string, unknown>): string {
+        const r = row as AttendeeRow;
+        const parts: string[] = [];
+        if (r.groupName) {
+            parts.push(r.groupName);
+        }
+        if (r.groupPath) {
+            parts.push(r.groupPath);
+        }
+        return parts.join(" ");
+    }
+
+    /**
+     * Extracts the selected schedule integer ids from the listbox's string
+     * values.
+     */
+    function getSelectedScheduleIds(): number[] {
+        return selectedScheduleValues.value
+            .map(v => parseInt(v, 10))
+            .filter(id => id > 0);
+    }
+
+    /**
+     * Extracts the selected group Guids from the GroupPicker's ListItemBag
+     * values.
+     */
+    function getSelectedGroupGuids(): string[] {
+        if (!selectedGroups.value) {
+            return [];
+        }
+
+        const items = Array.isArray(selectedGroups.value)
+            ? selectedGroups.value
+            : [selectedGroups.value];
+
+        return items
+            .map(i => i.value)
+            .filter((v): v is string => !!v);
+    }
+
+    /**
+     * Loads the grid data from the server with the current filter values.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<EnRouteGridDataBag>("GetGridData", {
+            selectedScheduleIds: getSelectedScheduleIds(),
+            selectedGroupGuids: getSelectedGroupGuids(),
+            includeChildGroups: isAlwaysShowChildGroups.value || includeChildGroups.value,
+            searchText: searchText.value
+        });
+
+        if (!result.isSuccess || !result.data) {
+            throw new Error(result.errorMessage ?? "Unable to load en-route data.");
+        }
+
+        if (result.data.warningMessage) {
+            // Return empty grid when a warning is present.
+            return { rows: [] } as GridDataBag;
+        }
+
+        return result.data.gridData ?? ({ rows: [] } as GridDataBag);
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onApplyFilter(): void {
+        gridDataSource.value = loadGridData();
+    }
+
+    function onClearFilter(): void {
+        selectedScheduleValues.value = [];
+        selectedGroups.value = null;
+        includeChildGroups.value = false;
+        searchText.value = "";
+
+        gridDataSource.value = loadGridData();
+    }
+
+    function onSearchEnter(event: Event): void {
+        event.preventDefault();
+        if (searchText.value.length > 2) {
+            gridDataSource.value = loadGridData();
+        }
+    }
+
+    /**
+     * ButtonColumn click handler. Looks up the row by its key and
+     * delegates to the move-person logic.
+     */
+    async function onMovePersonButtonClick(key: string, grid: IGridState): Promise<void> {
+        const row = grid.rows.find(r => (r as AttendeeRow).personGuid === key) as AttendeeRow | undefined;
+        if (row) {
+            await onMovePersonClick(row);
+        }
+    }
+
+    /**
+     * Handles clicking the Move Person button on a grid row. Loads the
+     * move-person options from the server and opens the modal.
+     */
+    async function onMovePersonClick(row: AttendeeRow): Promise<void> {
+        const attendanceIds = row.attendanceIds;
+        if (!attendanceIds || attendanceIds.length === 0) {
+            return;
+        }
+
+        const result = await invokeBlockAction<EnRouteMovePersonOptionsBag>("GetMovePersonOptions", {
+            attendanceIds
+        });
+
+        if (!result.isSuccess || !result.data) {
+            return;
+        }
+
+        if (result.data.errorMessage) {
+            return;
+        }
+
+        movePersonOptions.value = result.data;
+        isMovePersonVisible.value = true;
+    }
+
+    /**
+     * Called by the MovePersonModal when the user saves the move. Sends
+     * the request to the server, closes the modal on success, and reloads
+     * the grid.
+     */
+    async function onMovePersonSave(request: EnRouteMovePersonRequestBag): Promise<EnRouteMovePersonResponseBag | null> {
+        const result = await invokeBlockAction<EnRouteMovePersonResponseBag>("MovePerson", {
+            request
+        });
+
+        if (!result.isSuccess || !result.data) {
+            return {
+                isSuccess: false,
+                errorMessage: result.errorMessage ?? "Unable to move person."
+            } as EnRouteMovePersonResponseBag;
+        }
+
+        if (result.data.isSuccess) {
+            isMovePersonVisible.value = false;
+            gridDataSource.value = loadGridData();
+        }
+
+        return result.data;
+    }
+
+    /**
+     * Called by the MovePersonModal when the user changes the attendance
+     * selector. Refreshes the cascading dropdown options from the server.
+     */
+    async function onMovePersonAttendanceChanged(attendanceId: number): Promise<EnRouteMovePersonOptionsBag | null> {
+        const result = await invokeBlockAction<EnRouteMovePersonOptionsBag>("RefreshMovePersonOptions", {
+            attendanceId
+        });
+
+        if (!result.isSuccess || !result.data) {
+            return null;
+        }
+
+        return result.data;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    // Load the grid on mount with the initial filter state from the cookie.
+    gridDataSource.value = loadGridData();
+
+    // #endregion Lifecycle Hooks
+</script>
