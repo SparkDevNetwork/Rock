@@ -12,7 +12,7 @@
                 <slot name="prepend" :isInputGroupSupported="false" />
                 <div class="controls rockcheckboxlist" :class="containerClasses">
                     <template v-if="horizontal">
-                        <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
+                        <label v-for="item in items" class="checkbox-inline" :class="classForItem(item)" :for="uniqueIdForItem(uniqueId, item)">
                             <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                             <span class="label-text">{{ textForItem(item) }}</span>
                             <HelpBlock v-if="helpTextForItem(item)" :text="helpTextForItem(item)" />
@@ -20,7 +20,7 @@
                     </template>
                     <template v-else>
                         <div v-for="item in items" class="checkbox">
-                            <label :for="uniqueIdForItem(uniqueId, item)" :class="labelClasses(item)">
+                            <label :for="uniqueIdForItem(uniqueId, item)" :class="[labelClasses(item), classForItem(item)]">
                                 <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                                 <span class="label-text">{{ textForItem(item) }}</span>
                                 <HelpBlock v-if="helpTextForItem(item)" :text="helpTextForItem(item)" />
@@ -65,6 +65,21 @@
             default: () => ({})
         },
 
+        /**
+         * Optional per-item CSS class map, keyed by the item's value. When
+         * supplied, the matching class(es) are added to that item's <label>
+         * element. This lets callers style individual items (for example, to
+         * mute an item that is included for context but does not fully apply
+         * to the current selection) without wrapping the shared control.
+         *
+         * @private This is used internally by Rock and should not be used
+         * directly.
+         */
+        itemsClass: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
         repeatColumns: {
             type: Number as PropType<number>,
             default: 0
@@ -99,6 +114,7 @@
     const valueForItem = (item: ListItemBag): string => item.value ?? "";
     const textForItem = (item: ListItemBag): string => item.text ?? "";
     const helpTextForItem = (item: ListItemBag): string => props.itemsHelpText[valueForItem(item)] ?? "";
+    const classForItem = (item: ListItemBag): string => props.itemsClass[valueForItem(item)] ?? "";
 
     const uniqueIdForItem = (uniqueId: string, item: ListItemBag): string => `${uniqueId}-${(item.value ?? "").replace(" ", "-")}`;
 
