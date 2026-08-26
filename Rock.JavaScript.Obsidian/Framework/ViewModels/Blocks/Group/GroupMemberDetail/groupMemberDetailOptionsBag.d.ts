@@ -164,6 +164,18 @@ export type GroupMemberDetailOptionsBag = {
     personGuid?: Guid | null;
 
     /**
+     * Gets or sets the member's person IdKey, used by the avatar's
+     * hover card in edit mode.
+     */
+    personIdKey?: string | null;
+
+    /**
+     * Gets or sets the member's photo URL, shown beside their name
+     * once the person can no longer be changed.
+     */
+    personPhotoUrl?: string | null;
+
+    /**
      * Gets or sets the inline requirement alerts rendered below the
      * Role field.
      */

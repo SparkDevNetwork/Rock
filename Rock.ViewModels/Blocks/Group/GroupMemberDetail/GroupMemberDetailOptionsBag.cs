@@ -148,6 +148,22 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
 
         #endregion Header
 
+        #region Person Display
+
+        /// <summary>
+        /// Gets or sets the member's person IdKey, used by the avatar's
+        /// hover card in edit mode.
+        /// </summary>
+        public string PersonIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the member's photo URL, shown beside their name
+        /// once the person can no longer be changed.
+        /// </summary>
+        public string PersonPhotoUrl { get; set; }
+
+        #endregion Person Display
+
         #region Registrations and Documents
 
         /// <summary>

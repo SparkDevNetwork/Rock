@@ -386,6 +386,10 @@ namespace Rock.Blocks.Group
                 IsSchedulingEnabled = groupType.IsSchedulingEnabled && !IsSignUpMode,
                 ScheduleTemplateItems = GetScheduleTemplateItems( groupType.Id ),
 
+                // Person display for edit mode, where the person can no longer be changed.
+                PersonIdKey = entity.Person?.IdKey,
+                PersonPhotoUrl = entity.Person != null ? Person.GetPersonPhotoUrl( entity.Person ) : null,
+
                 LinkedRegistrations = GetLinkedRegistrations( entity ),
                 SignatureDocument = GetSignatureDocumentStatus( entity )
             };
@@ -473,7 +477,7 @@ namespace Rock.Blocks.Group
 
             if ( statusList?.Any() != true && entity.PersonId != 0 )
             {
-                statusList = entity.Group.PersonMeetsGroupRequirements( RockContext, entity.PersonId, selectedRoleId )?.ToList();
+                statusList = entity.Group.PersonMeetsGroupRequirements( RockContext, entity.PersonId, selectedRoleId )?.ToList<GroupRequirementStatus>();
             }
 
             if ( statusList == null || !statusList.Any() )
@@ -525,6 +529,7 @@ namespace Rock.Blocks.Group
                 {
                     Title = s.GroupRequirement.GroupRequirementType.Name,
                     Summary = isSummaryHidden ? string.Empty : s.GroupRequirement.GroupRequirementType.Summary,
+                    StatusText = GetRequirementStatusText( s ),
                     MeetsGroupRequirement = s.MeetsGroupRequirement,
                     TypeIconCssClass = s.GroupRequirement.GroupRequirementType.IconCssClass,
                     CanOverride = s.MeetsGroupRequirement != MeetsGroupRequirement.Meets
@@ -536,6 +541,33 @@ namespace Rock.Blocks.Group
                         : ( Guid? ) null
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets the status line for a requirement alert from the
+        /// requirement type's positive, negative, or warning label, with
+        /// the same defaults the WebForms requirement card used.
+        /// </summary>
+        /// <param name="status">The requirement status.</param>
+        /// <returns>The status text.</returns>
+        private string GetRequirementStatusText( GroupRequirementStatus status )
+        {
+            var requirementType = status.GroupRequirement.GroupRequirementType;
+
+            switch ( status.MeetsGroupRequirement )
+            {
+                case MeetsGroupRequirement.Meets:
+                    return requirementType.PositiveLabel.IsNotNullOrWhiteSpace() ? requirementType.PositiveLabel : "Requirement Met";
+
+                case MeetsGroupRequirement.NotMet:
+                    return requirementType.NegativeLabel.IsNotNullOrWhiteSpace() ? requirementType.NegativeLabel : "Requirement Not Met";
+
+                case MeetsGroupRequirement.MeetsWithWarning:
+                    return requirementType.WarningLabel.IsNotNullOrWhiteSpace() ? requirementType.WarningLabel : "Requirement Met With Warning";
+
+                default:
+                    return string.Empty;
+            }
         }
 
         /// <summary>
@@ -902,7 +934,7 @@ namespace Rock.Blocks.Group
             return new GroupMemberBag
             {
                 IdKey = entity.IdKey,
-                Person = entity.Person?.PrimaryAlias.ToListItemBag(),
+                Person = entity.Person?.PrimaryAlias.ToListItemBag( entity.Person.FullName ),
                 GroupRoleId = entity.GroupRoleId,
                 GroupMemberStatus = entity.GroupMemberStatus,
                 Note = entity.Note,

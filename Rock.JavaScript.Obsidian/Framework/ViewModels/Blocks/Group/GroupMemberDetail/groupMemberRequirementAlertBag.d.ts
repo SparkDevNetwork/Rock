@@ -51,6 +51,12 @@ export type GroupMemberRequirementAlertBag = {
     meetsGroupRequirement: MeetsGroupRequirement;
 
     /**
+     * Gets or sets the status line shown under the title, from the
+     * requirement type's positive, negative, or warning label.
+     */
+    statusText?: string | null;
+
+    /**
      * Gets or sets the requirement type's summary text. Empty when the
      * Hide Requirement Type Summary block setting is enabled.
      */

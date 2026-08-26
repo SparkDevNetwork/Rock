@@ -45,6 +45,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public MeetsGroupRequirement MeetsGroupRequirement { get; set; }
 
         /// <summary>
+        /// Gets or sets the status line shown under the title, from the
+        /// requirement type's positive, negative, or warning label.
+        /// </summary>
+        public string StatusText { get; set; }
+
+        /// <summary>
         /// Gets or sets the requirement type's icon CSS class.
         /// </summary>
         public string TypeIconCssClass { get; set; }

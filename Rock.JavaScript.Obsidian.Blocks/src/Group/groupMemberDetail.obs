@@ -8,17 +8,98 @@
                :titleIconCssClass="panelIconCssClass">
 
             <template #headerActions>
-                <!-- TODO: Archived + Added HighlightLabels, Communicate and Move header buttons, ellipsis menu with Audit Details modal. -->
+                <HighlightLabel v-if="options.addedDateText" labelType="default">{{ options.addedDateText }}</HighlightLabel>
+                <!-- TODO: Archived HighlightLabel, Communicate and Move header buttons, ellipsis menu with Audit Details modal. -->
             </template>
 
             <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
             <NotificationBox v-if="successMessage" alertType="success">{{ successMessage }}</NotificationBox>
 
             <ContentSectionContainer :sidebar="false">
-                <ContentSection disableCollapse>
-                    <!-- TODO: PersonPicker (add mode) / static person display with linked registrations (edit mode),
-                         Role dropdown with sync lock, inline requirement alerts + Refresh Requirements below Role,
-                         Member Status radios, and Note per conversion plan §9.2. -->
+                <ContentSection disableCollapse
+                                light>
+                    <div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <PersonPicker v-if="!isExistingMember"
+                                              v-model="person"
+                                              label="Person"
+                                              rules="required"
+                                              :disabled="!isEditable" />
+                                <StaticFormControl v-else label="Person" :modelValue="personName">
+                                    <div class="d-flex align-items-center">
+                                        <PersonAvatar :personIdKey="options.personIdKey ?? ''"
+                                                      :photoUrl="options.personPhotoUrl ?? ''"
+                                                      marginRight="sm"
+                                                      enableHoverInfo />
+                                        <span>{{ personName }}</span>
+                                    </div>
+
+                                    <div v-for="registration in linkedRegistrations" :key="registration.value ?? ''">
+                                        <a :href="registration.value ?? ''">{{ registration.text }}</a>
+                                    </div>
+                                </StaticFormControl>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <DropDownList v-model="roleId"
+                                              label="Role"
+                                              :help="roleHelpText"
+                                              :items="options.roleItems ?? []"
+                                              :showBlankItem="false"
+                                              rules="required"
+                                              :disabled="!isEditable || options.isRoleLockedBySync" />
+                            </div>
+                        </div>
+
+                        <template v-if="areRequirementsShown">
+                            <div class="mb-3">
+                                <RockButton :btnSize="BtnSize.Small" @click="onRefreshRequirements">
+                                    <i class="ti ti-refresh"></i> Refresh Requirements
+                                </RockButton>
+                                <span v-if="isRefreshSuccessShown" class="text-success ml-2">
+                                    <i class="ti ti-circle-check"></i> Successfully Refreshed
+                                </span>
+                            </div>
+
+                            <NotificationBox v-if="options.requirementCalculationErrors"
+                                             alertType="danger"
+                                             :details="options.requirementCalculationErrors">
+                                An error occurred in one or more of the requirement calculations.
+                            </NotificationBox>
+
+                            <div v-if="requirementAlerts.length" class="row d-flex flex-wrap">
+                                <div v-for="alert in requirementAlerts"
+                                     :key="alert.groupRequirementGuid"
+                                     class="col-md-4 mb-3">
+                                    <div class="alert h-100 mb-0" :class="getRequirementAlertClass(alert)">
+                                        <strong>{{ alert.title }}</strong>
+                                        <div>{{ alert.statusText }}</div>
+                                        <div v-if="alert.summary" class="mt-3">{{ alert.summary }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <RadioButtonList v-model="memberStatus"
+                                                 label="Member Status"
+                                                 help="Whether this member is pending, active, or inactive in the group."
+                                                 :items="options.statusItems ?? []"
+                                                 :disabled="!isEditable" />
+                            </div>
+                        </div>
+
+                        <TextBox v-model="note"
+                                 label="Note"
+                                 help="Internal notes about this member's involvement in the group."
+                                 textMode="multiline"
+                                 :rows="4"
+                                 :disabled="!isEditable" />
+                    </div>
                 </ContentSection>
 
                 <ContentSection title="Attributes" icon="ti ti-list-details">
@@ -66,21 +147,32 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import AssignmentPreferenceModal from "./GroupMemberDetail/assignmentPreferenceModal.partial.obs";
     import RestoreArchivedModal from "./GroupMemberDetail/restoreArchivedModal.partial.obs";
     import MoveGroupMemberModal from "./GroupMemberDetail/moveGroupMemberModal.partial.obs";
     import QuickCommunicationModal from "./GroupMemberDetail/quickCommunicationModal.partial.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberBag";
     import { GroupMemberDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberDetailOptionsBag";
+    import { GroupMemberRequirementAlertBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberRequirementAlertBag";
 
     const config = useConfigurationValues<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>();
 
-    console.log('config:', config);
+    console.log("config:", config);
     // #region Values
 
     const blockError = ref(config.errorMessage ?? "");
@@ -88,7 +180,6 @@
     const successMessage = ref("");
     const submitForm = ref(false);
 
-    const groupMemberBag = ref(config.entity ?? ({} as GroupMemberBag));
     const options = ref(config.options ?? ({} as GroupMemberDetailOptionsBag));
 
     const isAssignmentModalShown = ref(false);
@@ -96,17 +187,51 @@
     const isMoveModalShown = ref(false);
     const isCommunicationModalShown = ref(false);
 
+    const isEditable = config.isEditable === true;
+
+    /** True once the member record exists; the person can no longer change. */
+    const isExistingMember = !!config.entity?.idKey;
+
+    const isRefreshSuccessShown = ref(false);
+
+    // Member details section.
+    const person = ref<ListItemBag | undefined>(config.entity?.person ?? undefined);
+    const roleId = ref(config.entity?.groupRoleId?.toString() ?? "");
+    const memberStatus = ref(config.entity?.groupMemberStatus?.toString() ?? "");
+    const note = ref(config.entity?.note ?? "");
+
     // #endregion Values
 
     // #region Computed Values
 
     const panelTitle = computed((): string => {
         // TODO: Person full name, or "Add {GroupTerm} {GroupMemberTerm}" in add mode.
-        return groupMemberBag.value.person?.text ?? "Group Member Detail";
+        return person.value?.text ?? "Group Member Detail";
     });
 
     const panelIconCssClass = computed((): string => {
         return options.value.groupIconCssClass || "ti ti-user";
+    });
+
+    const personName = computed((): string => {
+        return person.value?.text ?? "";
+    });
+
+    /** The sync tooltip when Group Sync affects the role list, otherwise the standard helper text. */
+    const roleHelpText = computed((): string => {
+        return options.value.roleLockedMessage || "The role this person holds within the group.";
+    });
+
+    const linkedRegistrations = computed((): ListItemBag[] => {
+        return options.value.linkedRegistrations ?? [];
+    });
+
+    const areRequirementsShown = computed((): boolean => {
+        return options.value.hasGroupRequirements === true && options.value.areRequirementsHidden !== true;
+    });
+
+    const requirementAlerts = computed((): GroupMemberRequirementAlertBag[] => {
+        return options.value.requirementAlerts ?? [];
     });
 
     // #endregion Computed Values
@@ -124,7 +249,9 @@
      * Saves the group member via the Save block action.
      */
     async function onSave(): Promise<void> {
-        // TODO: Invoke the Save block action and handle navigation, validation errors, and the restore prompt.
+        // TODO: Assemble the ValidPropertiesBox from the field refs via setPropertiesBoxValue
+        // (converting roleId/memberStatus back to numbers), invoke the Save block action, and
+        // handle navigation, validation errors, and the restore prompt.
     }
 
     /**
@@ -141,5 +268,33 @@
         // TODO: Navigate to returnUrl or the parent page URL.
     }
 
+    /**
+     * Recalculates the group requirements and refreshes the inline alerts.
+     */
+    async function onRefreshRequirements(): Promise<void> {
+        // TODO: Invoke the RefreshRequirements block action, replace options.requirementAlerts, then show the success text.
+        isRefreshSuccessShown.value = true;
+    }
+
     // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the alert style for a requirement alert based on its met state.
+     */
+    function getRequirementAlertClass(alert: GroupMemberRequirementAlertBag): string {
+        switch (alert.meetsGroupRequirement) {
+            case MeetsGroupRequirement.Meets:
+                return "alert-success";
+
+            case MeetsGroupRequirement.MeetsWithWarning:
+                return "alert-warning";
+
+            default:
+                return "alert-danger";
+        }
+    }
+
+    // #endregion Functions
 </script>
