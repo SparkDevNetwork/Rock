@@ -10,7 +10,7 @@ summary: >-
 contributors: []
 ---
 
-# Connection Page Tree Cleanup (Phase 1)
+# Connection Page Tree Cleanup (Phase 1 of Connection Page/Block Cleanup)
 
 ## Summary
 
