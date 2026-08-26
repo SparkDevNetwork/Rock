@@ -229,8 +229,9 @@ namespace Rock.Blocks.CheckIn
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "FA4A6783-BFAA-4129-AE24-5BF871518EE9" )]
-    // was [Rock.SystemGuid.BlockTypeGuid( "1703315B-6255-499D-9B27-76245A314640" )]
-    [Rock.SystemGuid.BlockTypeGuid( "FA4D15E6-4C85-4247-A374-5E592E711CFD" )]
+    [Rock.SystemGuid.BlockTypeGuid( "1703315B-6255-499D-9B27-76245A314640" )]
+    //// was [Rock.SystemGuid.BlockTypeGuid( "1703315B-6255-499D-9B27-76245A314640" )]
+    //[Rock.SystemGuid.BlockTypeGuid( "FA4D15E6-4C85-4247-A374-5E592E711CFD" )]
     public class MobileCheckInLauncher : RockBlockType, IHasCustomActions
     {
         #region Keys
