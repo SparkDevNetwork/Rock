@@ -121,7 +121,7 @@ A successful save means the source compiled. It does not mean the component work
 
 # Design Lock-In
 
-If the user has not described the appearance concretely, do not build yet. Look for a Design Patterns topic in the community knowledge base and present its options as a short menu; if no such topic is available, offer these: a stat-card dashboard with a chart, a filterable table, a card grid, a list with a detail panel, or a multi-step form. Give each option a one-line plain-English description, ask the user to pick one or describe their own, and only then research the controls that compose the picked design. A locked-in design plus a fast first version beats a long questionnaire.
+If the user has not described the appearance concretely, do not build yet. The Coding Guide in the community knowledge base carries design lock-in guidance with a menu of design shapes; present those as a short menu with a one-line plain-English description each. If the guide is unavailable, offer these: a stat-card dashboard with a chart, a searchable table with a detail view, a single chart over time, a data entry form, or a kanban board. Ask the user to pick one or describe their own, and only then research the recipe and controls that compose the picked design. A locked-in design plus a fast first version beats a long questionnaire.
 
 # Coding Conventions
 
@@ -167,7 +167,7 @@ A successful save means the source compiled. It does not mean the component work
 
 # Design Lock-In
 
-If the user has not described the appearance concretely, do not build yet. Look for a Design Patterns topic in the community knowledge base and present its options as a short menu; if no such topic is available, offer these: a stat-card dashboard with a chart, a filterable table, a card grid, a list with a detail panel, or a multi-step form. Give each option a one-line plain-English description, ask the user to pick one or describe their own, and only then research the controls that compose the picked design. A locked-in design plus a fast first version beats a long questionnaire.
+If the user has not described the appearance concretely, do not build yet. The Coding Guide in the community knowledge base carries design lock-in guidance with a menu of design shapes; present those as a short menu with a one-line plain-English description each. If the guide is unavailable, offer these: a stat-card dashboard with a chart, a searchable table with a detail view, a single chart over time, a data entry form, or a kanban board. Ask the user to pick one or describe their own, and only then research the recipe and controls that compose the picked design. A locked-in design plus a fast first version beats a long questionnaire.
 
 # Coding Conventions
 

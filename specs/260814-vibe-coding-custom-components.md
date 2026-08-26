@@ -405,18 +405,6 @@ Control APIs and build patterns come from the Spark-curated Rock knowledge base:
 
 **The Coding Guide topic comes first (2026-08-24 meeting).** Both agents' instructions MUST direct the model to consult the Coding Guide topic in the Rock Community Knowledgebase for coding conventions and component patterns before reasoning from its own knowledge or searching anywhere else. The reference MUST be deliberately vague: name the topic ("the Coding Guide topic in the community knowledge base") and tell the model to find it through the knowledge base tools it already has (`GetKnowledgeBaseOverview` lists the curated topics, then the topic and article tools read into it). The instructions MUST NOT pin an exact path, URL, or article id, so a future restructure of the knowledge base does not silently break the seeded instruction text. This lands as instruction-text edits to both seeded `AIAgent` rows in the migration; because agent rows are create-only, instances that already seeded the agents pick it up only by re-running the seeding or editing the agent by hand.
 
-### Design lock-in
-
-Testing with vague, admin-realistic prompts ("build me something nice for our serving teams") showed the agent struggling to pick the right UI patterns and knowledge base lookups: with no concrete design intent, control research is a guess. The fix locks the design in before building.
-
-An MCP tool cannot present suggestions to a user; tools return data to the model and the model decides what to present. So the behavior lives in instructions and the suggestion content lives in the knowledge base, with a static fallback:
-
-- **Behavior (instructions, both agents).** A new Design Lock-In section: when the user has not described the appearance concretely, present a short menu of named design archetypes with a one-line plain-English description each, ask them to pick one or describe their own, and do not build until one is locked in. The picked archetype then drives the control lookups (it names the composing controls to research). This composes with, not replaces, the existing "pick defaults, state them, and produce a first version they can react to" behavior: archetype first, fast first version second, because an administrator reacts better to something rendered than to a description.
-- **Content (community knowledge base).** A Spark-curated Design Patterns topic: one entry per archetype naming it, describing when to use it, and listing the controls that compose it. The instructions direct the agent to read that topic through the tools it already has and present its options, under the same deliberately-vague reference rule as the Coding Guide (topic by name, never a pinned path).
-- **Fallback.** The instructions carry a thin inline menu (roughly five archetypes: stat-card dashboard with a chart, filterable table, card grid, list-detail, multi-step form) used when the Design Patterns topic does not exist or the knowledge base tools fail, mirroring the honest-degradation rule from layer 9.
-
-The knowledge base topic is outside this repository; see Open Questions.
-
 ## Security Model
 
 **The trust boundary is authoring, not execution.** Authored code runs in the visitor's browser as the visitor, with their cookie and their permissions. Nothing sandboxes it. It can call anything that person could call from their browser console, and nothing more.
@@ -468,7 +456,6 @@ Things that fail silently, in rough order of how much time they cost.
 1. **Lava application security.** The tools create applications with no rules and do not set any. Likely fix: take the intended audience as a parameter and write the matching `EXECUTE_VIEW` `Auth` rows at creation. `AddOrUpdateLavaApplication` (the layer 6 revision) is the natural home for that parameter once it exists. Until then the tools must not claim security is handled.
 2. **No compile circuit breaker.** If a compile ever does kill something, nothing records it, so a retrying client repeats it.
 3. **No version history.** Repeated saves overwrite `Source`; audit columns record who, never what.
-4. **Who adds the Design Patterns topic to the community knowledge base.** The design lock-in section depends on a Spark-curated topic that this repository cannot ship. Until it exists, the instructions' inline fallback menu is the whole experience. Needs an owner on the Spark side.
 
 ## Considered but Rejected
 
