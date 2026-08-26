@@ -232,26 +232,30 @@
     }
 
     /**
-     * Gets the URL for the registration instance detail page of the row's linked registration instance.
+     * Gets the URL for the registration instance page of the row's linked registration instance.
+     * The integer identifier is used because the registration instance pages are WebForms blocks
+     * that only recognize integer identifiers (not IdKeys).
      *
-     * @param key The identifier key of the registration instance.
+     * @param registrationInstanceId The integer identifier of the registration instance.
      */
-    function getRegistrationInstanceUrl(key: string): string {
+    function getRegistrationInstanceUrl(registrationInstanceId: number): string {
         if (config.options?.registrationInstancePageUrl) {
-            return config.options.registrationInstancePageUrl.replace("((Key))", key);
+            return config.options.registrationInstancePageUrl.replace("((Key))", registrationInstanceId.toString());
         }
 
         return "";
     }
 
     /**
-     * Gets the URL for the group detail page of the row's linked group.
+     * Gets the URL for the group detail page of the row's linked group. The integer identifier is
+     * used because the group detail page is a WebForms block that only recognizes integer
+     * identifiers (not IdKeys).
      *
-     * @param key The identifier key of the group.
+     * @param groupId The integer identifier of the group.
      */
-    function getGroupDetailUrl(key: string): string {
+    function getGroupDetailUrl(groupId: number): string {
         if (config.options?.groupDetailPageUrl) {
-            return config.options.groupDetailPageUrl.replace("((Key))", key);
+            return config.options.groupDetailPageUrl.replace("((Key))", groupId.toString());
         }
 
         return "";

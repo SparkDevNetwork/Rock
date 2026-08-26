@@ -131,7 +131,8 @@ namespace Rock.Blocks.Event
         {
             // The group and registration instance URLs are built with a "((Key))" placeholder as the
             // identifier value so the page's friendly route is used when one is configured. The client
-            // replaces the placeholder with each row's identifier key.
+            // replaces the placeholder with each row's integer identifier, because the linked pages are
+            // WebForms blocks that only recognize integer identifiers (not IdKeys).
             var options = new EventItemOccurrenceListOptionsBag()
             {
                 CampusItems = CampusCache.All().ToListItemBagList(),
@@ -209,9 +210,9 @@ namespace Rock.Blocks.Event
                 .AddTextField( "campus", a => a.Campus?.Name ?? "All Campuses" )
                 .AddDateTimeField( "date", a => GetNextStartDateTime( a )?.DateTime )
                 .AddTextField( "location", a => a.Location )
-                .AddField( "registrationInstanceId", a => a.Linkages.Any() ? a.Linkages.First().RegistrationInstance?.IdKey : null )
+                .AddField( "registrationInstanceId", a => a.Linkages.Any() ? a.Linkages.First().RegistrationInstance?.Id : null )
                 .AddTextField( "registration", a => a.Linkages.Any() ? a.Linkages.First().RegistrationInstance?.Name : null )
-                .AddField( "groupId", a => a.Linkages.Any() ? a.Linkages.First().Group?.IdKey : null )
+                .AddField( "groupId", a => a.Linkages.Any() ? a.Linkages.First().Group?.Id : null )
                 .AddField( "contentItems", a => FormatContentItems( a.ContentChannelItems.Select( e => e.ContentChannelItem ) ) )
                 .AddTextField( "group", a => a.Linkages.Any() ? a.Linkages.First().Group?.Name : null )
                 .AddPersonField( "contact", a => a.ContactPersonAlias?.Person )
