@@ -14,6 +14,7 @@
 
             <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
             <NotificationBox v-if="successMessage" alertType="success">{{ successMessage }}</NotificationBox>
+            <NotificationBox v-if="options.editModeMessage" alertType="info" v-html="options.editModeMessage" />
 
             <ContentSectionContainer :sidebar="false">
                 <ContentSection disableCollapse
@@ -56,7 +57,7 @@
 
                         <template v-if="areRequirementsShown">
                             <div class="mb-3">
-                                <RockButton :btnSize="BtnSize.Small" @click="onRefreshRequirements">
+                                <RockButton :btnSize="BtnSize.Small" :disabled="isRefreshingRequirements" @click="onRefreshRequirements">
                                     <i class="ti ti-refresh"></i> Refresh Requirements
                                 </RockButton>
                                 <span v-if="isRefreshSuccessShown" class="text-success ml-2">
@@ -73,7 +74,7 @@
                             <div v-if="requirementAlerts.length" class="row d-flex flex-wrap">
                                 <div v-for="alert in requirementAlerts"
                                      :key="alert.groupRequirementGuid"
-                                     class="col-md-4 mb-3">
+                                     class="col-md-4 mb-3 pr-0">
                                     <div class="alert h-100 mb-0" :class="getRequirementAlertClass(alert)">
                                         <strong>{{ alert.title }}</strong>
                                         <div>{{ alert.statusText }}</div>
@@ -142,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -163,16 +164,17 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberBag";
     import { GroupMemberDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberDetailOptionsBag";
     import { GroupMemberRequirementAlertBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberRequirementAlertBag";
+    import { RefreshRequirementsResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/refreshRequirementsResponseBag";
 
     const config = useConfigurationValues<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
 
-    console.log("config:", config);
     // #region Values
 
     const blockError = ref(config.errorMessage ?? "");
@@ -187,12 +189,16 @@
     const isMoveModalShown = ref(false);
     const isCommunicationModalShown = ref(false);
 
-    const isEditable = config.isEditable === true;
+    const isEditable = ref(config.isEditable === true);
 
-    /** True once the member record exists; the person can no longer change. */
-    const isExistingMember = !!config.entity?.idKey;
+    /** The saved member's IdKey. Empty while adding, and set once the sign-up flow swaps in an existing member. */
+    const groupMemberIdKey = ref(config.entity?.idKey ?? "");
 
     const isRefreshSuccessShown = ref(false);
+    const isRefreshingRequirements = ref(false);
+
+    /** Suppresses the person and role watchers while a whole detail box is being applied. */
+    let isApplyingDetailBox = false;
 
     // Member details section.
     const person = ref<ListItemBag | undefined>(config.entity?.person ?? undefined);
@@ -211,6 +217,11 @@
 
     const panelIconCssClass = computed((): string => {
         return options.value.groupIconCssClass || "ti ti-user";
+    });
+
+    /** True once the member record exists; the person can no longer change. */
+    const isExistingMember = computed((): boolean => {
+        return !!groupMemberIdKey.value;
     });
 
     const personName = computed((): string => {
@@ -272,8 +283,11 @@
      * Recalculates the group requirements and refreshes the inline alerts.
      */
     async function onRefreshRequirements(): Promise<void> {
-        // TODO: Invoke the RefreshRequirements block action, replace options.requirementAlerts, then show the success text.
-        isRefreshSuccessShown.value = true;
+        isRefreshSuccessShown.value = false;
+
+        if (await refreshRequirements()) {
+            isRefreshSuccessShown.value = true;
+        }
     }
 
     // #endregion Event Handlers
@@ -296,5 +310,113 @@
         }
     }
 
+    /**
+     * Recalculates the requirement alerts for the selected person and role.
+     * The WebForms block did this on every person change, role change, and
+     * Refresh Requirements click.
+     */
+    async function refreshRequirements(): Promise<boolean> {
+        if (!areRequirementsShown.value || !person.value?.value || !roleId.value) {
+            return false;
+        }
+
+        isRefreshingRequirements.value = true;
+
+        try {
+            const result = await invokeBlockAction<RefreshRequirementsResponseBag>("RefreshRequirements", {
+                groupMemberIdKey: groupMemberIdKey.value,
+                personAliasGuid: person.value.value,
+                selectedRoleId: Number(roleId.value)
+            });
+
+            if (!result.isSuccess || !result.data) {
+                errorMessage.value = result.errorMessage ?? "Unable to refresh the group requirements.";
+                return false;
+            }
+
+            options.value.requirementAlerts = result.data.requirementAlerts ?? [];
+            options.value.requirementCalculationErrors = result.data.calculationErrors;
+            options.value.isRequirementInteractionDisabled = result.data.isRequirementInteractionDisabled;
+
+            return true;
+        }
+        finally {
+            isRefreshingRequirements.value = false;
+        }
+    }
+
+    /**
+     * Loads the member the selected person already has in this group so the
+     * form becomes an edit of that record. Sign-up mode only, matching the
+     * WebForms TryLoadExistingSignUpGroupMember behavior.
+     */
+    async function tryLoadExistingSignUpGroupMember(): Promise<boolean> {
+        if (!options.value.isSignUpMode || !person.value?.value) {
+            return false;
+        }
+
+        const result = await invokeBlockAction<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>("GetExistingSignUpGroupMember", {
+            personAliasGuid: person.value.value
+        });
+
+        if (!result.isSuccess || !result.data?.entity) {
+            return false;
+        }
+
+        applyDetailBox(result.data);
+
+        return true;
+    }
+
+    /**
+     * Re-seeds the form from a detail box returned by a block action.
+     */
+    function applyDetailBox(box: DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>): void {
+        isApplyingDetailBox = true;
+
+        try {
+            options.value = box.options ?? ({} as GroupMemberDetailOptionsBag);
+            isEditable.value = box.isEditable === true;
+            groupMemberIdKey.value = box.entity?.idKey ?? "";
+
+            person.value = box.entity?.person ?? undefined;
+            roleId.value = box.entity?.groupRoleId?.toString() ?? "";
+            memberStatus.value = box.entity?.groupMemberStatus?.toString() ?? "";
+            note.value = box.entity?.note ?? "";
+        }
+        finally {
+            isApplyingDetailBox = false;
+        }
+    }
+
     // #endregion Functions
+
+    // #region Watchers
+
+    watch(person, async () => {
+        if (isApplyingDetailBox) {
+            return;
+        }
+
+        isRefreshSuccessShown.value = false;
+
+        // The swap brings its own requirement state, so only recalculate when no member was loaded.
+        if (await tryLoadExistingSignUpGroupMember()) {
+            return;
+        }
+
+        await refreshRequirements();
+    });
+
+    watch(roleId, async () => {
+        if (isApplyingDetailBox) {
+            return;
+        }
+
+        isRefreshSuccessShown.value = false;
+
+        await refreshRequirements();
+    });
+
+    // #endregion Watchers
 </script>

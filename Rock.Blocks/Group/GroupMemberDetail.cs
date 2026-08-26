@@ -221,11 +221,12 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>();
             var entity = GetInitialEntity();
 
             if ( entity == null )
             {
+                var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>();
+
                 // A lookup was attempted when a non-zero GroupMemberId parameter was supplied, even as an IdKey or Guid.
                 var groupMemberKey = PageParameter( PageParameterKey.GroupMemberId );
                 var isLookupAttempt = groupMemberKey.IsNotNullOrWhiteSpace() && groupMemberKey.AsIntegerOrNull() != 0;
@@ -239,6 +240,19 @@ namespace Rock.Blocks.Group
                 return box;
             }
 
+            return GetDetailBox( entity );
+        }
+
+        /// <summary>
+        /// Builds the fully populated detail box for a group member. Used
+        /// both for the initial render and when the sign-up flow swaps in an
+        /// existing member.
+        /// </summary>
+        /// <param name="entity">The group member to describe.</param>
+        /// <returns>The detail box.</returns>
+        private DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag> GetDetailBox( GroupMember entity )
+        {
+            var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>();
             var isReadOnly = GetIsReadOnly( entity );
             string editModeMessage;
 
@@ -1106,6 +1120,77 @@ namespace Rock.Blocks.Group
             return $"{startTimeOfDay.ToTimeString()} {scheduleName}";
         }
 
+        /// <summary>
+        /// Builds the group member the requirement calculation should run
+        /// against. Uses the saved member when one exists, otherwise an
+        /// in-memory member for the selected person and role.
+        /// </summary>
+        /// <param name="groupMemberIdKey">The IdKey of the member, or null while adding.</param>
+        /// <param name="personAliasGuid">The primary alias unique identifier of the selected person, as emitted by the PersonPicker.</param>
+        /// <param name="selectedRoleId">The currently selected role identifier.</param>
+        /// <returns>The group member to calculate against, or null when it cannot be resolved.</returns>
+        private GroupMember GetRequirementCalculationTarget( string groupMemberIdKey, Guid? personAliasGuid, int selectedRoleId )
+        {
+            if ( groupMemberIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var existing = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( existing != null )
+                {
+                    // Match the in-memory role to the selection so the statuses reflect the pending change.
+                    existing.GroupRoleId = selectedRoleId;
+
+                    return existing;
+                }
+            }
+
+            var group = GetGroupFromPageParameter();
+            var person = GetPersonFromAliasGuid( personAliasGuid );
+
+            if ( group == null || person == null )
+            {
+                return null;
+            }
+
+            return new GroupMember
+            {
+                GroupId = group.Id,
+                Group = group,
+                GroupRoleId = selectedRoleId,
+                PersonId = person.Id,
+                Person = person
+            };
+        }
+
+        /// <summary>
+        /// Gets the group from the GroupId page parameter.
+        /// </summary>
+        /// <returns>The group, or null when the parameter is missing or invalid.</returns>
+        private Model.Group GetGroupFromPageParameter()
+        {
+            var groupKey = PageParameter( PageParameterKey.GroupId );
+
+            return groupKey.IsNotNullOrWhiteSpace()
+                ? new GroupService( RockContext ).Get( groupKey, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+        }
+
+        /// <summary>
+        /// Gets a person from the primary alias unique identifier the
+        /// PersonPicker emits.
+        /// </summary>
+        /// <param name="personAliasGuid">The person's primary alias unique identifier.</param>
+        /// <returns>The person, or null when the identifier is missing or invalid.</returns>
+        private Person GetPersonFromAliasGuid( Guid? personAliasGuid )
+        {
+            if ( !personAliasGuid.HasValue || personAliasGuid.Value == Guid.Empty )
+            {
+                return null;
+            }
+
+            return new PersonAliasService( RockContext ).GetPerson( personAliasGuid.Value );
+        }
+
         /// <inheritdoc/>
         protected override bool UpdateEntityFromBox( GroupMember entity, ValidPropertiesBox<GroupMemberBag> box )
         {
@@ -1311,27 +1396,80 @@ namespace Rock.Blocks.Group
         /// Gets the existing sign-up group member for the selected person so
         /// the form can re-hydrate. Sign-up mode only.
         /// </summary>
-        /// <param name="personIdKey">The IdKey of the selected person.</param>
-        /// <returns>The existing member's bag, or an empty result when none exists.</returns>
+        /// <param name="personAliasGuid">The primary alias unique identifier of the selected person, as emitted by the PersonPicker.</param>
+        /// <returns>The existing member's detail box, or null when none exists.</returns>
         [BlockAction]
-        public BlockActionResult GetExistingSignUpGroupMember( string personIdKey )
+        public BlockActionResult GetExistingSignUpGroupMember( Guid? personAliasGuid )
         {
-            // TODO: Implement per conversion plan §8.
-            return ActionBadRequest( "Not implemented." );
+            // Outside sign-up mode a duplicate is rejected at save time instead of loading the existing record.
+            if ( !IsSignUpMode )
+            {
+                return ActionOk<object>( null );
+            }
+
+            var group = GetGroupFromPageParameter();
+            var person = GetPersonFromAliasGuid( personAliasGuid );
+
+            if ( group == null || person == null )
+            {
+                return ActionOk<object>( null );
+            }
+
+            var entity = new GroupMemberService( RockContext )
+                .Queryable()
+                .Include( m => m.Person )
+                .Include( m => m.Group )
+                .FirstOrDefault( m => m.GroupId == group.Id && m.PersonId == person.Id );
+
+            if ( entity == null )
+            {
+                return ActionOk<object>( null );
+            }
+
+            if ( !IsAuthorizedToEdit( entity.Group ) && !entity.Group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to view this group member." );
+            }
+
+            return ActionOk( GetDetailBox( entity ) );
         }
 
         /// <summary>
-        /// Recalculates the group requirements for the member and returns
-        /// refreshed inline alert bags.
+        /// Recalculates the group requirements for the given person and role
+        /// and returns refreshed inline alert bags. Serves the Refresh
+        /// Requirements button as well as the person and role changes, all of
+        /// which recalculated on postback in the WebForms block.
         /// </summary>
-        /// <param name="groupMemberIdKey">The IdKey of the member.</param>
+        /// <param name="groupMemberIdKey">The IdKey of the member, or null while adding.</param>
+        /// <param name="personAliasGuid">The primary alias unique identifier of the selected person, as emitted by the PersonPicker.</param>
         /// <param name="selectedRoleId">The currently selected role identifier.</param>
-        /// <returns>The refreshed requirement alerts.</returns>
+        /// <returns>A <see cref="RefreshRequirementsResponseBag"/>.</returns>
         [BlockAction]
-        public BlockActionResult RefreshRequirements( string groupMemberIdKey, int selectedRoleId )
+        public BlockActionResult RefreshRequirements( string groupMemberIdKey, Guid? personAliasGuid, int selectedRoleId )
         {
-            // TODO: Implement per conversion plan §8.
-            return ActionBadRequest( "Not implemented." );
+            var entity = GetRequirementCalculationTarget( groupMemberIdKey, personAliasGuid, selectedRoleId );
+
+            if ( entity == null )
+            {
+                return ActionOk( new RefreshRequirementsResponseBag
+                {
+                    RequirementAlerts = new List<GroupMemberRequirementAlertBag>()
+                } );
+            }
+
+            if ( entity.Id != 0 && !entity.IsNewOrChangedGroupMember( RockContext ) )
+            {
+                entity.CalculateRequirements( RockContext, true );
+            }
+
+            var alerts = GetRequirementAlerts( entity, selectedRoleId, out var calculationErrors );
+
+            return ActionOk( new RefreshRequirementsResponseBag
+            {
+                RequirementAlerts = alerts,
+                CalculationErrors = calculationErrors,
+                IsRequirementInteractionDisabled = entity.Id == 0 || entity.IsNewOrChangedGroupMember( RockContext )
+            } );
         }
 
         /// <summary>
