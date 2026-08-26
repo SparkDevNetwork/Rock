@@ -1260,6 +1260,22 @@
             || bag?.nonLeaderToNonLeaderRelationshipMultiplierOverride != null;
     }
 
+    /**
+     * True when the parent picker still holds the parent the server put on the edit
+     * bag (a ParentGroupBag, which carries isActive) rather than one the user picked.
+     * The bag already supplied the derived data, so the watchers can skip their round trips.
+     */
+    function isParentGroupFromBag(parentGroupKey: string): boolean {
+        const bagParentGroup = props.modelValue.bag?.parentGroup;
+
+        if (!bagParentGroup || bagParentGroup.value !== parentGroupKey) {
+            return false;
+        }
+
+        // A picker selection is a plain ListItemBag and has no isActive value.
+        return typeof bagParentGroup.isActive === "boolean";
+    }
+
     // #endregion
 
     // #region Watchers
@@ -1343,6 +1359,10 @@
         setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
         setPropertiesBoxValue(newValue, "photoBinaryFile", photoBinaryFile.value);
         setPropertiesBoxValue(newValue, "groupTypeId", groupTypeId.value);
+        // The picker emits a plain ListItemBag, so writing it here strips isActive
+        // from the bag. isParentGroupFromBag() relies on that to tell a user selection
+        // apart from the one the server sent; preserving isActive would make it skip
+        // refreshes it needs to perform.
         setPropertiesBoxValue(newValue, "parentGroup", parentGroup.value as ParentGroupBag | null);
         setPropertiesBoxValue(newValue, "campus", campus.value);
         setPropertiesBoxValue(newValue, "statusValueId", statusValueId.value);
@@ -1405,6 +1425,13 @@
             return;
         }
 
+        // Also fires when the edit bag loads, since the modelValue watcher assigns
+        // parentGroup from it. The bag already supplied isActive, so the round trip
+        // would only re-fetch the same value on every edit load.
+        if (isParentGroupFromBag(newKey)) {
+            return;
+        }
+
         const result = await blockAction.getParentGroupInfo(newKey);
 
         if (version !== parentGroupInfoRequestVersion) {
@@ -1423,6 +1450,12 @@
     let allowedGroupTypesRequestVersion = 0;
     watch(() => parentGroup.value?.value, async (newKey) => {
         if (!isAddMode.value) {
+            return;
+        }
+
+        // The block options were already filtered by a server-sourced parent
+        // (ParentGroupId on the Add URL), so only re-filter for a picker change.
+        if (newKey && isParentGroupFromBag(newKey)) {
             return;
         }
 

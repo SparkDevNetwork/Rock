@@ -238,6 +238,7 @@ namespace Rock.Blocks.Group
             public const string ParentGroupId = "ParentGroupId";
             public const string ExpandedIds = "ExpandedIds";
             public const string ReturnUrl = "returnUrl";
+            public const string AutoEdit = "autoEdit";
         }
 
         private static class NavigationUrlKey
@@ -504,7 +505,10 @@ namespace Rock.Blocks.Group
                 already satisfies the visibility condition or when the Map page URL isn't
                 configured.
             */
-            var hasGroupLocations = entity.GroupLocations?.Any() == true;
+            // An EXISTS query rather than entity.GroupLocations.Any(), which would
+            // lazy-load every GroupLocation row for the group just to test for one.
+            var hasGroupLocations = new GroupLocationService( RockContext ).Queryable()
+                .Any( gl => gl.GroupId == entity.Id );
 
             bool hasMemberWithAddress = false;
             if ( !hasGroupLocations
@@ -2316,8 +2320,8 @@ namespace Rock.Blocks.Group
                     var separator = resolved.Contains( "?" ) ? "&" : "?";
                     var returnUrl = RequestContext?.RequestUri?.PathAndQuery;
                     url = returnUrl.IsNotNullOrWhiteSpace()
-                        ? $"{resolved}{separator}autoEdit=true&returnUrl={Uri.EscapeDataString( returnUrl )}"
-                        : $"{resolved}{separator}autoEdit=true";
+                        ? $"{resolved}{separator}{PageParameterKey.AutoEdit}=true&{PageParameterKey.ReturnUrl}={Uri.EscapeDataString( returnUrl )}"
+                        : $"{resolved}{separator}{PageParameterKey.AutoEdit}=true";
                 }
             }
 
@@ -2999,37 +3003,64 @@ namespace Rock.Blocks.Group
         private List<GroupMemberInheritedAttributeBag> BuildInheritedMemberAttributes( GroupTypeCache groupType )
         {
             var inheritedAttributes = new List<GroupMemberInheritedAttributeBag>();
-            var attributeService = new AttributeService( RockContext );
-            var groupMemberEntityTypeId = new GroupMember().TypeId;
+
+            // The group type itself first, then each ancestor in inheritance order.
+            var groupTypeChain = new List<GroupTypeCache>();
+            WalkGroupTypeInheritancePath( groupType, groupTypeChain.Add );
+
+            if ( !groupTypeChain.Any() )
+            {
+                return inheritedAttributes;
+            }
 
             // Resolve the URL template once per cascade.
             var urlTemplate = EntityTypeCache.Get( typeof( GroupType ) )?.LinkUrlLavaTemplate;
 
-            WalkGroupTypeInheritancePath( groupType, inheritedGroupType =>
+            /*
+                8/26/26 - MSE
+
+                One query for the whole inheritance chain instead of one per ancestor.
+                The rows come back ordered by Order then Name and are then grouped per
+                ancestor in chain order, which is the same output the per-ancestor
+                queries produced.
+
+                Reason: Fewer round trips while building the edit panel options.
+            */
+            var qualifierValues = groupTypeChain.Select( gt => gt.Id.ToString() ).ToList();
+            var attributes = new AttributeService( RockContext ).GetByEntityTypeId( new GroupMember().TypeId, false )
+                .AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    qualifierValues.Contains( a.EntityTypeQualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Name,
+                    a.Description,
+                    a.Key,
+                    a.Guid,
+                    a.EntityTypeQualifierValue
+                } )
+                .ToList();
+
+            foreach ( var inheritedGroupType in groupTypeChain )
             {
                 var inheritedFromUrl = ResolveGroupTypeInheritedFromUrl( urlTemplate, inheritedGroupType );
-
                 var qualifierValue = inheritedGroupType.Id.ToString();
 
-                inheritedAttributes.AddRange(
-                    attributeService.GetByEntityTypeId( groupMemberEntityTypeId, false )
-                        .AsNoTracking()
-                        .Where( a =>
-                            a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .Select( a => new GroupMemberInheritedAttributeBag
-                        {
-                            Name = a.Name,
-                            Description = a.Description,
-                            Key = a.Key,
-                            Guid = a.Guid,
-                            InheritedFromGroupTypeName = inheritedGroupType.Name,
-                            InheritedFromGroupTypeUrl = inheritedFromUrl
-                        } )
-                        .ToList() );
-            } );
+                inheritedAttributes.AddRange( attributes
+                    .Where( a => a.EntityTypeQualifierValue == qualifierValue )
+                    .Select( a => new GroupMemberInheritedAttributeBag
+                    {
+                        Name = a.Name,
+                        Description = a.Description,
+                        Key = a.Key,
+                        Guid = a.Guid,
+                        InheritedFromGroupTypeName = inheritedGroupType.Name,
+                        InheritedFromGroupTypeUrl = inheritedFromUrl
+                    } ) );
+            }
 
             return inheritedAttributes;
         }
@@ -3043,37 +3074,48 @@ namespace Rock.Blocks.Group
         private List<InheritedGroupRequirementBag> BuildInheritedGroupRequirements( GroupTypeCache groupType )
         {
             var inheritedRequirements = new List<InheritedGroupRequirementBag>();
-            var groupRequirementService = new GroupRequirementService( RockContext );
+
+            // The group type itself first, then each ancestor in inheritance order.
+            var groupTypeChain = new List<GroupTypeCache>();
+            WalkGroupTypeInheritancePath( groupType, groupTypeChain.Add );
+
+            if ( !groupTypeChain.Any() )
+            {
+                return inheritedRequirements;
+            }
 
             // Resolve the URL template once per cascade.
             var urlTemplate = EntityTypeCache.Get( typeof( Model.GroupType ) )?.LinkUrlLavaTemplate;
 
-            WalkGroupTypeInheritancePath( groupType, inheritedGroupType =>
+            // One query for the whole inheritance chain, grouped per ancestor below
+            // in chain order. See BuildInheritedMemberAttributes.
+            var ancestorIds = groupTypeChain.Select( gt => gt.Id ).ToList();
+            var requirements = new GroupRequirementService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Include( r => r.GroupRequirementType )
+                .Include( r => r.GroupRole )
+                .Where( r => r.GroupTypeId.HasValue && ancestorIds.Contains( r.GroupTypeId.Value ) )
+                .ToList();
+
+            foreach ( var inheritedGroupType in groupTypeChain )
             {
                 var inheritedFromUrl = ResolveGroupTypeInheritedFromUrl( urlTemplate, inheritedGroupType );
-
                 var ancestorId = inheritedGroupType.Id;
                 var ancestorName = inheritedGroupType.Name;
 
-                inheritedRequirements.AddRange(
-                    groupRequirementService.Queryable()
-                        .AsNoTracking()
-                        .Include( r => r.GroupRequirementType )
-                        .Include( r => r.GroupRole )
-                        .Where( r => r.GroupTypeId.HasValue && r.GroupTypeId.Value == ancestorId )
-                        .ToList()
-                        .Select( r => new InheritedGroupRequirementBag
-                        {
-                            Guid = r.Guid,
-                            Name = r.GroupRequirementType?.Name ?? string.Empty,
-                            GroupRoleName = r.GroupRole?.Name ?? string.Empty,
-                            AppliesToAgeClassification = r.AppliesToAgeClassification,
-                            InheritedFromGroupTypeName = ancestorName,
-                            InheritedFromGroupTypeUrl = inheritedFromUrl
-                        } )
-                        .OrderBy( r => r.Name )
-                        .ToList() );
-            } );
+                inheritedRequirements.AddRange( requirements
+                    .Where( r => r.GroupTypeId.Value == ancestorId )
+                    .Select( r => new InheritedGroupRequirementBag
+                    {
+                        Guid = r.Guid,
+                        Name = r.GroupRequirementType?.Name ?? string.Empty,
+                        GroupRoleName = r.GroupRole?.Name ?? string.Empty,
+                        AppliesToAgeClassification = r.AppliesToAgeClassification,
+                        InheritedFromGroupTypeName = ancestorName,
+                        InheritedFromGroupTypeUrl = inheritedFromUrl
+                    } )
+                    .OrderBy( r => r.Name ) );
+            }
 
             return inheritedRequirements;
         }
@@ -3115,28 +3157,39 @@ namespace Rock.Blocks.Group
             // attribute qualified by GroupTypeId on the Group entity type.
             // The Group entity itself does not own attributes here; every
             // Group attribute is inherited from an ancestor.
-            var attributeService = new AttributeService( RockContext );
-            var groupEntityTypeId = new Model.Group().TypeId;
+            var groupTypeChain = new List<GroupTypeCache>();
+            WalkGroupTypeInheritancePath( groupType, groupTypeChain.Add );
 
-            WalkGroupTypeInheritancePath( groupType, inheritedGroupType =>
+            // One query for the whole inheritance chain, grouped per ancestor below
+            // in chain order. See BuildInheritedMemberAttributes.
+            var qualifierValues = groupTypeChain.Select( gt => gt.Id.ToString() ).ToList();
+            var dateAttributes = new AttributeService( RockContext ).GetByEntityTypeId( new Model.Group().TypeId, false )
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    qualifierValues.Contains( a.EntityTypeQualifierValue ) &&
+                    dateFieldTypeIds.Contains( a.FieldTypeId ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Guid,
+                    a.Name,
+                    a.EntityTypeQualifierValue
+                } )
+                .ToList();
+
+            foreach ( var inheritedGroupType in groupTypeChain )
             {
                 var qualifierValue = inheritedGroupType.Id.ToString();
 
-                results.AddRange(
-                    attributeService.GetByEntityTypeId( groupEntityTypeId, false )
-                        .Where( a =>
-                            a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( qualifierValue ) &&
-                            dateFieldTypeIds.Contains( a.FieldTypeId ) )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .Select( a => new ListItemBag
-                        {
-                            Value = a.Guid.ToString(),
-                            Text = a.Name
-                        } )
-                        .ToList() );
-            } );
+                results.AddRange( dateAttributes
+                    .Where( a => a.EntityTypeQualifierValue == qualifierValue )
+                    .Select( a => new ListItemBag
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = a.Name
+                    } ) );
+            }
 
             return results;
         }
@@ -4453,7 +4506,7 @@ namespace Rock.Blocks.Group
                     Url = this.GetLinkedPageUrl( AttributeKey.ContentItemPage, new Dictionary<string, string>
                     {
                         { "ContentItemId", c.IdKey },
-                        { "autoEdit", "true" }
+                        { PageParameterKey.AutoEdit, "true" }
                     } )
                 } )
                 .Where( l => l.Url.IsNotNullOrWhiteSpace() )
