@@ -624,56 +624,93 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         }
 
         /// <summary>
-        /// Prints the legacy labels for the specified attendance identifier.
+        /// Prints the legacy labels for the specified attendance identifiers.
         /// </summary>
-        /// <param name="attendanceId">The attendance identifier to print labels for.</param>
+        /// <param name="attendanceIds">The attendance identifiers to print labels for.</param>
         /// <returns>An instance of <see cref="PrintResponseBag"/> that contains the result of the operation.</returns>
-        private PrintResponseBag PrintLegacyLabelsForAttendanceId( int attendanceId )
+        private PrintResponseBag PrintLegacyLabelsForAttendanceIds( List<int> attendanceIds )
         {
 #if NET472_OR_GREATER
-            var attendance = new AttendanceService( RockContext ).Get( attendanceId );
-            var attendanceIds = new List<int> { attendance.Id };
-            var possibleLabels = ZebraPrint.GetLabelTypesForPerson( attendance.PersonAlias.PersonId, attendanceIds );
-            var fileGuids = possibleLabels.Select( pl => pl.FileGuid ).ToList();
-
-            var (errorMessages, legacyClientLabels) = ZebraPrint.ReprintZebraLabels( fileGuids, attendance.PersonAlias.PersonId, attendanceIds, null );
-
-            var legacyClientLabelBags = legacyClientLabels
-                .Select( label => new LegacyClientLabelBag
+            var attendanceData = new AttendanceService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( a => attendanceIds.Contains( a.Id ) )
+                .Select( a => new
                 {
-                    LabelFile = RequestContext.RootUrlPath + label.LabelFile,
-                    LabelKey = label.LabelKey,
-                    MergeFields = label.MergeFields,
-                    PrinterAddress = label.PrinterAddress
+                    a.AttendanceCheckInSessionId,
+                    a.PersonAlias.PersonId,
+                    a.AttendanceData.LabelData
                 } )
                 .ToList();
 
+            var personIds = attendanceData.Select( a => a.PersonId ).Distinct().ToList();
+
+            // Every attendance record in a check-in session stores the same
+            // complete, already de-duplicated label set, so only one record
+            // per session is read. Person labels are limited to the people
+            // behind the requested records; family labels always print.
+            var labels = attendanceData
+                .Where( a => a.LabelData != null )
+                .DistinctBy( a => a.AttendanceCheckInSessionId )
+                .SelectMany( a => a.LabelData.FromJsonOrNull<List<Rock.CheckIn.CheckInLabel>>() ?? new List<Rock.CheckIn.CheckInLabel>() )
+                .Where( l => l.LabelType == KioskLabelType.Family || ( l.PersonId.HasValue && personIds.Contains( l.PersonId.Value ) ) )
+                .OrderBy( l => l.PersonId )
+                .ThenBy( l => l.Order )
+                .ToList();
+
+            if ( !labels.Any() )
+            {
+                return null;
+            }
+
+            var serverLabels = labels.Where( l => l.PrintFrom == PrintFrom.Server ).ToList();
+
             return new PrintResponseBag
             {
-                ErrorMessages = errorMessages,
-                LegacyLabels = legacyClientLabelBags
+                ErrorMessages = serverLabels.Any() ? ZebraPrint.PrintLabels( serverLabels ) : new List<string>(),
+                Labels = new List<ClientLabelBag>(),
+                LegacyLabels = labels
+                    .Where( l => l.PrintFrom == PrintFrom.Client )
+                    .Select( l => new LegacyClientLabelBag
+                    {
+                        LabelFile = RequestContext.RootUrlPath + l.LabelFile,
+                        LabelKey = l.LabelKey,
+                        MergeFields = l.MergeFields,
+                        PrinterAddress = l.PrinterAddress
+                    } )
+                    .ToList()
             };
 #else
             return new PrintResponseBag
             {
                 ErrorMessages = new List<string> { "Legacy labels are not supported." },
+                Labels = new List<ClientLabelBag>(),
                 LegacyLabels = new List<LegacyClientLabelBag>(),
             };
 #endif
         }
 
         /// <summary>
-        /// Prints the labels for the specified attendance identifier.
+        /// Prints the labels for the specified attendance identifiers. This will
+        /// determine whether to print legacy or next-gen labels.
         /// </summary>
         /// <param name="director">The instance handling the check-in process.</param>
         /// <param name="kiosk">The kiosk that we will be printing labels for.</param>
         /// <param name="printer">The printer that will be used as an override for where to print if not <c>null</c>.</param>
-        /// <param name="attendanceId">The attendance identifier to print labels for.</param>
+        /// <param name="attendanceIds">The attendance identifiers to print labels for.</param>
         /// <returns>An instance of <see cref="PrintResponseBag"/> that contains the result of the operation.</returns>
-        private async Task<PrintResponseBag> PrintLabelsForAttendanceId( CheckInDirector director, DeviceCache kiosk, DeviceCache printer, int attendanceId )
+        private async Task<PrintResponseBag> PrintLabelsForAttendanceIds( CheckInDirector director, DeviceCache kiosk, DeviceCache printer, List<int> attendanceIds )
         {
-            // Use the new label format for re-printing.
-            var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceId }, kiosk, printer, false );
+            // If any attendance records for these sessions have legacy labels
+            // then use those for printing instead of the new label format.
+            if ( RockContext.Set<AttendanceData>().Any( a => attendanceIds.Contains( a.Id ) ) )
+            {
+                return PrintLegacyLabelsForAttendanceIds( attendanceIds );
+            }
+
+            // All of the attendance is rendered together so that a label configured
+            // to print once per family or once per person is not repeated for every
+            // attendance record.
+            var labels = director.LabelProvider.RenderLabels( attendanceIds, kiosk, printer, false );
 
             var errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
                 .Select( l => l.Error )
@@ -712,62 +749,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             return new PrintResponseBag
             {
                 ErrorMessages = errorMessages,
-                Labels = clientLabelBags
-            };
-        }
-
-        /// <summary>
-        /// Prints the labels for the specified attendance identifiers. This will
-        /// determine whether or not to print legacy or next-gen labels.
-        /// </summary>
-        /// <param name="director">The instance handling the check-in process.</param>
-        /// <param name="kiosk">The kiosk that we will be printing labels for.</param>
-        /// <param name="printer">The printer that will be used as an override for where to print if not <c>null</c>.</param>
-        /// <param name="attendanceIds">The attendance identifiers to print labels for.</param>
-        /// <returns>An instance of <see cref="PrintResponseBag"/> that contains the result of the operation.</returns>
-        private async Task<PrintResponseBag> PrintLabelsForAttendanceIds( CheckInDirector director, DeviceCache kiosk, DeviceCache printer, List<int> attendanceIds )
-        {
-            var response = new PrintResponseBag
-            {
-                ErrorMessages = new List<string>(),
-                Labels = new List<ClientLabelBag>(),
+                Labels = clientLabelBags,
                 LegacyLabels = new List<LegacyClientLabelBag>()
             };
-
-            // If any attendance records for these sessions have legacy labels
-            // then use those for printing instead of the new label format.
-            var legacy = RockContext.Set<AttendanceData>().Any( a => attendanceIds.Contains( a.Id ) );
-            var hasLabels = false;
-
-            foreach ( var attendanceId in attendanceIds )
-            {
-                var attendanceResponse = legacy
-                    ? PrintLegacyLabelsForAttendanceId( attendanceId )
-                    : await PrintLabelsForAttendanceId( director, kiosk, printer, attendanceId );
-
-                if ( attendanceResponse != null )
-                {
-                    response.ErrorMessages.AddRange( attendanceResponse.ErrorMessages );
-
-                    if ( legacy )
-                    {
-                        response.LegacyLabels.AddRange( attendanceResponse.LegacyLabels );
-                    }
-                    else
-                    {
-                        response.Labels.AddRange( attendanceResponse.Labels );
-                    }
-
-                    hasLabels = true;
-                }
-            }
-
-            if ( !hasLabels )
-            {
-                return null;
-            }
-
-            return response;
         }
 
         /// <summary>
