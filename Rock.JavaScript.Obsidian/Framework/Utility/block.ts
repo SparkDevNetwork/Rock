@@ -235,7 +235,7 @@ export function onConfigurationValuesChanged(callback: () => void): void {
     // Provide an explicit undefined default so Vue does not emit an
     // "injection not found" warning when a block is mounted without the
     // configuration-changed provider (e.g. inside a unit test).
-    const callbacks = inject<(() => void)[]>(configurationValuesChangedSymbol, undefined);
+    const callbacks = inject<(() => void)[] | undefined>(configurationValuesChangedSymbol, undefined);
 
     if (callbacks !== undefined) {
         callbacks.push(callback);
@@ -594,7 +594,7 @@ export function useSecurityGrantToken(): Ref<string | null> {
     // Provide an explicit undefined default so Vue does not emit an
     // "injection not found" warning when no parent has supplied a security
     // grant (e.g. a control mounted on its own or inside a unit test).
-    const grant = inject<SecurityGrant>(securityGrantSymbol, undefined);
+    const grant = inject<SecurityGrant | undefined>(securityGrantSymbol, undefined);
 
     return grant ? grant.token : ref(null);
 }
