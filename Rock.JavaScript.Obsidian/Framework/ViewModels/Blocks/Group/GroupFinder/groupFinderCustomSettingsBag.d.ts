@@ -36,6 +36,9 @@ export type GroupFinderCustomSettingsBag = {
     /** Gets or sets the color of the "you are here" proximity marker on the map. */
     currentLocationMarkerColor?: string | null;
 
+    /** Gets or sets how distance to each group is measured, as a Rock.Model.DistanceCalculationMode name. */
+    distanceCalculation?: string | null;
+
     /** Gets or sets the attributes surfaced in the "More Filters" modal. */
     displayAttributeFilters?: Guid[] | null;
 
@@ -68,9 +71,6 @@ export type GroupFinderCustomSettingsBag = {
 
     /** Gets or sets whether the results map is shown alongside the cards. */
     isMapShown: boolean;
-
-    /** Gets or sets whether proximity features (an address input and a Use Current Location action) are enabled. */
-    isProximityEnabled: boolean;
 
     /** Gets or sets whether the Time of Day filter is displayed. */
     isTimeOfDayFilterShown: boolean;
