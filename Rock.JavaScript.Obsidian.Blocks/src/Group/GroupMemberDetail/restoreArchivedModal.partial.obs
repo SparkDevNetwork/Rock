@@ -1,11 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Modal v-model="isShown" title="Restore Archived Member">
-        <NotificationBox alertType="info">{{ message }}</NotificationBox>
+        {{ message }}
 
         <template #customButtons>
-            <RockButton :btnType="BtnType.Primary" @click="onRestore">Restore</RockButton>
-            <RockButton @click="onDecline">Don't Restore</RockButton>
+            <div class="d-flex gap-3 justify-content-end">
+                <RockButton @click="onDecline">Don't Restore</RockButton>
+                <RockButton :btnType="BtnType.Primary" @click="onRestore">Restore</RockButton>
+            </div>
         </template>
     </Modal>
 </template>

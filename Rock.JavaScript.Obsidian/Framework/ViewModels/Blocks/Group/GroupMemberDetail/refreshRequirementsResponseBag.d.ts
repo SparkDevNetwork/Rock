@@ -36,6 +36,14 @@ export type RefreshRequirementsResponseBag = {
     calculationErrors?: string | null;
 
     /**
+     * Gets or sets a value indicating whether saving would raise the
+     * archived-member restore prompt, which drives the Archived header
+     * label. Rides along because the same person and role changes that
+     * recalculate requirements also change this.
+     */
+    hasArchivedRecord: boolean;
+
+    /**
      * Gets or sets a value indicating whether requirement interaction
      * (override, mark as met) is disabled for the recalculated state.
      */

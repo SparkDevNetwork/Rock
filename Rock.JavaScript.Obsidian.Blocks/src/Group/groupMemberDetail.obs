@@ -8,8 +8,9 @@
                :titleIconCssClass="panelIconCssClass">
 
             <template #headerActions>
+                <HighlightLabel v-if="options.hasArchivedRecord" labelType="danger">Archived</HighlightLabel>
                 <HighlightLabel v-if="options.addedDateText" labelType="default">{{ options.addedDateText }}</HighlightLabel>
-                <!-- TODO: Archived HighlightLabel, Communicate and Move header buttons, ellipsis menu with Audit Details modal. -->
+                <!-- TODO: Communicate and Move header buttons, ellipsis menu with Audit Details modal. -->
             </template>
 
             <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
@@ -177,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, nextTick, ref, watch } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -529,18 +530,43 @@
             return;
         }
 
-        options.value.requirementAlerts = result.data.requirementAlerts ?? [];
-        options.value.requirementCalculationErrors = result.data.calculationErrors;
-        options.value.isRequirementInteractionDisabled = result.data.isRequirementInteractionDisabled;
+        applyRequirementState(result.data);
     }
 
     /**
-     * Recalculates the requirement alerts for the selected person and role.
-     * The WebForms block did this on every person change, role change, and
-     * Refresh Requirements click.
+     * Applies a recalculated requirement and archived state to the options.
+     */
+    function applyRequirementState(state: RefreshRequirementsResponseBag): void {
+        options.value.requirementAlerts = state.requirementAlerts ?? [];
+        options.value.requirementCalculationErrors = state.calculationErrors;
+        options.value.isRequirementInteractionDisabled = state.isRequirementInteractionDisabled;
+        options.value.hasArchivedRecord = state.hasArchivedRecord;
+    }
+
+    /**
+     * Clears the requirement and archived state, so nothing calculated for a
+     * previous person or role is left on screen.
+     */
+    function clearRequirementState(): void {
+        options.value.requirementAlerts = [];
+        options.value.requirementCalculationErrors = null;
+        options.value.isRequirementInteractionDisabled = true;
+        options.value.hasArchivedRecord = false;
+    }
+
+    /**
+     * Recalculates the requirement alerts and the archived-record state for
+     * the selected person and role. The WebForms block recalculated
+     * requirements on every person change, role change, and Refresh
+     * Requirements click; the archived check rides along because it keys off
+     * the same person and role pairing.
      */
     async function refreshRequirements(): Promise<boolean> {
-        if (!areRequirementsShown.value || !person.value?.value || !roleId.value) {
+        // Without a person and role there is nothing to calculate against, so anything
+        // left over describes the previous selection and has to go.
+        if (!person.value?.value || !roleId.value) {
+            clearRequirementState();
+
             return false;
         }
 
@@ -558,9 +584,7 @@
                 return false;
             }
 
-            options.value.requirementAlerts = result.data.requirementAlerts ?? [];
-            options.value.requirementCalculationErrors = result.data.calculationErrors;
-            options.value.isRequirementInteractionDisabled = result.data.isRequirementInteractionDisabled;
+            applyRequirementState(result.data);
 
             return true;
         }
@@ -598,26 +622,36 @@
     function applyDetailBox(box: DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>): void {
         isApplyingDetailBox = true;
 
-        try {
-            options.value = box.options ?? ({} as GroupMemberDetailOptionsBag);
-            isEditable.value = box.isEditable === true;
-            groupMemberIdKey.value = box.entity?.idKey ?? "";
+        options.value = box.options ?? ({} as GroupMemberDetailOptionsBag);
+        isEditable.value = box.isEditable === true;
+        groupMemberIdKey.value = box.entity?.idKey ?? "";
 
-            person.value = box.entity?.person ?? undefined;
-            roleId.value = box.entity?.groupRoleId?.toString() ?? "";
-            memberStatus.value = box.entity?.groupMemberStatus?.toString() ?? "";
-            note.value = box.entity?.note ?? "";
-        }
-        finally {
+        person.value = box.entity?.person ?? undefined;
+        roleId.value = box.entity?.groupRoleId?.toString() ?? "";
+        memberStatus.value = box.entity?.groupMemberStatus?.toString() ?? "";
+        note.value = box.entity?.note ?? "";
+
+        // Watchers flush on the next tick, so the guard has to outlive this call to suppress them.
+        nextTick(() => {
             isApplyingDetailBox = false;
-        }
+        });
     }
 
     // #endregion Functions
 
     // #region Watchers
 
-    watch(person, async () => {
+    /*
+        8/27/26 - CLAUDE
+
+        These watch the person's guid rather than the ListItemBag itself. Applying a detail box
+        assigns a fresh bag object parsed from the response, which is never reference-equal to the
+        current one, so watching the object would retrigger this watcher and load the same member
+        again, and again. Watching the primitive means an equal guid does not retrigger.
+
+        Reason: Watching the bag object caused an unbounded reload loop in sign-up mode.
+    */
+    watch(() => person.value?.value, async () => {
         if (isApplyingDetailBox) {
             return;
         }

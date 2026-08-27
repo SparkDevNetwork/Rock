@@ -385,7 +385,7 @@ namespace Rock.Blocks.Group
                 GroupMemberTerm = groupType.GroupMemberTerm,
                 GroupIconCssClass = groupType.IconCssClass.IsNotNullOrWhiteSpace() ? groupType.IconCssClass : "ti ti-user",
                 AddedDateText = entity.DateTimeAdded.HasValue ? $"Added: {entity.DateTimeAdded.Value.ToShortDateString()}" : string.Empty,
-                IsArchived = entity.IsArchived,
+                HasArchivedRecord = HasArchivedRecord( entity ),
                 IsSaveThenAddShown = isNewMember && !isReadOnly,
                 IsMoveButtonShown = !isNewMember && !isReadOnly && GetAttributeValue( AttributeKey.ShowMoveToOtherGroup ).AsBoolean( true ),
                 IsCommunicationButtonShown = !isNewMember && GetAttributeValue( AttributeKey.EnableCommunications ).AsBoolean( true ),
@@ -1239,6 +1239,51 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Determines whether saving would raise the archived-member restore
+        /// prompt, which is what the Archived header label indicates. Mirrors
+        /// the conditions in <see cref="Save"/> so the label never promises a
+        /// prompt that will not appear.
+        /// </summary>
+        /// <param name="entity">The group member being viewed or edited, with any pending person or role change already applied.</param>
+        /// <returns><c>true</c> if the restore prompt would be raised.</returns>
+        private bool HasArchivedRecord( GroupMember entity )
+        {
+            if ( entity.Group == null || entity.PersonId == 0 || entity.GroupRoleId == 0 )
+            {
+                return false;
+            }
+
+            var groupService = new GroupService( RockContext );
+
+            // Checked first because it is the most selective, short-circuiting the rest.
+            if ( !groupService.ExistsAsArchived( entity.Group, entity.PersonId, entity.GroupRoleId, out _ ) )
+            {
+                return false;
+            }
+
+            // An active duplicate takes precedence; the save reports that instead of prompting.
+            if ( !GroupService.AllowsDuplicateMembers()
+                && groupService.ExistsAsMember( entity.Group, entity.PersonId, entity.GroupRoleId, out _ ) )
+            {
+                return false;
+            }
+
+            if ( entity.Id == 0 )
+            {
+                return true;
+            }
+
+            var savedMember = new GroupMemberService( RockContext ).AsNoFilter()
+                .Where( m => m.Id == entity.Id )
+                .Select( m => new { m.PersonId, m.GroupRoleId } )
+                .FirstOrDefault();
+
+            return savedMember == null
+                || savedMember.PersonId != entity.PersonId
+                || savedMember.GroupRoleId != entity.GroupRoleId;
+        }
+
+        /// <summary>
         /// Gets the workflow entry page URL for a requirement workflow.
         /// </summary>
         /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
@@ -1650,7 +1695,8 @@ namespace Rock.Blocks.Group
 
         /// <summary>
         /// Recalculates the group requirements for the given person and role
-        /// and returns refreshed inline alert bags. Serves the Refresh
+        /// and returns refreshed inline alert bags, along with whether an
+        /// archived record exists for that pairing. Serves the Refresh
         /// Requirements button as well as the person and role changes, all of
         /// which recalculated on postback in the WebForms block.
         /// </summary>
@@ -1682,7 +1728,8 @@ namespace Rock.Blocks.Group
             {
                 RequirementAlerts = alerts,
                 CalculationErrors = calculationErrors,
-                IsRequirementInteractionDisabled = entity.Id == 0 || entity.IsNewOrChangedGroupMember( RockContext )
+                IsRequirementInteractionDisabled = entity.Id == 0 || entity.IsNewOrChangedGroupMember( RockContext ),
+                HasArchivedRecord = HasArchivedRecord( entity )
             } );
         }
 
@@ -1769,7 +1816,8 @@ namespace Rock.Blocks.Group
             {
                 RequirementAlerts = alerts,
                 CalculationErrors = calculationErrors,
-                IsRequirementInteractionDisabled = false
+                IsRequirementInteractionDisabled = false,
+                HasArchivedRecord = HasArchivedRecord( entity )
             } );
         }
 

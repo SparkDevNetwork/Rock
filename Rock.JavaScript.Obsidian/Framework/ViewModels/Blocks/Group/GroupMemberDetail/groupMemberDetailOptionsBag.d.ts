@@ -85,16 +85,19 @@ export type GroupMemberDetailOptionsBag = {
     groupTerm?: string | null;
 
     /**
+     * Gets or sets a value indicating whether saving would raise the
+     * archived-member restore prompt: an archived record exists for the
+     * selected person and role, no active record does, and the person or
+     * role is new or changed. Drives the red Archived header label, and
+     * is recalculated whenever the person or the role changes.
+     */
+    hasArchivedRecord: boolean;
+
+    /**
      * Gets or sets a value indicating whether the group has any
      * requirements configured.
      */
     hasGroupRequirements: boolean;
-
-    /**
-     * Gets or sets a value indicating whether the member record is
-     * archived. Drives the red Archived header label.
-     */
-    isArchived: boolean;
 
     /**
      * Gets or sets a value indicating whether the Communicate header
