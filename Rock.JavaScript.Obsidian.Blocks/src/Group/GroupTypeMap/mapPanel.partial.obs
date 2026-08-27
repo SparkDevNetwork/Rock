@@ -1,0 +1,382 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="mapContainer" class="group-type-map-canvas w-100" :style="mapCanvasStyle"></div>
+</template>
+
+<style scoped>
+.group-type-map-canvas {
+    height: 100%;
+    border-radius: var(--border-radius-base);
+}
+</style>
+
+<script setup lang="ts">
+    /// <reference types="google.maps" />
+    /* global google */
+    import { computed, CSSProperties, onMounted, onUnmounted, PropType, ref } from "vue";
+    import { loadMapResources } from "@Obsidian/Utility/geo";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
+    import { GroupTypeMapInitializationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapInitializationBag";
+    import { GroupTypeMapGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapGroupBag";
+    import { GroupTypeMapOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapOptionsBag";
+
+    const props = defineProps({
+        bag: {
+            type: Object as PropType<GroupTypeMapInitializationBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GroupTypeMapOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Types
+
+    /** An AdvancedMarkerElement wrapped to present the same setPosition/setMap surface as the legacy Marker. */
+    type AdvancedMarkerWrapper = {
+        position: google.maps.LatLng;
+        map: google.maps.Map | null;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        marker_element: google.maps.marker.AdvancedMarkerElement;
+        getPosition(): google.maps.LatLng;
+        setPosition(position: google.maps.LatLng): void;
+        setMap(newMap: google.maps.Map | null): void;
+    };
+
+    /** A point marker: legacy Marker (no mapId) or AdvancedMarker wrapper (mapId set). */
+    type MapMarker = google.maps.Marker | AdvancedMarkerWrapper;
+
+    // #endregion Types
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const mapContainer = ref<HTMLDivElement | null>(null);
+
+    let map: google.maps.Map | null = null;
+
+    // A single shared info window, reused for every marker click.
+    let infoWindow: google.maps.InfoWindow | null = null;
+
+    // The marker whose info window is currently open, so clicking that same marker again toggles
+    // the window closed. Cleared when the window is closed (by toggle or its own close button).
+    let openMarker: MapMarker | null = null;
+
+    // The placed markers, tracked so they can be torn down on unmount.
+    let markers: MapMarker[] = [];
+
+    // Map Style values resolved server-side by loadMapResources. When the style has a mapId we
+    // use AdvancedMarkerElement; otherwise we apply the style JSON and fall back to the legacy Marker.
+    let styles: google.maps.MapTypeStyle[] = [];
+    let mapId: string | null = null;
+    let centerLatitude = 0;
+    let centerLongitude = 0;
+
+    const defaultZoom = 12;
+
+    // The running bounds of every placed marker; the map fits to this once the markers load.
+    let bounds: google.maps.LatLngBounds | null = null;
+
+    // Legacy teardrop pin used for the non-mapId Marker path.
+    const pinSvgPath = "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z";
+
+    // Jitter range used to separate markers that share an exact position.
+    const overlapMin = 0.999999;
+    const overlapMax = 1.000001;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const mapCanvasStyle = computed((): CSSProperties => ({
+        height: `${props.options.mapHeight ?? 600}px`
+    }));
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Initializes the Google Map from the resolved Map Style. When the style carries a mapId the
+     * style JSON is ignored (Google applies the cloud-hosted style); otherwise the style JSON is
+     * applied directly.
+     */
+    function renderMap(): void {
+        if (!mapContainer.value) {
+            return;
+        }
+
+        const isMapIdEmpty = isNullOrWhiteSpace(mapId);
+
+        const mapOptions: google.maps.MapOptions = {
+            mapTypeId: "roadmap",
+            center: new google.maps.LatLng(centerLatitude, centerLongitude),
+            zoom: defaultZoom,
+            ...(isMapIdEmpty ? { styles } : { mapId: mapId as string })
+        };
+
+        map = new google.maps.Map(mapContainer.value, mapOptions);
+        map.setTilt(45);
+
+        bounds = new google.maps.LatLngBounds();
+        infoWindow = new google.maps.InfoWindow();
+
+        // When the window is closed via its own close (✕) button, forget the open marker so
+        // clicking that same marker reopens it rather than being toggled closed again.
+        google.maps.event.addListener(infoWindow, "closeclick", () => {
+            openMarker = null;
+        });
+    }
+
+    /**
+     * Places every group marker from the initialization bag, wires its info window, and fits the
+     * map to their combined bounds.
+     */
+    function placeMarkers(): void {
+        const groups = props.bag.groups ?? [];
+
+        for (const group of groups) {
+            const position = new google.maps.LatLng(group.latitude, group.longitude);
+            bounds?.extend(position);
+
+            const marker = createMarker(position, group.name ?? "", props.bag.markerColor || "FE7569");
+            markers.push(marker);
+
+            wireMarkerInfoWindow(marker, group);
+        }
+
+        adjustOverlappedMarkers(markers);
+
+        if (map && bounds && !bounds.isEmpty()) {
+            map.fitBounds(bounds);
+        }
+    }
+
+    /**
+     * Builds a point marker, choosing the AdvancedMarkerElement wrapper when the Map Style has a
+     * mapId and the legacy Marker otherwise.
+     */
+    function createMarker(position: google.maps.LatLng, title: string, color: string): MapMarker {
+        // Stack overlapping pins by latitude so the more southern pin (lower on screen, visually
+        // nearer) draws in front.
+        const zIndex = Math.round(position.lat() * -100000);
+
+        if (isNullOrWhiteSpace(mapId)) {
+            const pinImage: google.maps.Symbol = {
+                path: pinSvgPath,
+                fillColor: "#" + color,
+                fillOpacity: 1,
+                strokeColor: "#000",
+                strokeWeight: 1,
+                scale: 1,
+                labelOrigin: new google.maps.Point(0, -28)
+            };
+
+            return new google.maps.Marker({
+                position,
+                map,
+                title,
+                icon: pinImage,
+                label: String.fromCharCode(9679),
+                zIndex
+            });
+        }
+
+        const pinGlyph = new google.maps.marker.PinElement({ glyphColor: "black" });
+
+        const wrapper: AdvancedMarkerWrapper = {
+            position,
+            map,
+            marker_element: new google.maps.marker.AdvancedMarkerElement({
+                position,
+                map,
+                title,
+                content: pinGlyph.element,
+                zIndex
+            }),
+            getPosition(): google.maps.LatLng {
+                return this.position;
+            },
+            setPosition(newPosition: google.maps.LatLng): void {
+                this.position = newPosition;
+                this.marker_element.position = newPosition;
+            },
+            setMap(newMap: google.maps.Map | null): void {
+                this.map = newMap;
+                this.marker_element.map = newMap;
+            }
+        };
+
+        return wrapper;
+    }
+
+    /**
+     * Requests the rendered info window HTML for a clicked group. The Lava and linked-page URLs
+     * are resolved server-side, so nothing is trusted from the client. Returns null when there is
+     * nothing to show (blank template, suppressed window, or error).
+     */
+    async function fetchInfoWindow(group: GroupTypeMapGroupBag): Promise<string | null> {
+        const result = await invokeBlockAction<string>("GetInfoWindow", {
+            request: {
+                groupId: group.groupId,
+                locationId: group.locationId
+            }
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        return null;
+    }
+
+    /**
+     * Opens the info window over a point marker on click. The legacy Marker anchors the window
+     * directly; the AdvancedMarker anchors via its wrapped element. Skipped entirely when the
+     * Show Map Info Window setting is off.
+     */
+    function wireMarkerInfoWindow(marker: MapMarker, group: GroupTypeMapGroupBag): void {
+        if (!props.options.isInfoWindowShown) {
+            return;
+        }
+
+        const isLegacyMarker = isNullOrWhiteSpace(mapId);
+        const clickTarget = isLegacyMarker
+            ? (marker as google.maps.Marker)
+            : (marker as AdvancedMarkerWrapper).marker_element;
+
+        google.maps.event.addListener(clickTarget, "click", async () => {
+            // Toggle: clicking the marker whose window is already open closes it.
+            if (openMarker === marker && infoWindow) {
+                infoWindow.close();
+                openMarker = null;
+                return;
+            }
+
+            const content = await fetchInfoWindow(group);
+
+            if (content === null || !infoWindow) {
+                return;
+            }
+
+            infoWindow.setContent(content);
+
+            if (isLegacyMarker) {
+                infoWindow.open(map, marker as google.maps.Marker);
+            }
+            else {
+                infoWindow.open({ anchor: (marker as AdvancedMarkerWrapper).marker_element, map });
+            }
+
+            openMarker = marker;
+        });
+    }
+
+    /**
+     * Nudges apart any markers that share an exact position so each remains clickable (ported from
+     * the legacy adjustOverlappedMarkers). Uses a single O(n) pass keyed by exact position rather
+     * than an O(n²) pairwise comparison, so it stays fast for group types with thousands of
+     * markers; the first marker at a given position is left in place and each subsequent one there
+     * is jittered.
+     */
+    function adjustOverlappedMarkers(markerList: MapMarker[]): void {
+        if (markerList.length < 2) {
+            return;
+        }
+
+        const seenPositions = new Set<string>();
+
+        for (const marker of markerList) {
+            const position = marker.getPosition();
+
+            if (!position) {
+                continue;
+            }
+
+            const positionKey = `${position.lat()},${position.lng()}`;
+
+            if (!seenPositions.has(positionKey)) {
+                seenPositions.add(positionKey);
+                continue;
+            }
+
+            const newLatitude = position.lat() * (Math.random() * (overlapMax - overlapMin) + overlapMin);
+            const newLongitude = position.lng() * (Math.random() * (overlapMax - overlapMin) + overlapMin);
+            marker.setPosition(new google.maps.LatLng(newLatitude, newLongitude));
+        }
+    }
+
+    /**
+     * Clears the click listeners for a single marker. AdvancedMarker listeners live on the
+     * wrapped element rather than the wrapper itself.
+     */
+    function clearMarkerListeners(marker: MapMarker): void {
+        google.maps.event.clearInstanceListeners(marker);
+
+        const wrapper = marker as AdvancedMarkerWrapper;
+        if (wrapper.marker_element) {
+            google.maps.event.clearInstanceListeners(wrapper.marker_element);
+        }
+    }
+
+    /**
+     * Tears down the Google Maps handles so listener tables and tile loaders can be GC'd. Only
+     * touches Google objects when the map was actually created.
+     */
+    function teardownMap(): void {
+        if (map) {
+            for (const marker of markers) {
+                clearMarkerListeners(marker);
+                marker.setMap(null);
+            }
+
+            if (infoWindow) {
+                infoWindow.close();
+                google.maps.event.clearInstanceListeners(infoWindow);
+            }
+
+            google.maps.event.clearInstanceListeners(map);
+        }
+
+        infoWindow = null;
+        map = null;
+        bounds = null;
+        markers = [];
+        openMarker = null;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(async (): Promise<void> => {
+        const settings = await loadMapResources({ mapStyleValueGuid: props.options.mapStyleValueGuid ?? emptyGuid });
+
+        // googleMapId lives on the Google-specific settings bag, so cast to read it.
+        mapId = (settings as GeoPickerGoogleMapSettingsBag).googleMapId ?? "";
+        centerLatitude = settings.centerLatitude ?? 33.590795;
+        centerLongitude = settings.centerLongitude ?? -112.126459;
+
+        try {
+            styles = JSON.parse(settings.mapStyle ?? "");
+        }
+        catch {
+            // The style JSON can be empty for cloud-styled (mapId) maps; ignore.
+        }
+
+        renderMap();
+        placeMarkers();
+    });
+
+    onUnmounted((): void => {
+        teardownMap();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
