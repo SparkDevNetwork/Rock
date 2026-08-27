@@ -5,8 +5,8 @@ summary: >-
   An extensible JSON document store for Rock: a FlexibleDocumentModel registry
   of document types and a FlexibleDocument table holding JSON payloads with five
   typed indexed columns, linked to other entities through the existing
-  RelatedEntity table. This spec covers the data-layer plumbing only; the vibe
-  coding flow consumes it later.
+  RelatedEntity table. This spec covers the data-layer plumbing only; the Forge
+  Content flow consumes it later.
 contributors: []
 ---
 
@@ -14,13 +14,13 @@ contributors: []
 
 ## Summary
 
-Vibe-coded tools and AI agents produce real, evolving data, and today every new shape of that data means a new table, a migration, and a fixed schema. FlexibleDocument gives that data one home: a `FlexibleDocumentModel` registry describing each document type (with long-form `Documentation` readable by humans and agents), and a `FlexibleDocument` table holding the JSON payload plus five generic typed columns for fast filtering. Every link to another Rock entity, including the primary one, goes through the existing `RelatedEntity` table, so the document carries no link columns of its own.
+Forge Content tools and AI agents produce real, evolving data, and today every new shape of that data means a new table, a migration, and a fixed schema. FlexibleDocument gives that data one home: a `FlexibleDocumentModel` registry describing each document type (with long-form `Documentation` readable by humans and agents), and a `FlexibleDocument` table holding the JSON payload plus five generic typed columns for fast filtering. Every link to another Rock entity, including the primary one, goes through the existing `RelatedEntity` table, so the document carries no link columns of its own.
 
-This spec covers **the plumbing only**: entities, entity configurations, services with query helpers, SystemGuids, and one EF migration. Admin UI, the expiry cleanup job, seeded models, and the vibe coding integration are all explicitly out of scope and come later.
+This spec covers **the plumbing only**: entities, entity configurations, services with query helpers, SystemGuids, and one EF migration. Admin UI, the expiry cleanup job, seeded models, and the Forge Content integration are all explicitly out of scope and come later.
 
 ## Motivation
 
-The vibe coding rebuild ([specs/260814-vibe-coding-custom-components.md](260814-vibe-coding-custom-components.md)) lets an AI agent author UI and data endpoints, but the data those tools produce has nowhere durable to live. An agent that builds a follow-up tracker or captures per-person notes either abuses an existing entity, invents attribute-value contortions, or needs a schema migration nobody is going to write for a one-off dashboard. A schema-less-but-queryable store closes that gap, and the same store is useful to human developers prototyping before committing to a real table.
+The Forge Content rebuild ([specs/260814-forge-content-components.md](260814-forge-content-components.md)) lets an AI agent author UI and data endpoints, but the data those tools produce has nowhere durable to live. An agent that builds a follow-up tracker or captures per-person notes either abuses an existing entity, invents attribute-value contortions, or needs a schema migration nobody is going to write for a one-off dashboard. A schema-less-but-queryable store closes that gap, and the same store is useful to human developers prototyping before committing to a real table.
 
 The full design rationale, entity diagrams, and column-by-column definitions live in the attached design doc; this spec pins the decisions needed to build the data layer against Rock conventions.
 
@@ -51,7 +51,7 @@ The full design rationale, entity diagrams, and column-by-column definitions liv
 
 - Security lives on the **type**, not the row. `FlexibleDocument.ParentAuthority` MUST return the document's `FlexibleDocumentModel`, so grants and denies made on a model flow to every document of that model and no one manages per-row ACEs. This is the Rock-native expression of the design's "type-level only" rule.
 - Neither entity gets `[CodeGenerateRest]` in this spec. The store's callers today are server-side; the REST surface decision belongs to the integration layer (see Considered but Rejected).
-- Documents hold untrusted, vibe-coded payloads. The entity XML docs MUST state that `ContentJson` and the indexed columns are not for PII, financial data, or credentials, and that readers must validate and encode payloads before use.
+- Documents hold untrusted, AI-authored payloads. The entity XML docs MUST state that `ContentJson` and the indexed columns are not for PII, financial data, or credentials, and that readers must validate and encode payloads before use.
 
 ### Services
 
@@ -66,7 +66,7 @@ The full design rationale, entity diagrams, and column-by-column definitions liv
 - Admin UI blocks for managing models.
 - The `ExpireDateTime` cleanup job, a potential future feature (the column ships; nothing purges until someone depends on expiry).
 - Seeded starter models such as `AgentMemory`.
-- Agent skill tools and any vibe coding flow integration.
+- Agent skill tools and any Forge Content flow integration.
 - History/versioning of `ContentJson`. Deferred deliberately: repeated saves overwrite, audit columns record who but never what, and that is accepted for now. May be revisited.
 - Search over `ContentJson` (see Considered but Rejected for why SQL full-text is ruled out permanently, not just deferred).
 
@@ -91,11 +91,11 @@ The column-by-column definitions, ERD detail, and the indexing strategy are in t
 - **No `IOrdered`.** The design's `Order` is nullable (unordered documents are the norm), and `IOrdered` requires a non-nullable `Order`. The column keeps the name and stays a plain nullable int.
 - **No table prefix.** The design doc's `_com_yourorg_` naming row is a leftover from a plugin-targeted draft; this ships in core as `FlexibleDocumentModel` and `FlexibleDocument`.
 - **`IndexedInteger1` exists despite `IndexedDecimal1`** because an int is narrower and cheaper to compare; integer dimensions (counts, years, enum values) should not burn the decimal slot. Numbered names leave room to add more by migration when a model proves the need.
-- **`Documentation` on the model is the agent contract.** When the vibe flow integrates later, that column is what an agent reads to know how to produce and consume a model's JSON. The plumbing just stores it.
+- **`Documentation` on the model is the agent contract.** When the Forge Content flow integrates later, that column is what an agent reads to know how to produce and consume a model's JSON. The plumbing just stores it.
 
 ### Consumption sketch (not built here)
 
-A later layer of the vibe coding spec gives agents tools over this store (create a model, upsert documents, query by model key and indexed columns). Nothing in this spec depends on that, but column and service naming were chosen with tool parameters in mind: `Key`, not `Slug`, matches the design doc and reads naturally as a tool argument.
+A later layer of the Forge Content spec gives agents tools over this store (create a model, upsert documents, query by model key and indexed columns). Nothing in this spec depends on that, but column and service naming were chosen with tool parameters in mind: `Key`, not `Slug`, matches the design doc and reads naturally as a tool argument.
 
 ## Verification Steps
 
@@ -129,5 +129,5 @@ Rejected permanently, not deferred. SQL Server can full-text index `nvarchar(max
 ## Related
 
 - [flexible-document-data-model.md](artifacts/260818-flexible-document-store/flexible-document-data-model.md) (design doc, 2026-08-10, treated as normative for column definitions; this spec corrects its four-vs-five indexed column inconsistency and drops its stale plugin table prefix)
-- [specs/260814-vibe-coding-custom-components.md](260814-vibe-coding-custom-components.md) (the eventual consumer; its layer 9 agent is a natural writer of these documents)
+- [specs/260814-forge-content-components.md](260814-forge-content-components.md) (the eventual consumer; its layer 9 agent is a natural writer of these documents)
 - `Rock/Model/Core/RelatedEntity/RelatedEntity.cs` (the existing linking table; columns verified against the design's claims)

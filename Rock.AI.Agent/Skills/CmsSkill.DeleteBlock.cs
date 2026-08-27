@@ -30,9 +30,9 @@ internal sealed partial class CmsSkill
 {
     #region Tool(s)
 
-    [Description( "Deletes a block from its page, layout, or site, along with any custom component content stored against it." )]
+    [Description( "Deletes a block from its page, layout, or site, along with any Forge Content stored against it." )]
     [AgentToolPreamble( "Deleting the block." )]
-    [AgentUsage( "Deleting a block is permanent and takes its settings and any authored custom component source with it. Confirm the exact block with the user before deleting, and never delete a block the user did not name explicitly." )]
+    [AgentUsage( "Deleting a block is permanent and takes its settings and any authored Forge Content source with it. Confirm the exact block with the user before deleting, and never delete a block the user did not name explicitly." )]
     [AgentToolGuid( "B30F66EA-0D9E-4854-BB82-A96BE7719D00" )]
     public AgentToolResult DeleteBlock(
         [Description( "The IdKey or guid of the block to delete." )]
@@ -64,7 +64,7 @@ internal sealed partial class CmsSkill
         var layoutId = block.LayoutId;
         var siteId = block.SiteId;
 
-        // Any CustomComponent row cascades with the block, which is the
+        // Any ForgeContent row cascades with the block, which is the
         // intended unwind for a scratch component.
         new BlockService( rockContext ).Delete( block );
 

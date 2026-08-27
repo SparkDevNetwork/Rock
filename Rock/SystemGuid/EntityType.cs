@@ -259,9 +259,9 @@ namespace Rock.SystemGuid
         public const string CONTENT_TOPIC_DOMAIN = "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.CustomComponent"/>
+        /// The EntityType Guid for <see cref="Rock.Model.ForgeContent"/>
         /// </summary>
-        public const string CUSTOM_COMPONENT = "38F182A7-9FE4-4D7B-B483-59F615BDE41C";
+        public const string FORGE_CONTENT = "38F182A7-9FE4-4D7B-B483-59F615BDE41C";
 
         /// <summary>
         /// The guid for the Rock.Model.DataView entity.

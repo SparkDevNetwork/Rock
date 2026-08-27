@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Classes.Skills.CmsSkill;
 
 /// <summary>
 /// Result model for a block placement. The IdKey is the block id to pass to
-/// the CustomComponent skill's AddOrUpdateCustomComponent tool.
+/// the Code Builder skill's AddOrUpdateForgeContent tool.
 /// </summary>
 internal class BlockResult : EntityResultBase
 {

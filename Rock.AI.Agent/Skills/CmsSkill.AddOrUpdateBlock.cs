@@ -36,9 +36,9 @@ internal sealed partial class CmsSkill
 {
     #region Tool(s)
 
-    [Description( "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the CustomComponent skill's AddOrUpdateCustomComponent tool needs." )]
+    [Description( "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the Code Builder skill's AddOrUpdateForgeContent tool needs." )]
     [AgentToolPreamble( "Saving the block." )]
-    [AgentUsage( "When adding, resolve the block type with ListBlockTypes and provide exactly one of pageIdKey, layoutIdKey, or siteIdKey. For vibe-coded content use the 'Custom Component' block type. Returns the block IdKey to pass as blockId to the CustomComponent skill's AddOrUpdateCustomComponent tool." )]
+    [AgentUsage( "When adding, resolve the block type with ListBlockTypes and provide exactly one of pageIdKey, layoutIdKey, or siteIdKey. For AI-authored content use the 'Forge Content' block type. Returns the block IdKey to pass as blockId to the Code Builder skill's AddOrUpdateForgeContent tool." )]
     [AgentUsage( "Blocks placed on a layout or site render on every page that uses the layout or site; place on a page unless the user asks otherwise." )]
     [AgentToolGuid( "05C9C108-4516-46B7-85FB-5C8FE6212CCF" )]
     public AgentToolResult AddOrUpdateBlock(
@@ -57,7 +57,7 @@ internal sealed partial class CmsSkill
         [Description( "The IdKey or guid of the site to add the block to. The block renders on every page of the site." )]
         string siteIdKey = null,
 
-        [Description( "The IdKey or guid of the block type to add. Required when adding; use ListBlockTypes to find it. For vibe-coded content use the 'Custom Component' block type." )]
+        [Description( "The IdKey or guid of the block type to add. Required when adding; use ListBlockTypes to find it. For AI-authored content use the 'Forge Content' block type." )]
         string blockTypeIdKey = null,
 
         [Description( "An administrative name for the block. Defaults to the block type name when adding." )]

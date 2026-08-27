@@ -14,13 +14,13 @@ contributors: []
 
 ## Summary
 
-The "AI Next Steps" planning task assigns ten CMS agent tools to Kyle: `LookupSites`, `GetSite`, `ListPages`, `ListPagesForSite`, `SearchPages`, `GetPage`, `AddOrUpdatePage`, `ListBlockTypes`, `ListBlocks`, and `AddOrUpdateBlock`. One of the ten is finished, three exist in a narrower form built for the vibe-coding flow, and six do not exist at all. This spec defines the finished shape of all ten, consolidates them onto a single `CmsSkill`, and lays out the implementation order. It also adds `DeletePage` and `DeleteBlock`, honoring the parent task's "add delete for items with add/update" note and closing the vibe flow's cleanup gap, following the authorization-only delete shape the shipped skills use.
+The "AI Next Steps" planning task assigns ten CMS agent tools to Kyle: `LookupSites`, `GetSite`, `ListPages`, `ListPagesForSite`, `SearchPages`, `GetPage`, `AddOrUpdatePage`, `ListBlockTypes`, `ListBlocks`, and `AddOrUpdateBlock`. One of the ten is finished, three exist in a narrower form built for the Forge Content flow, and six do not exist at all. This spec defines the finished shape of all ten, consolidates them onto a single `CmsSkill`, and lays out the implementation order. It also adds `DeletePage` and `DeleteBlock`, honoring the parent task's "add delete for items with add/update" note and closing the Forge Content flow's cleanup gap, following the authorization-only delete shape the shipped skills use.
 
 ## Motivation
 
-The three tools that exist (`SearchPages`, `AddPage`, `AddBlock`) were written for one job: give the Custom Component authoring flow somewhere to put a block. They were never meant to be a general CMS surface, and it shows. `AddPage` cannot update, `AddBlock` cannot set block settings or place a block on a layout or site, and neither can be reached from a site or a page tree because no read tool walks that structure. An agent asked "what pages are on the main site" today has no tool that answers.
+The three tools that exist (`SearchPages`, `AddPage`, `AddBlock`) were written for one job: give the Forge Content authoring flow somewhere to put a block. They were never meant to be a general CMS surface, and it shows. `AddPage` cannot update, `AddBlock` cannot set block settings or place a block on a layout or site, and neither can be reached from a site or a page tree because no read tool walks that structure. An agent asked "what pages are on the main site" today has no tool that answers.
 
-The gap also blocks the vibe-coding flow itself. Once a page has more than a couple of blocks, the agent cannot see what is already on the page before adding another, so it duplicates blocks rather than updating the one it created last turn.
+The gap also blocks the Forge Content flow itself. Once a page has more than a couple of blocks, the agent cannot see what is already on the page before adding another, so it duplicates blocks rather than updating the one it created last turn.
 
 ## Current State
 
@@ -118,7 +118,7 @@ public AgentToolResult AddOrUpdateBlock(
 - Add requires `blockTypeIdKey` plus exactly one of `pageIdKey`, `layoutIdKey`, or `siteIdKey`. Update requires `blockIdKey` and rejects all three placement keys.
 - `attributeValues` writes the block's settings. `Block` inherits `IHasAttributes` from `Model<T>`, and block attributes are qualified by `BlockTypeId`, so `helper.SetAttributeValues()` works once the block type is set.
 - `zone` defaults to `Main` on add, matching today's behavior.
-- The return payload keeps `IdKey` as the value the Custom Component skill's `AddOrUpdateCustomComponent` consumes.
+- The return payload keeps `IdKey` as the value the Forge Content skill's `AddOrUpdateForgeContent` consumes.
 
 **`DeletePage( string pageIdKey, bool deleteInteractions = true )`** (new, revised per the 2026-08-24 meeting). Deletes a page along with its blocks and routes, following the authorization-only delete shape the shipped skills use (`DeleteNote`, `DeleteStep`, `DeletePrayerRequest`): per-entity security decides what is deletable, not who created the record.
 
@@ -133,7 +133,7 @@ public AgentToolResult AddOrUpdateBlock(
 **`DeleteBlock( string blockIdKey )`** (new). Deletes a block from its page, layout, or site.
 
 - Requires `Authorization.ADMINISTRATE` on the block through `BlockCache`, and carries administrator-only tool security.
-- A block with a `CustomComponent` row hanging off it is still deletable: the FK from `CustomComponent` to `Block` cascades, which is the intended unwind for a scratch component.
+- A block with a `ForgeContent` row hanging off it is still deletable: the FK from `ForgeContent` to `Block` cascades, which is the intended unwind for a scratch component.
 - Flushes the page, layout, or site pages the block rendered on, matching `AddOrUpdateBlock`.
 - Same usage-annotation requirements as `DeletePage`: permanent, confirm first, only what the user named.
 
@@ -147,15 +147,15 @@ public AgentToolResult AddOrUpdateBlock(
 ### Registration
 
 - Tool rows self-register at startup from the `[AgentToolGuid]` and `[Description]` attributes (`Rock/Model/AI/AISkillTool/AISkillToolService.cs:45`), including re-parenting a tool whose `AISkillId` changed. The `PageSkill` to `CmsSkill` move therefore needs no data migration for the tool rows themselves.
-- Seeding MUST be done by editing the existing `Rock.Migrations/Migrations/202608172102127_AddCustomComponent.cs` in place. No new EF migration is created. That migration exists only on `feature-kh-vibe-coding` (commit `5707f55bbe`) and has never shipped, so it is still the right place for the vibe-coding seed data. Adding a second migration to correct an unreleased one leaves both in the permanent history for no benefit.
+- Seeding MUST be done by editing the existing `Rock.Migrations/Migrations/202608172102127_AddForgeContent.cs` in place. No new EF migration is created. That migration exists only on `feature-kh-vibe-coding` (commit `5707f55bbe`) and has never shipped, so it is still the right place for the Forge Content seed data. Adding a second migration to correct an unreleased one leaves both in the permanent history for no benefit.
 - The edits to that migration are:
   - Replace the `PageSkillGuid` and `PageSkillEntityTypeGuid` constants with `CmsSkillGuid` (`613D7110-6453-4BAB-892B-064222F8397C`) and `CmsSkillEntityTypeGuid` (`7A63570D-6FC3-4573-BDF2-89CFF605D5AB`).
   - Rename `AddPageSkill_Up()` to `AddCmsSkill_Up()` and seed all thirteen tools instead of three.
-  - Point `RegisterCustomComponentEntityTypes_Up()` at `Rock.AI.Agent.Skills.CmsSkill` in place of `Rock.AI.Agent.Skills.PageSkill`.
+  - Point `RegisterForgeContentEntityTypes_Up()` at `Rock.AI.Agent.Skills.CmsSkill` in place of `Rock.AI.Agent.Skills.PageSkill`.
   - Replace the skill-level `AddAdministratorOnlySecurityForAISkill()` call with `AddSecurityAuthForAISkillTool()` allow/deny pairs, one per mutating tool (`AddOrUpdatePage`, `AddOrUpdateBlock`, `DeletePage`, `DeleteBlock`). The two existing auth guids can be reused for the first pair; the other pairs need new guids added to `RemoveSkillsAndTools_Down()`.
   - Update the tool guid list in `AttachSkillsToAgent_Up()` from three entries to thirteen.
   - Update the `skillGuids` list in `RemoveSkillsAndTools_Down()` so `Down()` removes the CMS skill rather than the page skill.
-- Seeded names and descriptions MUST match the strings the attributes derive, per the engineering note in `Rock.Migrations/Migrations/202608172102127_AddCustomComponent.cs:280`. Startup re-registration overwrites drift, so mismatched seed text silently disappears on first restart and is worse than useless.
+- Seeded names and descriptions MUST match the strings the attributes derive, per the engineering note in `Rock.Migrations/Migrations/202608172102127_AddForgeContent.cs:280`. Startup re-registration overwrites drift, so mismatched seed text silently disappears on first restart and is worse than useless.
 - Because the migration has already run on any dev instance that pulled the branch, editing it in place does nothing on those instances. Developers MUST roll the migration back (or restore a pre-migration database) and re-run it to pick up the new seed data.
 
 ## Design
@@ -177,10 +177,10 @@ flowchart TD
     I[ListBlockTypes] --> J[AddOrUpdateBlock]
     H --> J
     G --> J
-    J --> K[AddOrUpdateCustomComponent]
+    J --> K[AddOrUpdateForgeContent]
 ```
 
-`AddOrUpdateCustomComponent` lives on `CustomComponentSkill` and is unchanged by this spec. It is shown because it is the reason the block tools exist.
+`AddOrUpdateForgeContent` lives on `CodeBuilderSkill` and is unchanged by this spec. It is shown because it is the reason the block tools exist.
 
 ### File layout
 
@@ -246,16 +246,16 @@ No behavior changes in this phase. It is deliberately separable so a regression 
 
 11. Rename `AddPage` to `AddOrUpdatePage`, keeping guid `4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633`. Add the update branch, `layoutIdKey`, the extra `SetOrClear` properties, and `attributeValues`.
 12. Rename `AddBlock` to `AddOrUpdateBlock`, keeping guid `05C9C108-4516-46B7-85FB-5C8FE6212CCF`. Add the update branch, `BlockLocation` placement, `blockTypeIdKey` in place of the block type name string, and `attributeValues`.
-13. Update `CustomComponentSkill`'s usage annotations so the flow reads `ListBlockTypes`, then `AddOrUpdateBlock`, then `AddOrUpdateCustomComponent`.
+13. Update `CodeBuilderSkill`'s usage annotations so the flow reads `ListBlockTypes`, then `AddOrUpdateBlock`, then `AddOrUpdateForgeContent`.
 
 ### Phase 4: registration and security
 
-14. Edit `Rock.Migrations/Migrations/202608172102127_AddCustomComponent.cs` in place, applying the six changes listed under Registration above. Do not add a new migration.
+14. Edit `Rock.Migrations/Migrations/202608172102127_AddForgeContent.cs` in place, applying the six changes listed under Registration above. Do not add a new migration.
 15. Roll the migration back on the dev instance and re-run it, then confirm the agent exposes all ten tools to an administrator and only the eight read tools to a non-administrator.
 
 ### Phase 5: verification
 
-16. Ask the agent, as an administrator, to walk from `LookupSites` to a rendered Custom Component on a new page without being given any ids.
+16. Ask the agent, as an administrator, to walk from `LookupSites` to a rendered Forge Content on a new page without being given any ids.
 17. Repeat as a non-administrator and confirm the mutating tools are absent from the tool list rather than failing at execution.
 18. Confirm `AddOrUpdatePage` called twice with the same `pageIdKey` updates rather than duplicating, and the same for `AddOrUpdateBlock`.
 
@@ -306,10 +306,10 @@ Rejected. The current implementation does an exact name match with a fuzzy-sugge
 Rejected. A recursive call on a large install returns thousands of pages and blows the context window. Repeated shallow calls let the model stop as soon as it finds what it needs.
 
 ### Write a new EF migration for the CmsSkill seeding
-Rejected. `202608172102127_AddCustomComponent` has not shipped and lives only on the feature branch, so it can still be corrected at the source. A follow-up migration would leave the branch permanently carrying a seed of `PageSkill` followed by a seed that undoes it, and would make `Down()` harder to reason about across two files. The cost is that developers on the branch have to roll back and re-run.
+Rejected. `202608172102127_AddForgeContent` has not shipped and lives only on the feature branch, so it can still be corrected at the source. A follow-up migration would leave the branch permanently carrying a seed of `PageSkill` followed by a seed that undoes it, and would make `Down()` harder to reason about across two files. The cost is that developers on the branch have to roll back and re-run.
 
 ### Provenance-gated deletes
-Rejected after being briefly implemented. The first cut stamped `ForeignKey = "AI-Agent:CmsSkill"` on records the upserts created and had the delete tools refuse anything without the stamp, mirroring `LavaApplicationSkill`. It was replaced with the authorization-only shape because that is the established pattern across the shipped delete tools (`DeleteNote`, `DeleteStep`, `DeletePrayerRequest`, `DeleteGroupMember`), because agent-parity with the admin UI is the intent of the tool suite, and because the provenance gate made the tools useless against anything created before the stamp landed or through the admin pages. The blast-radius concerns it addressed are covered instead by the admin-only tool security, the per-entity ADMINISTRATE check, the child-pages refusal on `DeletePage`, and confirm-first usage annotations on both tools.
+Rejected after being briefly implemented. The first cut stamped `ForeignKey = "AI-Agent:CmsSkill"` on records the upserts created and had the delete tools refuse anything without the stamp, mirroring `CodeBuilderSkill`. It was replaced with the authorization-only shape because that is the established pattern across the shipped delete tools (`DeleteNote`, `DeleteStep`, `DeletePrayerRequest`, `DeleteGroupMember`), because agent-parity with the admin UI is the intent of the tool suite, and because the provenance gate made the tools useless against anything created before the stamp landed or through the admin pages. The blast-radius concerns it addressed are covered instead by the admin-only tool security, the per-entity ADMINISTRATE check, the child-pages refusal on `DeletePage`, and confirm-first usage annotations on both tools.
 
 ### Lock CmsSkill to administrators
 Rejected. `LookupSites` already distinguishes internal from external audiences and is usable by public agents. A skill-level deny would remove that capability to protect two tools that can be protected individually.
@@ -319,7 +319,7 @@ Rejected. `LookupSites` already distinguishes internal from external audiences a
 - `GetSiteAvailableAttributes`, `GetPageAvailableAttributes`, `GetBlockAvailableAttributes` (see Open Questions).
 - `AddOrUpdateSite`, `ListShortcodes`, personalization segment and request filter tools. These are on the parent planning task but are not assigned to Kyle. (`ListLayouts` was originally in this list; it was pulled in because `AddOrUpdatePage` takes a `layoutIdKey` the model otherwise had no way to discover.)
 - Moving a page to a new parent.
-- Any change to `CustomComponentSkill` or `LavaApplicationSkill` beyond the usage annotation update in step 13.
+- Any change to `CodeBuilderSkill` or `CodeBuilderSkill` beyond the usage annotation update in step 13.
 
 ## Related
 
@@ -331,5 +331,5 @@ Rejected. `LookupSites` already distinguishes internal from external audiences a
 - [Tool Parameters](https://community.rockrms.com/developer/ai-agents/writing-custom-tools/native-tools/tool-parameters)
 - [Rock Tool Helper](https://community.rockrms.com/developer/ai-agents/writing-custom-tools/native-tools/rock-tool-helper)
 - [Gotchas](https://community.rockrms.com/developer/ai-agents/writing-custom-tools/native-tools/gotchas)
-- `specs/260814-vibe-coding-custom-components.md` (the flow these tools feed)
-- Commit `62ad577b9c` gave the vibe-coding skills their current names (`PageSkill`, `SearchPages`, `AddPage`, `AddBlock`); the `AddCustomComponent` migration registered them.
+- `specs/260814-forge-content-components.md` (the flow these tools feed)
+- Commit `62ad577b9c` gave the Forge Content skills their current names (`PageSkill`, `SearchPages`, `AddPage`, `AddBlock`); the `AddForgeContent` migration registered them.

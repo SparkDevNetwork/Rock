@@ -9,7 +9,7 @@
 ## 1. Purpose
 
 Provide an extensible data model in Rock RMS so developers and AI agents can persist
-**real data produced by vibe-coded sources** without creating a new database table for
+**real data produced by Forge Content sources** without creating a new database table for
 each use case. The store supports flexible, schema-less JSON payloads while still allowing
 fast filtering on a small set of common dimensions.
 
@@ -201,7 +201,7 @@ Consequences and rules:
 - Do **not** store PII, financial data, credentials, or anything needing row-level access
   control in `ContentJson` or the indexed columns.
 - `OwnerPersonAliasId` records intent and ownership. It does **not** enforce anything.
-- Because the data comes from vibe-coded sources, treat every payload as untrusted input.
+- Because the data comes from Forge Content sources, treat every payload as untrusted input.
   Callers reading `ContentJson` must validate and encode it before use (for example before
   rendering in a UI or feeding it into Lava).
 

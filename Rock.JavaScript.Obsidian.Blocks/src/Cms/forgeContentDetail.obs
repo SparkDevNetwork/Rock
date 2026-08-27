@@ -1,0 +1,167 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError"
+                     alertType="danger">{{ blockError }}</NotificationBox>
+
+    <!-- Edit mode: authorized administrators only. -->
+    <Panel v-else-if="isEditing"
+           title="Forge Content"
+           type="block">
+        <EditPanel v-model="source"
+                   :compileError="compileError" />
+
+        <template #footerActions>
+            <RockButton btnType="primary"
+                        :disabled="isSaving"
+                        :isLoading="isSaving"
+                        @click="onSave">Save</RockButton>
+            <RockButton btnType="link"
+                        :disabled="isSaving"
+                        @click="onCancel">Cancel</RockButton>
+        </template>
+    </Panel>
+
+    <!-- View mode: everyone. -->
+    <template v-else>
+        <div v-if="isEditable"
+             class="text-right mb-2">
+            <RockButton btnType="default"
+                        btnSize="xs"
+                        @click="onEdit">
+                <i class="ti ti-pencil"></i>
+                {{ hasContent ? "Edit" : "Add Component" }}
+            </RockButton>
+        </div>
+
+        <ViewPanel v-if="hasContent"
+                   :compiledContent="compiledContent" />
+
+        <NotificationBox v-else-if="isEditable"
+                         alertType="info">
+            This block has no component yet. Click <strong>Add Component</strong> to author it.
+        </NotificationBox>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ForgeContentDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/ForgeContentDetail/forgeContentDetailInitializationBox";
+    import { SaveForgeContentRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/ForgeContentDetail/saveForgeContentRequestBag";
+    import { SaveForgeContentResponseBag } from "@Obsidian/ViewModels/Blocks/Cms/ForgeContentDetail/saveForgeContentResponseBag";
+    import EditPanel from "./forgeContentDetail/editPanel.partial.obs";
+    import ViewPanel from "./forgeContentDetail/viewPanel.partial.obs";
+
+    const config = useConfigurationValues<ForgeContentDetailInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    /** The starter source shown when an author opens an unconfigured block. */
+    const defaultSource = `<template>
+    <div class="custom-component-example">
+        <RockLabel>Count is {{ count }}</RockLabel>
+        <RockButton btnType="primary" @click="increment">Add one</RockButton>
+    </div>
+</template>
+
+<script setup>
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+import { ref } from "vue";
+
+const count = ref(0);
+
+function increment() {
+    count.value += 1;
+}
+<\/script>
+
+<style scoped>
+.custom-component-example {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+</style>`;
+
+    const blockError = ref(config.errorMessage ?? "");
+    const isEditable = ref(config.isEditable);
+    const isEditing = ref(false);
+    const isSaving = ref(false);
+    const source = ref(config.source ?? "");
+
+    /** The last successfully saved source, restored when the author cancels. */
+    const savedSource = ref(config.source ?? "");
+
+    const compiledContent = ref(config.compiledContent ?? "");
+    const compileError = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasContent = computed((): boolean => !!compiledContent.value);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Enters edit mode, seeding the starter source when the block has none.
+     * No compiler loads in the browser; compilation happens on Save, on the
+     * server.
+     */
+    function onEdit(): void {
+        if (!source.value) {
+            source.value = defaultSource;
+        }
+
+        compileError.value = "";
+        isEditing.value = true;
+    }
+
+    /**
+     * Sends the source to the server, which compiles and stores it. A compile
+     * failure stores nothing and is surfaced inline from the server's own error
+     * text.
+     */
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+        compileError.value = "";
+
+        try {
+            const bag: SaveForgeContentRequestBag = {
+                source: source.value
+            };
+
+            const response = await invokeBlockAction<SaveForgeContentResponseBag>("SaveContent", { bag });
+
+            if (!response.isSuccess || !response.data) {
+                compileError.value = response.errorMessage ?? "The component could not be saved.";
+                return;
+            }
+
+            compiledContent.value = response.data.compiledContent ?? "";
+            savedSource.value = source.value;
+            isEditing.value = false;
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Leaves edit mode, discarding any unsaved source edits.
+     */
+    function onCancel(): void {
+        source.value = savedSource.value;
+        compileError.value = "";
+        isEditing.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>
