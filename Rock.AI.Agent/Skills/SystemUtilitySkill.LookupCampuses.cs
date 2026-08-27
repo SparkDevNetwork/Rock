@@ -70,13 +70,16 @@ internal sealed partial class SystemUtilitySkill
                 Url = c.Url,
                 Location = new LocationResult
                 {
+                    Id = c.LocationId ?? 0,
                     Street1 = c.Location.Street1,
                     Street2 = c.Location.Street2,
                     City = c.Location.City,
                     State = c.Location.State,
                     PostalCode = c.Location.PostalCode,
                     Country = c.Location.Country,
-                    GeographyPoint = ( c.Location.Latitude.HasValue && c.Location.Longitude.HasValue ) ? new GeographyPoint( c.Location.Latitude.Value, c.Location.Latitude.Value ) : null
+                    GeographyPoint = c.Location.Latitude.HasValue && c.Location.Longitude.HasValue
+                        ? new GeographyPoint( c.Location.Latitude.Value, c.Location.Longitude.Value )
+                        : null
                 },
                 CampusSchedules = c.CampusSchedules
                     .Where( s => s.Schedule.IsActive )
