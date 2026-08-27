@@ -94,8 +94,15 @@ namespace Rock.Blocks.Mobile
                     return;
                 }
 
+                // View uses the block's own permission; edit additionally respects the platform lock
+                // so a platform-managed application's layouts render read-only. An existing layout
+                // carries its Site; a new one takes the Site from the page parameter.
+                var site = entity.Site
+                    ?? new SiteService( RockContext ).Get( RequestContext.GetPageParameter( PageParameterKey.SiteId ), !PageCache.Layout.Site.DisablePredictableIds );
+
                 var isViewable = BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                box.IsEditable = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson )
+                    && !SiteService.IsSiteEditRestrict( site );
 
                 entity.LoadAttributes( RockContext );
 
@@ -252,7 +259,26 @@ namespace Rock.Blocks.Mobile
 
             if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Layout.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Layout.FriendlyTypeName}." );
+                return false;
+            }
+
+            /*
+                8/27/26 - CLAUDE
+
+                The platform-managed mobile application is maintained only through plugin migrations,
+                so its layouts are locked from admin-UI editing regardless of permissions. An existing
+                layout carries its Site; a brand-new layout has no Site yet, so resolve the target Site
+                from the page parameter. IsSiteEditRestrict hard-blocks the mutation for that Site.
+
+                Reason: Lock the platform-managed mobile application from all admin-UI editing.
+            */
+            var site = entity.Site
+                ?? new SiteService( RockContext ).Get( PageParameter( PageParameterKey.SiteId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( SiteService.IsSiteEditRestrict( site ) )
+            {
+                error = ActionBadRequest( "This mobile application is managed by the platform and cannot be edited here." );
                 return false;
             }
 

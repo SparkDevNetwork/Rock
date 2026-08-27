@@ -116,6 +116,11 @@ namespace Rock.Blocks.Mobile
         #region Constants
 
         /// <summary>
+        /// Message returned when a mutation is blocked because the application is platform-managed.
+        /// </summary>
+        private const string PlatformManagedMessage = "This mobile application is managed by the platform and cannot be edited here.";
+
+        /// <summary>
         /// The default Phone/Tablet XAML for a brand-new mobile application's
         /// seeded Homepage layout: the Main zone in a vertical ScrollView with
         /// the scrollbar hidden (no wrapper StackLayout - Zone already derives
@@ -219,8 +224,11 @@ namespace Rock.Blocks.Mobile
                 return;
             }
 
+            // View uses the block's own permission; edit additionally respects the platform lock so a
+            // platform-managed application renders read-only. See SiteService.IsSiteEditRestrict.
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                && !SiteService.IsSiteEditRestrict( entity );
 
             entity.LoadAttributes( RockContext );
 
@@ -643,6 +651,23 @@ namespace Rock.Blocks.Mobile
                 return false;
             }
 
+            /*
+                8/27/26 - CLAUDE
+
+                The platform-managed mobile application is created and maintained only through
+                plugin migrations, never the admin UI, so ordinary block permission is not enough
+                on its own. IsSiteEditRestrict identifies that application by its well-known Guid
+                and hard-blocks every mutation here regardless of the user's permissions. Every
+                mutating action in this block applies the same guard against the Site it targets.
+
+                Reason: Lock the platform-managed mobile application from all admin-UI editing.
+            */
+            if ( SiteService.IsSiteEditRestrict( entity ) )
+            {
+                error = ActionBadRequest( PlatformManagedMessage );
+                return false;
+            }
+
             return true;
         }
 
@@ -818,16 +843,21 @@ namespace Rock.Blocks.Mobile
                 return ActionBadRequest( "Style settings are required." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile application" ) );
-            }
-
             var entity = ResolveSite();
 
             if ( entity == null )
             {
                 return ActionBadRequest( "Mobile application not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile application" ) );
+            }
+
+            if ( SiteService.IsSiteEditRestrict( entity ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             var settings = GetAdditionalSettings( entity );
@@ -932,15 +962,20 @@ namespace Rock.Blocks.Mobile
         [BlockAction]
         public async System.Threading.Tasks.Task<BlockActionResult> Deploy()
         {
+            var entity = ResolveSite();
+            if ( entity == null || entity.Id == 0 )
+            {
+                return ActionBadRequest( "Mobile application not found." );
+            }
+
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile application" ) );
             }
 
-            var entity = ResolveSite();
-            if ( entity == null || entity.Id == 0 )
+            if ( SiteService.IsSiteEditRestrict( entity ) )
             {
-                return ActionBadRequest( "Mobile application not found." );
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             using ( var rockContext = new RockContext() )
@@ -1085,17 +1120,22 @@ namespace Rock.Blocks.Mobile
         [BlockAction]
         public BlockActionResult DeleteLayout( string key )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile layout" ) );
-            }
-
             var layoutService = new LayoutService( RockContext );
             var layout = layoutService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( layout == null )
             {
                 return ActionBadRequest( "Layout not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile layout" ) );
+            }
+
+            if ( SiteService.IsSiteEditRestrict( layout.Site ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             if ( !layoutService.CanDelete( layout, out var errorMessage ) )
@@ -1115,17 +1155,22 @@ namespace Rock.Blocks.Mobile
         [BlockAction]
         public BlockActionResult DeletePage( string key )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile page" ) );
-            }
-
             var pageService = new PageService( RockContext );
             var page = pageService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( page == null )
             {
                 return ActionBadRequest( "Page not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile page" ) );
+            }
+
+            if ( SiteService.IsSiteEditRestrict( page.Layout?.Site ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             if ( !pageService.CanDelete( page, out var errorMessage ) )
@@ -1145,15 +1190,20 @@ namespace Rock.Blocks.Mobile
         [BlockAction]
         public BlockActionResult ReorderPage( string key, string beforeKey )
         {
+            var entity = ResolveSite();
+            if ( entity == null )
+            {
+                return ActionBadRequest( "Mobile application not found." );
+            }
+
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile page" ) );
             }
 
-            var entity = ResolveSite();
-            if ( entity == null )
+            if ( SiteService.IsSiteEditRestrict( entity ) )
             {
-                return ActionBadRequest( "Mobile application not found." );
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             var pageService = new PageService( RockContext );
@@ -1178,11 +1228,6 @@ namespace Rock.Blocks.Mobile
         [BlockAction]
         public BlockActionResult DeleteDeepLink( string key )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "deep link" ) );
-            }
-
             var routeGuid = key.AsGuidOrNull();
             if ( !routeGuid.HasValue )
             {
@@ -1193,6 +1238,16 @@ namespace Rock.Blocks.Mobile
             if ( entity == null )
             {
                 return ActionBadRequest( "Mobile application not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "deep link" ) );
+            }
+
+            if ( SiteService.IsSiteEditRestrict( entity ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             var settings = GetAdditionalSettings( entity );
@@ -1216,11 +1271,6 @@ namespace Rock.Blocks.Mobile
         [BlockAction]
         public BlockActionResult ReorderDeepLink( string key, string beforeKey )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "deep link" ) );
-            }
-
             var movedGuid = key.AsGuidOrNull();
             if ( !movedGuid.HasValue )
             {
@@ -1231,6 +1281,16 @@ namespace Rock.Blocks.Mobile
             if ( entity == null )
             {
                 return ActionBadRequest( "Mobile application not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "deep link" ) );
+            }
+
+            if ( SiteService.IsSiteEditRestrict( entity ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             var settings = GetAdditionalSettings( entity );

@@ -105,6 +105,33 @@ namespace Rock.Model
             return new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
         }
 
+        /// <summary>
+        /// Determines whether editing of the specified <see cref="Site"/> is restricted because it
+        /// is the platform-managed application/site. That application is created and maintained
+        /// exclusively by platform plugin migrations, so it is locked from all admin-UI editing
+        /// regardless of the current individual's permissions. Callers should treat a <c>true</c> result
+        /// as a hard block on any mutation.
+        /// </summary>
+        /// <param name="site">The site to check. A <c>null</c> site is not restricted.</param>
+        /// <returns><c>true</c> if the site is the platform-managed application; otherwise <c>false</c>.</returns>
+        public static bool IsSiteEditRestrict( Site site )
+        {
+            //return site != null && site.Guid == PlatformMobileApplicationGuid;
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether editing of the specified <see cref="SiteCache"/> is restricted because
+        /// it is the platform-managed application/site. See <see cref="IsSiteEditRestrict(Site)"/>.
+        /// </summary>
+        /// <param name="site">The cached site to check. A <c>null</c> site is not restricted.</param>
+        /// <returns><c>true</c> if the site is the platform-managed application; otherwise <c>false</c>.</returns>
+        public static bool IsSiteEditRestrict( SiteCache site )
+        {
+            //return site != null && site.Guid == PlatformMobileApplicationGuid;
+            return false;
+        }
+
         #region Mobile Site Deployment
 
         /// <summary>
