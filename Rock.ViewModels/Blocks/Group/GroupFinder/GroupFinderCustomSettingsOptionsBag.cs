@@ -40,5 +40,19 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         /// Gets or sets the attributes eligible to be shown on the card: all attributes of the selected group types.
         /// </summary>
         public List<ListItemBag> AvailableCardAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the Straight-Line Distance (Address or Zip Code) option can be chosen, established by a live geocoding call when the panel opens.
+        /// </summary>
+        public bool IsAddressSearchAvailable { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the Driving Distance option can be chosen, established by a live routing call when the panel opens.
+        /// </summary>
+        /// <remarks>
+        /// Driving is additive over address search, so it requires geocoding as well as routing; this is true
+        /// only when both live probes answered.
+        /// </remarks>
+        public bool IsDrivingDistanceAvailable { get; set; }
     }
 }

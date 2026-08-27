@@ -20,24 +20,26 @@
 */
 .group-finder-card {
     height: 100%;
-    /* Match the card surface rather than transparent, so the 1px ring does not reveal the darker pane
-       behind the card (most noticeable on hover in dark mode); the selected state recolors it to primary. */
-    border: 1px solid var(--color-interface-softest, #fff);
+    /* A hairline in its own right rather than a color-matched ring, so the card reads as a distinct
+       surface against the page; the hovered and selected states recolor it to primary. */
+    border: 1px solid var(--color-interface-soft, #d9d9e3);
     border-radius: var(--rounded-xlarge);
     cursor: pointer;
     transition: box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
-/* Hovered (its own hover, or its map circle hovered): raised with the strong shadow and a primary outline. */
-.group-finder-card.is-hovered {
-    border-color: var(--color-primary);
-    box-shadow: var(--box-shadow-strong);
-}
+/*
+    Raised states, both outlined in the primary color: hovered (its own hover, or its map circle hovered)
+    and selected (clicked, or its map circle clicked).
 
-/* Selected (clicked, or its map circle clicked): raised and outlined in the primary color. */
+    --box-shadow-strong is defined in styles-v2, which not every theme loads, and an undefined custom
+    property drops the whole declaration - so the fallback keeps the card's lift on those themes rather
+    than leaving hover and selection with a border change alone.
+*/
+.group-finder-card.is-hovered,
 .group-finder-card.is-selected {
     border-color: var(--color-primary);
-    box-shadow: var(--box-shadow-strong);
+    box-shadow: var(--box-shadow-strong, rgba(145, 158, 171, 0.2) 0 20px 25px -5px, rgba(145, 158, 171, 0.12) 0 10px 10px -5px);
 }
 
 .group-finder-card.is-selected :deep(.group-finder-card-title) {
@@ -51,14 +53,19 @@
     gap: var(--spacing-medium);
     height: 100%;
     padding: var(--spacing-medium);
-    background: var(--color-interface-softest, #fff);
+    background: var(--color-interface-softer, #f8f8fc);
     border-radius: var(--rounded-xlarge);
 }
 
-/* The cover is a framed, floating photo: inset by the card padding, white-bordered and shadowed. */
+/*
+    The cover is a framed, floating photo: inset by the card padding, white-bordered and shadowed. The
+    height cap keeps the 21:9 frame from scaling without limit on a card wider than the ~370px it is drawn
+    for (a single-column list in a wide container); past the cap the photo crops rather than growing.
+*/
 .group-finder-card :deep(.group-finder-card-media) {
     position: relative;
     aspect-ratio: 21 / 9;
+    max-height: 240px;
     overflow: hidden;
     border: 4px solid var(--color-interface-softest, #fff);
     border-radius: var(--rounded-xlarge);

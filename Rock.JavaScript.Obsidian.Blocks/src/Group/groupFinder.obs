@@ -14,7 +14,7 @@
         <!-- Desktop filter bar: an Airbnb-style search pill of Campus/Where/When/What segments and a
              primary search action, with a More Filters dropdown beside it. Each segment shows its
              current value (or a placeholder) and opens its filter content in an anchored dropdown. -->
-        <div ref="filterBar" class="group-finder-filterbar">
+        <div v-if="isFilterBarShown" ref="filterBar" class="group-finder-filterbar">
             <!-- Cancel hint pinned just under the bar, shown when the pending overlay is up and no filter
                  popover is open. A subtle, temporary affordance for the designer to evaluate; it ignores
                  pointer events so the scrim handles the click, and it is absolutely positioned so it does
@@ -39,9 +39,21 @@
                                      raised>
                         <template #anchor>
                             <button type="button" class="filter-segment filter-segment-filters" :class="{ 'is-open': openSection === 'more' }">
-                                <span class="filter-segment-name">Filters</span>
-                                <span class="filter-segment-value" :class="{ 'is-placeholder': !moreFiltersSummary }">{{ moreFiltersSummary || "Start your search" }}</span>
-                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                                <span class="filter-segment-text">
+                                    <span class="filter-segment-name">Filters</span>
+                                    <span v-tooltip.overflow="segmentValueText.more" class="filter-segment-value" :class="{ 'is-placeholder': !moreFiltersSummary }">{{ segmentValueText.more }}</span>
+                                </span>
+                                <span v-if="isSegmentClearShown('more', moreFiltersSummary)"
+                                      class="filter-segment-clear"
+                                      role="button"
+                                      tabindex="0"
+                                      aria-label="Clear the applied filters"
+                                      @click.stop="clearFilterSegment('more')"
+                                      @keydown.enter.stop="clearFilterSegment('more')"
+                                      @keydown.space.prevent.stop="clearFilterSegment('more')">
+                                    <i class="ti ti-x"></i>
+                                </span>
+                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
                             </button>
                         </template>
                         <div class="group-finder-filter-popover filters-more">
@@ -59,9 +71,21 @@
                                      raised>
                         <template #anchor>
                             <button type="button" class="filter-segment filter-segment-campus" :class="{ 'is-open': openSection === 'campus' }">
-                                <span class="filter-segment-name">Campus</span>
-                                <span class="filter-segment-value" :class="{ 'is-placeholder': !campusSummary }">{{ campusSummary || "Select a Campus" }}</span>
-                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                                <span class="filter-segment-text">
+                                    <span class="filter-segment-name">Campus</span>
+                                    <span v-tooltip.overflow="segmentValueText.campus" class="filter-segment-value" :class="{ 'is-placeholder': !campusSummary }">{{ segmentValueText.campus }}</span>
+                                </span>
+                                <span v-if="isSegmentClearShown('campus', campusSummary)"
+                                      class="filter-segment-clear"
+                                      role="button"
+                                      tabindex="0"
+                                      aria-label="Clear the Campus filter"
+                                      @click.stop="clearFilterSegment('campus')"
+                                      @keydown.enter.stop="clearFilterSegment('campus')"
+                                      @keydown.space.prevent.stop="clearFilterSegment('campus')">
+                                    <i class="ti ti-x"></i>
+                                </span>
+                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
                             </button>
                         </template>
                         <div class="group-finder-filter-popover filters-campus">
@@ -80,9 +104,21 @@
                                      raised>
                         <template #anchor>
                             <button type="button" class="filter-segment filter-segment-where" :class="{ 'is-open': openSection === 'where' }">
-                                <span class="filter-segment-name">Where</span>
-                                <span class="filter-segment-value" :class="{ 'is-placeholder': !whereSummary }">{{ whereSummary || "Discover location near you" }}</span>
-                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                                <span class="filter-segment-text">
+                                    <span class="filter-segment-name">Where</span>
+                                    <span v-tooltip.overflow="segmentValueText.where" class="filter-segment-value" :class="{ 'is-placeholder': !whereSummary }">{{ segmentValueText.where }}</span>
+                                </span>
+                                <span v-if="isSegmentClearShown('where', whereSummary)"
+                                      class="filter-segment-clear"
+                                      role="button"
+                                      tabindex="0"
+                                      aria-label="Clear the Where filter"
+                                      @click.stop="clearFilterSegment('where')"
+                                      @keydown.enter.stop="clearFilterSegment('where')"
+                                      @keydown.space.prevent.stop="clearFilterSegment('where')">
+                                    <i class="ti ti-x"></i>
+                                </span>
+                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
                             </button>
                         </template>
                         <div class="group-finder-filter-popover filters-where">
@@ -101,9 +137,21 @@
                                      raised>
                         <template #anchor>
                             <button type="button" class="filter-segment filter-segment-when" :class="{ 'is-open': openSection === 'when' }">
-                                <span class="filter-segment-name">When</span>
-                                <span class="filter-segment-value" :class="{ 'is-placeholder': !whenSummary }"><i v-if="whenTimeIcon" :class="whenTimeIcon" class="filter-segment-value-icon"></i>{{ whenSummary || "Find when to meet" }}</span>
-                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                                <span class="filter-segment-text">
+                                    <span class="filter-segment-name">When</span>
+                                    <span v-tooltip.overflow="segmentValueText.when" class="filter-segment-value" :class="{ 'is-placeholder': !whenSummary }"><i v-if="whenTimeIcon" :class="whenTimeIcon" class="filter-segment-value-icon"></i>{{ segmentValueText.when }}</span>
+                                </span>
+                                <span v-if="isSegmentClearShown('when', whenSummary)"
+                                      class="filter-segment-clear"
+                                      role="button"
+                                      tabindex="0"
+                                      aria-label="Clear the When filter"
+                                      @click.stop="clearFilterSegment('when')"
+                                      @keydown.enter.stop="clearFilterSegment('when')"
+                                      @keydown.space.prevent.stop="clearFilterSegment('when')">
+                                    <i class="ti ti-x"></i>
+                                </span>
+                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
                             </button>
                         </template>
                         <div class="group-finder-filter-popover filters-when">
@@ -122,9 +170,21 @@
                                      raised>
                         <template #anchor>
                             <button type="button" class="filter-segment filter-segment-what" :class="{ 'is-open': openSection === 'what' }">
-                                <span class="filter-segment-name">What</span>
-                                <span class="filter-segment-value" :class="{ 'is-placeholder': !whatSummary }">{{ whatSummary || "Search what fits" }}</span>
-                                <i class="ti ti-chevron-down filter-segment-caret"></i>
+                                <span class="filter-segment-text">
+                                    <span class="filter-segment-name">What</span>
+                                    <span v-tooltip.overflow="segmentValueText.what" class="filter-segment-value" :class="{ 'is-placeholder': !whatSummary }">{{ segmentValueText.what }}</span>
+                                </span>
+                                <span v-if="isSegmentClearShown('what', whatSummary)"
+                                      class="filter-segment-clear"
+                                      role="button"
+                                      tabindex="0"
+                                      aria-label="Clear the What filter"
+                                      @click.stop="clearFilterSegment('what')"
+                                      @keydown.enter.stop="clearFilterSegment('what')"
+                                      @keydown.space.prevent.stop="clearFilterSegment('what')">
+                                    <i class="ti ti-x"></i>
+                                </span>
+                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
                             </button>
                         </template>
                         <div class="group-finder-filter-popover filters-what">
@@ -152,8 +212,13 @@
                                  rounded
                                  raised>
                     <template #anchor>
-                        <button type="button" class="more-filters-button btn" :class="moreFiltersCount > 0 ? 'btn-primary' : 'btn-default'" aria-labelledby="groupFinderMoreFiltersLabel">
-                            <i v-if="openSection === 'more'" class="ti ti-x more-filters-close"></i>
+                        <button type="button"
+                                class="more-filters-button btn"
+                                :class="moreFiltersCount > 0 ? 'btn-primary' : 'btn-default'"
+                                :aria-label="isMoreFiltersClearShown ? 'Clear the More Filters values' : undefined"
+                                :aria-labelledby="isMoreFiltersClearShown ? undefined : 'groupFinderMoreFiltersLabel'"
+                                @click="onMoreFiltersButtonClick">
+                            <i v-if="isMoreFiltersClearShown" class="ti ti-x more-filters-clear"></i>
                             <span v-else-if="moreFiltersCount > 0" class="filter-count">{{ moreFiltersCount }}</span>
                             <i v-else class="ti ti-adjustments-horizontal"></i>
                         </button>
@@ -168,7 +233,7 @@
         <!-- Mobile filter bar: a full-width field above the results/map (mobile breakpoint only). Its
              label and trailing action reflect the applied filters (Start/Refine Your Search, and a search
              icon or a count), and tapping it opens the full-screen filter panel. -->
-        <button type="button" class="group-finder-mobile-filterbar" @click="isDrawerOpen = true">
+        <button v-if="isFilterBarShown" type="button" class="group-finder-mobile-filterbar" @click="isDrawerOpen = true">
             <span class="group-finder-mobile-filterbar-label">{{ mobileFilterLabel }}</span>
             <span class="group-finder-mobile-filterbar-action">
                 <span v-if="totalFilterCount > 0" class="group-finder-mobile-filter-count">{{ totalFilterCount }}</span>
@@ -258,14 +323,15 @@
 
             <!-- Card list inline for every mode except the drawer, where it rides in the bottom sheet. -->
             <GroupFinderResults v-if="layoutMode !== 'drawer'"
-                                v-model:selectedGroupGuid="selectedGroupGuid"
+                                :selectedGroupGuid="selectedGroupGuid"
+                                @update:selectedGroupGuid="onGroupCardSelect"
                                 v-model:hoveredGroupGuid="hoveredGroupGuid"
                                 :cards="cards"
                                 :resultCountText="resultCountText"
                                 :isLoading="isLoading"
                                 :hasCardImage="hasCardImage"
                                 :hasCardCta="hasCardCta"
-                                columns="auto"
+                                :columns="resultColumns"
                                 :isPagerShown="isPagerShown"
                                 :currentPage="currentPage"
                                 :pageCount="pageCount"
@@ -428,13 +494,23 @@
     min-width: 0;
 }
 
-/* A two-line segment: the filter name over its current value (or a placeholder), plus a caret. */
+/* The pill is flush against its first segment, so that segment's text needs more than the segment's own
+   padding to clear the rounded end and not look wedged into the curve. */
+.filter-segments > :deep(*:first-child) .filter-segment {
+    padding-left: var(--spacing-large);
+}
+
+/*
+    A segment lays its two lines of text (the filter name over its current value or a placeholder) beside a
+    trailing control - the caret, or the clear action once there is something to clear. The two sit side by
+    side rather than the control floating over the text, so a long value ellipsizes short of the control
+    instead of running underneath it.
+*/
 .filter-segment {
     position: relative;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
+    align-items: center;
+    gap: var(--spacing-xsmall);
     width: 240px;
     /* Keep 240px as the preferred size, but allow shrinking below it (min-width: 0) when the bar runs out
        of room, so the segments narrow and their values ellipsize instead of wrapping or overflowing. */
@@ -445,6 +521,17 @@
     background: transparent;
     text-align: left;
     cursor: pointer;
+}
+
+/* The name and value column, taking the width the trailing control does not. min-width: 0 is what lets the
+   value ellipsize here rather than pushing the control past the segment's edge. */
+.filter-segment-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
 }
 
 .filter-segment:hover,
@@ -490,22 +577,48 @@
 }
 
 .filter-segment-caret {
-    position: absolute;
-    top: 50%;
-    right: var(--spacing-small);
-    transform: translateY(-50%);
+    flex: none;
     font-size: 1rem;
     color: var(--color-interface-medium, #8b8ba7);
     transition: transform 0.15s ease-in-out;
 }
 
-/* Open segment: highlight the name and flip the chevron to point up (keeping the vertical centering). */
+/* Open segment: highlight the name and turn the caret over. The caret only survives an open segment while
+   there is nothing to clear; once the segment holds a value the clear action takes its slot instead (see
+   isSegmentClearShown), so the two affordances never compete. */
 .filter-segment.is-open .filter-segment-name {
     color: var(--color-primary);
 }
 
 .filter-segment.is-open .filter-segment-caret {
-    transform: translateY(-50%) rotate(180deg);
+    transform: rotate(180deg);
+}
+
+/*
+    The clear action, which takes the caret's place on an open segment that has something to clear. It holds
+    the same slot beside the text, so the swap does not shift the value, and carries a hit area of its own
+    since it is a target inside the larger segment button rather than part of it. The negative margins keep
+    that hit area from widening the slot the caret occupies, so the value's ellipsis lands in the same place
+    either way.
+*/
+.filter-segment-clear {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin: -4px;
+    font-size: 1rem;
+    color: var(--color-interface-strong, #3d444d);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.filter-segment-clear:hover,
+.filter-segment-clear:focus-visible {
+    background: var(--color-interface-soft, #d9d9e3);
+    color: var(--color-interface-stronger, #0d1117);
 }
 
 .filter-segment-divider {
@@ -627,22 +740,36 @@
     line-height: 1;
 }
 
-/* Open: the surface stays put; only the glyph swaps to a larger X that closes the dropdown on click. */
-.more-filters-close {
+/*
+    The clear glyph, larger than the icon it replaces so the action reads at a glance. It appears only while
+    the panel is open with values applied, which is the one state where the button clears rather than
+    toggles - the button otherwise keeps the icon it wears closed, so an X never has to mean two things.
+*/
+.more-filters-clear {
     font-size: 1.5rem;
 }
 
-/* Sizing and padding for the filter dropdown content; DropDownContent supplies the floating card
-   surface (anchoring, border, shadow) around it. */
+/*
+    Sizing and padding for the filter dropdown content; DropDownContent supplies the floating card
+    surface (anchoring, border, shadow) around it.
+
+    The panel floats over the results, so it carries its own hairline and elevation rather than relying on
+    the surrounding body's: --box-shadow-strong is defined in styles-v2, which not every theme loads, and an
+    undefined custom property drops the whole declaration. Without the fallback the panel loses its shadow,
+    and since its fill matches the card surface underneath it exactly, the options read as text floating over
+    the group cards.
+*/
 .group-finder-filter-popover {
     min-width: 240px;
     max-width: min(92vw, 420px);
     padding: var(--spacing-medium);
-    background: var(--color-interface-softest);
+    background: var(--color-interface-softest, #fff);
+    border: 1px solid var(--color-interface-soft, #d9d9e3);
     /* The floating body is rounded but does not clip (preventOverflowClipping lets inner dropdowns such as
        the address suggestions overflow), so round this opaque content to match, or its square corners paint
        over the body's rounded ones and the panel looks square. */
     border-radius: var(--rounded-large);
+    box-shadow: var(--box-shadow-strong, rgba(145, 158, 171, 0.2) 0 20px 25px -5px, rgba(145, 158, 171, 0.12) 0 10px 10px -5px);
 }
 
 /* Map pane: rounded, clipped, and the positioning anchor for the approximation banner. */
@@ -808,6 +935,34 @@
 
 
 /*
+    Stacked is the tier between side-by-side and the drawer: the map is a fixed-height hero across the
+    block with the card column beneath it, both on the page. Nothing is pinned to the viewport here, so
+    the page scrolls as one and the bottom of the screen stays free for whatever the host layout puts
+    there (on an administrator's page, Rock's admin footer).
+
+    The map leads visually while the cards keep their document order, so the list stays first for a screen
+    reader and the pane is reordered instead of being moved in the markup.
+*/
+.group-finder-body[data-layout="stacked"] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.group-finder-body[data-layout="stacked"] .group-finder-map-pane {
+    order: -1;
+    width: 100%;
+    /* Tall enough to read as the hero, capped so a short window still leaves room for a card or two. */
+    height: min(50vh, 420px);
+}
+
+/* The single card column and its count line share one centered measure under the full-width map. */
+.group-finder-body[data-layout="stacked"] :deep(.group-finder-result-count) {
+    max-width: 370px;
+    margin-inline: auto;
+}
+
+/*
     Side by side is a fixed-height two-pane: the body fills the viewport below the fixed top header
     and the sticky filter bar, and never scrolls itself. The card column scrolls internally while
     the map fills its side and stays put, so scrolling the cards does not move the map.
@@ -964,6 +1119,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import type { Ref } from "vue";
     import CampusFilterContent from "./GroupFinder/campusFilterContent.partial.obs";
     import WhereFilterContent from "./GroupFinder/whereFilterContent.partial.obs";
     import WhenFilterContent from "./GroupFinder/whenFilterContent.partial.obs";
@@ -979,6 +1135,7 @@
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import MapView from "@Obsidian/Controls/mapView.obs";
     import DockedPanel from "@Obsidian/Controls/Internal/dockedPanel.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
     import { MapViewMarker } from "@Obsidian/Types/Controls/mapView";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
@@ -1018,6 +1175,14 @@
         viewport: { north: number; south: number; east: number; west: number } | null;
     };
 
+    // One of the layout media queries, the flag mirroring whether it matches, and the change listener kept
+    // for removal on unmount.
+    type LayoutQuery = {
+        list: MediaQueryList;
+        flag: Ref<boolean>;
+        handler?: (event: MediaQueryListEvent) => void;
+    };
+
     // #endregion Types
 
     // #region Values
@@ -1053,9 +1218,10 @@
     const featuredAttributeSelections = ref<Record<string, string[]>>({});
     const modalAttributeValues = ref<Record<string, ComparisonValue>>({});
 
-    // The block's own rendered width (not the viewport), so the layout adapts to wherever
-    // the block is placed (main content, a sidebar, a modal). Updated by a ResizeObserver.
-    const blockWidth = ref(0);
+    // Whether each layout media query currently matches, which is what drives the tier and the filter bar
+    // (see mobileFilterBarQuery and drawerQuery). Kept in step by the queries' own change events.
+    const isMobileFilterBarWidth = ref(false);
+    const isDrawerWidth = ref(false);
 
     const openSection = ref<"campus" | "where" | "when" | "what" | "more" | null>(null);
     // Whether the visitor is actively building a search on the desktop filter bar, which drives the
@@ -1105,10 +1271,19 @@
     // does the scroll once the sheet is in its resting place. Null when nothing is waiting to be revealed.
     const pendingScrollGuid = ref<string | null>(null);
 
-    // A CSS length that holds the collapsed sheet above Rock's admin footer (a fixed bar at the viewport
-    // bottom, shown to admins in edit mode) so the minimized handle does not cover it. Zero when the bar is
-    // absent (public visitors, or outside edit mode). Fed to the drawer's bottomOffset; the map-fill reserve
-    // measures the sheet's real top, so it follows the lift on its own.
+    /*
+        A CSS length that holds the collapsed sheet above Rock's admin footer (a fixed bar at the viewport
+        bottom) so the minimized handle does not cover it. Zero whenever the bar is absent, which covers
+        every visitor.
+
+        Whether an administrator sees the bar at drawer widths is up to the theme, so this is measured
+        rather than assumed: the internal theme hides it below 768 (revealing it again with the side nav),
+        while an external theme such as Stark keeps it at every width - so on a public site this is the
+        difference between a reachable admin bar and one buried under the sheet.
+
+        Fed to the drawer's bottomOffset; the map-fill reserve measures the sheet's real top, so it follows
+        the lift on its own.
+    */
     const drawerBottomOffset = ref<string>("0px");
 
     // The drawer's live height (bound from the sheet) and, captured whenever it rests at its first
@@ -1191,6 +1366,7 @@
     let filterBarObserver: ResizeObserver | undefined;
     let blockObserver: ResizeObserver | undefined;
     let visibilityObserver: IntersectionObserver | undefined;
+    let layoutQueries: LayoutQuery[] = [];
     let isFitLoopActive = false;
     let lastMapHeight = -1;
     let lastResultsWidth = -1;
@@ -1203,11 +1379,25 @@
     const mapMinWidthPx = 370;
     const maxCardColumns = 3;
 
-    // The single layout threshold in block-width pixels (not viewport), tuned to this block's
-    // content: a 370px map + one 370px card + the row gap needs ~764 to sit side-by-side, so that
-    // is where side-by-side begins. Below it the block switches straight to the drawer; there is no
-    // intermediate tier. Within side-by-side the card column wraps from three to one as width drops.
-    const sideBySideMinWidth = 991;
+    /*
+        The two layout thresholds, as the very media queries the stylesheets use rather than as numbers to
+        compare a measured width against. A media query is evaluated against the viewport including the
+        scrollbar, while element widths exclude it, so on a page whose document scrolls the two disagree by
+        the scrollbar width - enough to leave the block a tier behind the CSS for ~15px of window width.
+        Matching on the query itself keeps the tier and the stylesheets on the same pixel by construction.
+
+        The first is this block's own filter bar swap (Bootstrap's @screen-sm-max), so the bar and the tier
+        change together: above it, side-by-side. The second is the phone boundary (@screen-xs-max), below
+        which the map-with-a-bottom-sheet reading of the design takes over. Between them the map and a
+        single card column stack.
+
+        Only the tier reads the viewport. How much fits within the tier is still measured from the block's
+        own box (sizeResultsPane and the auto-fill card grid), so the block adapts to whatever zone it
+        lands in while the tier follows the device: the sheet and the filter bar swap are both
+        viewport-bound, so neither can be driven from the block's width.
+    */
+    const mobileFilterBarQuery = "(max-width: 991px)";
+    const drawerQuery = "(max-width: 767px)";
 
     // Share the filter state with the section partials so the bar and the mobile
     // drawer both bind to one source of truth.
@@ -1316,6 +1506,11 @@
         return Object.entries(modalAttributeValues.value).filter(([key, comparison]) => modalFilterText(key, comparison).trim().length > 0).length;
     });
 
+    // The More Filters button reads as an X while its panel is open. That X clears the applied filters when
+    // there are any, matching what an open segment's clear does; with none applied there is nothing to
+    // clear and it stays the plain close it has always been.
+    const isMoreFiltersClearShown = computed((): boolean => openSection.value === "more" && moreFiltersCount.value > 0);
+
     // Every applied attribute filter across both surfaces (featured "What" pills plus More Filters), for
     // the whole-block filter tallies (see hasAnyFilter and totalFilterCount).
     const appliedFilterCount = computed((): number => {
@@ -1379,6 +1574,16 @@
         && !config.isWhenFilterShown
         && !config.isWhatFilterShown
         && config.isMoreFiltersShown);
+
+    // The filter bar needs at least one filter to offer. With every segment hidden and no More Filters, both
+    // the desktop bar and its mobile counterpart drop out entirely rather than leaving an empty pill (and a
+    // Search button with nothing to search by) above the results.
+    const isFilterBarShown = computed((): boolean =>
+        config.isCampusFilterShown
+        || config.isWhereFilterShown
+        || config.isWhenFilterShown
+        || config.isWhatFilterShown
+        || config.isMoreFiltersShown);
 
     /*
         Each filter bar segment shows a short summary of its current selection under the filter name,
@@ -1497,6 +1702,22 @@
             .join(", ");
     });
 
+    /*
+        The text each segment shows on its value line: the segment's summary, or the placeholder that stands
+        in for an empty one. Single-sourced here because the value and its hover tooltip both render it, and
+        a segment is only 240px wide, so a summary of any length is likely to be the truncated one the
+        tooltip exists to reveal.
+    */
+    const segmentValueText = computed((): Record<"more" | "campus" | "where" | "when" | "what", string> => {
+        return {
+            more: moreFiltersSummary.value || "Start your search",
+            campus: campusSummary.value || "Select a Campus",
+            where: whereSummary.value || "Discover location near you",
+            when: whenSummary.value || "Find when to meet",
+            what: whatSummary.value || "Search what fits"
+        };
+    });
+
     // Markers pair to cards by group guid. Selecting a marker highlights the matching card in the list.
     const mapMarkers = computed((): MapViewMarker[] => {
         return (results.value.markers ?? []).map(marker => {
@@ -1509,19 +1730,34 @@
         });
     });
 
-    // The responsive layout tier, chosen from the block's own width. Only meaningful when the
-    // map is shown; without a map the grid simply fills the width at every size.
-    const layoutMode = computed((): "results" | "sidebyside" | "drawer" => {
+    /*
+        The responsive layout tier (see mobileFilterBarQuery and drawerQuery). Only meaningful when the
+        map is shown; without a map the grid simply fills the width at every size.
+
+        The tier follows the viewport rather than the block because the drawer is a DockedPanel fixed to the
+        viewport: a narrow block in a wide window would otherwise get a window-wide sheet holding one
+        enormous card. Between the two queries the stacked tier keeps both panes on the page instead, so no
+        viewport-fixed sheet has to share the bottom of the screen with Rock's admin footer.
+    */
+    const layoutMode = computed((): "results" | "sidebyside" | "stacked" | "drawer" => {
         if (!config.isMapShown) {
             return "results";
         }
-        return blockWidth.value >= sideBySideMinWidth ? "sidebyside" : "drawer";
+        if (!isMobileFilterBarWidth.value) {
+            return "sidebyside";
+        }
+        return isDrawerWidth.value ? "drawer" : "stacked";
     });
+
+    // The card grid within the tier: the stacked tier gives its cards one centered column under the map,
+    // while the wide tiers wrap as many fixed-width columns as the pane holds.
+    const resultColumns = computed((): "auto" | "one" => layoutMode.value === "stacked" ? "one" : "auto");
 
     // The desktop filter bar (segments + inline pending-search flow) is shown above the mobile breakpoint;
     // below it the filters live in a full-screen modal with its own Apply, so the pending-search overlay -
-    // which belongs to the desktop click-Search / click-outside-to-cancel flow - is suppressed there.
-    const isDesktopFilterBar = computed((): boolean => blockWidth.value >= sideBySideMinWidth);
+    // which belongs to the desktop click-Search / click-outside-to-cancel flow - is suppressed there. The
+    // swap is done in CSS, so this tracks the same query rather than a measured width.
+    const isDesktopFilterBar = computed((): boolean => !isMobileFilterBarWidth.value);
 
     // True once results are loaded and the visitor has edited a filter without committing the search yet.
     // Drives the dim overlay over the results/map and the expanded Search button, prompting a new search.
@@ -2021,6 +2257,40 @@
         });
     }
 
+    // Reveal the selected group's card in the inline list (every tier but the drawer, which has its own
+    // sheet-aware path). The selection is re-checked after the render so a rapid re-selection that has
+    // already moved on does not scroll to a stale card.
+    function revealCardInList(guid: string): void {
+        nextTick(() => {
+            if (selectedGroupGuid.value !== guid) {
+                return;
+            }
+
+            document.querySelector(`[data-group-guid="${guid}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        });
+    }
+
+    /*
+        Reveal the selected group's marker on the map, the mirror of a marker click scrolling to its card.
+        Only the stacked tier needs it: the map sits above the list there, so a card far down the page has
+        scrolled it out of sight. Side by side keeps both panes on screen, and the drawer reveals the map by
+        minimizing the sheet instead.
+
+        The map is brought back into view and the marker centered (MapView saves the prior view and restores
+        it when the selection clears, so this does not strand the visitor zoomed in). nextTick lets the
+        card's own selected styling render first, so the two land together.
+    */
+    function revealMapMarker(guid: string): void {
+        nextTick(() => {
+            if (selectedGroupGuid.value !== guid) {
+                return;
+            }
+
+            mapPane.value?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            mapViewRef.value?.focusMarker(guid);
+        });
+    }
+
     // Reveal the selected group's card in the drawer. Only open the sheet when it is minimized, where the
     // card is otherwise hidden; at a middle stop the map and list both already show, so leave the depth
     // where the visitor set it.
@@ -2077,29 +2347,45 @@
     function onGroupCardSelect(guid: string | null): void {
         // A card tap always reveals its group on the map, even when it is already the selection. Assigning
         // an unchanged value would not fire the selectedGroupGuid watcher, so mirror the watcher's card
-        // branch directly in that case: minimize a maximized sheet to show the map and focus the group's marker.
+        // branch directly in that case: the drawer minimizes a maximized sheet to show the map and focuses
+        // the marker, while the stacked tier scrolls the map back into view and focuses it there.
         const isAlreadySelected = selectedGroupGuid.value === guid;
 
         selectionSource.value = "card";
         selectedGroupGuid.value = guid;
 
-        if (guid && isAlreadySelected && layoutMode.value === "drawer") {
+        if (!guid || !isAlreadySelected) {
+            return;
+        }
+
+        if (layoutMode.value === "drawer") {
             minimizeDrawerIfMaximized();
             mapViewRef.value?.focusMarker(guid);
+        }
+        else if (layoutMode.value === "stacked") {
+            revealMapMarker(guid);
         }
     }
 
     function onGroupMarkerSelect(guid: string | null): void {
-        // A marker tap always reveals its group in the drawer, even when it is already the selection.
-        // Assigning an unchanged value would not fire the selectedGroupGuid watcher, so reveal directly in
-        // that case; a changed value routes through the watcher as usual.
+        // A marker tap always reveals its group's card, even when it is already the selection. Assigning an
+        // unchanged value would not fire the selectedGroupGuid watcher, so mirror the watcher's marker
+        // branch directly in that case: the drawer opens its sheet to the card, every other tier scrolls
+        // the card into view in the list.
         const isAlreadySelected = selectedGroupGuid.value === guid;
 
         selectionSource.value = "marker";
         selectedGroupGuid.value = guid;
 
-        if (guid && isAlreadySelected && layoutMode.value === "drawer") {
+        if (!guid || !isAlreadySelected) {
+            return;
+        }
+
+        if (layoutMode.value === "drawer") {
             revealSelectedGroupInDrawer(guid);
+        }
+        else {
+            revealCardInList(guid);
         }
     }
 
@@ -2116,11 +2402,31 @@
         }
     }
 
-    // Close the open filter dropdown on Escape (DropDownContent handles the outside-click close).
+    /*
+        Escape is the keyboard form of clicking the dimmed area, and it follows the same two steps: an open
+        filter dropdown closes first, and a second Escape abandons the search being built and reverts to the
+        last searched filters. Closing a dropdown is the more common intent, so it never discards edits on
+        its own.
+
+        Only the desktop bar cancels this way; the mobile panel commits with its own Apply, and its modal
+        handles Escape itself.
+    */
     function onDocumentKeyDown(event: KeyboardEvent): void {
-        if (event.key === "Escape") {
-            openSection.value = null;
+        if (event.key !== "Escape") {
+            return;
         }
+
+        if (openSection.value !== null) {
+            openSection.value = null;
+            return;
+        }
+
+        if (!isDesktopFilterBar.value) {
+            return;
+        }
+
+        isFilterSessionActive.value = false;
+        revertPendingFilters();
     }
 
     // Clicking the dimmed results/map area cancels a pending search, reverting the filters to their last
@@ -2167,6 +2473,60 @@
     // rest), and when it reports it closed none is open.
     function onMobileSectionToggle(section: string, isCollapsed: boolean): void {
         mobileOpenSection.value = isCollapsed ? null : section;
+    }
+
+    // Whether an open segment offers its clear action in place of the caret. Only the open segment does,
+    // and only while it holds a value, so the action is never a control that would do nothing.
+    function isSegmentClearShown(section: "campus" | "where" | "when" | "what" | "more", summary: string): boolean {
+        return openSection.value === section && summary !== "";
+    }
+
+
+    /*
+        The More Filters button's X clears the applied filters rather than closing the panel, so the visitor
+        can empty it and keep working; the panel closes on the next click, once there is nothing left to
+        clear. Stopping the event is what keeps that click off DropDownContent's anchor, which would
+        otherwise toggle the panel shut in the same breath.
+    */
+    function onMoreFiltersButtonClick(event: MouseEvent): void {
+        if (!isMoreFiltersClearShown.value) {
+            return;
+        }
+
+        event.stopPropagation();
+        clearFilterSegment("more");
+    }
+
+    // Reset one segment's filters from its clear action, leaving the other segments alone. Like any other
+    // filter edit this only stages the change: the results and map keep showing the last searched set until
+    // the visitor commits it with Search.
+    function clearFilterSegment(section: "campus" | "where" | "when" | "what" | "more"): void {
+        switch (section) {
+            case "campus":
+                selectedCampuses.value = [];
+                break;
+
+            case "where":
+                selectedMeetingStyles.value = [];
+                origin.value = "";
+                isCurrentLocation.value = false;
+                isMapAreaLocation.value = false;
+                break;
+
+            case "when":
+                selectedDaysOfWeek.value = [];
+                selectedTimeOfDay.value = "";
+                break;
+
+            case "what":
+                searchTerm.value = "";
+                featuredAttributeSelections.value = {};
+                break;
+
+            case "more":
+                modalAttributeValues.value = {};
+                break;
+        }
     }
 
     // Reset every filter section to empty. The mobile bar and panel title fall back to "Start Your
@@ -2379,8 +2739,8 @@
         hidden behind an expanded sheet.
     */
     // Track Rock's admin footer so the collapsed sheet clears it. Read on the fit loop (drawer only) so it
-    // follows the bar appearing or disappearing with page-edit mode; offsetHeight is 0 when it is hidden or
-    // absent, which zeroes the offset for public visitors.
+    // follows the bar being revealed or hidden mid-session (the side nav opening and closing); offsetHeight
+    // is 0 when it is hidden or absent, which is every visitor and some themes (see drawerBottomOffset).
     function updateDrawerBottomOffset(): void {
         if (layoutMode.value !== "drawer") {
             if (drawerBottomOffset.value !== "0px") {
@@ -2606,10 +2966,13 @@
                 revealSelectedGroupInDrawer(guid);
             }
         }
+        else if (layoutMode.value === "stacked" && source === "card") {
+            // The stacked map sits above the list, so a card click reveals its marker up there - the same
+            // pairing the drawer makes, and the mirror of a marker click scrolling down to the card.
+            revealMapMarker(guid);
+        }
         else {
-            nextTick(() => {
-                document.querySelector(`[data-group-guid="${guid}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-            });
+            revealCardInList(guid);
         }
     });
 
@@ -2646,15 +3009,25 @@
         }
         updateFilterBarHeight();
 
-        // Drive the layout from the block's own width rather than the viewport, so it adapts
-        // to any placement. ResizeObserver fires on the element's box changing, which is more
-        // reliable than window resize events (which do not fire in every host context).
+        // Let the browser decide when each layout query flips, so the tier changes on the same pixel the
+        // stylesheets do rather than on a width this script measures and compares.
+        layoutQueries = [
+            { list: window.matchMedia(mobileFilterBarQuery), flag: isMobileFilterBarWidth },
+            { list: window.matchMedia(drawerQuery), flag: isDrawerWidth }
+        ];
+        for (const query of layoutQueries) {
+            query.flag.value = query.list.matches;
+            query.handler = (event: MediaQueryListEvent): void => {
+                query.flag.value = event.matches;
+            };
+            query.list.addEventListener("change", query.handler);
+        }
+
+        // The block's own box is watched for the drawer's map height, which follows it and can change
+        // without the viewport changing (a collapsing sidebar, a resized zone). A ResizeObserver rather
+        // than window resize events, which do not fire in every host context.
         if (root.value) {
-            blockWidth.value = root.value.clientWidth;
             blockObserver = new ResizeObserver(() => {
-                if (root.value) {
-                    blockWidth.value = root.value.clientWidth;
-                }
                 updateDrawerMapHeight();
             });
             blockObserver.observe(root.value);
@@ -2700,6 +3073,12 @@
         filterBarObserver?.disconnect();
         blockObserver?.disconnect();
         visibilityObserver?.disconnect();
+        for (const query of layoutQueries) {
+            if (query.handler) {
+                query.list.removeEventListener("change", query.handler);
+            }
+        }
+        layoutQueries = [];
         stopFitLoop();
         if (drawerModeSwapTimer !== undefined) {
             clearTimeout(drawerModeSwapTimer);
