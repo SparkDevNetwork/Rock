@@ -67,21 +67,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         public bool IsCampusFilterHidden { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the Where (location) filter is hidden.
-        /// </summary>
-        public bool IsWhereFilterHidden { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the When (schedule) filter is hidden.
-        /// </summary>
-        public bool IsWhenFilterHidden { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the What (attributes) filter is hidden.
-        /// </summary>
-        public bool IsWhatFilterHidden { get; set; }
-
-        /// <summary>
         /// Gets or sets the campus types offered by the Campus filter.
         /// </summary>
         public List<ListItemBag> CampusTypes { get; set; }

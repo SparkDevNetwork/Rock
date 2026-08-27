@@ -75,15 +75,6 @@ export type GroupFinderCustomSettingsBag = {
     /** Gets or sets whether the Time of Day filter is displayed. */
     isTimeOfDayFilterShown: boolean;
 
-    /** Gets or sets whether the What (attributes) filter is hidden. */
-    isWhatFilterHidden: boolean;
-
-    /** Gets or sets whether the When (schedule) filter is hidden. */
-    isWhenFilterHidden: boolean;
-
-    /** Gets or sets whether the Where (location) filter is hidden. */
-    isWhereFilterHidden: boolean;
-
     /** Gets or sets the map style applied to the results map. */
     mapStyle?: ListItemBag | null;
 

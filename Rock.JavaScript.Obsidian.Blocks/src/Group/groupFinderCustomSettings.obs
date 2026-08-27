@@ -43,7 +43,6 @@
                     </ContentStack>
 
                     <ContentStack title="Where">
-                        <CheckBox v-model="isWhereFilterHidden" label="Hide Where Filter" />
                         <CheckBoxList v-model="supportedMeetingStyles"
                                       label="Supported Meeting Styles"
                                       help="The meeting styles offered by the Where filter. When none are selected the Meeting Style filter is hidden."
@@ -54,13 +53,11 @@
                     </ContentStack>
 
                     <ContentStack title="When">
-                        <CheckBox v-model="isWhenFilterHidden" label="Hide When Filter" />
                         <CheckBox v-model="isDayOfWeekFilterShown" label="Display Day of Week Filter" />
                         <CheckBox v-model="isTimeOfDayFilterShown" label="Display Time of Day Filter" />
                     </ContentStack>
 
                     <ContentStack title="What">
-                        <CheckBox v-model="isWhatFilterHidden" label="Hide What Filter" />
                         <CheckBox v-model="isLiveSearchEnabled"
                                   label="Live Text Search"
                                   help="Renders a text field that filters groups by name as the visitor types." />
@@ -186,9 +183,6 @@
 
     // Filters.
     const isCampusFilterHidden = ref(false);
-    const isWhereFilterHidden = ref(false);
-    const isWhenFilterHidden = ref(false);
-    const isWhatFilterHidden = ref(false);
     const campusTypes = ref<ListItemBag[]>([]);
     const campusStatuses = ref<ListItemBag[]>([]);
     const isProximityEnabled = ref(false);
@@ -279,9 +273,6 @@
         setCustomSettingsBoxValue(box, "showAttributeOnCard", showAttributeOnCard.value);
 
         setCustomSettingsBoxValue(box, "isCampusFilterHidden", isCampusFilterHidden.value);
-        setCustomSettingsBoxValue(box, "isWhereFilterHidden", isWhereFilterHidden.value);
-        setCustomSettingsBoxValue(box, "isWhenFilterHidden", isWhenFilterHidden.value);
-        setCustomSettingsBoxValue(box, "isWhatFilterHidden", isWhatFilterHidden.value);
         setCustomSettingsBoxValue(box, "campusTypes", campusTypes.value);
         setCustomSettingsBoxValue(box, "campusStatuses", campusStatuses.value);
         setCustomSettingsBoxValue(box, "isProximityEnabled", isProximityEnabled.value);
@@ -330,9 +321,6 @@
             showAttributeOnCard.value = settings.showAttributeOnCard ?? [];
 
             isCampusFilterHidden.value = settings.isCampusFilterHidden;
-            isWhereFilterHidden.value = settings.isWhereFilterHidden;
-            isWhenFilterHidden.value = settings.isWhenFilterHidden;
-            isWhatFilterHidden.value = settings.isWhatFilterHidden;
             campusTypes.value = settings.campusTypes ?? [];
             campusStatuses.value = settings.campusStatuses ?? [];
             isProximityEnabled.value = settings.isProximityEnabled;

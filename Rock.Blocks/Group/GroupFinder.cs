@@ -73,27 +73,6 @@ namespace Rock.Blocks.Group
         Description = "When enabled, the Campus filter is not shown in the filter bar.",
         DefaultBooleanValue = false )]
 
-    [BooleanField( "Hide Where Filters",
-        Key = AttributeKey.HideWhereFilters,
-        Order = 20,
-        Category = AttributeCategory.CustomSetting,
-        Description = "When enabled, the Where (location) filter is not shown in the filter bar.",
-        DefaultBooleanValue = false )]
-
-    [BooleanField( "Hide When Filters",
-        Key = AttributeKey.HideWhenFilters,
-        Order = 30,
-        Category = AttributeCategory.CustomSetting,
-        Description = "When enabled, the When (schedule) filter is not shown in the filter bar.",
-        DefaultBooleanValue = false )]
-
-    [BooleanField( "Hide What Filters",
-        Key = AttributeKey.HideWhatFilters,
-        Order = 40,
-        Category = AttributeCategory.CustomSetting,
-        Description = "When enabled, the What (attributes) filter is not shown in the filter bar.",
-        DefaultBooleanValue = false )]
-
     [DefinedValueField( "Campus Types",
         Key = AttributeKey.CampusTypes,
         Order = 50,
@@ -101,7 +80,8 @@ namespace Rock.Blocks.Group
         Description = "The campus types offered by the campus filter.",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
         AllowMultiple = true,
-        IsRequired = false )]
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL )]
 
     [DefinedValueField( "Campus Statuses",
         Key = AttributeKey.CampusStatuses,
@@ -110,14 +90,15 @@ namespace Rock.Blocks.Group
         Description = "The campus statuses offered by the campus filter.",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
         AllowMultiple = true,
-        IsRequired = false )]
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN )]
 
     [BooleanField( "Enable Proximity Features",
         Key = AttributeKey.EnableProximityFeatures,
         Order = 70,
         Category = AttributeCategory.CustomSetting,
         Description = "Renders an address input and a Use Current Location action. Requires Google APIs to be configured.",
-        DefaultBooleanValue = false )]
+        DefaultBooleanValue = true )]
 
     [CustomCheckboxListField( "Supported Meeting Styles",
         Key = AttributeKey.SupportedMeetingStyles,
@@ -125,14 +106,15 @@ namespace Rock.Blocks.Group
         Category = AttributeCategory.CustomSetting,
         Description = "The meeting styles offered by the Where filter. When none are selected the Meeting Style filter is hidden.",
         ListSource = "InPerson^In-Person,Online^Online,Hybrid^Hybrid",
-        IsRequired = false )]
+        IsRequired = false,
+        DefaultValue = "InPerson" )]
 
     [BooleanField( "Display Day of Week Filter",
         Key = AttributeKey.DisplayDayOfWeekFilter,
         Order = 90,
         Category = AttributeCategory.CustomSetting,
         Description = "When enabled, a Day of Week filter is shown in the When section.",
-        DefaultBooleanValue = false )]
+        DefaultBooleanValue = true )]
 
     [BooleanField( "Display Time of Day Filter",
         Key = AttributeKey.DisplayTimeOfDayFilter,
@@ -146,7 +128,7 @@ namespace Rock.Blocks.Group
         Order = 110,
         Category = AttributeCategory.CustomSetting,
         Description = "Renders a text field that filters groups by name as the visitor types.",
-        DefaultBooleanValue = false )]
+        DefaultBooleanValue = true )]
 
     [AttributeField( "Display Attribute Filters",
         Key = AttributeKey.DisplayAttributeFilters,
@@ -201,14 +183,14 @@ namespace Rock.Blocks.Group
         Order = 175,
         Category = AttributeCategory.CustomSetting,
         Description = "The color of the group markers on the map. This one color drives every state via opacity: a solid 2px border with a light fill when hovered or selected, and a lighter border and fill otherwise.",
-        DefaultValue = "#D70015" )]
+        DefaultValue = "#2B7FFF" )]
 
     [ColorField( "Current Location Marker Color",
         Key = AttributeKey.CurrentLocationMarkerColor,
         Order = 176,
         Category = AttributeCategory.CustomSetting,
         Description = "The color of the \"you are here\" proximity marker (the visitor's current location or entered address) on the map.",
-        DefaultValue = "#EE7725" )]
+        DefaultValue = "#EF4444" )]
 
     [DefinedValueField( "Map Style",
         Key = AttributeKey.MapStyle,
@@ -268,9 +250,6 @@ namespace Rock.Blocks.Group
 
             // New to this block.
             public const string HideCampusFilters = "HideCampusFilters";
-            public const string HideWhereFilters = "HideWhereFilters";
-            public const string HideWhenFilters = "HideWhenFilters";
-            public const string HideWhatFilters = "HideWhatFilters";
             public const string EnableProximityFeatures = "EnableProximityFeatures";
             public const string SupportedMeetingStyles = "SupportedMeetingStyles";
             public const string DisplayDayOfWeekFilter = "DisplayDayOfWeekFilter";
@@ -299,7 +278,7 @@ namespace Rock.Blocks.Group
             /// The default group card template. Reproduces the block's built-in card content and
             /// documents the available merge fields in a leading comment block.
             /// </summary>
-            public const string GroupCardTemplate = @"{% comment %}
+            public const string GroupCardTemplate = @"/-
     Available merge fields for the group card:
       Group                - the full group entity (Group.Name, Group.Description, Group.Schedule, Group.GroupType, Group.Attributes, ...)
       GroupTypeName        - group type name, shown as the badge
@@ -315,68 +294,68 @@ namespace Rock.Blocks.Group
       DriveTime            - calculated driving time as a friendly label (""1 hr 20 min""), or empty when the group cannot be routed
       Attributes           - the ""show on card"" attributes, each with Label, Value, and IconCssClass
       RegisterUrl          - the register page URL for this group, or empty when no register page is set
-{% endcomment %}
+-/
 <div class=""group-finder-card-content"">
-    {%- if ShowImage -%}
-    {%- if ImageUrl and ImageUrl != '' -%}
+    {% if ShowImage %}
+    {% if ImageUrl and ImageUrl != '' %}
     <div class=""group-finder-card-media"">
         <img class=""group-finder-card-image"" src=""{{ ImageUrl }}"" alt=""{{ Group.Name | Escape }}"" />
-        {%- if GroupTypeName and GroupTypeName != '' -%}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{%- endif -%}
+        {% if GroupTypeName and GroupTypeName != '' %}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{% endif %}
     </div>
-    {%- else -%}
+    {% else %}
     <div class=""group-finder-card-media is-fallback"" style=""--group-finder-fallback-color: {{ GroupTypeColor | Default:'#4fd1c5' }}"">
-        {%- if GroupTypeName and GroupTypeName != '' -%}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{%- endif -%}
+        {% if GroupTypeName and GroupTypeName != '' %}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{% endif %}
     </div>
-    {%- endif -%}
-    {%- endif -%}
+    {% endif %}
+    {% endif %}
 
     <div class=""group-finder-card-body"">
-        {%- if DrivingDistance or StraightLineDistance or AverageAge -%}
+        {% if DrivingDistance or StraightLineDistance or AverageAge %}
         <div class=""group-finder-card-meta"">
-            {%- if DriveTime and DriveTime != '' -%}
+            {% if DriveTime and DriveTime != '' %}
             <span class=""group-finder-card-distance""><strong>Drive Time:</strong> {{ DriveTime }}{% if DrivingDistance %} ({{ DrivingDistance | Format:'0.0' }} mi){% endif %}</span>
-            {%- elsif StraightLineDistance -%}
+            {% elsif StraightLineDistance %}
             <span class=""group-finder-card-distance""><strong>Distance:</strong> ~{{ StraightLineDistance | Format:'0.0' }} mile{% if StraightLineDistance != 1 %}s{% endif %}</span>
-            {%- endif -%}
-            {%- if AverageAge -%}
+            {% endif %}
+            {% if AverageAge %}
             <span class=""group-finder-card-average-age""><strong>Avg Age:</strong> {{ AverageAge }} yrs</span>
-            {%- endif -%}
+            {% endif %}
         </div>
         <hr class=""group-finder-card-divider"" />
-        {%- endif -%}
+        {% endif %}
 
         <h3 class=""group-finder-card-title"">{{ Group.Name | Escape }}</h3>
 
-        {%- if ScheduleText and ScheduleText != '' -%}
+        {% if ScheduleText and ScheduleText != '' %}
         <div class=""group-finder-card-schedule"">{{ ScheduleText | Escape }}</div>
-        {%- endif -%}
+        {% endif %}
 
-        {%- if Group.Description and Group.Description != '' -%}
+        {% if Group.Description and Group.Description != '' %}
         <p class=""group-finder-card-description"">{{ Group.Description | Escape }}</p>
-        {%- endif -%}
+        {% endif %}
 
-        {%- assign attributeCount = Attributes | Size -%}
-        {%- assign hasCampus = false -%}
-        {%- if CampusName and CampusName != '' -%}{%- assign hasCampus = true -%}{%- endif -%}
-        {%- if hasCampus or attributeCount > 0 -%}
+        {% assign attributeCount = Attributes | Size %}
+        {% assign hasCampus = false %}
+        {% if CampusName and CampusName != '' %}{% assign hasCampus = true %}{% endif %}
+        {% if hasCampus or attributeCount > 0 %}
         <ul class=""group-finder-card-attributes"">
-            {%- if CampusName and CampusName != '' -%}
+            {% if CampusName and CampusName != '' %}
             <li class=""group-finder-card-attribute""><i class=""ti ti-map-pin""></i><span>{{ CampusName | Escape }}</span></li>
-            {%- endif -%}
-            {%- for attribute in Attributes -%}
+            {% endif %}
+            {% for attribute in Attributes %}
             <li class=""group-finder-card-attribute"">
-                {%- if attribute.IconCssClass and attribute.IconCssClass != '' -%}<i class=""{{ attribute.IconCssClass }}""></i>{%- endif -%}
+                {% if attribute.IconCssClass and attribute.IconCssClass != '' %}<i class=""{{ attribute.IconCssClass }}""></i>{% endif %}
                 <span>{{ attribute.Value | Escape }}</span>
             </li>
-            {%- endfor -%}
+            {% endfor %}
         </ul>
-        {%- endif -%}
+        {% endif %}
 
-        {%- if RegisterUrl and RegisterUrl != '' -%}
+        {% if RegisterUrl and RegisterUrl != '' %}
         <div class=""group-finder-card-footer"">
             <a class=""group-finder-card-action btn btn-primary"" href=""{{ RegisterUrl }}"">Register</a>
         </div>
-        {%- endif -%}
+        {% endif %}
     </div>
 </div>";
         }
@@ -449,19 +428,16 @@ namespace Rock.Blocks.Group
             // configuration message and hides the rest (IsUnconfigured drives that on the client).
             var isGroupTypeMissing = GetAttributeValue( AttributeKey.GroupTypes ).IsNullOrWhiteSpace();
 
-            // Each Where/When/What segment is hidden when it has no filter to show, on top of its explicit
-            // Hide setting, so an empty segment never renders. Contents: Where = Meeting Style and/or the
-            // proximity location search; When = Day of Week and/or Time of Day; What = Live Search and/or
-            // Featured Attributes.
+            // Each Where/When/What segment carries no setting of its own: it renders when at least one of
+            // its filters is configured and disappears when none are. Contents: Where = Meeting Style
+            // and/or the proximity location search; When = Day of Week and/or Time of Day; What = Live
+            // Search and/or Featured Attributes.
             var isMeetingStyleShown = meetingStyles.Any();
             var isDayOfWeekShown = GetAttributeValue( AttributeKey.DisplayDayOfWeekFilter ).AsBoolean();
             var isTimeOfDayShown = GetAttributeValue( AttributeKey.DisplayTimeOfDayFilter ).AsBoolean();
             var isLiveSearchEnabled = GetAttributeValue( AttributeKey.EnableLiveSearch ).AsBoolean();
             var hasFeaturedAttributes = featuredAttributeFilters.Any();
 
-            var isWhereFilterHidden = GetAttributeValue( AttributeKey.HideWhereFilters ).AsBoolean();
-            var isWhenFilterHidden = GetAttributeValue( AttributeKey.HideWhenFilters ).AsBoolean();
-            var isWhatFilterHidden = GetAttributeValue( AttributeKey.HideWhatFilters ).AsBoolean();
             var hasWhereFilters = isMeetingStyleShown || proximityEnabled;
             var hasWhenFilters = isDayOfWeekShown || isTimeOfDayShown;
             var hasWhatFilters = isLiveSearchEnabled || hasFeaturedAttributes;
@@ -470,27 +446,27 @@ namespace Rock.Blocks.Group
             var filterCampuses = GetFilterCampuses();
             var hasCampuses = filterCampuses.Any();
 
-            // A segment the admin left visible but gave no filters silently disappears; collect those so the
-            // configuration warning can nudge the admin (the segment is still hidden for visitors).
-            var emptyEnabledSegments = new List<string>();
-            if ( !isWhereFilterHidden && !hasWhereFilters )
+            // A segment with no filters configured is absent from the bar; collect those so the
+            // configuration message can tell an administrator why, since a visitor sees no trace of it.
+            var emptySegments = new List<string>();
+            if ( !hasWhereFilters )
             {
-                emptyEnabledSegments.Add( "Where" );
+                emptySegments.Add( "Where" );
             }
-            if ( !isWhenFilterHidden && !hasWhenFilters )
+            if ( !hasWhenFilters )
             {
-                emptyEnabledSegments.Add( "When" );
+                emptySegments.Add( "When" );
             }
-            if ( !isWhatFilterHidden && !hasWhatFilters )
+            if ( !hasWhatFilters )
             {
-                emptyEnabledSegments.Add( "What" );
+                emptySegments.Add( "What" );
             }
 
             // The Campus segment has no sub-filters to toggle; it is empty when no active campuses match the
             // configured Campus Types/Statuses. Like the other segments it hides for visitors and warns the admin.
             var isCampusFilterEmpty = !isCampusFilterHidden && !hasCampuses;
 
-            var configurationWarning = GetConfigurationWarning( isGroupTypeMissing, isMapConfigured && !isMapAvailable, proximityEnabled && !isGeocodingAvailable, isCampusFilterEmpty, emptyEnabledSegments );
+            var configurationWarning = GetConfigurationWarning( isGroupTypeMissing, isMapConfigured && !isMapAvailable, proximityEnabled && !isGeocodingAvailable, isCampusFilterEmpty, emptySegments );
 
             return new GroupFinderInitializationBox
             {
@@ -508,9 +484,9 @@ namespace Rock.Blocks.Group
                 IsUnconfigured = isGroupTypeMissing,
                 PageSize = ResultsPageSize,
                 IsCampusFilterShown = !isCampusFilterHidden && hasCampuses,
-                IsWhereFilterShown = !isWhereFilterHidden && hasWhereFilters,
-                IsWhenFilterShown = !isWhenFilterHidden && hasWhenFilters,
-                IsWhatFilterShown = !isWhatFilterHidden && hasWhatFilters,
+                IsWhereFilterShown = hasWhereFilters,
+                IsWhenFilterShown = hasWhenFilters,
+                IsWhatFilterShown = hasWhatFilters,
                 IsMeetingStyleFilterShown = isMeetingStyleShown,
                 IsDayOfWeekFilterShown = isDayOfWeekShown,
                 IsTimeOfDayFilterShown = isTimeOfDayShown,
@@ -549,15 +525,15 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Builds the message shown above the block: an everyone-visible message when no group types are selected (specific for an administrator, general otherwise), an administrator-only lead plus a bulleted list of issues when a Google key is missing or a visible filter segment has no filters, or nulls when nothing needs saying.
+        /// Builds the message shown above the block: an everyone-visible message when no group types are selected (specific for an administrator, general otherwise), an administrator-only lead plus a bulleted list of issues when a Google key is missing or a filter segment has no filters, or nulls when nothing needs saying.
         /// </summary>
         /// <param name="isGroupTypeMissing">Whether no group types are selected, leaving the finder with nothing to search.</param>
         /// <param name="isMapKeyMissing">Whether the map is enabled but the client Google Maps key is absent.</param>
         /// <param name="isGeocodingKeyMissing">Whether proximity is enabled but the server Google geocoding key is absent.</param>
         /// <param name="isCampusFilterEmpty">Whether the Campus segment is visible but no campuses are available to show.</param>
-        /// <param name="emptyEnabledSegments">The names of filter segments left visible but given no filters, so each silently fails to render.</param>
+        /// <param name="emptySegments">The names of filter segments given no filters, so each is absent from the bar.</param>
         /// <returns>The lead message (or <c>null</c> when nothing needs saying) and the bulleted issue list (<c>null</c> unless the not-fully-configured lead is returned).</returns>
-        private (string Message, List<string> Items) GetConfigurationWarning( bool isGroupTypeMissing, bool isMapKeyMissing, bool isGeocodingKeyMissing, bool isCampusFilterEmpty, IReadOnlyList<string> emptyEnabledSegments )
+        private (string Message, List<string> Items) GetConfigurationWarning( bool isGroupTypeMissing, bool isMapKeyMissing, bool isGeocodingKeyMissing, bool isCampusFilterEmpty, IReadOnlyList<string> emptySegments )
         {
             var isAdministrator = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
@@ -592,9 +568,9 @@ namespace Rock.Blocks.Group
             {
                 issues.Add( "The Campus filter is enabled but there are no campuses to show. Add an active campus (or adjust the Campus Types and Statuses in the block settings), or hide the Campus filter." );
             }
-            foreach ( var segment in emptyEnabledSegments )
+            foreach ( var segment in emptySegments )
             {
-                issues.Add( $"The {segment} filter is enabled but has no filters to show. Turn on one of its filters, or hide the {segment} filter in the block settings." );
+                issues.Add( $"The {segment} filter is not shown because none of its filters are configured. Turn on one of them in the block settings to offer it." );
             }
 
             if ( issues.Count == 0 )
@@ -1470,9 +1446,6 @@ namespace Rock.Blocks.Group
 
                 // Filters.
                 IsCampusFilterHidden = GetAttributeValue( AttributeKey.HideCampusFilters ).AsBoolean(),
-                IsWhereFilterHidden = GetAttributeValue( AttributeKey.HideWhereFilters ).AsBoolean(),
-                IsWhenFilterHidden = GetAttributeValue( AttributeKey.HideWhenFilters ).AsBoolean(),
-                IsWhatFilterHidden = GetAttributeValue( AttributeKey.HideWhatFilters ).AsBoolean(),
                 CampusTypes = GetAttributeValue( AttributeKey.CampusTypes ).DefinedValueGuidsToListItemBagList(),
                 CampusStatuses = GetAttributeValue( AttributeKey.CampusStatuses ).DefinedValueGuidsToListItemBagList(),
                 IsProximityEnabled = GetAttributeValue( AttributeKey.EnableProximityFeatures ).AsBoolean(),
@@ -1552,15 +1525,6 @@ namespace Rock.Blocks.Group
 
                 box.IfValidProperty( nameof( box.Settings.IsCampusFilterHidden ),
                     () => block.SetAttributeValue( AttributeKey.HideCampusFilters, box.Settings.IsCampusFilterHidden.ToString() ) );
-
-                box.IfValidProperty( nameof( box.Settings.IsWhereFilterHidden ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhereFilters, box.Settings.IsWhereFilterHidden.ToString() ) );
-
-                box.IfValidProperty( nameof( box.Settings.IsWhenFilterHidden ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhenFilters, box.Settings.IsWhenFilterHidden.ToString() ) );
-
-                box.IfValidProperty( nameof( box.Settings.IsWhatFilterHidden ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhatFilters, box.Settings.IsWhatFilterHidden.ToString() ) );
 
                 box.IfValidProperty( nameof( box.Settings.CampusTypes ),
                     () => block.SetAttributeValue( AttributeKey.CampusTypes, box.Settings.CampusTypes.ToCommaDelimitedValuesString() ) );
