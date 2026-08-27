@@ -26,38 +26,82 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /**
  * The lookup data the En Route Move Person modal needs to populate its
  * attendance selector and cascading Schedule / Location / Group dropdowns.
+ * Returned by the GetMovePersonOptions block action.
  */
 export type EnRouteMovePersonOptionsBag = {
-    /** Gets or sets the list of attendance options when the person is checked into multiple services. */
+    /**
+     * Gets or sets the list of attendance options when the person is
+     * checked into multiple services. Each item's Value is the attendance
+     * integer id (as a string), and Text describes the group, location,
+     * and schedule. Empty or single-item when only one attendance exists.
+     */
     attendances?: ListItemBag[] | null;
 
-    /** Gets or sets a value indicating whether the attendance selector should be shown. */
-    hasMultipleAttendances: boolean;
-
-    /** Gets or sets the instruction text shown when the person has multiple attendances. */
-    instructionText?: string | null;
-
-    /** Gets or sets the full list of schedules the person may be moved to. */
-    schedules?: ListItemBag[] | null;
-
-    /** Gets or sets the list of eligible locations keyed by the selected schedule's id-as-string. */
-    locationsBySchedule?: Record<string, ListItemBag[]> | null;
-
-    /** Gets or sets the list of eligible groups keyed by "{scheduleId}{Delimiter}{locationId}". */
-    groupsByScheduleAndLocation?: Record<string, ListItemBag[]> | null;
-
-    /** Gets or sets the delimiter used to compose the composite key in GroupsByScheduleAndLocation. */
-    groupListItemKeyDelimiter?: string | null;
-
-    /** Gets or sets the schedule id currently on the selected attendance's occurrence. */
-    currentScheduleId?: number | null;
-
-    /** Gets or sets the location id currently on the selected attendance's occurrence. */
-    currentLocationId?: number | null;
-
-    /** Gets or sets the group id currently on the selected attendance's occurrence. */
+    /**
+     * Gets or sets the group id currently on the selected attendance's
+     * occurrence. Used to pre-select the Group dropdown.
+     */
     currentGroupId?: number | null;
 
-    /** Gets or sets an error message when the options could not be computed. */
+    /**
+     * Gets or sets the location id currently on the selected attendance's
+     * occurrence. Used to pre-select the Location dropdown.
+     */
+    currentLocationId?: number | null;
+
+    /**
+     * Gets or sets the schedule id currently on the selected attendance's
+     * occurrence. Used to pre-select the Schedule dropdown when the
+     * modal opens.
+     */
+    currentScheduleId?: number | null;
+
+    /**
+     * Gets or sets an error message when the options could not be
+     * computed (e.g. the attendance no longer exists). Non-empty message
+     * tells the client to surface the text rather than opening the modal.
+     */
     errorMessage?: string | null;
+
+    /**
+     * Gets or sets the delimiter used to compose the composite key in
+     * GroupsByScheduleAndLocation. Passed through so the client uses the
+     * exact same delimiter as the server.
+     */
+    groupListItemKeyDelimiter?: string | null;
+
+    /**
+     * Gets or sets the list of eligible groups keyed by
+     * "{scheduleId}{Delimiter}{locationId}". Consumed client-side to
+     * cascade-filter the Group dropdown after Schedule + Location are
+     * picked.
+     */
+    groupsByScheduleAndLocation?: Record<string, ListItemBag[]> | null;
+
+    /**
+     * Gets or sets a value indicating whether the person has multiple
+     * attendances and the attendance selector should be shown.
+     */
+    hasMultipleAttendances: boolean;
+
+    /**
+     * Gets or sets the instruction text shown when the person has
+     * multiple attendances (e.g. "Person is en-route to multiple
+     * services. Select the one to be moved.").
+     */
+    instructionText?: string | null;
+
+    /**
+     * Gets or sets the list of eligible locations keyed by the selected
+     * schedule's id-as-string. Consumed client-side to cascade-filter
+     * the Location dropdown without a server round-trip.
+     */
+    locationsBySchedule?: Record<string, ListItemBag[]> | null;
+
+    /**
+     * Gets or sets the full list of schedules the person may be moved
+     * to, sorted by CheckinManagerHelper.GroupAndSortMovePersonOptions.
+     * Value is the schedule integer id (as a string).
+     */
+    schedules?: ListItemBag[] | null;
 };

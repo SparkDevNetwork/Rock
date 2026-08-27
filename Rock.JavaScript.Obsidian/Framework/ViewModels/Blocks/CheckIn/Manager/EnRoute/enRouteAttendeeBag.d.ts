@@ -28,39 +28,62 @@ import { Guid } from "@Obsidian/Types";
  * one person who may be checked into one or more services.
  */
 export type EnRouteAttendeeBag = {
-    /** Gets or sets the person's unique identifier, used as the grid row key. */
-    personGuid: Guid;
-
     /**
      * Gets or sets the attendance record identifiers for this person.
      * A person checked into multiple services will have multiple ids.
+     * Used by the Move Person modal to determine which attendance to
+     * move.
      */
     attendanceIds?: number[] | null;
-
-    /** Gets or sets the HTML img tag for the person's photo avatar. */
-    photoImageTag?: string | null;
-
-    /** Gets or sets the person's nick (preferred) name. */
-    nickName?: string | null;
-
-    /** Gets or sets the person's last name. */
-    lastName?: string | null;
 
     /** Gets or sets the person's full display name. */
     fullName?: string | null;
 
-    /** Gets or sets the parent names for child attendees. Null for adults. */
-    parentNames?: string | null;
-
-    /** Gets or sets the group name to display. */
+    /**
+     * Gets or sets the group name to display. When the "Show Only
+     * Parent Group" setting is enabled, this contains the parent group
+     * name; otherwise it contains the actual check-in group name.
+     */
     groupName?: string | null;
 
-    /** Gets or sets the group type path displayed as a subtitle under the group name. */
+    /**
+     * Gets or sets the group type path displayed as a subtitle under
+     * the group name. When "Show Only Parent Group" is enabled, this
+     * is the parent group's type path.
+     */
     groupPath?: string | null;
 
-    /** Gets or sets the comma-separated service times the person is checked into. */
-    serviceTimes?: string | null;
+    /** Gets or sets the person's last name. */
+    lastName?: string | null;
+
+    /** Gets or sets the person's nick (preferred) name. */
+    nickName?: string | null;
+
+    /**
+     * Gets or sets the parent names for child attendees. Null for
+     * adults.
+     */
+    parentNames?: string | null;
+
+    /**
+     * Gets or sets the person's unique identifier, used as the grid
+     * row key.
+     */
+    personGuid: Guid;
+
+    /**
+     * Gets or sets the HTML img tag for the person's photo avatar,
+     * including the appropriate no-photo silhouette when the person
+     * has no photo on file.
+     */
+    photoImageTag?: string | null;
 
     /** Gets or sets the room (location) name for the attendance. */
     roomName?: string | null;
+
+    /**
+     * Gets or sets the comma-separated service times the person is
+     * checked into.
+     */
+    serviceTimes?: string | null;
 };

@@ -21,16 +21,24 @@
 // </copyright>
 //
 
-/**
- * The response returned by the En Route MovePerson block action.
- */
+/** The response returned by the En Route MovePerson block action. */
 export type EnRouteMovePersonResponseBag = {
-    /** Gets or sets a value indicating whether the move was persisted successfully. */
+    /**
+     * Gets or sets a hard validation error message (missing required
+     * dropdown selection, attendance not found, etc.).
+     */
+    errorMessage?: string | null;
+
+    /**
+     * Gets or sets a value indicating whether the move was persisted
+     * successfully. When false, the modal should stay open and surface
+     * either the WarningMessage or ErrorMessage.
+     */
     isSuccess: boolean;
 
-    /** Gets or sets a non-blocking warning message (e.g. room at capacity). */
+    /**
+     * Gets or sets a non-blocking warning message (e.g. the destination
+     * location has hit its firm room threshold and refused the move).
+     */
     warningMessage?: string | null;
-
-    /** Gets or sets a hard validation error message. */
-    errorMessage?: string | null;
 };

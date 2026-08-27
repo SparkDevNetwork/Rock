@@ -38,31 +38,11 @@ export type EnRouteOptionsBag = {
     availableSchedules?: ListItemBag[] | null;
 
     /**
-     * Gets or sets the schedule integer ids that were previously selected
-     * in the cookie-based filter. Used to pre-select items in the schedule
-     * list box on the initial render.
-     */
-    selectedScheduleIds?: number[] | null;
-
-    /**
-     * Gets or sets the groups that were previously selected in the
-     * cookie-based filter, hydrated into ListItemBag format for the
-     * GroupPicker. Each item's Value is the group Guid (as a string).
-     */
-    selectedGroups?: ListItemBag[] | null;
-
-    /**
      * Gets or sets the check-in area group type Guids that the
      * GroupPicker should be limited to. Computed from the resolved
      * check-in area filter.
      */
     checkinAreaGroupTypeGuids?: Guid[] | null;
-
-    /**
-     * Gets or sets a value indicating whether the "Include Child Groups"
-     * checkbox was checked in the cookie-based filter.
-     */
-    isIncludeChildGroups: boolean;
 
     /**
      * Gets or sets a value indicating whether the "Always Show Child
@@ -72,10 +52,30 @@ export type EnRouteOptionsBag = {
     isAlwaysShowChildGroups: boolean;
 
     /**
+     * Gets or sets a value indicating whether the "Include Child Groups"
+     * checkbox was checked in the cookie-based filter.
+     */
+    isIncludeChildGroups: boolean;
+
+    /**
      * Gets or sets a value indicating whether the "Show Only Parent
      * Group" block setting is enabled. When true, the Group column
      * displays the parent group name and path instead of the actual
      * group.
      */
     isShowOnlyParentGroup: boolean;
+
+    /**
+     * Gets or sets the groups that were previously selected in the
+     * cookie-based filter, hydrated into ListItemBag format for the
+     * GroupPicker. Each item's Value is the group Guid (as a string).
+     */
+    selectedGroups?: ListItemBag[] | null;
+
+    /**
+     * Gets or sets the schedule integer ids that were previously selected
+     * in the cookie-based filter. Used to pre-select items in the schedule
+     * list box on the initial render.
+     */
+    selectedScheduleIds?: number[] | null;
 };

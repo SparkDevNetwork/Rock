@@ -22,18 +22,19 @@
 //
 
 /**
- * Payload the En Route Move Person modal sends to the MovePerson block action.
+ * Payload the En Route Move Person modal sends to the MovePerson block
+ * action.
  */
 export type EnRouteMovePersonRequestBag = {
     /** Gets or sets the attendance identifier to move. */
     attendanceId: number;
 
-    /** Gets or sets the selected schedule identifier. */
-    scheduleId?: number | null;
+    /** Gets or sets the selected group identifier. */
+    groupId?: number | null;
 
     /** Gets or sets the selected location identifier. */
     locationId?: number | null;
 
-    /** Gets or sets the selected group identifier. */
-    groupId?: number | null;
+    /** Gets or sets the selected schedule identifier. */
+    scheduleId?: number | null;
 };
