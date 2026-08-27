@@ -308,6 +308,19 @@ namespace Rock.Blocks.Group
         /// </summary>
         private bool? _isCurrentPersonGroupAdministrator;
 
+        /// <summary>
+        /// Per-request memo of the child group types the current person may
+        /// edit under the parent group identified by
+        /// <see cref="_authorizedChildGroupTypesParentGroupId"/>.
+        /// </summary>
+        private List<Model.GroupType> _authorizedChildGroupTypes;
+
+        /// <summary>
+        /// The parent group <see cref="_authorizedChildGroupTypes"/> was
+        /// computed for.
+        /// </summary>
+        private int? _authorizedChildGroupTypesParentGroupId;
+
         #endregion Fields
 
         #region Properties
@@ -392,37 +405,17 @@ namespace Rock.Blocks.Group
 
             // When a parent group narrows the allowed child types, auto-pick
             // the single option the current person is authorized to edit.
-            // Otherwise leave the field blank so the user makes the choice.
+            // Otherwise leave the group type blank so the user makes the
+            // choice; IsAuthorizedToEdit still admits the person to the form
+            // when more than one of the allowed types is editable.
             if ( entity.ParentGroup != null )
             {
-                var allowedChildGroupTypes = GetAllowedGroupTypes( GroupTypeCache.Get( entity.ParentGroup.GroupTypeId ), RockContext ).ToList();
-
-                var authorizedGroupTypes = new List<Model.GroupType>();
-                foreach ( var allowedGroupType in allowedChildGroupTypes )
-                {
-                    // Probe authorization by temporarily assigning each
-                    // candidate group type to the entity.
-                    entity.GroupTypeId = allowedGroupType.Id;
-                    entity.GroupType = allowedGroupType;
-
-                    if ( entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        authorizedGroupTypes.Add( allowedGroupType );
-                    }
-                }
+                var authorizedGroupTypes = GetAuthorizedChildGroupTypes( entity );
 
                 if ( authorizedGroupTypes.Count == 1 )
                 {
                     entity.GroupType = authorizedGroupTypes[0];
                     entity.GroupTypeId = authorizedGroupTypes[0].Id;
-                }
-                else
-                {
-                    // Reset so the user makes the selection. When no group
-                    // types are authorized, the downstream IsAuthorized
-                    // check falls back to parent-group authorization.
-                    entity.GroupType = null;
-                    entity.GroupTypeId = 0;
                 }
             }
         }
@@ -440,8 +433,9 @@ namespace Rock.Blocks.Group
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = IsAuthorizedToEdit( entity );
 
             if ( entity.Id != 0 )
             {
@@ -646,7 +640,8 @@ namespace Rock.Blocks.Group
             }
 
             var groupType = GetGroupTypeCache( entity );
-            var canEdit = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+            var canEdit = IsAuthorizedToEdit( entity );
             var canAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
             var hasChildGroups = entity.Id > 0 && new GroupService( RockContext ).Queryable().Any( g => g.ParentGroupId == entity.Id );
@@ -818,7 +813,7 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !IsAuthorizedToEdit( entity ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {Model.Group.FriendlyTypeName}." );
                 return false;
@@ -1887,15 +1882,16 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetGroupTypeOptions( int groupTypeId )
         {
-            // Re-check EDIT authorization on the entity. On the Add path
-            // the entity is fresh and inherits page-level authorization.
+            // Same gate as opening the editor. On the Add path the entity is
+            // fresh and may not have a group type yet, so the plain EDIT check
+            // would deny anyone whose rights come from the group type.
             var entity = GetInitialEntity();
             if ( entity == null )
             {
                 return ActionBadRequest( $"{Model.Group.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !IsAuthorizedToEdit( entity ) )
             {
                 return ActionBadRequest( $"Not authorized to edit {Model.Group.FriendlyTypeName}." );
             }
@@ -2037,6 +2033,86 @@ namespace Rock.Blocks.Group
 
             _cachedGroupType = GroupTypeCache.Get( entity.GroupTypeId );
             return _cachedGroupType;
+        }
+
+        /// <summary>
+        /// Whether the current person may enter edit mode: EDIT on the group,
+        /// or for a new group with no type yet, EDIT on any allowed child type.
+        /// </summary>
+        /// <param name="entity">The group to check.</param>
+        /// <returns><c>true</c> if edit mode is allowed; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToEdit( Model.Group entity )
+        {
+            /*
+                8/26/26 - MSE
+
+                A new group with no type yet has nothing to inherit from
+                (ParentAuthorityPre is only evaluated on the root entity), so the
+                plain check only sees the parent chain's explicit rules. Probe the
+                allowed child types instead, as legacy and the tree view do; Save
+                validates the type actually chosen (ValidateGroup).
+
+                Reason: Staff could not add child groups when the parent group type allowed multiple child group types.
+            */
+            if ( entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return true;
+            }
+
+            var isNewGroupAwaitingGroupType = entity.Id == 0
+                && entity.GroupTypeId <= 0
+                && entity.ParentGroup != null;
+
+            if ( !isNewGroupAwaitingGroupType )
+            {
+                return false;
+            }
+
+            return GetAuthorizedChildGroupTypes( entity ).Any();
+        }
+
+        /// <summary>
+        /// Gets the parent group's allowed child group types that the current
+        /// person may edit, probed by temporarily assigning each to the entity.
+        /// Empty when there is no parent group. Memoized per request.
+        /// </summary>
+        /// <param name="entity">The new group whose parent group is being checked.</param>
+        /// <returns>The allowed child group types the current person may edit.</returns>
+        private List<Model.GroupType> GetAuthorizedChildGroupTypes( Model.Group entity )
+        {
+            if ( entity?.ParentGroup == null )
+            {
+                return new List<Model.GroupType>();
+            }
+
+            if ( _authorizedChildGroupTypes != null && _authorizedChildGroupTypesParentGroupId == entity.ParentGroup.Id )
+            {
+                return _authorizedChildGroupTypes;
+            }
+
+            var authorizedGroupTypes = new List<Model.GroupType>();
+            var allowedChildGroupTypes = GetAllowedGroupTypes( GroupTypeCache.Get( entity.ParentGroup.GroupTypeId ), RockContext ).ToList();
+            var originalGroupTypeId = entity.GroupTypeId;
+            var originalGroupType = entity.GroupType;
+
+            foreach ( var allowedGroupType in allowedChildGroupTypes )
+            {
+                entity.GroupTypeId = allowedGroupType.Id;
+                entity.GroupType = allowedGroupType;
+
+                if ( entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    authorizedGroupTypes.Add( allowedGroupType );
+                }
+            }
+
+            entity.GroupTypeId = originalGroupTypeId;
+            entity.GroupType = originalGroupType;
+
+            _authorizedChildGroupTypes = authorizedGroupTypes;
+            _authorizedChildGroupTypesParentGroupId = entity.ParentGroup.Id;
+
+            return authorizedGroupTypes;
         }
 
         /// <summary>
