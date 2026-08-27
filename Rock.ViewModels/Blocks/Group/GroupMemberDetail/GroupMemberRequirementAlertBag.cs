@@ -62,6 +62,42 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public bool CanOverride { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this is a manual check
+        /// type requirement, which renders the mark-as-met checkbox link.
+        /// </summary>
+        public bool IsManualRequirement { get; set; }
+
+        /// <summary>
+        /// Gets or sets the label for the manual mark-as-met checkbox link,
+        /// from the requirement type's checkbox label or its name.
+        /// </summary>
+        public string ManualCheckboxLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the link text for launching the does-not-meet
+        /// workflow. Null when the link should not be shown.
+        /// </summary>
+        public string DoesNotMeetWorkflowLinkText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the link text for launching the warning workflow.
+        /// Null when the link should not be shown.
+        /// </summary>
+        public string WarningWorkflowLinkText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Due: {date}" text. Null when the requirement
+        /// is met or has no due date.
+        /// </summary>
+        public string DueDateText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tooltip describing who overrode the requirement
+        /// and when. Null when the requirement was not overridden.
+        /// </summary>
+        public string OverriddenText { get; set; }
+
+        /// <summary>
         /// Gets or sets the group requirement's unique identifier.
         /// </summary>
         public Guid GroupRequirementGuid { get; set; }

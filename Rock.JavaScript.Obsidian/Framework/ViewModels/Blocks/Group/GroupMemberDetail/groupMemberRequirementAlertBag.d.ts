@@ -36,6 +36,18 @@ export type GroupMemberRequirementAlertBag = {
     canOverride: boolean;
 
     /**
+     * Gets or sets the link text for launching the does-not-meet
+     * workflow. Null when the link should not be shown.
+     */
+    doesNotMeetWorkflowLinkText?: string | null;
+
+    /**
+     * Gets or sets the "Due: {date}" text. Null when the requirement
+     * is met or has no due date.
+     */
+    dueDateText?: string | null;
+
+    /**
      * Gets or sets the group member requirement's unique identifier.
      * Null when no requirement record exists yet for the member.
      */
@@ -45,10 +57,28 @@ export type GroupMemberRequirementAlertBag = {
     groupRequirementGuid: Guid;
 
     /**
+     * Gets or sets a value indicating whether this is a manual check
+     * type requirement, which renders the mark-as-met checkbox link.
+     */
+    isManualRequirement: boolean;
+
+    /**
+     * Gets or sets the label for the manual mark-as-met checkbox link,
+     * from the requirement type's checkbox label or its name.
+     */
+    manualCheckboxLabel?: string | null;
+
+    /**
      * Gets or sets whether the member meets the requirement. Drives
      * the alert style (met, not met, warning).
      */
     meetsGroupRequirement: MeetsGroupRequirement;
+
+    /**
+     * Gets or sets the tooltip describing who overrode the requirement
+     * and when. Null when the requirement was not overridden.
+     */
+    overriddenText?: string | null;
 
     /**
      * Gets or sets the status line shown under the title, from the
@@ -67,4 +97,10 @@ export type GroupMemberRequirementAlertBag = {
 
     /** Gets or sets the requirement type's icon CSS class. */
     typeIconCssClass?: string | null;
+
+    /**
+     * Gets or sets the link text for launching the warning workflow.
+     * Null when the link should not be shown.
+     */
+    warningWorkflowLinkText?: string | null;
 };

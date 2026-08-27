@@ -72,13 +72,44 @@
                             </NotificationBox>
 
                             <div v-if="requirementAlerts.length" class="row d-flex flex-wrap">
-                                <div v-for="alert in requirementAlerts"
-                                     :key="alert.groupRequirementGuid"
+                                <div v-for="requirementAlert in requirementAlerts"
+                                     :key="requirementAlert.groupRequirementGuid"
                                      class="col-md-4 mb-3 pr-0">
-                                    <div class="alert h-100 mb-0" :class="getRequirementAlertClass(alert)">
-                                        <strong>{{ alert.title }}</strong>
-                                        <div>{{ alert.statusText }}</div>
-                                        <div v-if="alert.summary" class="mt-3">{{ alert.summary }}</div>
+                                    <div class="alert h-100 mb-0 d-flex" :class="getRequirementAlertClass(requirementAlert)">
+                                        <span v-if="requirementAlert.typeIconCssClass" class="flex-shrink-0 mr-2">
+                                            <i :class="requirementAlert.typeIconCssClass"></i>
+                                        </span>
+                                        <div class="flex-fill">
+                                            <strong>{{ requirementAlert.title }}</strong>
+                                            <span v-if="requirementAlert.dueDateText" class="small ml-2">{{ requirementAlert.dueDateText }}</span>
+                                            <i v-if="requirementAlert.overriddenText"
+                                               class="ti ti-user-check ml-1"
+                                               :title="requirementAlert.overriddenText"></i>
+                                            <div>{{ requirementAlert.statusText }}</div>
+                                            <div v-if="requirementAlert.summary" class="mt-3">{{ requirementAlert.summary }}</div>
+                                            <ul v-if="isRequirementInteractionShown(requirementAlert)" class="list-unstyled list-requirements mt-2 mb-0">
+                                                <li v-if="isManualLinkShown(requirementAlert)">
+                                                    <a href="#" @click.prevent="onMarkManualRequirement(requirementAlert)">
+                                                        <i class="ti ti-square"></i> {{ requirementAlert.manualCheckboxLabel }}
+                                                    </a>
+                                                </li>
+                                                <li v-if="requirementAlert.doesNotMeetWorkflowLinkText">
+                                                    <a href="#" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, false)">
+                                                        <i class="ti ti-player-play"></i> {{ requirementAlert.doesNotMeetWorkflowLinkText }}
+                                                    </a>
+                                                </li>
+                                                <li v-if="requirementAlert.warningWorkflowLinkText">
+                                                    <a href="#" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, true)">
+                                                        <i class="ti ti-player-play"></i> {{ requirementAlert.warningWorkflowLinkText }}
+                                                    </a>
+                                                </li>
+                                                <li v-if="requirementAlert.canOverride">
+                                                    <a href="#" @click.prevent="onOverrideRequirement(requirementAlert)">
+                                                        <i class="ti ti-circle-check"></i> Mark as Met
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -129,15 +160,18 @@
             </ContentSectionContainer>
 
             <template #footerActions>
-                <RockButton :btnType="BtnType.Primary" @click="onStartSubmitForm">Save</RockButton>
-                <RockButton v-if="options.isSaveThenAddShown" :btnType="BtnType.Link" @click="onSaveThenAdd">Save Then Add</RockButton>
+                <RockButton :btnType="BtnType.Primary" :disabled="isSaving" @click="onStartSubmitForm">Save</RockButton>
+                <RockButton v-if="options.isSaveThenAddShown" :btnType="BtnType.Link" :disabled="isSaving" @click="onSaveThenAdd">Save Then Add</RockButton>
                 <RockButton :btnType="BtnType.Link" @click="onCancel">Cancel</RockButton>
             </template>
         </Panel>
     </RockForm>
 
     <AssignmentPreferenceModal v-model="isAssignmentModalShown" />
-    <RestoreArchivedModal v-model="isRestoreModalShown" />
+    <RestoreArchivedModal v-model="isRestoreModalShown"
+                          :message="restorePromptMessage"
+                          @restore="onRestoreArchivedMember"
+                          @decline="onDeclineRestore" />
     <MoveGroupMemberModal v-model="isMoveModalShown" />
     <QuickCommunicationModal v-model="isCommunicationModalShown" />
 </template>
@@ -163,14 +197,29 @@
     import QuickCommunicationModal from "./GroupMemberDetail/quickCommunicationModal.partial.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { GroupMemberStatus } from "@Obsidian/Enums/Group/groupMemberStatus";
     import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { alert as showAlert, confirm as showConfirm } from "@Obsidian/Utility/dialogs";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberBag";
     import { GroupMemberDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberDetailOptionsBag";
     import { GroupMemberRequirementAlertBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberRequirementAlertBag";
     import { RefreshRequirementsResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/refreshRequirementsResponseBag";
+    import { LaunchRequirementWorkflowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/launchRequirementWorkflowResponseBag";
+    import { SaveGroupMemberResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/saveGroupMemberResponseBag";
+
+    // #region Types
+
+    const enum NavigationUrlKey {
+        ParentPage = "ParentPage"
+    }
+
+    // #endregion Types
 
     const config = useConfigurationValues<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -196,6 +245,15 @@
 
     const isRefreshSuccessShown = ref(false);
     const isRefreshingRequirements = ref(false);
+
+    const isSaving = ref(false);
+
+    /** True when the pending save should reload the page in add mode. */
+    const isSaveThenAdd = ref(false);
+
+    // Restore prompt state from the last Save response.
+    const restorePromptMessage = ref("");
+    const archivedGroupMemberIdKey = ref("");
 
     /** Suppresses the person and role watchers while a whole detail box is being applied. */
     let isApplyingDetailBox = false;
@@ -253,30 +311,55 @@
      * Starts the RockForm submit so validation runs before onSave.
      */
     function onStartSubmitForm(): void {
+        isSaveThenAdd.value = false;
         submitForm.value = true;
     }
 
     /**
-     * Saves the group member via the Save block action.
+     * Starts the RockForm submit for a save that reloads in add mode.
      */
-    async function onSave(): Promise<void> {
-        // TODO: Assemble the ValidPropertiesBox from the field refs via setPropertiesBoxValue
-        // (converting roleId/memberStatus back to numbers), invoke the Save block action, and
-        // handle navigation, validation errors, and the restore prompt.
+    function onSaveThenAdd(): void {
+        isSaveThenAdd.value = true;
+        submitForm.value = true;
     }
 
     /**
-     * Saves the group member, then reloads the page in add mode.
+     * Saves the group member once the RockForm validation passes.
      */
-    async function onSaveThenAdd(): Promise<void> {
-        // TODO: Save, then full page reload with GroupMemberId=0 and carried parameters.
+    async function onSave(): Promise<void> {
+        await saveGroupMember(false);
+    }
+
+    /**
+     * Restores the archived member the Save response found, then reloads
+     * the block on the restored record.
+     */
+    async function onRestoreArchivedMember(): Promise<void> {
+        const result = await invokeBlockAction<string>("RestoreArchivedGroupMember", {
+            archivedGroupMemberIdKey: archivedGroupMemberIdKey.value
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to restore the archived group member.";
+            return;
+        }
+
+        window.location.href = makeUrlRedirectSafe(result.data);
+    }
+
+    /**
+     * Saves as a new record after the user declined restoring the archived
+     * member.
+     */
+    async function onDeclineRestore(): Promise<void> {
+        await saveGroupMember(true);
     }
 
     /**
      * Cancels editing and navigates back to the parent page or returnUrl.
      */
     function onCancel(): void {
-        // TODO: Navigate to returnUrl or the parent page URL.
+        window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ParentPage] ?? "/");
     }
 
     /**
@@ -287,6 +370,57 @@
 
         if (await refreshRequirements()) {
             isRefreshSuccessShown.value = true;
+        }
+    }
+
+    /**
+     * Marks a manual requirement as met.
+     */
+    async function onMarkManualRequirement(requirementAlert: GroupMemberRequirementAlertBag): Promise<void> {
+        await markRequirementAsMet(requirementAlert, false);
+    }
+
+    /**
+     * Overrides a requirement as met after confirmation.
+     */
+    async function onOverrideRequirement(requirementAlert: GroupMemberRequirementAlertBag): Promise<void> {
+        if (!await showConfirm("Are you sure you want to manually mark this requirement as met?")) {
+            return;
+        }
+
+        await markRequirementAsMet(requirementAlert, true);
+    }
+
+    /**
+     * Launches the requirement's does-not-meet or warning workflow, or
+     * navigates to one already started.
+     */
+    async function onLaunchRequirementWorkflow(requirementAlert: GroupMemberRequirementAlertBag, isWarningWorkflow: boolean): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<LaunchRequirementWorkflowResponseBag>("LaunchRequirementWorkflow", {
+            groupMemberIdKey: groupMemberIdKey.value,
+            groupRequirementGuid: requirementAlert.groupRequirementGuid,
+            isWarningWorkflow
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to start the workflow.";
+            return;
+        }
+
+        if (result.data.message) {
+            await showAlert(result.data.message);
+        }
+
+        if (result.data.workflowEntryUrl) {
+            // An existing workflow navigates directly; a newly started one opens in a new tab.
+            if (result.data.message) {
+                window.open(makeUrlRedirectSafe(result.data.workflowEntryUrl));
+            }
+            else {
+                window.location.href = makeUrlRedirectSafe(result.data.workflowEntryUrl);
+            }
         }
     }
 
@@ -308,6 +442,96 @@
             default:
                 return "alert-danger";
         }
+    }
+
+    /**
+     * Invokes the Save block action with the current field values and
+     * handles navigation, validation errors, and the restore prompt.
+     */
+    async function saveGroupMember(isRestoreDeclined: boolean): Promise<void> {
+        errorMessage.value = "";
+        isSaving.value = true;
+
+        try {
+            const box: ValidPropertiesBox<GroupMemberBag> = {
+                bag: { idKey: groupMemberIdKey.value } as GroupMemberBag
+            };
+
+            setPropertiesBoxValue(box, "person", person.value ?? null);
+            setPropertiesBoxValue(box, "groupRoleId", toNumberOrNull(roleId.value));
+            setPropertiesBoxValue(box, "groupMemberStatus", (toNumberOrNull(memberStatus.value) ?? GroupMemberStatus.Active) as GroupMemberStatus);
+            setPropertiesBoxValue(box, "note", note.value);
+
+            const result = await invokeBlockAction<SaveGroupMemberResponseBag>("Save", {
+                box,
+                isSaveThenAdd: isSaveThenAdd.value,
+                isRestoreDeclined
+            });
+
+            if (!result.isSuccess || !result.data) {
+                errorMessage.value = result.errorMessage ?? "Unable to save the group member.";
+                return;
+            }
+
+            if (result.data.isRestorePromptShown) {
+                restorePromptMessage.value = result.data.restorePromptMessage ?? "";
+                archivedGroupMemberIdKey.value = result.data.archivedGroupMemberIdKey ?? "";
+                isRestoreModalShown.value = true;
+                return;
+            }
+
+            if (result.data.navigationUrl) {
+                window.location.href = makeUrlRedirectSafe(result.data.navigationUrl);
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Gets whether the requirement alert's interaction links are shown.
+     */
+    function isRequirementInteractionShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+        if (!isEditable.value || options.value.isRequirementInteractionDisabled) {
+            return false;
+        }
+
+        return isManualLinkShown(requirementAlert)
+            || !!requirementAlert.doesNotMeetWorkflowLinkText
+            || !!requirementAlert.warningWorkflowLinkText
+            || requirementAlert.canOverride;
+    }
+
+    /**
+     * Gets whether the manual mark-as-met link is shown for the alert.
+     */
+    function isManualLinkShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+        return requirementAlert.isManualRequirement
+            && requirementAlert.meetsGroupRequirement !== MeetsGroupRequirement.Meets;
+    }
+
+    /**
+     * Marks the requirement as met, manually or as an override, and applies
+     * the refreshed alerts.
+     */
+    async function markRequirementAsMet(requirementAlert: GroupMemberRequirementAlertBag, isOverride: boolean): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<RefreshRequirementsResponseBag>("MarkRequirementAsMet", {
+            groupMemberIdKey: groupMemberIdKey.value,
+            groupRequirementGuid: requirementAlert.groupRequirementGuid,
+            isOverride
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to mark the requirement as met.";
+            return;
+        }
+
+        options.value.requirementAlerts = result.data.requirementAlerts ?? [];
+        options.value.requirementCalculationErrors = result.data.calculationErrors;
+        options.value.isRequirementInteractionDisabled = result.data.isRequirementInteractionDisabled;
     }
 
     /**
