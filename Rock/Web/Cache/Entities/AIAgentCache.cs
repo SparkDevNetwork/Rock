@@ -152,7 +152,7 @@ namespace Rock.Web.Cache.Entities
                     Description = tool.Description,
                     Preamble = additionalSettings.Preamble,
                     Instructions = instructions,
-                    Role = ModelServiceRole.Default, // TODO: Fix this
+                    Role = ModelServiceRole.Medium, // TODO: Fix this
                     ToolType = tool.ToolType,
                     Prompt = prompt.Prompt ?? string.Empty,
                     EnableLavaPreRendering = prompt.PreRenderLava,

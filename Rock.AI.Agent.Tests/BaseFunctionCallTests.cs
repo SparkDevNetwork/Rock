@@ -14,7 +14,6 @@ using Rock.Enums.AI.Agent;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.AI.Agent.Tests;
 
@@ -22,7 +21,7 @@ namespace Rock.AI.Agent.Tests;
 /// Base class for function call tests that provides common functionality for
 /// setting up and configuring the chat agent to call a specific function.
 /// </summary>
-public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
+public abstract class BaseFunctionCallTests
 {
     /// <summary>
     /// Configure a chat agent for testing with the specified function and seed.
@@ -44,8 +43,7 @@ public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
 
         providerMock.Setup( m => m.GetAttributeValue( "ApiKey" ) ).Returns( apiKey );
 
-        // Create mocks for accessing the database.
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        // Create a mock for accessing the database.
         var rockContextFactoryMock = new Mock<IRockContextFactory>();
 
         // Create a mock for accessing the request context. This is used to

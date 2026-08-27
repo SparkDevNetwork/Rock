@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -33,8 +32,6 @@ namespace Rock.Tests.Shared.TestFramework
 {
     public static class TestHelper
     {
-        public const string DefaultTaskName = "Main Test Action";
-
         static TestHelper()
         {
             // Add the console as the default trace output.
@@ -51,116 +48,6 @@ namespace Rock.Tests.Shared.TestFramework
             Trace.WriteLine( $"[{timestamp}] {message}" );
         }
 
-        /// <summary>
-        /// Gets the path to the RockWeb folder. This is determined automatically
-        /// by searching for the solution file.
-        /// </summary>
-        /// <returns>The path to the RockWeb folder or <c>null</c> if it could not be determined.</returns>
-        public static string GetRockWebPath()
-        {
-            var directory = new DirectoryInfo( Directory.GetCurrentDirectory() );
-
-            while ( directory != null )
-            {
-                var solutionFile = Path.Combine( directory.FullName, "Rock.sln" );
-
-                if ( File.Exists( solutionFile ) )
-                {
-                    return Path.Combine( directory.FullName, "RockWeb" ) + Path.DirectorySeparatorChar;
-                }
-
-                directory = directory.Parent;
-            }
-
-            return null;
-        }
-
-        #region Stopwatch
-
-        private static Dictionary<string, Stopwatch> _stopwatches = new Dictionary<string, Stopwatch>( StringComparer.OrdinalIgnoreCase );
-
-        /// <summary>
-        /// Starts or restarts a named timer.
-        /// </summary>
-        /// <param name="name"></param>
-        public static Stopwatch ExecuteWithTimer( string message, Action testMethod )
-        {
-            var stopwatch = StartTimer( message );
-            try
-            {
-                testMethod();
-            }
-            catch ( Exception ex )
-            {
-                Log( $"** ERROR:\n{ex.Message}" );
-            }
-            finally
-            {
-                EndTimer( message );
-            }
-
-            return stopwatch;
-        }
-
-        /// <summary>
-        /// Starts or restarts a named timer.
-        /// </summary>
-        /// <param name="name"></param>
-        public static Stopwatch StartTimer( string name = DefaultTaskName )
-        {
-            Stopwatch stopwatch;
-            if ( _stopwatches.ContainsKey( name ) )
-            {
-                stopwatch = _stopwatches[name];
-            }
-            else
-            {
-                stopwatch = new Stopwatch();
-                _stopwatches[name] = stopwatch;
-                Log( $"** START: {name}" );
-            }
-            stopwatch.Start();
-
-            return stopwatch;
-        }
-
-        /// <summary>
-        /// Pauses the named timer.
-        /// </summary>
-        /// <param name="name"></param>
-        public static void PauseTimer( string name = DefaultTaskName )
-        {
-            if ( !_stopwatches.ContainsKey( name ) )
-            {
-                return;
-            }
-
-            var stopwatch = _stopwatches[name];
-            stopwatch.Stop();
-        }
-
-        /// <summary>
-        /// Finalizes the named timer and prints the elapsed time to debug output.
-        /// </summary>
-        /// <param name="name"></param>
-        public static Stopwatch EndTimer( string name = DefaultTaskName )
-        {
-            if ( !_stopwatches.ContainsKey( name ) )
-            {
-                return null;
-            }
-
-            var stopwatch = _stopwatches[name];
-            stopwatch.Stop();
-            _stopwatches.Remove( name );
-
-            Log( $"**   END: {name} ({stopwatch.ElapsedMilliseconds}ms)" );
-
-            return stopwatch;
-        }
-
-        #endregion
-
         #region RockApp Initialization
 
         /// <summary>
@@ -168,7 +55,7 @@ namespace Rock.Tests.Shared.TestFramework
         /// connection string, which may be <c>null</c>.
         /// </summary>
         /// <param name="connectionString">The connection string to use for configuring the RockApp.</param>
-        public static void ConfigureRockApp( string connectionString )
+        internal static void ConfigureRockApp( string connectionString )
         {
             var app = CreateRockApp( connectionString, null );
 
@@ -182,56 +69,37 @@ namespace Rock.Tests.Shared.TestFramework
         /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
         public static RockAppScope CreateScopedRockApp()
         {
-            return CreateScopedRockApp( null, null );
+            return CreateScopedRockApp( null );
         }
 
         /// <summary>
-        /// Creates a new scoped RockApp instance with no database configuration.
+        /// Creates a new scoped RockApp instance with database configuration.
         /// When the instance is no longer required the scope should be disposed.
         /// </summary>
         /// <param name="configureApp">A function to call to perform additional configuration of the services.</param>
         /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
         public static RockAppScope CreateScopedRockApp( Action<ServiceCollection> configureApp )
         {
-            return CreateScopedRockApp( null, configureApp );
-        }
-
-        /// <summary>
-        /// Creates a new scoped RockApp instance with database configuration.
-        /// When the instance is no longer required the scope should be disposed.
-        /// </summary>
-        /// <param name="connectionString">The connection string to use when connecting to the database.</param>
-        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
-        public static RockAppScope CreateScopedRockApp( string connectionString )
-        {
-            return CreateScopedRockApp( connectionString, null );
-        }
-
-        /// <summary>
-        /// Creates a new scoped RockApp instance with database configuration.
-        /// When the instance is no longer required the scope should be disposed.
-        /// </summary>
-        /// <param name="connectionString">The connection string to use when connecting to the database.</param>
-        /// <param name="configureApp">A function to call to perform additional configuration of the services.</param>
-        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
-        public static RockAppScope CreateScopedRockApp( string connectionString, Action<ServiceCollection> configureApp )
-        {
-            var app = CreateRockApp( connectionString, configureApp );
-
-            return new RockAppScope( app );
-        }
-
-        /// <summary>
-        /// Creates a new scoped RockApp instance with a mock database configuration.
-        /// The database can be accessed via the IRockContextFactory service.
-        /// </summary>
-        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
-        public static RockAppScope CreateScopedRockAppWithMockDatabase()
-        {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            return CreateScopedRockApp( "Server=localhost\\MockInstance;Database=Rock", sc => sc.AddSingleton( rockContextFactory ) );
+            // Provide a mocked IDatabaseConfiguration. The real implementation
+            // queries a live database in its constructor to determine the
+            // platform, version, edition and size - none of which is available
+            // when running against a mocked context. Using the real one would
+            // open a connection to a non-existent server and block until the
+            // connection timeout elapsed.
+            var databaseConfigurationMock = new Mock<IDatabaseConfiguration>( MockBehavior.Loose );
+            databaseConfigurationMock.Setup( m => m.IsDatabaseAvailable ).Returns( true );
+
+            var app = CreateRockApp( "Server=localhost\\MockInstance;Database=Rock", sc =>
+            {
+                sc.AddSingleton( rockContextFactory );
+                sc.AddSingleton<IDatabaseConfiguration>( databaseConfigurationMock.Object );
+                configureApp?.Invoke( sc );
+            } );
+
+            return new RockAppScope( app );
         }
 
         /// <summary>
@@ -270,6 +138,30 @@ namespace Rock.Tests.Shared.TestFramework
             }
 
             return app;
+        }
+
+        /// <summary>
+        /// Gets the path to the RockWeb folder. This is determined automatically
+        /// by searching for the solution file.
+        /// </summary>
+        /// <returns>The path to the RockWeb folder or <c>null</c> if it could not be determined.</returns>
+        private static string GetRockWebPath()
+        {
+            var directory = new DirectoryInfo( Directory.GetCurrentDirectory() );
+
+            while ( directory != null )
+            {
+                var solutionFile = Path.Combine( directory.FullName, "Rock.sln" );
+
+                if ( File.Exists( solutionFile ) )
+                {
+                    return Path.Combine( directory.FullName, "RockWeb" ) + Path.DirectorySeparatorChar;
+                }
+
+                directory = directory.Parent;
+            }
+
+            return null;
         }
 
         /// <summary>

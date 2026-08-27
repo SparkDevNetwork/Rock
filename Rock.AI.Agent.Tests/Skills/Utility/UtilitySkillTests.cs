@@ -8,14 +8,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Enums.AI.Agent;
 using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.AI.Agent.Tests.Skills.Utility;
 
 [TestClass]
 [MethodIgnoreIf( nameof( HasRequiredConfiguration ), "Missing configuration settings in app.TestSettings.config file." )]
 [MethodIgnoreIf( nameof( TestsAreDisabled ), "Test disabled in in app.TestSettings.config file." )]
-public class UtilitySkillTests : MockDatabaseTestsBase
+public class UtilitySkillTests
 {
     /// <summary>
     /// Checks if the required configuration settings for integration tests are present.

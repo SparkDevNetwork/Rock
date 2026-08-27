@@ -74,7 +74,10 @@ namespace Rock.AI.Agent
         #region Methods
 
         /// <summary>
-        /// Initializes the component for use with a chat agent.
+        /// Initializes the component for use with a chat agent. Unit tests reach
+        /// this through the <c>InitializeForTesting</c> helper in
+        /// <c>Rock.Tests.Shared.TestAccess.AI.Agent</c>, which has access to this
+        /// internal method; keep that helper in sync with this signature.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="agentRequestContext">The context for this chat agent request.</param>

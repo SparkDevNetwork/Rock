@@ -41,7 +41,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentPurpose( "Reads the code around a known location, after SearchCode or GrepCode has found it." )]
     [AgentUsage( "Ask for the smallest range that answers the question, then widen if needed. Use GetCodeFile only when the whole file is genuinely needed." )]
     [AgentToolPrerequisite( "Take documentId from SearchCode or GrepCode. It cannot be constructed." )]
-    [AgentToolReturnDescription( "The requested lines with their line numbers, the file path, the file's total line count, and whether more lines follow the range returned." )]
+    [AgentToolReturnDescription( "The requested lines exactly as the code service returns them, carrying code_document_id, file_path, repo, rock_version, and lines. Response metadata carries start_line, end_line, total_lines, and has_more. Trust has_more rather than comparing end_line against total_lines." )]
     [AgentToolGuid( "DB33743D-B2A7-4CD8-A6BA-9576EA83DD35" )]
     [AgentToolPreamble( "Reading Rock Source" )]
     public async Task<AgentToolResult> GetCodeLines( string documentId, int startLine, int endLine )
@@ -66,27 +66,12 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             return DescribeCodeDocumentFailure( response );
         }
 
-        var data = response.Data;
-
-        var result = new CodeLinesResult
-        {
-            FilePath = data.GetString( "file_path" ),
-
-            // Paging values live in meta, but are read from data as a fallback so a
-            // shape change on the service moves this from wrong to merely stale.
-            StartLine = response.Meta.GetNullableInt( "start_line" ) ?? data.GetInt( "start_line", startLine ),
-            EndLine = response.Meta.GetNullableInt( "end_line" ) ?? data.GetInt( "end_line", endLine ),
-            TotalLines = response.Meta.GetNullableInt( "total_lines" ) ?? data.GetInt( "total_lines" ),
-
-            // Read from the service rather than derived by comparing EndLine against
-            // TotalLines. The derived check fails at boundaries, notably when a per
-            // call cap returns fewer lines than were asked for without reaching the
-            // end of the file. The service already computed the answer.
-            HasMore = response.Meta.GetBool( "has_more" ),
-            Lines = data.GetStringList( "lines" )
-        };
-
-        return Success( result );
+        // Paging lives in meta rather than in the payload, so it is surfaced as
+        // metadata. has_more in particular is the service's own answer and must not
+        // be derived by comparing end_line against total_lines, which is wrong at a
+        // boundary where a per call cap returned fewer lines than were asked for.
+        return Success( response.Data.ToPlainObject() )
+            .WithMetadata( response.Meta.ToPlainMetadata() );
     }
 
     #endregion

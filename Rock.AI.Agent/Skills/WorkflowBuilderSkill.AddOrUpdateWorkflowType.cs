@@ -29,6 +29,17 @@ namespace Rock.AI.Agent.Skills;
 
 internal sealed partial class WorkflowBuilderSkill
 {
+    #region Constants
+
+    /// <summary>
+    /// The processing interval given to a new workflow type when the caller does not
+    /// ask for one, in seconds. One day, which Rock's own screen would show as 1440
+    /// minutes.
+    /// </summary>
+    private const int DefaultProcessingIntervalSeconds = 86400;
+
+    #endregion
+
     #region Tool(s)
 
     /// <summary>
@@ -50,7 +61,7 @@ internal sealed partial class WorkflowBuilderSkill
         string name = null,
         SetOrClear<string> description = null,
         bool? isActive = null,
-        [Description( "Whether instances are saved to the database. Defaults to false. Persisting every workflow is the most common performance mistake in Rock, so turn this on only when the history is genuinely needed." )]
+        [Description( "Whether every instance is saved to the database from the moment it is created. Defaults to false. Persisting every workflow is the most common performance mistake in Rock, so leave this off unless the workflow has no forms and its state must exist before any of them. For a workflow with a form, add a Workflow Persist action after the form instead, which saves the submitted values without creating a row for people who never finish." )]
         bool? isPersisted = null,
         [Description( "How much detail is written to the workflow log. Defaults to None. Verbose logging on a busy workflow produces a large amount of data." )]
         WorkflowLoggingLevel? loggingLevel = null,
@@ -66,7 +77,7 @@ internal sealed partial class WorkflowBuilderSkill
         SetOrClear<string> workflowIdPrefix = null,
         [Description( "The URL fragment this workflow's form is reached by, when it is used as a public entry form." )]
         SetOrClear<string> slug = null,
-        [Description( "How long to wait between processing passes, in seconds. Zero means process immediately. Raise it for a workflow that polls rather than reacts." )]
+        [Description( "The shortest time that must pass before the Process Workflows job picks up the same waiting instance again, in seconds. Rock's own screen asks for this in minutes, so multiply by 60. Defaults to 86400 (one day) on a new workflow type." )]
         SetOrClear<int> processingIntervalSeconds = null,
         [Description( "How many days of workflow log entries to keep. Omit to keep them indefinitely, which on a busy workflow is how the log becomes the largest table in the database." )]
         SetOrClear<int> logRetentionPeriod = null,
@@ -112,7 +123,25 @@ internal sealed partial class WorkflowBuilderSkill
 
             workflowType.IsActive = true;
             workflowType.WorkTerm = "Work";
-            workflowType.ProcessingIntervalSeconds = 0;
+
+            /*
+                8/18/26 - CLAUDE
+
+                Seeded to one day rather than zero. This value only gates how often the
+                Process Workflows job revisits a persisted instance that is waiting, so
+                it costs a workflow that runs straight through nothing: that workflow
+                finishes on its first pass and is never revisited. Zero meant every
+                waiting instance was re-examined on every job run, which is the setting
+                that hurts on a workflow type with a lot of open instances, and it was
+                being applied by default to workflow types nobody had thought about.
+
+                Rock's own workflow type screen seeds 28800 (8 hours) for the same
+                reason. A day is used here instead because a caller who cared about the
+                interval would have said so.
+
+                Reason: A default nobody chose should be the cheap one.
+            */
+            workflowType.ProcessingIntervalSeconds = DefaultProcessingIntervalSeconds;
 
             // Both defaults are deliberate rather than inherited. Persisting
             // every workflow is the most common performance mistake in Rock, and

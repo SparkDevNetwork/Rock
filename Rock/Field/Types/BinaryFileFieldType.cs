@@ -440,6 +440,39 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Implemented here rather than on each descendant because they all store the
+        /// same thing. File, Image, Label, Audio File, Video File and Background Check
+        /// differ in what they will accept and how they render, not in the shape of
+        /// the value.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var binaryFileTypeGuid = privateConfigurationValues.GetValueOrNull( BINARY_FILE_TYPE ).AsGuidOrNull();
+            var binaryFileType = binaryFileTypeGuid.HasValue
+                ? BinaryFileTypeCache.Get( binaryFileTypeGuid.Value )
+                : null;
+
+            var valueFormat = "The guid of a row in the BinaryFile table. Not its id or idKey, and not a file name or url.";
+
+            if ( binaryFileType != null )
+            {
+                valueFormat += $" The file must belong to the '{binaryFileType.Name}' binary file type.";
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = valueFormat,
+                Instructions = "A value here points at a file that has already been uploaded, so it is the guid of an existing BinaryFile rather than file content or a path. A guid that does not match a stored file leaves the field looking empty rather than reporting a problem."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

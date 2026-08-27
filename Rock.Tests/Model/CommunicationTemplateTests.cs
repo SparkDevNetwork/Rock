@@ -888,11 +888,11 @@ namespace Rock.Tests.Model
 
 </html>";
             var defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplate, null, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
 
             // see if it still ok after running it again
             defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplateOutput, null, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
         }
 
         /// <summary>
@@ -912,11 +912,11 @@ namespace Rock.Tests.Model
 
             var actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
 
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
 
             // see if it still ok after running it again
             actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
         }
 
         /// <summary>
@@ -946,11 +946,11 @@ namespace Rock.Tests.Model
   <body>
 </html>";
             string actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
 
             // see if it still ok after running it again
             actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
         }
 
         /// <summary>
@@ -986,11 +986,11 @@ namespace Rock.Tests.Model
   <body>
 </html>";
             string actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
 
             // see if it still ok after running it again
             actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
         }
 
         /// <summary>
@@ -1010,11 +1010,11 @@ namespace Rock.Tests.Model
 </noscript>
 ";
             string actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
 
             // see if it still ok after running it again
             actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
         }
 
         /// <summary>
@@ -1049,11 +1049,11 @@ namespace Rock.Tests.Model
 {% endif %}";
 
             string actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
 
             // see if it still ok after running it again
             actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
-            Assert.That.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+            Assert.AreEqual( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
         }
     }
 }

@@ -34,6 +34,11 @@ namespace Rock.Enums.AI.Agent
         /// <summary>
         /// Fast, low-cost, general-purpose model for chat and standard tasks.
         /// </summary>
-        Default,
+        Medium = 0,
+
+        /// <summary>
+        /// High-performance model for high reasoning and code generation tasks.
+        /// </summary>
+        High = 1,
     }
 }

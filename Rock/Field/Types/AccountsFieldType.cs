@@ -214,6 +214,23 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. A chart of accounts is a tree and can be large, so the shape
+            // of the value and where to get one is what can usefully be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the FinancialAccount table, separated by commas. Not their ids or idKeys.",
+                Instructions = "To find the correct values, read the financial accounts and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -106,6 +106,19 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                ValueFormat = "Two dates separated by a comma, the lower bound first, as in 2026-01-01,2026-12-31. Either side may be left empty to leave that end of the range open, so ,2026-12-31 means everything up to that date and 2026-01-01, means everything from it onward. The comma is required even when one side is empty. Use ISO 8601 dates so the value does not depend on the server's culture."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

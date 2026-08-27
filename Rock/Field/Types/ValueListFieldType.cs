@@ -21,10 +21,13 @@ using System.Web;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -41,6 +44,8 @@ namespace Rock.Field.Types
     public class ValueListFieldType : FieldType, IEntityReferenceFieldType
     {
         private const string VALUES_KEY = "values";
+        private const string ALLOW_HTML = "allowhtml";
+        private const string ALLOW_LAVA = "allowlava";
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
 
         #region Configuration
@@ -222,6 +227,29 @@ namespace Rock.Field.Types
             return values.JoinStrings( "|" );
         }
 
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            var allowHtml = privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
+            var allowLava = privateConfigurationValues.GetValueOrDefault( ALLOW_LAVA, string.Empty ).AsBoolean();
+
+            if ( allowHtml && allowLava )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.LavaAndBasicHtml );
+            }
+            else if ( allowHtml )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.BasicHtml );
+            }
+            else if ( allowLava )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
+                    excludedRules: StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands );
+            }
+
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText );
+        }
+
         #endregion
 
         #region Filter Control
@@ -287,6 +315,38 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Three things here are easy to get wrong and none of them raise an error:
+        /// the delimiter is a pipe rather than the usual comma, each entry is url
+        /// encoded, and when a defined type is configured the entries are defined
+        /// value ids rather than the guids nearly every other field type stores.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var definedType = DefinedTypeCache.Get( privateConfigurationValues.GetValueOrNull( "definedtype" ).AsInteger() );
+
+            if ( definedType != null )
+            {
+                return new FieldTypeHints
+                {
+                    IsCompleteList = false,
+                    ValueFormat = $"One or more ids of DefinedValues from the '{definedType.Name}' defined type, separated by pipes rather than commas, as in 12|15|19. These are ids, not guids and not idKeys. Each entry is url encoded when read back, so a value containing a pipe or a percent sign must be percent encoded.",
+                    Instructions = $"To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey} and take the id of each one you want."
+                };
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more text entries separated by pipes rather than commas, as in first|second|third. Each entry is url encoded, so an entry that itself contains a pipe or a percent sign must be percent encoded."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -300,7 +360,8 @@ namespace Rock.Field.Types
             configKeys.Add( "valueprompt" );
             configKeys.Add( "definedtype" );
             configKeys.Add( "customvalues" );
-            configKeys.Add( "allowhtml" );
+            configKeys.Add( ALLOW_HTML );
+            configKeys.Add( ALLOW_LAVA );
             return configKeys;
         }
 
@@ -340,13 +401,23 @@ namespace Rock.Field.Types
             tbCustomValues.Label = "Custom Values";
             tbCustomValues.Help = "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1^text1,value2^text2,value3^text3,...'.";
 
-            var cbAllowHtml = new RockCheckBox();
+            var cbAllowHtml = new RockCheckBox
+            {
+                // turn on AutoPostBack so that it'll create the Editor control based on AllowHtml
+                AutoPostBack = true,
+                Label = "Allow HTML",
+                Help = "Allow HTML content in values."
+            };
             controls.Add( cbAllowHtml );
 
-            // turn on AutoPostBack so that it'll create the Editor control based on AllowHtml
-            cbAllowHtml.AutoPostBack = true;
-            cbAllowHtml.Label = "Allow HTML";
-            cbAllowHtml.Help = "Allow HTML content in values.";
+            var cbAllowLava = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Allow Lava",
+                Help = "Controls whether server should allow Lava syntax in this field or not. This can often be a security risk so use with caution.",
+            };
+            cbAllowLava.CheckedChanged += OnQualifierUpdated;
+            controls.Add( cbAllowLava );
 
             return controls;
         }
@@ -362,7 +433,8 @@ namespace Rock.Field.Types
             configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
             configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1^text1,value2^text2,value3^text3,...'.", "" ) );
-            configurationValues.Add( "allowhtml", new ConfigurationValue( "Allow HTML", "Allow HTML content in values", "" ) );
+            configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Allow HTML content in values", "" ) );
+            configurationValues.Add( ALLOW_LAVA, new ConfigurationValue( "Allow Lava", "Controls whether server should allow Lava syntax in this field or not.", "" ) );
 
             if ( controls != null )
             {
@@ -380,7 +452,12 @@ namespace Rock.Field.Types
                 }
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is RockCheckBox )
                 {
-                    configurationValues["allowhtml"].Value = ( ( RockCheckBox ) controls[3] ).Checked.ToTrueFalse();
+                    configurationValues[ALLOW_HTML].Value = ( ( RockCheckBox ) controls[3] ).Checked.ToTrueFalse();
+                }
+
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox cbAllowLava )
+                {
+                    configurationValues[ALLOW_LAVA].Value = cbAllowLava.Checked.ToTrueFalse();
                 }
             }
 
@@ -408,9 +485,14 @@ namespace Rock.Field.Types
                 {
                     ( ( RockTextBox ) controls[2] ).Text = configurationValues["customvalues"].Value;
                 }
-                if ( controls.Count > 3 && controls[3] != null && controls[3] is RockCheckBox && configurationValues.ContainsKey( "allowhtml" ) )
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is RockCheckBox && configurationValues.ContainsKey( ALLOW_HTML ) )
                 {
-                    ( ( RockCheckBox ) controls[3] ).Checked = configurationValues["allowhtml"].Value.AsBoolean();
+                    ( ( RockCheckBox ) controls[3] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox cbAllowLava && configurationValues.ContainsKey( ALLOW_LAVA ) )
+                {
+                    cbAllowLava.Checked = configurationValues[ALLOW_LAVA].Value.AsBoolean();
                 }
             }
         }
@@ -470,9 +552,9 @@ namespace Rock.Field.Types
                     control.CustomValues = Helper.GetConfiguredValues( configurationValues, "customvalues" );
                 }
 
-                if ( control is ValueList && configurationValues.ContainsKey( "allowhtml" ) )
+                if ( control is ValueList && configurationValues.ContainsKey( ALLOW_HTML ) )
                 {
-                    ( control as ValueList ).AllowHtmlValue = configurationValues["allowhtml"].Value.AsBoolean();
+                    ( control as ValueList ).AllowHtmlValue = configurationValues[ALLOW_HTML].Value.AsBoolean();
                 }
             }
 

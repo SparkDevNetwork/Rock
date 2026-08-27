@@ -139,9 +139,17 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-/* Drawer tier: a single full-width column so cards are not skinny in the narrow panel. */
+/*
+    Stacked and drawer tiers: a single column, full width until it reaches the 370px the card is drawn for,
+    then centered at that width so the card matches the other tiers instead of stretching. Both tiers can
+    be far wider than one card wants to be - the drawer's sheet is fixed to the viewport rather than the
+    block, and the stacked tier runs the full width of whatever zone the block sits in - while a phone-width
+    panel stays narrower than the cap and simply fills it.
+*/
 .group-finder-results-pane.is-columns-one .group-finder-results {
     grid-template-columns: minmax(0, 1fr);
+    max-width: 370px;
+    margin-inline: auto;
 }
 
 .group-finder-empty {

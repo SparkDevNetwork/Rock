@@ -122,6 +122,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A single email address on its own, with no display name and no mailto prefix, as in person@example.com. Several addresses are not valid here."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

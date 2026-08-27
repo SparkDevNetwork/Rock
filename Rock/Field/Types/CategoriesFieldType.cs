@@ -216,6 +216,30 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Overridden so the inherited single category wording does not stand for a
+        /// field type that stores several. Everything else about the value is the
+        /// same, so this reuses the base and replaces only the format sentence.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var hints = base.GetFieldHints( privateConfigurationValues );
+
+            if ( hints == null )
+            {
+                return null;
+            }
+
+            hints.ValueFormat = "One or more guids identifying rows in the Category table, separated by commas. Not their ids or idKeys.";
+
+            return hints;
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

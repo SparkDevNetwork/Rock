@@ -307,6 +307,27 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Two parts, and the second is an id where nearly every other field type
+        /// stores a guid, so both halves are described. Rock ignores a value that is
+        /// not exactly two parts, which means a lone guid reads as nothing rather than
+        /// as an error.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two parts separated by a pipe, the guid of a row in the EntityType table followed by the id of the record it points at, as in 72657ed8-d16e-492e-ac12-144c5e7567e7|42. The second part is an id, not a guid and not an idKey. Both parts are required, because a value that is not exactly two parts is ignored. For a person the entity type is PersonAlias and the id is a PersonAlias id rather than a Person id.",
+                Instructions = "To find the correct value, take the guid of the entity type you want from the entity types, then read the record itself to get its id."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

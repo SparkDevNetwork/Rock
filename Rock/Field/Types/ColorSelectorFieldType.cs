@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -267,6 +268,44 @@ namespace Rock.Field.Types
             }
 
             return string.Join( $"{ValueDelimiter}", input );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// A pipe rather than the comma nearly every other multi select field type
+        /// uses, which is worth stating outright. The displayed value is comma joined,
+        /// so a caller copying what they see on screen stores one unusable value
+        /// instead of several.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var colors = DeserializeColors( privateConfigurationValues.GetValueOrNull( ConfigurationKey.Colors ) );
+
+            if ( !colors.Any() )
+            {
+                return null;
+            }
+
+            var allowMultiple = privateConfigurationValues.GetValueOrNull( ConfigurationKey.AllowMultiple ).AsBoolean();
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = colors
+                    .Select( c => new ListItemBag
+                    {
+                        Value = c,
+                        Text = c
+                    } )
+                    .ToList(),
+                ValueFormat = allowMultiple
+                    ? "One or more of the listed colors, written exactly as they appear and separated by pipes rather than commas, as in #1a2b3c|#4d5e6f. Only a color that appears in the list is recognized."
+                    : "One of the listed colors, written exactly as it appears."
+            };
         }
 
         #endregion

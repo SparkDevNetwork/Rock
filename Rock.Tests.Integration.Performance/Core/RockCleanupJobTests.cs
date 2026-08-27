@@ -34,12 +34,9 @@ namespace Rock.Tests.Integration.Performance.Core
 
         private void CalculateGroupRequirementsJob_MeasurePerformance()
         {
-            TestHelper.ExecuteWithTimer( "Rock Cleanup: Cleanup Interaction Sessions", () =>
-            {
-                var jobTests = new global::Rock.Tests.Integration.Core.Jobs.RockCleanupJobTests();
+            var jobTests = new global::Rock.Tests.Integration.Core.Jobs.RockCleanupJobTests();
 
-                jobTests.RockCleanup_CleanupInteractionSessions_RemovesSessionsWithNoInteractions();
-            } );
+            jobTests.RockCleanup_CleanupInteractionSessions_RemovesSessionsWithNoInteractions();
         }
     }
 }

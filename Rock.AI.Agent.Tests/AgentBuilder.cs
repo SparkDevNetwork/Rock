@@ -15,7 +15,6 @@ using Rock.Enums.AI.Agent;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
 
 [assembly: DoNotParallelize]
 
@@ -101,8 +100,7 @@ internal class AgentBuilder
 
         providerMock.Setup( m => m.GetAttributeValue( "ApiKey" ) ).Returns( apiKey );
 
-        // Create mocks for accessing the database.
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        // Create a mock for accessing the database.
         var rockContextFactoryMock = new Mock<IRockContextFactory>();
 
         // Create a mock for accessing the request context. This is used to

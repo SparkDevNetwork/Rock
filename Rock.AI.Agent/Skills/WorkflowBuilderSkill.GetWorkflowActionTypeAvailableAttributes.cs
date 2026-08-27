@@ -93,9 +93,34 @@ internal sealed partial class WorkflowBuilderSkill
                 .WithInstructions( $"This action takes no settings. Add it with {nameof( AddOrUpdateWorkflowActionType )} and supply no settings." );
         }
 
+        /*
+            8/19/26 - CLAUDE
+
+            The instruction below exists because silence reads as agreement. An action
+            usually mixes settings that accept a workflow attribute guid with settings
+            that do not, and only the former describe themselves. A caller that reads
+            three settings saying a guid is a reference and two saying nothing at all
+            will generalize, and store a raw attribute guid in a plain text setting,
+            where it is kept verbatim and shown to the person as a guid.
+
+            The test is deliberately the presence of valueFormat rather than a list of
+            field type class names. The field types that accept a reference already
+            describe themselves through GetFieldHints and the ones that do not return
+            null, so the distinction is already carried in the payload. A second copy
+            here would be one more thing to keep in step with them.
+
+            It is sent unconditionally. Deciding whether a given action mixes the two
+            kinds would mean inspecting the wording of each valueFormat, which is the
+            fragile coupling this avoids, and the statement holds either way.
+
+            Reason: A setting that says nothing about guids was being read as one that
+            accepts them.
+        */
+
         // No paging and no cap. One component's settings are bounded by its own
         // declaration, which is a handful of fields.
         return Success( settings )
+            .WithInstructions( "A setting turns a guid into a reference to another record only when its valueFormat says it does. Where a setting has no valueFormat, the value is stored exactly as supplied, so a guid stays literal text and is never read as a reference. To use a workflow attribute's value in such a setting, supply Lava that reads the attribute by its key rather than supplying its guid, such as {{ Workflow | Attribute:'SampleKey' }} for an attribute on the workflow type or {{ Activity | Attribute:'SampleKey' }} for one on the containing activity." )
             .WithHistoryKey( $"workflow-action-settings-{actionEntityTypeIdKey}" );
     }
 

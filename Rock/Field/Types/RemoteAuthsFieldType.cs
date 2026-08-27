@@ -124,6 +124,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the EntityType table, separated by commas, each being the entity type of an authentication component. Not the component's name or class name, and not an id or idKey.",
+                Instructions = "To find the correct values, read the entity types of the available authentication components and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -63,7 +63,7 @@ internal sealed partial class CoreAdministrationSkill
 
         if ( partialName.IsNotNullOrWhiteSpace() )
         {
-            categories = categories.Where( c => c.Name != null && c.Name.Contains( partialName ) );
+            categories = categories.Where( c => c.Name.ContainsIgnoreCase( partialName ) );
         }
 
         categories = helper.WhereOptionalIdKey( categories, c => c.ParentCategoryId, parentCategoryIdKey );

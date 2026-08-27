@@ -63,6 +63,23 @@ namespace Rock.Field.Types
 
         #region Methods
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. These are rows in a table that a caller can look up, and
+            // reading them here would cost a query for every attribute described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the ConnectionType table, separated by commas. This is the connection type itself, not one of its opportunities.",
+                Instructions = "To find the correct values, read the connection types and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the list source.
         /// </summary>

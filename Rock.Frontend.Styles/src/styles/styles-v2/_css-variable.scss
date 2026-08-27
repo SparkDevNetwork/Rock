@@ -134,254 +134,107 @@
   }
 
 
-  // Visualization Color Primitives
-  // Based on Tailwind 4's color palette, these primitives are used for charting and visualization colors.
-
-  --color-tw-gray-50: #f9fafb;
-  --color-tw-gray-100: #f3f4f6;
-  --color-tw-gray-200: #e5e7eb;
-  --color-tw-gray-300: #d1d5db;
-  --color-tw-gray-400: #9ca3af;
-  --color-tw-gray-500: #6b7280;
-  --color-tw-gray-600: #4b5563;
-  --color-tw-gray-700: #374151;
-  --color-tw-gray-800: #1f2937;
-  --color-tw-gray-900: #111827;
-  --color-tw-gray-950: #030712;
-
-  --color-tw-red-50: #fef2f2;
-  --color-tw-red-100: #fee2e2;
-  --color-tw-red-200: #fecaca;
-  --color-tw-red-300: #fca5a5;
-  --color-tw-red-400: #f87171;
-  --color-tw-red-500: #ef4444;
-  --color-tw-red-600: #dc2626;
-  --color-tw-red-700: #b91c1c;
-  --color-tw-red-800: #991b1b;
-  --color-tw-red-900: #7f1d1d;
-  --color-tw-red-950: #450a0a;
-
-  --color-tw-orange-50: #fff7ed;
-  --color-tw-orange-100: #ffedd5;
-  --color-tw-orange-200: #fed7aa;
-  --color-tw-orange-300: #fdba74;
-  --color-tw-orange-400: #fb923c;
-  --color-tw-orange-500: #f97316;
-  --color-tw-orange-600: #ea580c;
-  --color-tw-orange-700: #c2410c;
-  --color-tw-orange-800: #9a3412;
-  --color-tw-orange-900: #7c2d12;
-  --color-tw-orange-950: #431407;
-
-  --color-tw-amber-50: #fffbeb;
-  --color-tw-amber-100: #fef3c7;
-  --color-tw-amber-200: #fde68a;
-  --color-tw-amber-300: #fcd34d;
-  --color-tw-amber-400: #fbbf24;
-  --color-tw-amber-500: #f59e0b;
-  --color-tw-amber-600: #d97706;
-  --color-tw-amber-700: #b45309;
-  --color-tw-amber-800: #92400e;
-  --color-tw-amber-900: #78350f;
-  --color-tw-amber-950: #451a03;
-
-  --color-tw-yellow-50: #fefce8;
-  --color-tw-yellow-100: #fef9c3;
-  --color-tw-yellow-200: #fef08a;
-  --color-tw-yellow-300: #fde047;
-  --color-tw-yellow-400: #facc15;
-  --color-tw-yellow-500: #eab308;
-  --color-tw-yellow-600: #ca8a04;
-  --color-tw-yellow-700: #a16207;
-  --color-tw-yellow-800: #854d0e;
-  --color-tw-yellow-900: #713f12;
-  --color-tw-yellow-950: #422006;
-
-  --color-tw-lime-50: #f7fee7;
-  --color-tw-lime-100: #ecfccb;
-  --color-tw-lime-200: #d9f99d;
-  --color-tw-lime-300: #bef264;
-  --color-tw-lime-400: #a3e635;
-  --color-tw-lime-500: #84cc16;
-  --color-tw-lime-600: #65a30d;
-  --color-tw-lime-700: #4d7c0f;
-  --color-tw-lime-800: #3f6212;
-  --color-tw-lime-900: #365314;
-  --color-tw-lime-950: #1a2e05;
-
-  --color-tw-green-50: #f0fdf4;
-  --color-tw-green-100: #dcfce7;
-  --color-tw-green-200: #bbf7d0;
-  --color-tw-green-300: #86efac;
-  --color-tw-green-400: #4ade80;
-  --color-tw-green-500: #22c55e;
-  --color-tw-green-600: #16a34a;
-  --color-tw-green-700: #15803d;
-  --color-tw-green-800: #166534;
-  --color-tw-green-900: #14532d;
-  --color-tw-green-950: #052e16;
-
-  --color-tw-emerald-50: #ecfdf5;
-  --color-tw-emerald-100: #d1fae5;
-  --color-tw-emerald-200: #a7f3d0;
-  --color-tw-emerald-300: #6ee7b7;
-  --color-tw-emerald-400: #34d399;
-  --color-tw-emerald-500: #10b981;
-  --color-tw-emerald-600: #059669;
-  --color-tw-emerald-700: #047857;
-  --color-tw-emerald-800: #065f46;
-  --color-tw-emerald-900: #064e3b;
-  --color-tw-emerald-950: #022c22;
-
-  --color-tw-cyan-50: #ecfeff;
-  --color-tw-cyan-100: #cffafe;
-  --color-tw-cyan-200: #a5f3fc;
-  --color-tw-cyan-300: #67e8f9;
-  --color-tw-cyan-400: #22d3ee;
-  --color-tw-cyan-500: #06b6d4;
-  --color-tw-cyan-600: #0891b2;
-  --color-tw-cyan-700: #0e7490;
-  --color-tw-cyan-800: #155e75;
-  --color-tw-cyan-900: #164e63;
-  --color-tw-cyan-950: #083344;
-
-  --color-tw-indigo-50: #eef2ff;
-  --color-tw-indigo-100: #e0e7ff;
-  --color-tw-indigo-200: #c7d2fe;
-  --color-tw-indigo-300: #a5b4fc;
-  --color-tw-indigo-400: #818cf8;
-  --color-tw-indigo-500: #6366f1;
-  --color-tw-indigo-600: #4f46e5;
-  --color-tw-indigo-700: #4338ca;
-  --color-tw-indigo-800: #3730a3;
-  --color-tw-indigo-900: #312e81;
-  --color-tw-indigo-950: #1e1b4b;
-
-  --color-tw-fuchsia-50: #fdf4ff;
-  --color-tw-fuchsia-100: #fae8ff;
-  --color-tw-fuchsia-200: #f5d0fe;
-  --color-tw-fuchsia-300: #f0abfc;
-  --color-tw-fuchsia-400: #e879f9;
-  --color-tw-fuchsia-500: #d946ef;
-  --color-tw-fuchsia-600: #c026d3;
-  --color-tw-fuchsia-700: #a21caf;
-  --color-tw-fuchsia-800: #86198f;
-  --color-tw-fuchsia-900: #701a75;
-  --color-tw-fuchsia-950: #4a044e;
-
-  --color-tw-rose-50: #fff1f2;
-  --color-tw-rose-100: #ffe4e6;
-  --color-tw-rose-200: #fecdd3;
-  --color-tw-rose-300: #fda4af;
-  --color-tw-rose-400: #fb7185;
-  --color-tw-rose-500: #f43f5e;
-  --color-tw-rose-600: #e11d48;
-  --color-tw-rose-700: #be123c;
-  --color-tw-rose-800: #9f1239;
-  --color-tw-rose-900: #881337;
-  --color-tw-rose-950: #4c0519;
-
   // COLORS FOR CHARTS / ANALYTICS
   // ===============================
   // Categorical, Diverging, and Metric colors below are sourced from Tailwind's color palette.
 
   // CATEGORICAL COLORS
-  --color-categorical-1: var(--color-metric-primary);
-  --color-categorical-2: var(--color-tw-fuchsia-500);
-  --color-categorical-3: var(--color-tw-emerald-500);
-  --color-categorical-4: var(--color-tw-rose-500);
-  --color-categorical-5: var(--color-tw-amber-500);
-  --color-categorical-6: var(--color-tw-cyan-500);
-  --color-categorical-7: var(--color-tw-yellow-500);
-  --color-categorical-8: var(--color-tw-gray-500);
+  --color-categorical-1: var(--color-metric-primary); // Tailwind indigo-500
+  --color-categorical-2: #a855f7; // Tailwind purple-500
+  --color-categorical-3: #14b8a6; // Tailwind teal-500
+  --color-categorical-4: #f43f5e; // Tailwind rose-500
+  --color-categorical-5: #f97316; // Tailwind orange-500
+  --color-categorical-6: #06b6d4; // Tailwind cyan-500
+  --color-categorical-7: #f59e0b; // Tailwind yellow-500
+  --color-categorical-8: #6b7280; // Tailwind gray-500
 
   // DIVERGING COLORS
-  --color-diverging-1:  var(--color-tw-indigo-900);
-  --color-diverging-2:  var(--color-tw-indigo-700);
-  --color-diverging-3:  var(--color-tw-indigo-500);
-  --color-diverging-4:  var(--color-tw-indigo-300);
-  --color-diverging-5:  var(--color-tw-indigo-100);
-  --color-diverging-6:  var(--color-tw-indigo-50);
-  --color-diverging-7:  var(--color-tw-emerald-100);
-  --color-diverging-8:  var(--color-tw-emerald-300);
-  --color-diverging-9:  var(--color-tw-emerald-500);
-  --color-diverging-10: var(--color-tw-emerald-700);
-  --color-diverging-11: var(--color-tw-emerald-900);
+  --color-diverging-1:  #312e81; // Tailwind indigo-900
+  --color-diverging-2:  #4338ca; // Tailwind indigo-700
+  --color-diverging-3:  #6366f1; // Tailwind indigo-500
+  --color-diverging-4:  #a5b4fc; // Tailwind indigo-300
+  --color-diverging-5:  #e0e7ff; // Tailwind indigo-100
+  --color-diverging-6:  #eef2ff; // Tailwind indigo-50
+  --color-diverging-7:  #d1fae5; // Tailwind emerald-100
+  --color-diverging-8:  #6ee7b7; // Tailwind emerald-300
+  --color-diverging-9:  #10b981; // Tailwind emerald-500
+  --color-diverging-10: #047857; // Tailwind emerald-700
+  --color-diverging-11: #064e3b; // Tailwind emerald-900
 
   // POSITIVE COLORS
   --color-positive-primary: var(--color-positive-5);
 
-  --color-positive-1:  var(--color-tw-green-50);
-  --color-positive-2:  var(--color-tw-green-100);
-  --color-positive-3:  var(--color-tw-green-200);
-  --color-positive-4:  var(--color-tw-green-300);
-  --color-positive-5:  var(--color-tw-green-400);
-  --color-positive-6:  var(--color-tw-green-500);
-  --color-positive-7:  var(--color-tw-green-600);
-  --color-positive-8:  var(--color-tw-green-700);
-  --color-positive-9:  var(--color-tw-green-800);
-  --color-positive-10: var(--color-tw-green-900);
-  --color-positive-11: var(--color-tw-green-950);
+  --color-positive-1:  #ecfdf5; // Tailwind green-50
+  --color-positive-2:  #d1fae5; // Tailwind green-100
+  --color-positive-3:  #a7f3d0; // Tailwind green-200
+  --color-positive-4:  #6ee7b7; // Tailwind green-300
+  --color-positive-5:  #34d399; // Tailwind green-400
+  --color-positive-6:  #10b981; // Tailwind green-500
+  --color-positive-7:  #059669; // Tailwind green-600
+  --color-positive-8:  #047857; // Tailwind green-700
+  --color-positive-9:  #065f46; // Tailwind green-800
+  --color-positive-10: #064e3b; // Tailwind green-900
+  --color-positive-11: #022c22; // Tailwind green-950
 
   // CAUTION COLORS
   --color-caution-primary: var(--color-caution-5);
 
-  --color-caution-1:  var(--color-tw-orange-50);
-  --color-caution-2:  var(--color-tw-orange-100);
-  --color-caution-3:  var(--color-tw-orange-200);
-  --color-caution-4:  var(--color-tw-orange-300);
-  --color-caution-5:  var(--color-tw-orange-400);
-  --color-caution-6:  var(--color-tw-orange-500);
-  --color-caution-7:  var(--color-tw-orange-600);
-  --color-caution-8:  var(--color-tw-orange-700);
-  --color-caution-9:  var(--color-tw-orange-800);
-  --color-caution-10: var(--color-tw-orange-900);
-  --color-caution-11: var(--color-tw-orange-950);
+  --color-caution-1:  #fff7ed; // Tailwind orange-50
+  --color-caution-2:  #ffedd5; // Tailwind orange-100
+  --color-caution-3:  #fed7aa; // Tailwind orange-200
+  --color-caution-4:  #fdba74; // Tailwind orange-300
+  --color-caution-5:  #fb923c; // Tailwind orange-400
+  --color-caution-6:  #f97316; // Tailwind orange-500
+  --color-caution-7:  #ea580c; // Tailwind orange-600
+  --color-caution-8:  #c2410c; // Tailwind orange-700
+  --color-caution-9:  #9a3412; // Tailwind orange-800
+  --color-caution-10: #7c2d12; // Tailwind orange-900
+  --color-caution-11: #431407; // Tailwind orange-950
 
   // NEGATIVE COLORS
   --color-negative-primary: var(--color-negative-6);
 
-  --color-negative-1:  var(--color-tw-red-50);
-  --color-negative-2:  var(--color-tw-red-100);
-  --color-negative-3:  var(--color-tw-red-200);
-  --color-negative-4:  var(--color-tw-red-300);
-  --color-negative-5:  var(--color-tw-red-400);
-  --color-negative-6:  var(--color-tw-red-500);
-  --color-negative-7:  var(--color-tw-red-600);
-  --color-negative-8:  var(--color-tw-red-700);
-  --color-negative-9:  var(--color-tw-red-800);
-  --color-negative-10: var(--color-tw-red-900);
-  --color-negative-11: var(--color-tw-red-950);
+  --color-negative-1:  #fef2f2; // Tailwind red-50
+  --color-negative-2:  #fee2e2; // Tailwind red-100
+  --color-negative-3:  #fecaca; // Tailwind red-200
+  --color-negative-4:  #fca5a5; // Tailwind red-300
+  --color-negative-5:  #f87171; // Tailwind red-400
+  --color-negative-6:  #ef4444; // Tailwind red-500
+  --color-negative-7:  #dc2626; // Tailwind red-600
+  --color-negative-8:  #b91c1c; // Tailwind red-700
+  --color-negative-9:  #991b1b; // Tailwind red-800
+  --color-negative-10: #7f1d1d; // Tailwind red-900
+  --color-negative-11: #450a0a; // Tailwind red-950
 
   // NEUTRAL COLORS
   --color-neutral-primary: var(--color-neutral-4);
 
-  --color-neutral-1:  var(--color-tw-gray-50);
-  --color-neutral-2:  var(--color-tw-gray-100);
-  --color-neutral-3:  var(--color-tw-gray-200);
-  --color-neutral-4:  var(--color-tw-gray-300);
-  --color-neutral-5:  var(--color-tw-gray-400);
-  --color-neutral-6:  var(--color-tw-gray-500);
-  --color-neutral-7:  var(--color-tw-gray-600);
-  --color-neutral-8:  var(--color-tw-gray-700);
-  --color-neutral-9:  var(--color-tw-gray-800);
-  --color-neutral-10: var(--color-tw-gray-900);
-  --color-neutral-11: var(--color-tw-gray-950);
+  --color-neutral-1:  #f9fafb; // Tailwind gray-50
+  --color-neutral-2:  #f3f4f6; // Tailwind gray-100
+  --color-neutral-3:  #e5e7eb; // Tailwind gray-200
+  --color-neutral-4:  #d1d5db; // Tailwind gray-300
+  --color-neutral-5:  #9ca3af; // Tailwind gray-400
+  --color-neutral-6:  #6b7280; // Tailwind gray-500
+  --color-neutral-7:  #4b5563; // Tailwind gray-600
+  --color-neutral-8:  #374151; // Tailwind gray-700
+  --color-neutral-9:  #1f2937; // Tailwind gray-800
+  --color-neutral-10: #111827; // Tailwind gray-900
+  --color-neutral-11: #030712; // Tailwind gray-950
 
   // METRIC COLORS
   --color-metric-primary: var(--color-metric-6);
 
-  --color-metric-1:  var(--color-tw-indigo-50);
-  --color-metric-2:  var(--color-tw-indigo-100);
-  --color-metric-3:  var(--color-tw-indigo-200);
-  --color-metric-4:  var(--color-tw-indigo-300);
-  --color-metric-5:  var(--color-tw-indigo-400);
-  --color-metric-6:  var(--color-tw-indigo-500);
-  --color-metric-7:  var(--color-tw-indigo-600);
-  --color-metric-8:  var(--color-tw-indigo-700);
-  --color-metric-9:  var(--color-tw-indigo-800);
-  --color-metric-10: var(--color-tw-indigo-900);
-  --color-metric-11: var(--color-tw-indigo-950);
+  --color-metric-1:  #eef2ff; // Tailwind indigo-50
+  --color-metric-2:  #e0e7ff; // Tailwind indigo-100
+  --color-metric-3:  #c7d2fe; // Tailwind indigo-200
+  --color-metric-4:  #a5b4fc; // Tailwind indigo-300
+  --color-metric-5:  #818cf8; // Tailwind indigo-400
+  --color-metric-6:  #6366f1; // Tailwind indigo-500
+  --color-metric-7:  #4f46e5; // Tailwind indigo-600
+  --color-metric-8:  #4338ca; // Tailwind indigo-700
+  --color-metric-9:  #3730a3; // Tailwind indigo-800
+  --color-metric-10: #312e81; // Tailwind indigo-900
+  --color-metric-11: #1e1b4b; // Tailwind indigo-950
 
 
 

@@ -423,6 +423,7 @@ namespace Rock.Blocks.Communication
                 box.IsUsingRockMobilePushTransport = GetIsUsingRockMobilePushTransport( mediumBags );
                 box.MaxSmsImageWidth = this.MaxSmsImageWidth;
                 box.Mediums = mediumBags;
+                box.StandaloneMediums = GetStandalonePickerMediumBags( currentPerson );
                 box.MergeFields = GetCommunicationMergeFields( communication );
                 box.MinimumShortLinkTokenLength = this.MinimumShortLinkTokenLength;
                 box.NavigationUrls = GetBoxNavigationUrls();
@@ -2390,8 +2391,14 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Retrieves the allowed communication types based on block configuration and preferences.
         /// </summary>
+        /// <param name="expandRecipientPreference">
+        /// When <c>true</c> (the default), selecting "Recipient Preference" also includes Email and SMS,
+        /// because recipient-preference delivery resolves to those mediums. When <c>false</c> (used to
+        /// build the standalone picker options), the result contains only the types explicitly enabled
+        /// in the block setting, so the picker reflects exactly what the admin chose.
+        /// </param>
         /// <returns>A list of <see cref="CommunicationType"/> values representing the allowed communication types.</returns>
-        private List<CommunicationType> GetAllowedCommunicationTypes()
+        private List<CommunicationType> GetAllowedCommunicationTypes( bool expandRecipientPreference = true )
         {
             /*
                 JME 8/20/2021
@@ -2412,7 +2419,7 @@ namespace Rock.Blocks.Communication
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
 
             var result = new List<CommunicationType>();
-            if ( communicationTypes.Contains( "Recipient Preference" ) )
+            if ( expandRecipientPreference && communicationTypes.Contains( "Recipient Preference" ) )
             {
                 result.Add( CommunicationType.RecipientPreference );
 
@@ -2441,6 +2448,11 @@ namespace Rock.Blocks.Communication
                 if ( communicationTypes.Contains( "Push" ) )
                 {
                     result.Add( CommunicationType.PushNotification );
+                }
+
+                if ( communicationTypes.Contains( "Recipient Preference" ) )
+                {
+                    result.Add( CommunicationType.RecipientPreference );
                 }
             }
             else
@@ -2577,6 +2589,69 @@ namespace Rock.Blocks.Communication
 
             // Only add recipient preference if at least two options exists.
             if ( isRecipientPreferenceEnabled && mediums.Count >= 2 )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    // If this hard-coded value is changed, then the Obsidian client code should be updated too.
+                    Value = "Recipient Preference",
+                    Text = "Recipient Preference"
+                } );
+            }
+
+            return mediums;
+        }
+
+        /// <summary>
+        /// Retrieves the standalone medium options the sender may directly choose, honoring exactly the
+        /// communication types enabled in the block setting (without expanding Recipient Preference into
+        /// Email and SMS). This drives the medium picker, and differs from <see cref="GetCommunicationMediumBags"/>,
+        /// which returns the full set of mediums Recipient Preference composes and delivers.
+        /// </summary>
+        /// <param name="currentPerson">The currently logged-in person for authorization checks.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects representing the selectable standalone mediums.</returns>
+        private List<ListItemBag> GetStandalonePickerMediumBags( Person currentPerson )
+        {
+            var mediums = new List<ListItemBag>();
+
+            // Honor exactly what the admin enabled, so do not expand Recipient Preference into Email/SMS here.
+            var allowedCommunicationTypes = GetAllowedCommunicationTypes( expandRecipientPreference: false );
+
+            var hasEmailTransport = MediumContainer.HasActiveAndAuthorizedEmailTransport( currentPerson );
+            var hasSmsTransport = MediumContainer.HasActiveAndAuthorizedSmsTransport( currentPerson );
+            var hasPushTransport = MediumContainer.HasActiveAndAuthorizedPushTransport( currentPerson );
+
+            if ( hasEmailTransport && allowedCommunicationTypes.Contains( CommunicationType.Email ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL,
+                    Text = "Email"
+                } );
+            }
+
+            if ( hasSmsTransport && allowedCommunicationTypes.Contains( CommunicationType.SMS ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS,
+                    Text = "SMS"
+                } );
+            }
+
+            if ( hasPushTransport && allowedCommunicationTypes.Contains( CommunicationType.PushNotification ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION,
+                    Text = "Push"
+                } );
+            }
+
+            // Recipient Preference resolves to a recipient's Email or SMS, so offer it whenever it is
+            // enabled and at least one of those transports is active, regardless of whether Email or SMS
+            // are also enabled as standalone options. This lets a "Recipient Preference only" setting
+            // still present the Recipient Preference option.
+            if ( allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference ) && ( hasEmailTransport || hasSmsTransport ) )
             {
                 mediums.Add( new ListItemBag
                 {

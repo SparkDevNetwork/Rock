@@ -262,6 +262,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the Category table. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the categories for the entity type this setting is filtered to and take the guid of the one you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 

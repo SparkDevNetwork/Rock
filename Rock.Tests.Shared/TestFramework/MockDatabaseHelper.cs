@@ -1,19 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Moq;
+﻿using Moq;
 using Moq.Protected;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.Shared.TestFramework
 {
     /// <summary>
     /// Helper methods for working with mock databases.
     /// </summary>
-    public static class MockDatabaseHelper
+    /// <remarks>
+    /// This is the low-level seam for mocking a <see cref="RockContext"/> and is
+    /// rarely used directly. Most tests should use the higher-level
+    /// <c>TestHelper.CreateScopedRockApp()</c>, which builds the mocked context
+    /// through this helper, registers it with the dependency injection system as an
+    /// <see cref="IRockContextFactory"/>, and clears the cache when the scope is
+    /// disposed after each test.
+    /// </remarks>
+    internal static class MockDatabaseHelper
     {
         /// <summary>
         /// Create an <see cref="IRockContextFactory"/> object that always
@@ -53,37 +56,6 @@ namespace Rock.Tests.Shared.TestFramework
             rockContextMock.Protected().Setup( "Dispose", ItExpr.IsAny<bool>() );
 
             return rockContextMock;
-        }
-
-        /// <summary>
-        /// Creates a mock <typeparamref name="TEntity"/> object.
-        /// </summary>
-        /// <param name="id">The entity identifier.</param>
-        /// <param name="guid">The entity unique identifier.</param>
-        /// <returns>A mocking instance for <typeparamref name="TEntity"/>.</returns>
-        public static Mock<TEntity> CreateEntityMock<TEntity>( int id, Guid guid )
-            where TEntity : class, IEntity, new()
-        {
-            var entityMock = new RockMock<TEntity>( MockBehavior.Loose )
-            {
-                CallBase = true
-            };
-
-            entityMock.Setup( m => m.TypeId ).Returns( 0 );
-
-            entityMock.SetupInitializer( instance =>
-            {
-                instance.Id = id;
-                instance.Guid = guid;
-
-                if ( instance is IHasAttributes attributeMock )
-                {
-                    attributeMock.Attributes = new Dictionary<string, AttributeCache>();
-                    attributeMock.AttributeValues = new Dictionary<string, AttributeValueCache>();
-                }
-            } );
-
-            return entityMock;
         }
     }
 }

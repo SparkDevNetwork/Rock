@@ -1,9 +1,8 @@
 ﻿using System;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Data;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
@@ -16,7 +15,7 @@ namespace Rock.Tests.Web.Cache
     /// </summary>
     /// <seealso cref="CampusCache"/>
     [TestClass]
-    public class CampusCacheTests : MockDatabaseTestsBase
+    public class CampusCacheTests
     {
         /// <summary>
         /// Test to verify that RawServiceTimes is correctly built from the legacy Campus.ServiceTimes
@@ -25,20 +24,17 @@ namespace Rock.Tests.Web.Cache
         [TestMethod]
         public void RawServiceTimes_FromLegacyServiceTimes_Succeeds()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campus = BasicTestCampus();
 
-            rockContextMock.Object.Set<Campus>().Add( campus );
+            rockContext.Set<Campus>().Add( campus );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var campusCache = CampusCache.Get( 1, rockContextMock.Object );
+            var campusCache = CampusCache.Get( 1, rockContext );
 #pragma warning disable CS0612, CS0618
-                // When this property is removed from Rock, this entire test can be removed too.
-                Assert.AreEqual( "Sat^4:30pm|Sat^6pm", campusCache.RawServiceTimes );
+            // When this property is removed from Rock, this entire test can be removed too.
+            Assert.AreEqual( "Sat^4:30pm|Sat^6pm", campusCache.RawServiceTimes );
 #pragma warning restore CS0612, CS0618
-            }
         }
 
         /// <summary>
@@ -48,8 +44,8 @@ namespace Rock.Tests.Web.Cache
         [TestMethod]
         public void RawServiceTimes_FromCampusSchedules_Succeeds()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var campusMock = BasicTestCampus();
 
@@ -112,17 +108,14 @@ END:VCALENDAR
             campusMock.CampusSchedules.Add( saturday430pm );
             campusMock.CampusSchedules.Add( saturday6pm );
 
-            rockContextMock.Object.Set<Campus>().Add( campusMock );
+            rockContext.Set<Campus>().Add( campusMock );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var campusCache = CampusCache.Get( 1, rockContextMock.Object );
+            var campusCache = CampusCache.Get( 1, rockContext );
 
 #pragma warning disable CS0612, CS0618
-                // When this property is removed from Rock, this entire test can be removed too.
-                Assert.AreEqual( "Saturday^4:30 PM|Saturday^6:00 PM", campusCache.RawServiceTimes );
+            // When this property is removed from Rock, this entire test can be removed too.
+            Assert.AreEqual( "Saturday^4:30 PM|Saturday^6:00 PM", campusCache.RawServiceTimes );
 #pragma warning restore CS0612, CS0618
-            }
         }
 
         /// <summary>
@@ -131,18 +124,15 @@ END:VCALENDAR
         [TestMethod]
         public void CondensedName_WithoutShortCode_Succeeds()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campus = BasicTestCampus();
 
-            rockContextMock.Object.Set<Campus>().Add( campus );
+            rockContext.Set<Campus>().Add( campus );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var campusCache = CampusCache.Get( 1, rockContextMock.Object );
+            var campusCache = CampusCache.Get( 1, rockContext );
 
-                Assert.AreEqual( "Test", campusCache.CondensedName );
-            }
+            Assert.AreEqual( "Test", campusCache.CondensedName );
         }
 
         /// <summary>
@@ -151,19 +141,16 @@ END:VCALENDAR
         [TestMethod]
         public void CondensedName_WithShortCode_Succeeds()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campus = BasicTestCampus();
             campus.ShortCode = "TC";
 
-            rockContextMock.Object.Set<Campus>().Add( campus );
+            rockContext.Set<Campus>().Add( campus );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var campusCache = CampusCache.Get( 1, rockContextMock.Object );
+            var campusCache = CampusCache.Get( 1, rockContext );
 
-                Assert.AreEqual( "TC", campusCache.CondensedName );
-            }
+            Assert.AreEqual( "TC", campusCache.CondensedName );
         }
 
         #region Helper Methods
