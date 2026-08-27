@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Lava;
@@ -183,6 +184,35 @@ namespace Rock.Model
         [DataMember]
         [StringValidation( StringValidationProfile.Unrestricted )]
         public string Cookies { get; set; }
+
+        /// <summary>
+        /// Gets the key used to group related exceptions: the <see cref="ExceptionType"/>, a pipe and the first
+        /// <see cref="ExceptionLogService.DescriptionGroupingPrefixLength"/> characters of the <see cref="Description"/>,
+        /// e.g. "System.NullReferenceException|Object reference not set to an instance of an object.".
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the exception group key. This is a non-persisted computed column
+        /// that SQL Server derives from the other columns, so it is never set from code and is only populated on
+        /// entities that were loaded from the database.
+        /// </value>
+        /*
+            8/26/26 - MSE
+
+            The Exception List block groups exceptions by this key in SQL, and the filtered index that covers that
+            query INCLUDEs this column in place of the unbounded [Description] column. Deriving the key in SQL Server
+            means every insert path (EF, raw SQL in migrations, imports) is covered with nothing to backfill, and the
+            size of the index is bounded by the schema instead of by how long an install's exception messages happen
+            to be. The column is added by the AddExceptionLogExceptionGroupKey migration and indexed by the
+            PostV201UpdateExceptionListIndex job.
+
+            Reason: SQL-derived grouping key so exceptions can be grouped in SQL against a bounded covering index.
+        */
+        [DataMember]
+        [MaxLength( 406 )]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaHidden]
+        [RockInternal( "20.1", true )]
+        public string ExceptionGroupKey { get; private set; }
 
         #endregion
 

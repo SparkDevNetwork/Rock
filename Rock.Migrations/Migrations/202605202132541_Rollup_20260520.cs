@@ -249,12 +249,16 @@ END" );
         /// </summary>
         private void JPH_AddExceptionListIndex_20260407_Up()
         {
-            RockMigrationHelper.AddPostUpdateServiceJob(
-                name: "Rock Update Helper v20.0 - Add Exception Log Index for the Exception List Block",
-                description: "This job will add an Exception Log index to improve performance of the Exception List block.",
-                jobType: "Rock.Jobs.PostV20AddExceptionListIndex",
-                cronExpression: "0 0 2 1/1 * ? *",
-                guid: Rock.SystemGuid.ServiceJob.DATA_MIGRATIONS_200_ADD_EXCEPTION_LIST_INDEX );
+            // This is no longer needed, as Rock v20.1 introduces an improved version of this index
+            // (Rock.Jobs.PostV201UpdateExceptionListIndex, registered by the AddExceptionLogExceptionGroupKey migration).
+            // The v20.0 job dropped and recreated the index unconditionally, so registering it alongside the v20.1 job
+            // would let it undo the v20.1 index. That migration also deletes this job's row where it is still pending.
+            //RockMigrationHelper.AddPostUpdateServiceJob(
+            //    name: "Rock Update Helper v20.0 - Add Exception Log Index for the Exception List Block",
+            //    description: "This job will add an Exception Log index to improve performance of the Exception List block.",
+            //    jobType: "Rock.Jobs.PostV20AddExceptionListIndex",
+            //    cronExpression: "0 0 2 1/1 * ? *",
+            //    guid: Rock.SystemGuid.ServiceJob.DATA_MIGRATIONS_200_ADD_EXCEPTION_LIST_INDEX );
         }
 
         /// <summary>

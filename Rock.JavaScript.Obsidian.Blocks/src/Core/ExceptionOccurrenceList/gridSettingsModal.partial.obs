@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -64,6 +64,11 @@
             required: true
         },
 
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
+            required: true
+        },
+
         visible: {
             type: Boolean as PropType<boolean>,
             required: true
@@ -83,7 +88,7 @@
     const site = ref(props.modelValue.site ?? "");
     const page = ref(toPageRouteValueBag(props.modelValue.page));
     const user = ref(props.modelValue.user ?? undefined);
-    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? null);
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? props.defaultSlidingDateRange);
 
     // #endregion Values
 
@@ -144,7 +149,15 @@
         site.value = props.modelValue.site ?? "";
         page.value = toPageRouteValueBag(props.modelValue.page);
         user.value = props.modelValue.user ?? undefined;
-        dateRange.value = props.modelValue.dateRange ?? null;
+        dateRange.value = props.modelValue.dateRange ?? props.defaultSlidingDateRange;
+    });
+
+    watch(dateRange, () => {
+        nextTick(() => {
+            if (!dateRange.value) {
+                dateRange.value = props.defaultSlidingDateRange;
+            }
+        });
     });
 
     watch(isVisible, () => {

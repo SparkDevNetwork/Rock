@@ -593,8 +593,14 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// The job to run Post v20.0 Data Migrations to add an Exception Log index to improve performance of the Exception List block.
+        /// This job is no longer registered; it was superseded in v20.1 by <see cref="DATA_MIGRATIONS_201_UPDATE_EXCEPTION_LIST_INDEX"/>.
         /// </summary>
         public const string DATA_MIGRATIONS_200_ADD_EXCEPTION_LIST_INDEX = "A0824D0E-0E7C-4448-85FA-7C36C4AF29E6";
+
+        /// <summary>
+        /// The job to run Post v20.1 Data Migrations to update the Exception Log indexes used by the Exception List, Exception Occurrences and Exception Detail blocks.
+        /// </summary>
+        public const string DATA_MIGRATIONS_201_UPDATE_EXCEPTION_LIST_INDEX = "99A11ADD-9DCF-4573-8E3B-BEED38D013C5";
 
         /// <summary>
         /// The job to run Post v19.0 Data Migrations to backfill the newly-added [ConnectionRequest].[ConnectedDateTime] and [WasCompletedOnTime] fields from the History table for requests that were already in the Connected state prior to v19.

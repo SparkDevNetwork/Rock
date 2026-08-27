@@ -18,11 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks;
@@ -56,7 +56,7 @@ namespace Rock.Blocks.Core
     // was [SystemGuid.BlockTypeGuid( "DBF895CE-FFFC-45DB-88EA-3CA73838EA1B" )]
     [Rock.SystemGuid.BlockTypeGuid( "E3486885-FA88-4B67-88B6-472F1FE4E5E4" )]
     [CustomizedGrid]
-    public class ExceptionOccurrenceList : RockEntityListBlockType<ExceptionLog>
+    public class ExceptionOccurrenceList : RockListBlockType<ExceptionOccurrenceList.ExceptionOccurrenceRow>
     {
         #region Keys
 
@@ -84,6 +84,16 @@ namespace Rock.Blocks.Core
         }
 
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// The number of leading description characters selected and displayed for each row, so the entire
+        /// nvarchar(max) description is never read for every row.
+        /// </summary>
+        private const int DescriptionDisplayLength = 255;
+
+        #endregion Fields
 
         #region Properties
 
@@ -190,26 +200,22 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<ExceptionLog> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<ExceptionOccurrenceRow> GetListQueryable( RockContext rockContext )
         {
             var exceptionLogService = new ExceptionLogService( rockContext );
-
-            var queryable = base.GetListQueryable( rockContext )
-                .AsNoTracking()
-                .Include( e => e.Page )
-                .Include( e => e.CreatedByPersonAlias.Person );
+            var queryable = exceptionLogService.Queryable();
 
             // Load the template exception to determine the filter criteria.
             var templateException = GetTemplateException( rockContext );
 
             if ( templateException == null )
             {
-                return queryable.Where( e => false );
+                return SelectExceptionOccurrenceRows( queryable.Where( e => false ) );
             }
 
-            // Filter to outermost exceptions matching the template description prefix.
+            // Filter to outermost exceptions in the same group as the template exception.
             queryable = exceptionLogService.FilterByOutermost( queryable );
-            queryable = exceptionLogService.FilterByDescriptionPrefix( queryable, templateException.Description );
+            queryable = exceptionLogService.FilterByExceptionGroupKey( queryable, templateException.ExceptionGroupKey );
 
             // Apply preference filters.
             var siteGuid = FilterSiteGuid;
@@ -248,46 +254,127 @@ namespace Rock.Blocks.Core
                 }
             }
 
-            var slidingDateRange = FilterDateRange;
-            if ( slidingDateRange != null )
+            /*
+                8/26/26 - MSE
+
+                The group key is an INCLUDE column of IX_Outermost_ParentId_CreatedDateTime rather than a key
+                column, so filtering by key alone makes SQL Server read every outermost exception in the index.
+                Always bounding the query by CreatedDateTime turns that into a seek on the index key.
+
+                Reason: A default date range keeps this query a range seek instead of a scan of every outermost exception.
+            */
+            // Default to the last month if a null/invalid range was selected. This must match the client-side default.
+            var defaultSlidingDateRange = new SlidingDateRangeBag
             {
-                var dateRange = slidingDateRange.Validate( slidingDateRange ).ActualDateRange;
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 1
+            };
 
-                if ( dateRange.Start.HasValue )
-                {
-                    queryable = queryable.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= dateRange.Start.Value );
-                }
+            var dateRange = FilterDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
+            var dateTimeStart = dateRange.Start;
+            var dateTimeEnd = dateRange.End;
 
-                if ( dateRange.End.HasValue )
-                {
-                    queryable = queryable.Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value < dateRange.End.Value );
-                }
-            }
+            queryable = queryable.Where( e =>
+                e.CreatedDateTime >= dateTimeStart
+                && e.CreatedDateTime < dateTimeEnd
+            );
 
-            return queryable;
+            return SelectExceptionOccurrenceRows( queryable );
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<ExceptionLog> GetOrderedListQueryable( IQueryable<ExceptionLog> queryable, RockContext rockContext )
+        protected override IQueryable<ExceptionOccurrenceRow> GetOrderedListQueryable( IQueryable<ExceptionOccurrenceRow> queryable, RockContext rockContext )
         {
-            return queryable.OrderByDescending( e => e.CreatedDateTime );
+            return queryable.OrderByDescending( r => r.CreatedDateTime );
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<ExceptionLog> GetGridBuilder()
+        protected override GridBuilder<ExceptionOccurrenceRow> GetGridBuilder()
         {
-            return new GridBuilder<ExceptionLog>()
+            return new GridBuilder<ExceptionOccurrenceRow>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "idKey", a => a.Id.AsIdKey() )
                 .AddField( "id", a => a.Id )
                 .AddDateTimeField( "createdDateTime", a => a.CreatedDateTime )
-                .AddTextField( "pageName", a => a.Page != null ? a.Page.InternalName : a.PageUrl )
-                .AddTextField( "fullName", a => a.CreatedByPersonAlias != null && a.CreatedByPersonAlias.Person != null
-                    ? a.CreatedByPersonAlias.Person.LastName + ", " + a.CreatedByPersonAlias.Person.NickName
+                .AddTextField( "pageName", a => a.PageInternalName ?? a.PageUrl )
+                .AddTextField( "fullName", a => a.CreatedByPersonAliasId.HasValue
+                    ? a.PersonLastName + ", " + a.PersonNickName
                     : "" )
-                .AddTextField( "description", a => a.Description?.Truncate( 255 ) );
+                .AddTextField( "description", a => a.Description );
+        }
+
+        /// <summary>
+        /// Projects the exception logs to the columns the grid displays, so the full description, stack trace,
+        /// server variables, form and cookies (all nvarchar(max)) are never read for each row.
+        /// </summary>
+        /// <param name="queryable">The filtered exception logs.</param>
+        /// <returns>A queryable of grid rows.</returns>
+        private static IQueryable<ExceptionOccurrenceRow> SelectExceptionOccurrenceRows( IQueryable<ExceptionLog> queryable )
+        {
+            return queryable.Select( e => new ExceptionOccurrenceRow
+            {
+                Id = e.Id,
+                CreatedDateTime = e.CreatedDateTime,
+                PageInternalName = e.Page.InternalName,
+                PageUrl = e.PageUrl,
+                CreatedByPersonAliasId = e.CreatedByPersonAliasId,
+                PersonLastName = e.CreatedByPersonAlias.Person.LastName,
+                PersonNickName = e.CreatedByPersonAlias.Person.NickName,
+                Description = e.Description.Substring( 0, DescriptionDisplayLength )
+            } );
         }
 
         #endregion Methods
+
+        #region Supporting Classes
+
+        /// <summary>
+        /// A POCO to represent one exception occurrence row in the grid.
+        /// </summary>
+        public class ExceptionOccurrenceRow
+        {
+            /// <summary>
+            /// Gets or sets the identifier of the <see cref="ExceptionLog"/>.
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date and time the exception was logged.
+            /// </summary>
+            public DateTime? CreatedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the internal name of the <see cref="Page"/> the exception occurred on, if any.
+            /// </summary>
+            public string PageInternalName { get; set; }
+
+            /// <inheritdoc cref="ExceptionLog.PageUrl"/>
+            public string PageUrl { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the <see cref="PersonAlias"/> of the person who was logged in when
+            /// the exception occurred, if any.
+            /// </summary>
+            public int? CreatedByPersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name of the person who was logged in when the exception occurred, if any.
+            /// </summary>
+            public string PersonLastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the nick name of the person who was logged in when the exception occurred, if any.
+            /// </summary>
+            public string PersonNickName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the leading <see cref="DescriptionDisplayLength"/> characters of the exception's
+            /// <see cref="ExceptionLog.Description"/>.
+            /// </summary>
+            public string Description { get; set; }
+        }
+
+        #endregion Supporting Classes
     }
 }

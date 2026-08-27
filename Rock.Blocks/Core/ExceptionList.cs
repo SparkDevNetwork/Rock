@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -278,89 +279,23 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetSummaryData()
         {
-            // Default to the last 6 months if a null/invalid range was selected.
+            // Default to the last month if a null/invalid range was selected.
             var defaultSlidingDateRange = new SlidingDateRangeBag
             {
                 RangeType = SlidingDateRangeType.Last,
                 TimeUnit = TimeUnitType.Month,
-                TimeValue = 6
+                TimeValue = 1
             };
 
             var dateRange = FilterDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
             var dateTimeStart = dateRange.Start;
             var dateTimeEnd = dateRange.End;
 
-            var shouldFilterByType = FilterExceptionTypeName.IsNotNullOrWhiteSpace();
+            // Both the grid and the chart aggregate this same filtered query in SQL, so only the aggregated
+            // results (one row per group, or per day and type) are ever pulled into memory.
+            var qry = GetFilteredExceptionLogQueryable( dateTimeStart, dateTimeEnd );
 
-            var exceptionLogService = new ExceptionLogService( RockContext );
-            var qry = exceptionLogService
-                .Queryable()
-                .Where( e =>
-                    e.CreatedDateTime >= dateTimeStart
-                    && e.CreatedDateTime < dateTimeEnd
-                );
-
-            // Only include outermost exceptions (those without a parent exception).
-            qry = exceptionLogService.FilterByOutermost( qry );
-
-            if ( FilterSiteId.HasValue )
-            {
-                qry = qry.Where( e => e.SiteId == FilterSiteId.Value );
-            }
-
-            if ( FilterPageId.HasValue )
-            {
-                qry = qry.Where( e => e.PageId == FilterPageId.Value );
-            }
-
-            if ( FilterPersonId > 0 )
-            {
-                qry = qry.Where( e =>
-                    e.CreatedByPersonAliasId.HasValue
-                    && e.CreatedByPersonAlias.PersonId == FilterPersonId
-                );
-            }
-
-            if ( shouldFilterByType )
-            {
-                qry = qry.Where( e => e.ExceptionType.Contains( FilterExceptionTypeName ) );
-            }
-
-            // Pull the data into memory to perform grouping and summarization here. This will avoid potential
-            // performance issues with description substring grouping in SQL. Both the grid and chart(s) can use
-            // this same list of exception infos.
-            var exceptionLogInfos = qry
-                .Select( e => new ExceptionLogInfo
-                {
-                    Id = e.Id,
-                    ExceptionType = e.ExceptionType,
-                    Description = e.Description,
-                    CreatedDateTime = e.CreatedDateTime.Value
-                } )
-                .ToList();
-
-            var minSubsetCountDate = RockDateTime.Today.AddDays( -SubsetCountDays );
-
-            var exceptionLogSummaries = exceptionLogInfos
-                .GroupBy( e => new
-                {
-                    e.ExceptionType,
-                    DescriptionPrefix = e.Description.Truncate( ExceptionLogService.DescriptionGroupingPrefixLength, false )
-                } )
-                .Select( g =>
-                {
-                    var mostRecent = g.OrderByDescending( e => e.CreatedDateTime ).First();
-                    return new ExceptionLogSummary
-                    {
-                        IdKey = mostRecent.Id.AsIdKey(),
-                        LastExceptionDate = mostRecent.CreatedDateTime,
-                        ExceptionTypeName = mostRecent.ExceptionType,
-                        Description = mostRecent.Description,
-                        TotalCount = g.Count(),
-                        SubsetCount = g.Count( e => e.CreatedDateTime.Date >= minSubsetCountDate )
-                    };
-                } )
-                .ToList();
+            var exceptionLogSummaries = GetExceptionLogSummaries( qry );
 
             var gridBuilder = GetGridBuilder();
 
@@ -371,7 +306,7 @@ namespace Rock.Blocks.Core
             var summaryData = new ExceptionListSummaryDataBag
             {
                 GridDataBag = gridDataBag,
-                ExceptionCountsPerDay = GetExceptionCountsPerDay( exceptionLogInfos )
+                ExceptionCountsPerDay = GetExceptionCountsPerDay( qry, dateTimeStart.Value )
             };
 
             return ActionOk( summaryData );
@@ -482,12 +417,169 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Gets the daily exception counts for the filtered exception logs.
+        /// Gets the outermost exception logs within the specified date range, further filtered by the
+        /// individual's grid settings (site, page, person and exception type).
         /// </summary>
-        /// <param name="exceptionLogInfos">The filtered exception logs.</param>
-        /// <returns>A bag that contains the daily exception counts.</returns>
-        private ExceptionCountsPerDayBag GetExceptionCountsPerDay( List<ExceptionLogInfo> exceptionLogInfos )
+        /// <param name="dateTimeStart">The inclusive start of the date range.</param>
+        /// <param name="dateTimeEnd">The exclusive end of the date range.</param>
+        /// <returns>A queryable of the filtered exception logs.</returns>
+        private IQueryable<ExceptionLog> GetFilteredExceptionLogQueryable( DateTime? dateTimeStart, DateTime? dateTimeEnd )
         {
+            var exceptionLogService = new ExceptionLogService( RockContext );
+            var qry = exceptionLogService
+                .Queryable()
+                .Where( e =>
+                    e.CreatedDateTime >= dateTimeStart
+                    && e.CreatedDateTime < dateTimeEnd
+                );
+
+            // Only include outermost exceptions (those without a parent exception).
+            qry = exceptionLogService.FilterByOutermost( qry );
+
+            var filterSiteId = FilterSiteId;
+            if ( filterSiteId.HasValue )
+            {
+                qry = qry.Where( e => e.SiteId == filterSiteId.Value );
+            }
+
+            var filterPageId = FilterPageId;
+            if ( filterPageId.HasValue )
+            {
+                qry = qry.Where( e => e.PageId == filterPageId.Value );
+            }
+
+            var filterPersonId = FilterPersonId;
+            if ( filterPersonId > 0 )
+            {
+                qry = qry.Where( e =>
+                    e.CreatedByPersonAliasId.HasValue
+                    && e.CreatedByPersonAlias.PersonId == filterPersonId
+                );
+            }
+
+            var filterExceptionTypeName = FilterExceptionTypeName;
+            if ( filterExceptionTypeName.IsNotNullOrWhiteSpace() )
+            {
+                qry = qry.Where( e => e.ExceptionType.Contains( filterExceptionTypeName ) );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets one summary row per exception group for the filtered exception logs, grouping and aggregating
+        /// in SQL.
+        /// </summary>
+        /// <param name="qry">The filtered exception logs.</param>
+        /// <returns>The exception log summaries.</returns>
+        private List<ExceptionLogSummary> GetExceptionLogSummaries( IQueryable<ExceptionLog> qry )
+        {
+            var minSubsetCountDate = RockDateTime.Today.AddDays( -SubsetCountDays );
+
+            /*
+                8/26/26 - MSE
+
+                This grouping used to happen in memory: every outermost exception in the date window (including its
+                full description) was pulled from SQL only to be grouped and then discarded. The grouping now
+                happens in SQL on the ExceptionGroupKey computed column, which is carried by the filtered index
+                that covers this query, so only one row per group leaves the database.
+
+                The query is deliberately shaped as project, then group, then aggregate. Referencing the group's
+                elements in the projection (g.First(), g.FirstOrDefault(), g.Count( predicate )) makes EF6 emit a
+                correlated sub-query per group that re-scans the index once for every group.
+
+                Reason: Group in SQL with a single GROUP BY so the block scales with the number of groups rather than the number of exceptions.
+            */
+            var exceptionLogGroups = qry
+                .Select( e => new
+                {
+                    e.ExceptionGroupKey,
+                    e.Id,
+                    e.ExceptionType,
+                    e.CreatedDateTime,
+                    SubsetCount = e.CreatedDateTime >= minSubsetCountDate ? 1 : 0
+                } )
+                .GroupBy( e => e.ExceptionGroupKey )
+                .Select( g => new ExceptionLogGroupInfo
+                {
+                    ExceptionGroupKey = g.Key,
+                    LatestExceptionId = g.Max( e => e.Id ),
+                    ExceptionType = g.Max( e => e.ExceptionType ),
+                    LastExceptionDate = g.Max( e => e.CreatedDateTime ),
+                    TotalCount = g.Count(),
+                    SubsetCount = g.Sum( e => e.SubsetCount )
+                } )
+                .ToList();
+
+            return exceptionLogGroups
+                .Select( g => new ExceptionLogSummary
+                {
+                    IdKey = g.LatestExceptionId.AsIdKey(),
+                    LastExceptionDate = g.LastExceptionDate,
+                    ExceptionTypeName = g.ExceptionType,
+                    Description = GetDisplayDescription( g.ExceptionGroupKey, g.ExceptionType ),
+                    TotalCount = g.TotalCount,
+                    SubsetCount = g.SubsetCount
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the description to display for an exception group: the description portion of its group key, with
+        /// an ellipsis appended when the description was cut at the grouping prefix length, so it reads like the
+        /// truncated descriptions on the Exception Occurrences grid.
+        /// </summary>
+        /// <param name="exceptionGroupKey">The exception group key.</param>
+        /// <param name="exceptionType">The exception type of the group.</param>
+        /// <returns>The description to display.</returns>
+        private static string GetDisplayDescription( string exceptionGroupKey, string exceptionType )
+        {
+            var description = ExceptionLogService.GetDescriptionFromExceptionGroupKey( exceptionGroupKey, exceptionType );
+
+            if ( description != null && description.Length >= ExceptionLogService.DescriptionGroupingPrefixLength )
+            {
+                description += "...";
+            }
+
+            return description;
+        }
+
+        /// <summary>
+        /// Gets the daily exception counts for the filtered exception logs, aggregating in SQL.
+        /// </summary>
+        /// <param name="qry">The filtered exception logs.</param>
+        /// <param name="dateTimeStart">The start of the date range; each day is queried as an offset from this date.</param>
+        /// <returns>A bag that contains the daily exception counts.</returns>
+        private ExceptionCountsPerDayBag GetExceptionCountsPerDay( IQueryable<ExceptionLog> qry, DateTime dateTimeStart )
+        {
+            var baseDate = dateTimeStart.Date;
+
+            /*
+                8/26/26 - MSE
+
+                DbFunctions.DiffDays translates to DATEDIFF( DAY, @baseDate, [CreatedDateTime] ), an integer that
+                SQL Server can hash-aggregate straight from the covering index. DbFunctions.TruncateTime instead
+                translates to CAST( CAST( [CreatedDateTime] AS DATE ) AS DATETIME2 ), which SQL Server sorts before
+                aggregating (spilling to tempdb on larger windows) and which measured roughly twice as slow across
+                hundreds of thousands of rows.
+
+                Reason: Group by an integer day offset in SQL so the chart query stays a cheap aggregate.
+            */
+            var dailyTypeCounts = qry
+                .Select( e => new
+                {
+                    DayOffset = DbFunctions.DiffDays( baseDate, e.CreatedDateTime ),
+                    e.ExceptionType
+                } )
+                .GroupBy( e => new { e.DayOffset, e.ExceptionType } )
+                .Select( g => new
+                {
+                    g.Key.DayOffset,
+                    g.Key.ExceptionType,
+                    ExceptionCount = g.Count()
+                } )
+                .ToList();
+
             var exceptionCountsPerDay = new ExceptionCountsPerDayBag
             {
                 DateLabels = new List<string>(),
@@ -495,13 +587,16 @@ namespace Rock.Blocks.Core
                 UniqueExceptionCounts = new List<int>()
             };
 
-            foreach ( var dailySummary in exceptionLogInfos
-                .GroupBy( e => e.CreatedDateTime.Date )
+            // Each SQL row represents one exception type on one day, so the number of rows for a day is the
+            // number of unique exception types that occurred that day.
+            foreach ( var dailySummary in dailyTypeCounts
+                .Where( d => d.DayOffset.HasValue )
+                .GroupBy( d => d.DayOffset.Value )
                 .Select( g => new
                 {
-                    DateValue = g.Key,
-                    ExceptionCount = g.Count(),
-                    UniqueExceptionCount = g.Select( e => e.ExceptionType ).Distinct().Count()
+                    DateValue = baseDate.AddDays( g.Key ),
+                    ExceptionCount = g.Sum( d => d.ExceptionCount ),
+                    UniqueExceptionCount = g.Count()
                 } )
                 .OrderBy( g => g.DateValue ) )
             {
@@ -520,22 +615,35 @@ namespace Rock.Blocks.Core
         #region Supporting Classes
 
         /// <summary>
-        /// A POCO to represent an exception log SQL projection.
+        /// A POCO to represent the SQL projection of one group of exception logs.
         /// </summary>
-        private class ExceptionLogInfo
+        private class ExceptionLogGroupInfo
         {
+            /// <inheritdoc cref="ExceptionLog.ExceptionGroupKey"/>
+            public string ExceptionGroupKey { get; set; }
+
             /// <summary>
-            /// Gets or sets the identifier for the <see cref="ExceptionLog"/>.
+            /// Gets or sets the identifier of the most recently logged <see cref="ExceptionLog"/> in the group.
             /// </summary>
-            public int Id { get; set; }
+            public int LatestExceptionId { get; set; }
 
             /// <inheritdoc cref="ExceptionLog.ExceptionType"/>
             public string ExceptionType { get; set; }
 
-            /// <inheritdoc cref="ExceptionLog.Description"/>
-            public string Description { get; set; }
+            /// <summary>
+            /// Gets or sets the most recent datetime for <see cref="ExceptionLog"/> entries in the group.
+            /// </summary>
+            public DateTime? LastExceptionDate { get; set; }
 
-            public DateTime CreatedDateTime { get; set; }
+            /// <summary>
+            /// Gets or sets the total count of <see cref="ExceptionLog"/> entries in the group.
+            /// </summary>
+            public int TotalCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the count of <see cref="ExceptionLog"/> entries in the group within the summary date range.
+            /// </summary>
+            public int SubsetCount { get; set; }
         }
 
         /// <summary>

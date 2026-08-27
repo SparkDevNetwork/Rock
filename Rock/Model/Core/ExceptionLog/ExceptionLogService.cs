@@ -77,8 +77,23 @@ namespace Rock.Model
         ///
         /// <summary>
         /// Specifies the number of prefix characters of the Exception Message property that are examined when grouping similar exceptions.
+        /// This is the number of <see cref="ExceptionLog.Description"/> characters that are included in <see cref="ExceptionLog.ExceptionGroupKey"/>.
         /// </summary>
-        public static readonly int DescriptionGroupingPrefixLength = 95;
+        /*
+            8/26/26 - MSE
+
+            This was 95 for years without a documented reason, and on real data 95 characters were often nothing but
+            boilerplate wrapper text (e.g. "Rocket.Chat Exception: The Rocket.Chat API returned an error. The Response
+            URI was: https://c"), which merged genuinely different errors into one row. 255 is also the length of the
+            description the Exception List block displays, so the block now groups by exactly what it shows.
+
+            Changing this value alone does NOT change how exceptions are grouped: the grouping is performed by the
+            ExceptionGroupKey computed column, whose definition (LEFT( [Description], 255 )) lives in the
+            AddExceptionLogExceptionGroupKey migration. Keep the two in sync.
+
+            Reason: Group by the same 255 characters that are displayed, instead of an arbitrary 95.
+        */
+        public static readonly int DescriptionGroupingPrefixLength = 255;
 
         /// <summary>
         /// Filter a query for exceptions at the innermost or lowest level of the exception hierarchy.
@@ -105,6 +120,10 @@ namespace Rock.Model
         /// <summary>
         /// Filter a query for exceptions having a description matching the specified prefix.
         /// </summary>
+        /// <remarks>
+        /// This filter is not covered by an index. Prefer <see cref="FilterByExceptionGroupKey(IQueryable{ExceptionLog}, string)"/>
+        /// when filtering to the exceptions that the Exception List block groups together.
+        /// </remarks>
         /// <param name="query">The query.</param>
         /// <param name="descriptionPrefix">The description prefix.</param>
         /// <returns></returns>
@@ -118,6 +137,41 @@ namespace Rock.Model
             }
 
             return query;
+        }
+
+        /// <summary>
+        /// Filter a query for exceptions belonging to the specified exception group, that is, having the same
+        /// <see cref="ExceptionLog.ExceptionGroupKey"/>.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="exceptionGroupKey">The <see cref="ExceptionLog.ExceptionGroupKey"/> of the group.</param>
+        /// <returns>The filtered query.</returns>
+        internal IQueryable<ExceptionLog> FilterByExceptionGroupKey( IQueryable<ExceptionLog> query, string exceptionGroupKey )
+        {
+            return query.Where( e => e.ExceptionGroupKey == exceptionGroupKey );
+        }
+
+        /// <summary>
+        /// Gets the description portion of an <see cref="ExceptionLog.ExceptionGroupKey"/>: the first
+        /// <see cref="DescriptionGroupingPrefixLength"/> characters of the group's <see cref="ExceptionLog.Description"/>.
+        /// </summary>
+        /// <param name="exceptionGroupKey">The exception group key, formatted as "{ExceptionType}|{Description prefix}".</param>
+        /// <param name="exceptionType">The <see cref="ExceptionLog.ExceptionType"/> of the group. Its length determines where the description begins within the key.</param>
+        /// <returns>The description prefix, or <see langword="null"/> if <paramref name="exceptionGroupKey"/> is <see langword="null"/>.</returns>
+        internal static string GetDescriptionFromExceptionGroupKey( string exceptionGroupKey, string exceptionType )
+        {
+            if ( exceptionGroupKey == null )
+            {
+                return null;
+            }
+
+            // The key is built as ISNULL( [ExceptionType], '' ) + '|' + LEFT( [Description], n ), so the description
+            // starts right after the exception type (an empty string when the type is null) and the pipe separator.
+            var descriptionStartIndex = ( exceptionType?.Length ?? 0 ) + 1;
+
+            return exceptionGroupKey.Length > descriptionStartIndex
+                ? exceptionGroupKey.Substring( descriptionStartIndex )
+                : string.Empty;
         }
 
         #endregion Filters

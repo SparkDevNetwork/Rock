@@ -96,7 +96,7 @@
         </Grid>
 
         <GridSettingsModal v-model="gridSettings"
-                           v-model:visible="isGridSettingsVisible" g
+                           v-model:visible="isGridSettingsVisible"
                            :siteItems="siteItems"
                            :defaultSlidingDateRange="defaultSlidingDateRange" />
     </BreakpointObserver>
@@ -149,13 +149,13 @@
 
     onConfigurationValuesChanged(useReloadBlock());
 
-    // We'll enforce a default date range of the last 6 months - to be applied
+    // We'll enforce a default date range of the last month - to be applied
     // if the individual doesn't have a preference - as the [ExceptionLog] table
-    // can have a large number of rows.
+    // can have a large number of rows. This must match the server-side default.
     const defaultSlidingDateRange: SlidingDateRange = {
         rangeType: RangeType.Last,
         timeUnit: TimeUnit.Month,
-        timeValue: 6
+        timeValue: 1
     };
 
     // #region Values

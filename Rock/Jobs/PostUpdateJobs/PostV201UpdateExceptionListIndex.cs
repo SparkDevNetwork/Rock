@@ -23,10 +23,11 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Run once job for v20.0 to add an Exception Log index to improve performance of the Exception List block.
+    /// Run once job for v20.1 to update the Exception Log indexes that the Exception List, Exception Occurrences and
+    /// Exception Detail blocks rely on, replacing the index shape that the v20.0 job built.
     /// </summary>
-    [DisplayName( "Rock Update Helper v20.0 - Add Exception Log Index for the Exception List Block" )]
-    [Description( "This job will add an Exception Log index to improve performance of the Exception List block." )]
+    [DisplayName( "Rock Update Helper v20.1 - Update Exception Log Indexes" )]
+    [Description( "This job will update the Exception Log indexes used by the Exception List, Exception Occurrences and Exception Detail blocks." )]
 
     [IntegerField( "Command Timeout",
         Key = AttributeKey.CommandTimeout,
@@ -34,7 +35,7 @@ namespace Rock.Jobs
         IsRequired = false,
         DefaultIntegerValue = 14400 )]
 
-    public class PostV20AddExceptionListIndex : RockJob
+    public class PostV201UpdateExceptionListIndex : RockJob
     {
         private static class AttributeKey
         {
@@ -44,33 +45,32 @@ namespace Rock.Jobs
         /// <inheritdoc />
         public override void Execute()
         {
-            /*
-                8/27/26 - MSE
-
-                This is no longer needed, as Rock v20.1 introduces an improved version of this index that INCLUDEs the
-                bounded [ExceptionGroupKey] computed column instead of the unbounded [Description] column (see
-                PostV201UpdateExceptionListIndex). The original migration below must not run any more: it dropped and
-                recreated the index unconditionally, so on an install where the v20.1 job has already run it would
-                put the earlier, oversized shape back.
-
-                Rollup_20260520 no longer registers this job and the AddExceptionLogExceptionGroupKey migration
-                deletes its row where one is still pending, so this job should not normally run at all. If it does,
-                it only removes itself.
-
-                Begin: Original Job Migration
-
             // Get the configured timeout, or default to 240 minutes if it is blank.
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
 
+            /*
+                8/27/26 - MSE
+
+                The v20.0 job (PostV20AddExceptionListIndex) built IX_Outermost_ParentId_CreatedDateTime with
+                INCLUDE ([Description]), an nvarchar(max) column, which made the size of the index depend on how long
+                an install's exception messages were (on one install it grew to roughly the size of the table). This
+                job rebuilds it to INCLUDE the bounded [ExceptionGroupKey] computed column instead, which the
+                Exception List block groups by in SQL.
+
+                v20.0 had already shipped, so the v20.0 job was retired rather than edited (see the note in that
+                class) and this job was added with its own guid, matching how earlier index fixes were shipped.
+
+                Reason: Replace the unbounded v20.0 index shape on every install, whether or not the v20.0 job ran.
+            */
             jobMigration.Sql( @"
--- Drop index (if it exists).
+-- Drop the index (if it exists). The v20.0 shape INCLUDEd the unbounded [Description] column.
 IF EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_Outermost_ParentId_CreatedDateTime' AND object_id = OBJECT_ID(N'[dbo].[ExceptionLog]'))
 BEGIN
     DROP INDEX [IX_Outermost_ParentId_CreatedDateTime] ON [dbo].[ExceptionLog];
 END
 
--- Add an Exception Log index to improve performance of the Exception List block.
+-- Recreate the index to include the bounded [ExceptionGroupKey] computed column instead of [Description].
 -- Note that this index is purposefully a filtered index (WHERE [ParentId] IS NULL) while also including that same
 -- column within the index proper. This is to reduce the size of the index while also giving the optimizer the index
 -- shape it's most often able to use.
@@ -78,13 +78,18 @@ CREATE NONCLUSTERED INDEX [IX_Outermost_ParentId_CreatedDateTime] ON [dbo].[Exce
     [ParentId] ASC,
     [CreatedDateTime] ASC
 )
-INCLUDE ([SiteId], [PageId], [ExceptionType], [Description], [CreatedByPersonAliasId])
-WHERE [ParentId] IS NULL;" );
+INCLUDE ([SiteId], [PageId], [ExceptionType], [ExceptionGroupKey], [CreatedByPersonAliasId])
+WHERE [ParentId] IS NULL;
 
-                End: Original Job Migration
-
-                Reason: Prevent a superseded index migration from undoing the v20.1 Exception Log index.
-            */
+-- Add an index on [ParentId] for the Exception Detail block, which loads an exception's inner exceptions by their
+-- parent. This index is purposefully NOT filtered: EF6 compiles the nullable parent identifier parameter as
+-- ""[ParentId] = @parentId OR ([ParentId] IS NULL AND @parentId IS NULL)"", which a filtered index cannot satisfy.
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_ParentId' AND object_id = OBJECT_ID(N'[dbo].[ExceptionLog]'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_ParentId] ON [dbo].[ExceptionLog] (
+        [ParentId] ASC
+    );
+END" );
 
             DeleteJob();
         }
