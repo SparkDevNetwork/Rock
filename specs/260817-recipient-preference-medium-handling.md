@@ -1,12 +1,24 @@
+---
+author: Joshua Henninger
+date_created: 2026-08-17
+summary: >-
+  The v19 Obsidian Communication Entry Wizard showed all three medium options
+  even when the block's "Communication Types" setting excluded SMS, because it
+  collapsed two distinct concepts (which mediums appear as standalone picker
+  options, and which mediums Recipient Preference actually composes and
+  delivers) into one. The reported symptom is fixed; this spec remains the
+  record for the deferred work: explicit deliverability validation, an
+  admin-only configuration error banner, a send block, and treating Recipient
+  Preference as unavailable until both Email and SMS are deliverable.
+contributors: []
+---
+
 # Communication Entry Wizard: Recipient Preference and Medium Validation
 
 | Field | Value |
 |---|---|
-| Domain | Communication |
 | Issue | #6938 / DEV-14623 |
 | Target | v19.5 |
-| Status | Proposed (in review) |
-| Date | 2026-08-17 |
 
 ## Problem
 
