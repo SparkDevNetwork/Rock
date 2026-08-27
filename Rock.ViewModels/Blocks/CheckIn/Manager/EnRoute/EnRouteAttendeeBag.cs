@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Manager.EnRoute
 {
@@ -37,7 +38,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Manager.EnRoute
         /// Used by the Move Person modal to determine which attendance to
         /// move.
         /// </summary>
-        public int[] AttendanceIds { get; set; }
+        public List<int> AttendanceIds { get; set; }
 
         /// <summary>
         /// Gets or sets the HTML img tag for the person's photo avatar,

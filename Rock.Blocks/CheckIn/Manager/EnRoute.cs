@@ -602,7 +602,7 @@ namespace Rock.Blocks.CheckIn.Manager
             return new EnRouteAttendeeBag
             {
                 PersonGuid = attendee.PersonGuid,
-                AttendanceIds = attendee.AttendanceIds,
+                AttendanceIds = attendee.AttendanceIds.ToList(),
                 PhotoImageTag = attendee.Person != null
                     ? Person.GetPersonPhotoImageTag( attendee.Person, 50, 50, className: "avatar avatar-lg" )
                     : null,
