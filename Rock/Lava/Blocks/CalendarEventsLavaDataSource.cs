@@ -58,6 +58,14 @@ namespace Rock.Lava.Blocks
         /// </summary>
         public static readonly string ParameterAudienceIds = "audienceids";
         /// <summary>
+        /// Parameter name for specifying that Event Occurrences tagged with personalization segments should be excluded unless the current request matches one of those segments. Events with no segments are always included. If not specified, the default value is false.
+        /// </summary>
+        public static readonly string ParameterFilterBySegments = "filterbysegments";
+        /// <summary>
+        /// Parameter name for specifying that Event Occurrences tagged with request filters should be excluded unless the current request matches one of those filters. Events with no request filters are always included. If not specified, the default value is false.
+        /// </summary>
+        public static readonly string ParameterFilterByRequestFilters = "filterbyrequestfilters";
+        /// <summary>
         /// Parameter name for specifying a filter for the campus of the Event Occurrences. If not specified, all campuses are considered.
         /// </summary>
         public static readonly string ParameterCampusIds = "campusids";
@@ -92,8 +100,17 @@ namespace Rock.Lava.Blocks
         /// </exception>
         public List<EventOccurrenceSummary> GetEventOccurrencesForCalendar( LavaElementAttributes settings, RockContext rockContext )
         {
+            return this.GetEventOccurrencesForCalendar( settings, rockContext, null );
+        }
+
+        /// <summary>
+        /// Gets the event occurrences for calendar.
+        /// </summary>
+        /// <returns></returns>
+        public List<EventOccurrenceSummary> GetEventOccurrencesForCalendar( LavaElementAttributes settings, RockContext rockContext, ILavaRenderContext lavaContext )
+        {
             // Check for invalid parameters.
-            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterCampusIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
+            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterCampusIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate, ParameterFilterBySegments, ParameterFilterByRequestFilters } );
 
             if ( unknownNames.Any() )
             {
@@ -138,6 +155,24 @@ namespace Rock.Lava.Blocks
             var qryOccurrences = GetBaseEventOccurrenceQuery( rockContext );
 
             qryOccurrences = qryOccurrences.Where( m => m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == calendar.Id ) );
+
+            var filterBySegments = settings.GetBoolean( ParameterFilterBySegments );
+            var filterByRequestFilters = settings.GetBoolean( ParameterFilterByRequestFilters );
+
+            var canFilterBySegments = filterBySegments && lavaContext != null;
+
+            if ( canFilterBySegments || filterByRequestFilters )
+            {
+                var matchedSegmentIds = canFilterBySegments
+                    ? LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( lavaContext )
+                    : new List<int>();
+
+                var matchedRequestFilterIds = filterByRequestFilters
+                    ? LavaPersonalizationHelper.GetPersonalizationRequestFilterIdList()
+                    : new List<int>();
+
+                qryOccurrences = qryOccurrences.FilterByPersonalization( rockContext, canFilterBySegments, filterByRequestFilters, matchedSegmentIds, matchedRequestFilterIds );
+            }
 
             var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, campusIdList, maxOccurrences, startDate, endDate );
 
@@ -542,7 +577,7 @@ namespace Rock.Lava.Blocks
             endDate = endDate.Value.Date.AddDays( 1 ).AddTicks( -1 );
 
             // Events scheduled on the boundary dates of the period specified by the startDate and endDate parameters should include e.
-            // To ensure this is 
+            // To ensure this is
             var occurrencesWithDates = qryOccurrences.ToList()
                 .Select( o =>
                 {
