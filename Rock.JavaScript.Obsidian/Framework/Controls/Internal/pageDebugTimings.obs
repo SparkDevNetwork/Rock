@@ -66,6 +66,7 @@
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
     import { computed, ref, watch } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     type TraceRecordBag = {
@@ -86,6 +87,9 @@
         parent: TraceRecordTreeBag | null;
     };
 
+    /** The query string parameter that requests the page debug timings modal. */
+    const showDebugTimingsParameterKey = "ShowDebugTimings";
+
     const http = useHttp();
 
     const showTimingsModal = ref(true);
@@ -95,6 +99,11 @@
 
     let loadDataTimeout: number | null = null;
     let loadingDelay = 1000;
+
+    // The value of the query string parameter that opened this modal. It is
+    // captured up front so it can be put back in the URL if the modal is
+    // opened again after having been closed.
+    const showDebugTimingsParameterValue = new URL(window.location.href).searchParams.get(showDebugTimingsParameterKey);
 
     // #region Computed Values
 
@@ -198,6 +207,33 @@
         }
     }
 
+    /**
+     * Updates the URL to match the current state of the modal. The query string
+     * parameter is what causes the modal to be displayed on page load, so it is
+     * removed when the modal is closed. Otherwise refreshing the page would
+     * bring the modal back up after it had been dismissed.
+     *
+     * @param isModalShown true if the modal is currently open; otherwise false.
+     */
+    function updateDebugTimingsUrlParameter(isModalShown: boolean): void {
+        if (!isModalShown) {
+            removeCurrentUrlQueryParams(showDebugTimingsParameterKey);
+            return;
+        }
+
+        // The page must have been loaded without the parameter, so there is
+        // nothing to put back in the URL.
+        if (!showDebugTimingsParameterValue) {
+            return;
+        }
+
+        const url = new URL(window.location.href);
+
+        url.searchParams.set(showDebugTimingsParameterKey, showDebugTimingsParameterValue);
+
+        window.history.replaceState(null, "", url);
+    }
+
     function initializeOpenButton(): void {
         const adminFooter = document.getElementById("cms-admin-footer");
 
@@ -224,6 +260,8 @@
     // #endregion
 
     watch(showTimingsModal, () => {
+        updateDebugTimingsUrlParameter(showTimingsModal.value);
+
         if (!showTimingsModal.value && loadDataTimeout) {
             window.clearTimeout(loadDataTimeout);
             loadDataTimeout = null;
