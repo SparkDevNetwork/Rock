@@ -50,6 +50,12 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string ConnectionRequestIdKey { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the block should open the Add Connection Request
+        /// modal on load.
+        /// </summary>
+        public bool IsAddConnectionRequestRequested { get; set; }
+
+        /// <summary>
         /// Gets or sets the GUID of the Connection Opportunity supplied via a page parameter, used to pre-filter the view.
         /// </summary>
         public Guid? ConnectionOpportunityGuidFromPageParameter { get; set; }
