@@ -1,21 +1,21 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="rootEl" class="group-finder-address-typeahead">
+    <div ref="rootEl" class="groupfinder-address-typeahead">
         <TextBox v-model="searchText"
                  type="search"
                  :disableAutocomplete="true"
-                 :inputClasses="'group-finder-address'"
+                 :inputClasses="'groupfinder-address'"
                  :placeholder="placeholder"
                  @keydown.down.prevent="moveActive(1)"
                  @keydown.up.prevent="moveActive(-1)"
                  @keydown.enter="onEnter"
                  @keydown.esc="closeSuggestions" />
 
-        <ul v-if="suggestions.length > 0" class="group-finder-address-suggestions" role="listbox">
+        <ul v-if="suggestions.length > 0" class="groupfinder-address-suggestion-list" role="listbox">
             <li v-for="(suggestion, index) in suggestions" :key="suggestion">
                 <button type="button"
                         role="option"
-                        class="group-finder-address-suggestion"
+                        class="groupfinder-address-suggestion groupfinder-option-row"
                         :class="{ 'is-active': index === activeIndex }"
                         :aria-selected="index === activeIndex"
                         @click="selectSuggestion(suggestion)"
@@ -27,44 +27,6 @@
         </ul>
     </div>
 </template>
-
-<style scoped>
-.group-finder-address-typeahead {
-    position: relative;
-}
-
-.group-finder-address-suggestions {
-    list-style: none;
-    margin: var(--spacing-xsmall) 0 0;
-    padding: 0;
-    border: 1px solid var(--color-interface-soft, #e5e5e5);
-    border-radius: var(--rounded-small);
-    background: var(--color-interface-softest, #fff);
-    overflow: hidden;
-}
-
-.group-finder-address-suggestion {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    width: 100%;
-    padding: var(--spacing-xsmall) var(--spacing-small);
-    border: none;
-    background: transparent;
-    text-align: left;
-    cursor: pointer;
-}
-
-.group-finder-address-suggestion:hover,
-.group-finder-address-suggestion.is-active {
-    background: var(--color-interface-softer, #f3f3f3);
-}
-
-.group-finder-address-suggestion i {
-    flex: none;
-    color: var(--color-interface-medium, #999);
-}
-</style>
 
 <script setup lang="ts">
     import { onMounted, onUnmounted, PropType, ref, watch } from "vue";

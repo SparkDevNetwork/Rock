@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="filter-when-content">
+    <div class="groupfinder-when-filter">
         <div v-if="config.isTimeOfDayFilterShown" class="form-group">
             <RockLabel>Time of Day</RockLabel>
             <div class="control-wrapper">
