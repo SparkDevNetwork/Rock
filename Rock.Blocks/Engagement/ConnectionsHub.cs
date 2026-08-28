@@ -324,9 +324,15 @@ namespace Rock.Blocks.Engagement
                 SetSingleConnectionTypeHubOptions( connectionType, connectionOpportunity, options );
             }
 
-            if ( PageParameter( PageParameterKey.Request ).IsNotNullOrWhiteSpace() )
+            var requestParameter = PageParameter( PageParameterKey.Request );
+
+            if ( requestParameter == "0" )
             {
-                options.ConnectionRequestIdKey = new ConnectionRequestService( RockContext ).Get( PageParameter( PageParameterKey.Request ), !PageCache.Layout.Site.DisablePredictableIds )?.IdKey ?? string.Empty;
+                options.IsAddConnectionRequestRequested = true;
+            }
+            else if ( requestParameter.IsNotNullOrWhiteSpace() )
+            {
+                options.ConnectionRequestIdKey = new ConnectionRequestService( RockContext ).Get( requestParameter, !PageCache.Layout.Site.DisablePredictableIds )?.IdKey ?? string.Empty;
             }
 
             if ( options.ErrorMessage.IsNotNullOrWhiteSpace() )
