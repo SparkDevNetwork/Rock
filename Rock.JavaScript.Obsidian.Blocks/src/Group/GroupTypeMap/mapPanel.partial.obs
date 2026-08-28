@@ -1,0 +1,535 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="mapContainer" class="group-type-map-canvas w-100" :style="mapCanvasStyle"></div>
+</template>
+
+<style scoped>
+.group-type-map-canvas {
+    height: 100%;
+    border-radius: var(--border-radius-base);
+}
+</style>
+
+<script setup lang="ts">
+    /// <reference types="google.maps" />
+    /* global google */
+    import { computed, CSSProperties, onMounted, onUnmounted, PropType, ref } from "vue";
+    import { loadMapResources } from "@Obsidian/Utility/geo";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { MarkerClusterer, Marker, Cluster, ClusterStats, MarkerUtils, SuperClusterViewportAlgorithm, AlgorithmInput, SuperClusterViewportOptions } from "@Obsidian/Libs/markerClusterer";
+    import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
+    import { GroupTypeMapInitializationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapInitializationBag";
+    import { GroupTypeMapGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapGroupBag";
+    import { GroupTypeMapOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapOptionsBag";
+
+    const props = defineProps({
+        bag: {
+            type: Object as PropType<GroupTypeMapInitializationBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GroupTypeMapOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Types
+
+    /** An AdvancedMarkerElement wrapped to present the same setPosition/setMap surface as the legacy Marker. */
+    type AdvancedMarkerWrapper = {
+        position: google.maps.LatLng;
+        map: google.maps.Map | null;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        marker_element: google.maps.marker.AdvancedMarkerElement;
+        getPosition(): google.maps.LatLng;
+        setPosition(position: google.maps.LatLng): void;
+        setMap(newMap: google.maps.Map | null): void;
+    };
+
+    /** A point marker: legacy Marker (no mapId) or AdvancedMarker wrapper (mapId set). */
+    type MapMarker = google.maps.Marker | AdvancedMarkerWrapper;
+
+    /** Options for {@link ViewportThresholdClusterAlgorithm}: the viewport algorithm options plus the bypass threshold. */
+    type ViewportThresholdOptions = SuperClusterViewportOptions & {
+        /** When the current viewport holds this many markers or fewer, clustering is skipped and every marker shows individually. */
+        disableClusteringAtOrBelow: number;
+    };
+
+    /**
+     * A viewport-aware clustering algorithm that stops clustering once the current view holds only
+     * a handful of markers. The base SuperClusterViewportAlgorithm re-runs on every pan/zoom and
+     * returns just the in-view clusters; we count the markers those clusters represent and, when
+     * that count is at or below the threshold, explode them back into individual pins. This avoids
+     * leftover "2"/"3" bubbles when the person has already zoomed in far enough to separate them.
+     */
+    class ViewportThresholdClusterAlgorithm extends SuperClusterViewportAlgorithm {
+        private readonly disableClusteringAtOrBelow: number;
+
+        constructor(options: ViewportThresholdOptions) {
+            const { disableClusteringAtOrBelow, ...viewportOptions } = options;
+            super(viewportOptions);
+            this.disableClusteringAtOrBelow = disableClusteringAtOrBelow;
+        }
+
+        /** @inheritdoc */
+        public override cluster(input: AlgorithmInput): Cluster[] {
+            const clusters = super.cluster(input);
+
+            const inViewMarkerCount = clusters.reduce((total, cluster) => total + cluster.markers.length, 0);
+
+            if (inViewMarkerCount > this.disableClusteringAtOrBelow) {
+                return clusters;
+            }
+
+            // Few enough markers are in view that grouping adds nothing; show each as its own pin.
+            const singletons: Cluster[] = [];
+
+            for (const cluster of clusters) {
+                for (const marker of cluster.markers) {
+                    singletons.push(new Cluster({ markers: [marker], position: MarkerUtils.getPosition(marker) }));
+                }
+            }
+
+            return singletons;
+        }
+    }
+
+    // #endregion Types
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const mapContainer = ref<HTMLDivElement | null>(null);
+
+    let map: google.maps.Map | null = null;
+
+    // A single shared info window, reused for every marker click.
+    let infoWindow: google.maps.InfoWindow | null = null;
+
+    // The marker whose info window is currently open, so clicking that same marker again toggles
+    // the window closed. Cleared when the window is closed (by toggle or its own close button).
+    let openMarker: MapMarker | null = null;
+
+    // The placed markers, tracked so they can be torn down on unmount.
+    let markers: MapMarker[] = [];
+
+    // Clusters the markers so only cluster bubbles and the currently-visible markers are drawn.
+    // This keeps the live marker count small regardless of how many groups there are, which is
+    // what keeps the map responsive for group types with thousands of locations.
+    let markerClusterer: MarkerClusterer | null = null;
+
+    // Map Style values resolved server-side by loadMapResources. When the style has a mapId we
+    // use AdvancedMarkerElement; otherwise we apply the style JSON and fall back to the legacy Marker.
+    let styles: google.maps.MapTypeStyle[] = [];
+    let mapId: string | null = null;
+    let centerLatitude = 0;
+    let centerLongitude = 0;
+
+    const defaultZoom = 12;
+
+    // The running bounds of every placed marker; the map fits to this once the markers load.
+    let bounds: google.maps.LatLngBounds | null = null;
+
+    // Legacy teardrop pin used for the non-mapId Marker path.
+    const pinSvgPath = "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z";
+
+    // Jitter range used to separate markers that share an exact position.
+    const overlapMin = 0.999999;
+    const overlapMax = 1.000001;
+
+    // Clustering controls. Two markers closer than clusterRadius pixels are grouped; past
+    // clusterMaxZoom no clustering happens at all. In addition, whenever the current viewport
+    // holds clusterDisableAtOrBelow markers or fewer, clustering is skipped entirely so a lightly
+    // populated view shows individual pins instead of small "2"/"3" bubbles.
+    const clusterRadius = 60;
+    const clusterMaxZoom = 16;
+    const clusterDisableAtOrBelow = 50;
+
+    // Clustering is only worth its overhead for large data sets. When the final marker list has
+    // more than this many groups, the map clusters; at or below it, every marker is drawn directly.
+    const clusteringMarkerThreshold = 1000;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const mapCanvasStyle = computed((): CSSProperties => ({
+        height: `${props.options.mapHeight ?? 600}px`
+    }));
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Initializes the Google Map from the resolved Map Style. When the style carries a mapId the
+     * style JSON is ignored (Google applies the cloud-hosted style); otherwise the style JSON is
+     * applied directly.
+     */
+    function renderMap(): void {
+        if (!mapContainer.value) {
+            return;
+        }
+
+        const isMapIdEmpty = isNullOrWhiteSpace(mapId);
+
+        const mapOptions: google.maps.MapOptions = {
+            mapTypeId: "roadmap",
+            center: new google.maps.LatLng(centerLatitude, centerLongitude),
+            zoom: defaultZoom,
+            ...(isMapIdEmpty ? { styles } : { mapId: mapId as string })
+        };
+
+        map = new google.maps.Map(mapContainer.value, mapOptions);
+
+        bounds = new google.maps.LatLngBounds();
+        infoWindow = new google.maps.InfoWindow();
+
+        // When the window is closed via its own close (✕) button, forget the open marker so
+        // clicking that same marker reopens it rather than being toggled closed again.
+        google.maps.event.addListener(infoWindow, "closeclick", () => {
+            openMarker = null;
+        });
+    }
+
+    /**
+     * Places every group marker from the initialization bag, wires its info window, clusters the
+     * markers, and fits the map to their combined bounds.
+     */
+    function placeMarkers(): void {
+        const groups = props.bag.groups ?? [];
+
+        for (const group of groups) {
+            const position = new google.maps.LatLng(group.latitude, group.longitude);
+            bounds?.extend(position);
+
+            const marker = createMarker(position, group.name ?? "", props.bag.markerColor || "FE7569");
+            markers.push(marker);
+
+            wireMarkerInfoWindow(marker, group);
+        }
+
+        adjustOverlappedMarkers(markers);
+
+        if (map) {
+            if (markers.length > clusteringMarkerThreshold) {
+                // Large data set: hand the markers to the clusterer instead of dropping all of
+                // them on the map at once. The clusterer owns adding/removing each marker from the
+                // map as the person pans and zooms, so only a small number are ever live in the DOM.
+                markerClusterer = new MarkerClusterer({
+                    map,
+                    markers: markers.map(toClusterMarker),
+                    algorithm: new ViewportThresholdClusterAlgorithm({
+                        radius: clusterRadius,
+                        maxZoom: clusterMaxZoom,
+                        disableClusteringAtOrBelow: clusterDisableAtOrBelow
+                    }),
+                    // Only the no-mapId (legacy) style needs the legacy-marker bubble renderer.
+                    // On a mapId (vector) map the default AdvancedMarkerElement renderer works and
+                    // is the modern path, so leave it in place there.
+                    ...(isNullOrWhiteSpace(mapId) ? { renderer: { render: renderClusterBubble } } : {})
+                });
+            }
+            else {
+                // Small enough to draw every marker directly; markers are created detached, so
+                // attach each one to the map here.
+                for (const marker of markers) {
+                    marker.setMap(map);
+                }
+            }
+        }
+
+        if (map && bounds && !bounds.isEmpty()) {
+            map.fitBounds(bounds);
+        }
+    }
+
+    /**
+     * Renders a cluster bubble as a legacy google.maps.Marker. The clusterer's default renderer
+     * builds AdvancedMarkerElement bubbles, which do not render (and log a "no valid Map ID" error
+     * per bubble) on a Map Style with no Map ID. A legacy marker renders correctly on both styled
+     * and mapId maps, mirroring how our individual markers are drawn on the no-mapId path.
+     */
+    function renderClusterBubble(cluster: Cluster, stats: ClusterStats): Marker {
+        const count = cluster.count;
+
+        // Match the default renderer: a stronger color once a cluster is larger than average.
+        const color = count > Math.max(10, stats.clusters.markers.mean) ? "#A32D2D" : "#185FA5";
+
+        const svg = window.btoa(`<svg fill="${color}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="50" height="50"><circle cx="120" cy="120" opacity=".6" r="70"/><circle cx="120" cy="120" opacity=".3" r="90"/><circle cx="120" cy="120" opacity=".2" r="110"/></svg>`);
+
+        return new google.maps.Marker({
+            position: cluster.position,
+            icon: {
+                url: `data:image/svg+xml;base64,${svg}`,
+                scaledSize: new google.maps.Size(45, 45)
+            },
+            label: {
+                text: String(count),
+                color: "rgba(255,255,255,0.9)",
+                fontSize: "12px"
+            },
+            title: `Cluster of ${count} markers`,
+            zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count
+        });
+    }
+
+    /**
+     * Returns the underlying Google marker the clusterer works with: the legacy Marker itself, or
+     * the AdvancedMarkerElement inside our wrapper.
+     */
+    function toClusterMarker(marker: MapMarker): Marker {
+        return isNullOrWhiteSpace(mapId)
+            ? (marker as google.maps.Marker)
+            : (marker as AdvancedMarkerWrapper).marker_element;
+    }
+
+    /**
+     * Builds a point marker, choosing the AdvancedMarkerElement wrapper when the Map Style has a
+     * mapId and the legacy Marker otherwise. The marker is created detached (no map) because the
+     * clusterer is responsible for adding it to the map when it is not folded into a cluster.
+     */
+    function createMarker(position: google.maps.LatLng, title: string, color: string): MapMarker {
+        // Stack overlapping pins by latitude so the more southern pin (lower on screen, visually
+        // nearer) draws in front.
+        const zIndex = Math.round(position.lat() * -100000);
+
+        if (isNullOrWhiteSpace(mapId)) {
+            const pinImage: google.maps.Symbol = {
+                path: pinSvgPath,
+                fillColor: "#" + color,
+                fillOpacity: 1,
+                strokeColor: "#000",
+                strokeWeight: 1,
+                scale: 1,
+                labelOrigin: new google.maps.Point(0, -28)
+            };
+
+            return new google.maps.Marker({
+                position,
+                title,
+                icon: pinImage,
+                label: String.fromCharCode(9679),
+                zIndex
+            });
+        }
+
+        const pinGlyph = new google.maps.marker.PinElement({ glyphColor: "black" });
+
+        const wrapper: AdvancedMarkerWrapper = {
+            position,
+            map: null,
+            marker_element: new google.maps.marker.AdvancedMarkerElement({
+                position,
+                title,
+                // Pass the PinElement directly; its .element getter is deprecated.
+                content: pinGlyph,
+                zIndex
+            }),
+            getPosition(): google.maps.LatLng {
+                return this.position;
+            },
+            setPosition(newPosition: google.maps.LatLng): void {
+                this.position = newPosition;
+                this.marker_element.position = newPosition;
+            },
+            setMap(newMap: google.maps.Map | null): void {
+                this.map = newMap;
+                this.marker_element.map = newMap;
+            }
+        };
+
+        return wrapper;
+    }
+
+    /**
+     * Requests the rendered info window HTML for a clicked group. The Lava and linked-page URLs
+     * are resolved server-side, so nothing is trusted from the client. Returns null when there is
+     * nothing to show (blank template, suppressed window, or error).
+     */
+    async function fetchInfoWindow(group: GroupTypeMapGroupBag): Promise<string | null> {
+        const result = await invokeBlockAction<string>("GetInfoWindow", {
+            request: {
+                groupId: group.groupId,
+                locationId: group.locationId
+            }
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        return null;
+    }
+
+    /**
+     * Opens the info window over a point marker on click. The legacy Marker anchors the window
+     * directly; the AdvancedMarker anchors via its wrapped element. Skipped entirely when the
+     * Show Map Info Window setting is off.
+     */
+    function wireMarkerInfoWindow(marker: MapMarker, group: GroupTypeMapGroupBag): void {
+        if (!props.options.isInfoWindowShown) {
+            return;
+        }
+
+        const isLegacyMarker = isNullOrWhiteSpace(mapId);
+        const clickTarget = isLegacyMarker
+            ? (marker as google.maps.Marker)
+            : (marker as AdvancedMarkerWrapper).marker_element;
+
+        google.maps.event.addListener(clickTarget, "click", async () => {
+            // Toggle: clicking the marker whose window is already open closes it.
+            if (openMarker === marker && infoWindow) {
+                infoWindow.close();
+                openMarker = null;
+                return;
+            }
+
+            const content = await fetchInfoWindow(group);
+
+            if (content === null || !infoWindow) {
+                return;
+            }
+
+            infoWindow.setContent(content);
+
+            if (isLegacyMarker) {
+                infoWindow.open(map, marker as google.maps.Marker);
+            }
+            else {
+                infoWindow.open({ anchor: (marker as AdvancedMarkerWrapper).marker_element, map });
+            }
+
+            openMarker = marker;
+        });
+    }
+
+    /**
+     * Nudges apart any markers that share an exact position so each remains clickable (ported from
+     * the legacy adjustOverlappedMarkers). Uses a single O(n) pass keyed by exact position rather
+     * than an O(n²) pairwise comparison, so it stays fast for group types with thousands of
+     * markers; the first marker at a given position is left in place and each subsequent one there
+     * is jittered.
+     */
+    function adjustOverlappedMarkers(markerList: MapMarker[]): void {
+        if (markerList.length < 2) {
+            return;
+        }
+
+        const seenPositions = new Set<string>();
+
+        for (const marker of markerList) {
+            const position = marker.getPosition();
+
+            if (!position) {
+                continue;
+            }
+
+            const positionKey = `${position.lat()},${position.lng()}`;
+
+            if (!seenPositions.has(positionKey)) {
+                seenPositions.add(positionKey);
+                continue;
+            }
+
+            const newLatitude = position.lat() * (Math.random() * (overlapMax - overlapMin) + overlapMin);
+            const newLongitude = position.lng() * (Math.random() * (overlapMax - overlapMin) + overlapMin);
+            marker.setPosition(new google.maps.LatLng(newLatitude, newLongitude));
+        }
+    }
+
+    /**
+     * Clears the click listeners for a single marker. AdvancedMarker listeners live on the
+     * wrapped element rather than the wrapper itself.
+     */
+    function clearMarkerListeners(marker: MapMarker): void {
+        google.maps.event.clearInstanceListeners(marker);
+
+        const wrapper = marker as AdvancedMarkerWrapper;
+        if (wrapper.marker_element) {
+            google.maps.event.clearInstanceListeners(wrapper.marker_element);
+        }
+    }
+
+    /**
+     * Tears down the Google Maps handles so listener tables and tile loaders can be GC'd. Only
+     * touches Google objects when the map was actually created.
+     */
+    function teardownMap(): void {
+        if (map) {
+            if (markerClusterer) {
+                google.maps.event.clearInstanceListeners(markerClusterer);
+                markerClusterer.clearMarkers();
+                markerClusterer.setMap(null);
+            }
+
+            for (const marker of markers) {
+                clearMarkerListeners(marker);
+                marker.setMap(null);
+            }
+
+            if (infoWindow) {
+                infoWindow.close();
+                google.maps.event.clearInstanceListeners(infoWindow);
+            }
+
+            google.maps.event.clearInstanceListeners(map);
+        }
+
+        markerClusterer = null;
+        infoWindow = null;
+        map = null;
+        bounds = null;
+        markers = [];
+        openMarker = null;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(async (): Promise<void> => {
+        const settings = await loadMapResources({ mapStyleValueGuid: props.options.mapStyleValueGuid ?? emptyGuid });
+
+        // googleMapId lives on the Google-specific settings bag, so cast to read it.
+        mapId = (settings as GeoPickerGoogleMapSettingsBag).googleMapId ?? "";
+        centerLatitude = settings.centerLatitude ?? 33.590795;
+        centerLongitude = settings.centerLongitude ?? -112.126459;
+
+        try {
+            styles = JSON.parse(settings.mapStyle ?? "");
+        }
+        catch {
+            // The style JSON can be empty for cloud-styled (mapId) maps; ignore.
+        }
+
+        // loadMapResources only waits for google.maps to exist, not for the individual libraries
+        // or the vector (mapId) renderer to finish initializing. On a cold first load that let the
+        // map be created before the "maps"/"marker" libraries were ready, which intermittently
+        // produced the "This page can't load Google Maps correctly" error and the "initialized
+        // without a valid Map ID" warning (a reload worked because everything was then cached).
+        // Awaiting the libraries we use guarantees they are ready before the map is built.
+        if (typeof google.maps.importLibrary === "function") {
+            await google.maps.importLibrary("maps");
+
+            // Only the mapId (vector) path uses AdvancedMarkerElement, so the marker library is
+            // only needed then. On a legacy style (no mapId) we render with google.maps.Marker.
+            if (!isNullOrWhiteSpace(mapId)) {
+                await google.maps.importLibrary("marker");
+            }
+        }
+
+        renderMap();
+        placeMarkers();
+    });
+
+    onUnmounted((): void => {
+        teardownMap();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
