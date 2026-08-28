@@ -54,7 +54,7 @@ internal sealed partial class CoreAdministrationSkill
 
         if ( partialName.IsNotNullOrWhiteSpace() )
         {
-            definedTypes = definedTypes.Where( dt => dt.Name != null && dt.Name.Contains( partialName ) );
+            definedTypes = definedTypes.Where( dt => dt.Name.ContainsIgnoreCase( partialName ) );
         }
 
         definedTypes = helper.WhereOptionalIdKey( definedTypes, dt => dt.CategoryId, categoryIdKey );

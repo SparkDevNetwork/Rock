@@ -99,6 +99,33 @@ namespace Rock.Field.Types
             return privateValue.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
         }
 
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Describes the shape only, which is all this level knows. Whether the value
+        /// holds one item or several comes from
+        /// <see cref="IsMultipleSelection"/>, and that is the part a caller is most
+        /// likely to get wrong, because the two shapes look identical until a second
+        /// item is added.
+        /// </para>
+        /// <para>
+        /// Says nothing about which items exist, because this has no way to find out
+        /// without a subclass telling it, and asking would cost a query on every
+        /// attribute described. A subclass that can answer cheaply should override
+        /// this and add them, the way the picker below does.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = IsMultipleSelection
+                    ? "One or more item values separated by commas. Each is a guid in nearly every implementation, and never a display name."
+                    : "The value of a single item, a guid in nearly every implementation and never a display name. Only one is stored, so a comma separated list is not valid here."
+            };
+        }
+
         /// <summary>
         /// Gets the item bags for the values. If an item is not found
         /// (for example, no longer exists), then it should not be included

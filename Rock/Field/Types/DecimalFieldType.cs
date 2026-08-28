@@ -200,6 +200,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A number, which may carry a decimal point. No thousands separators and no currency symbol; use the Currency field type where an amount is meant."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

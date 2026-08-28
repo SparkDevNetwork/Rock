@@ -32,6 +32,7 @@ using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Rest.Filters;
 using Rock.Transactions;
 using Rock.Utility;
@@ -151,6 +152,29 @@ namespace Rock.Rest.Controllers
                 {
                     interactionInfo.UserAgentPlatformVersion = request.UserAgentPlatformVersion();
                 }
+            }
+
+            /*
+                8/24/2026 - CLAUDE
+
+                Bot and prefetch rejection has to happen here, before the
+                Anonymous Visitor alias is created below. The crawler filter in
+                InteractionTransaction.Execute runs when the transaction queue
+                flushes, which is long after CreateAnonymousVisitorAlias has
+                already committed a PersonAlias row. That ordering left one
+                orphaned alias per bot page view, since a crawler that does not
+                persist cookies looks like a brand new first-time visitor on
+                every request.
+
+                Reason: The alias was being committed before anything checked
+                whether the caller was a bot.
+            */
+            if ( CrawlerUserAgents.IsCrawler( interactionInfo.UserAgent )
+                 || WebRequestHelper.IsPrefetchRequest( request?.Headers ) )
+            {
+                // Return a normal success response. Telling a scraper that it
+                // was detected only invites it to change its user agent.
+                return Ok();
             }
 
             var rockContext = new RockContext();

@@ -42,6 +42,7 @@ namespace Rock.Workflow.Action
         Description = "The parameters to supply to the SQL query. <span class='tip tip-lava'></span>",
         IsRequired = false,
         KeyPrompt = "Parameter",
+        AllowLava = true,
         Order = 1 )]
     [WorkflowAttribute( "Result Attribute",
         Description = "An optional attribute to set to the scalar result of SQL query.",

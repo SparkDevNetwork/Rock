@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -81,6 +82,9 @@ internal class AgentRequestContextImplementation : AgentRequestContext
     public override int? AgentId { get; }
 
     /// <inheritdoc/>
+    public override Guid? AgentGuid { get; }
+
+    /// <inheritdoc/>
     public override string AgentName { get; }
 
     /// <inheritdoc/>
@@ -111,6 +115,7 @@ internal class AgentRequestContextImplementation : AgentRequestContext
     {
         RockContext = rockContext;
         AgentId = agentConfiguration.AgentId;
+        AgentGuid = agentConfiguration.AgentGuid;
         AgentName = agentConfiguration.Name;
         AgentType = agentConfiguration.AgentType;
         AudienceType = agentConfiguration.AudienceType;

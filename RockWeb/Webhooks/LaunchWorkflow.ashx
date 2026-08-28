@@ -159,7 +159,26 @@ public class LaunchWorkflow : IHttpHandler
             if ( attribute.Contains( '^' ) )
             {
                 string[] settings = attribute.Split( '^' );
-                workflow.SetAttributeValue( settings[0], settings[1].ResolveMergeFields( mergeFields ) );
+
+                /*
+                    08/24/2026 - NA
+
+                    The KeyValueListFieldType stores each key and value in a
+                    possibly-URL-encoded form (see Rock/Field/Types/KeyValueListFieldType.cs).
+                    Every other consumer of that field type UrlDecodes each half on read;
+                    this handler previously did not, so values saved through the Obsidian
+                    Defined Value editor (which fully HttpUtility.UrlEncode's each half)
+                    arrived here as encoded Lava (e.g. "%7b%7b+RawBody+%7d%7d") and never
+                    resolved. UrlDecode restores the intended template text before Lava
+                    resolution and repairs already-saved data without requiring a re-save.
+
+                    Reason: Honor the KeyValueListFieldType contract so both WebForms and
+                            Obsidian save paths resolve identically. (See Issue #6992.)
+                */
+                string attributeKey = HttpUtility.UrlDecode( settings[0] );
+                string attributeValueTemplate = HttpUtility.UrlDecode( settings[1] );
+
+                workflow.SetAttributeValue( attributeKey, attributeValueTemplate.ResolveMergeFields( mergeFields ) );
             }
         }
 

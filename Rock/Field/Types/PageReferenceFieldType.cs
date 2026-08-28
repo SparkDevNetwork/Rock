@@ -235,6 +235,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Either a page guid on its own, or a page guid and a route guid separated by a comma, in the order Page.Guid,PageRoute.Guid.",
+                Instructions = "To find the correct value, look up the page and take its guid, adding the guid of a specific route after a comma only when the route matters."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 

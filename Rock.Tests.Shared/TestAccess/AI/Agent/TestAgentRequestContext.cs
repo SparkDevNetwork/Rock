@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.AI.Agent;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
@@ -46,6 +48,9 @@ namespace Rock.Tests.Shared.TestAccess.AI.Agent
         public override int? AgentId { get; }
 
         /// <inheritdoc/>
+        public override Guid? AgentGuid { get; }
+
+        /// <inheritdoc/>
         public override string AgentName { get; }
 
         /// <inheritdoc/>
@@ -73,6 +78,7 @@ namespace Rock.Tests.Shared.TestAccess.AI.Agent
         /// <param name="rootUrlPath">The root URL path to report.</param>
         /// <param name="agentName">The agent name to report.</param>
         /// <param name="agentId">The agent identifier to report.</param>
+        /// <param name="agentGuid">The agent unique identifier to report.</param>
         public TestAgentRequestContext(
             RockContext rockContext,
             Person currentPerson = null,
@@ -80,7 +86,8 @@ namespace Rock.Tests.Shared.TestAccess.AI.Agent
             AudienceType audienceType = AudienceType.Internal,
             string rootUrlPath = "https://rock.example",
             string agentName = "Test Agent",
-            int? agentId = null )
+            int? agentId = null,
+            Guid? agentGuid = null )
         {
             RockContext = rockContext;
             CurrentPerson = currentPerson;
@@ -89,6 +96,7 @@ namespace Rock.Tests.Shared.TestAccess.AI.Agent
             RootUrlPath = rootUrlPath;
             AgentName = agentName;
             AgentId = agentId;
+            AgentGuid = agentGuid;
         }
     }
 }

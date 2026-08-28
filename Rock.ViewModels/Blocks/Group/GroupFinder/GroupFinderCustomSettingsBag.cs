@@ -67,21 +67,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         public bool IsCampusFilterHidden { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the Where (location) filter is hidden.
-        /// </summary>
-        public bool IsWhereFilterHidden { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the When (schedule) filter is hidden.
-        /// </summary>
-        public bool IsWhenFilterHidden { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the What (attributes) filter is hidden.
-        /// </summary>
-        public bool IsWhatFilterHidden { get; set; }
-
-        /// <summary>
         /// Gets or sets the campus types offered by the Campus filter.
         /// </summary>
         public List<ListItemBag> CampusTypes { get; set; }
@@ -92,9 +77,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         public List<ListItemBag> CampusStatuses { get; set; }
 
         /// <summary>
-        /// Gets or sets whether proximity features (an address input and a Use Current Location action) are enabled.
+        /// Gets or sets how distance to each group is measured, as a <see cref="Rock.Model.DistanceCalculationMode"/> name.
         /// </summary>
-        public bool IsProximityEnabled { get; set; }
+        /// <remarks>
+        /// Carried as the enum's name rather than its number so the stored setting reads plainly, matching
+        /// how the supported meeting styles are stored.
+        /// </remarks>
+        public string DistanceCalculation { get; set; }
 
         /// <summary>
         /// Gets or sets the meeting styles offered by the Where filter (InPerson, Online, Hybrid). When none are selected the Meeting Style filter is hidden.

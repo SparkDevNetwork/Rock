@@ -3070,93 +3070,23 @@ WHERE NOT EXISTS (
                     .ToList();
             }
 
-            var deleteCount = 0;
-
-            // stalePersonAliasIds could have over a million values. So instead of
-            // using Skip().ToList() to rebuild the list, we are going to use a
-            // for loop so we don't have to waste as much memory.
-            for ( int bulkStart = 0; bulkStart < stalePersonAliasIds.Count; bulkStart += 500 )
-            {
-                // Work in relatively small batches of 500 at a time. Since we
-                // have to revert to single deletes if the batch fails this
-                // gives us a decent balance between speed when everything
-                // works and not having to do single deletes on too many records
-                // because a single record failed.
-                var batchPersonAliasIds = stalePersonAliasIds.Skip( bulkStart ).Take( 500 ).ToList();
-
-                using ( var bulkRockContext = CreateRockContext() )
+            // Nulling out the interactions that reference these aliases has to
+            // happen before the delete is attempted, so it is passed in as the
+            // pre-batch step. The shared routine owns the batching and the
+            // per-record fallback.
+            var deleteCount = PersonAliasService.DeletePersonAliasesInBatches(
+                stalePersonAliasIds,
+                CreateRockContext,
+                Logger,
+                ( bulkRockContext, batchPersonAliasIds ) =>
                 {
-                    var bulkPersonAliasService = new PersonAliasService( bulkRockContext );
                     var interactionQry = new InteractionService( bulkRockContext ).Queryable()
                         .Where( a => a.PersonAliasId.HasValue && batchPersonAliasIds.Contains( a.PersonAliasId.Value ) );
 
                     // Update all the interactions that point to one of these
                     // PersonAlias records to have a NULL value instead.
                     BulkUpdateInChunks( interactionQry, i => new Interaction { PersonAliasId = null }, batchAmount, commandTimeout, int.MaxValue );
-
-                    try
-                    {
-                        // Try to delete all records in the batch in bulk.
-                        // NOTE: This will bypass any save hooks.
-                        var personAliasesQry = bulkPersonAliasService.Queryable()
-                            .Where( pa => batchPersonAliasIds.Contains( pa.Id ) );
-
-                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry, batchAmount );
-                    }
-                    catch
-                    {
-                        // At least one record failed. Try again one record at
-                        // a time so we can log which one(s) failed.
-                        foreach ( var personAliasId in batchPersonAliasIds )
-                        {
-                            try
-                            {
-                                using ( var singleRockContext = CreateRockContext() )
-                                {
-                                    var singlePersonAliasService = new PersonAliasService( singleRockContext );
-                                    var personAlias = singlePersonAliasService.Get( personAliasId );
-
-                                    if ( personAlias != null )
-                                    {
-                                        singlePersonAliasService.Delete( personAlias );
-                                        singleRockContext.SaveChanges();
-
-                                        deleteCount += 1;
-                                    }
-                                }
-                            }
-                            catch ( Exception ex )
-                            {
-                                // Something prevented us from deleting the record.
-                                // This is most likely a foreign key violation. Find
-                                // the inner most exception and log it and then update
-                                // the PersonAlias record to note we couldn't delete it.
-                                var innerEx = ex;
-
-                                while ( innerEx.InnerException != null )
-                                {
-                                    innerEx = innerEx.InnerException;
-                                }
-
-                                Logger.LogWarning( $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
-
-                                // The context we used to attempt the deletion is no
-                                // good to use now since it is in a bad state. Create
-                                // a new context.
-                                using ( var errorRockContext = CreateRockContext() )
-                                {
-                                    var singlePersonAliasService = new PersonAliasService( errorRockContext );
-                                    var personAlias = singlePersonAliasService.Get( personAliasId );
-
-                                    personAlias.InternalMessage = innerEx.Message.SubstringSafe( 0, 250 );
-
-                                    errorRockContext.SaveChanges();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                } );
 
             // Manually update the CreatedByPersonAliasId and ModifiedByPersonAliasId
             // columns to be null for any aliases that do not exist anymore.

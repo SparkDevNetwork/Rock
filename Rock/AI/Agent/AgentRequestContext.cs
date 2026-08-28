@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 
@@ -32,6 +34,12 @@ namespace Rock.AI.Agent
         /// is being processed by.
         /// </summary>
         public abstract int? AgentId { get; }
+
+        /// <summary>
+        /// The unique identifier of the <see cref="Model.AIAgent"/> that this
+        /// request is being processed by.
+        /// </summary>
+        public abstract Guid? AgentGuid { get; }
 
         /// <inheritdoc cref="Model.AIAgent.Name"/>
         public abstract string AgentName { get; }

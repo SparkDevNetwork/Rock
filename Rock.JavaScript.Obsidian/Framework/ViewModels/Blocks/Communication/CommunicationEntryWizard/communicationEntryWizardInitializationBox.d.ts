@@ -136,6 +136,9 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets the SMS supported MIME types. */
     smsSupportedMimeTypes?: string[] | null;
 
+    /** Gets or sets the standalone medium options the sender may directly choose in the picker. */
+    standaloneMediums?: ListItemBag[] | null;
+
     /** Gets or sets the communication templates. */
     templates?: CommunicationEntryWizardCommunicationTemplateListItemBag[] | null;
 

@@ -82,8 +82,8 @@ internal sealed partial class CoreAdministrationSkill
 
         if ( partialValue.IsNotNullOrWhiteSpace() )
         {
-            query = query.Where( dv => ( dv.Value != null && dv.Value.Contains( partialValue ) )
-                || ( dv.Description != null && dv.Description.Contains( partialValue ) ) );
+            query = query.Where( dv => dv.Value.ContainsIgnoreCase( partialValue )
+                || dv.Description.ContainsIgnoreCase( partialValue ) );
         }
 
         query = helper.WhereOptionalIdKey( query, dv => dv.CategoryId, categoryIdKey );

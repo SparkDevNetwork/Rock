@@ -1,0 +1,242 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="mobile-check-in-launcher-flow">
+        <ContentTransition>
+            <PersonSelectScreen v-if="screen === Screen.PersonSelect"
+                                :configuration="configuration"
+                                :session="session"
+                                @next="onNextScreen"
+                                @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
+
+            <AutoModeOpportunitySelectScreen v-else-if="screen === Screen.AutoModeOpportunitySelect"
+                                             :configuration="configuration"
+                                             :session="session"
+                                             @next="onNextScreen"
+                                             @updateActions="onUpdateActions($event, Screen.AutoModeOpportunitySelect)" />
+
+            <AbilityLevelSelectScreen v-else-if="screen === Screen.AbilityLevelSelect"
+                                      :configuration="configuration"
+                                      :session="session"
+                                      @next="onNextScreen"
+                                      @updateActions="onUpdateActions($event, Screen.AbilityLevelSelect)" />
+
+            <AreaSelectScreen v-else-if="screen === Screen.AreaSelect"
+                              :configuration="configuration"
+                              :session="session"
+                              @next="onNextScreen"
+                              @updateActions="onUpdateActions($event, Screen.AreaSelect)" />
+
+            <GroupSelectScreen v-else-if="screen === Screen.GroupSelect"
+                               :configuration="configuration"
+                               :session="session"
+                               @next="onNextScreen"
+                               @updateActions="onUpdateActions($event, Screen.GroupSelect)" />
+
+            <LocationSelectScreen v-else-if="screen === Screen.LocationSelect"
+                                  :configuration="configuration"
+                                  :session="session"
+                                  @next="onNextScreen"
+                                  @updateActions="onUpdateActions($event, Screen.LocationSelect)" />
+
+            <ScheduleSelectScreen v-else-if="screen === Screen.ScheduleSelect"
+                                  :configuration="configuration"
+                                  :session="session"
+                                  @next="onNextScreen"
+                                  @updateActions="onUpdateActions($event, Screen.ScheduleSelect)" />
+
+            <div v-else-if="screen === Screen.Success">
+                <SuccessScreen :configuration="configuration"
+                               :session="session" />
+
+                <LabelQrCode v-if="qrCodeImageUrl" :imageUrl="qrCodeImageUrl" />
+            </div>
+
+            <div v-else class="check-in-panel mobile-check-in-launcher-message">
+                {{ UnexpectedErrorMessage }}
+            </div>
+        </ContentTransition>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import LabelQrCode from "./labelQrCode.partial.obs";
+    import { LauncherAction } from "./types.partial";
+    import AbilityLevelSelectScreen from "../CheckInKiosk/abilityLevelSelectScreen.partial.obs";
+    import AreaSelectScreen from "../CheckInKiosk/areaSelectScreen.partial.obs";
+    import AutoModeOpportunitySelectScreen from "../CheckInKiosk/autoModeOpportunitySelectScreen.partial.obs";
+    import { CheckInSession } from "../CheckInKiosk/checkInSession.partial";
+    import ContentTransition from "../CheckInKiosk/contentTransition.partial.obs";
+    import GroupSelectScreen from "../CheckInKiosk/groupSelectScreen.partial.obs";
+    import LocationSelectScreen from "../CheckInKiosk/locationSelectScreen.partial.obs";
+    import PersonSelectScreen from "../CheckInKiosk/personSelectScreen.partial.obs";
+    import ScheduleSelectScreen from "../CheckInKiosk/scheduleSelectScreen.partial.obs";
+    import SuccessScreen from "../CheckInKiosk/successScreen.partial.obs";
+    import { KioskButton, KioskConfiguration, Screen } from "../CheckInKiosk/types.partial";
+    import { UnexpectedErrorMessage } from "../CheckInKiosk/utils.partial";
+
+    const props = defineProps({
+        /** The check-in session driving which screen is shown. */
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        },
+
+        /** Whether an earlier step is available to return to. */
+        hasPreviousStep: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The url of the QR code image a kiosk scans to print the labels for
+         * the completed check-in, or an empty string when no code is shown.
+         */
+        qrCodeImageUrl: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update", session: CheckInSession): void;
+        (event: "updateActions", actions: LauncherAction[]): void;
+        (event: "updateBack", isShown: boolean): void;
+        (event: "restart"): void;
+    }>();
+
+    // #region Values
+
+    /** The screens this block presents. */
+    const presentedScreens: Screen[] = [
+        Screen.PersonSelect,
+        Screen.AutoModeOpportunitySelect,
+        Screen.AbilityLevelSelect,
+        Screen.AreaSelect,
+        Screen.GroupSelect,
+        Screen.LocationSelect,
+        Screen.ScheduleSelect,
+        Screen.Success
+    ];
+
+    /** The buttons the current screen asked the page chrome to show. */
+    const screenActions = ref<KioskButton[]>([]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The screen the session is currently on. */
+    const screen = computed((): Screen => props.session.currentScreen);
+
+    /**
+     * The kiosk pulls live location counts over real-time. Nothing here
+     * subscribes, so the screens read an empty set rather than a missing one.
+     */
+    const configuration = computed((): KioskConfiguration => {
+        return {
+            ...props.session.configuration,
+            locationIdMap: {},
+            groupIdMap: {},
+            locationCountAdjustments: []
+        };
+    });
+
+    /**
+     * Once attendance is saved there is nothing left to change, and the
+     * fallback offers a restart instead.
+     */
+    const isBackShown = computed((): boolean => {
+        return props.hasPreviousStep
+            && screen.value !== Screen.Success
+            && presentedScreens.includes(screen.value);
+    });
+
+    /**
+     * The buttons for the current screen, with the restart action standing in
+     * on the two screens that end the flow.
+     */
+    const actions = computed((): LauncherAction[] => {
+        if (screen.value === Screen.Success) {
+            return [getRestartAction("Done")];
+        }
+
+        if (!presentedScreens.includes(screen.value)) {
+            return [getRestartAction("Start Over")];
+        }
+
+        return screenActions.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Builds the action that abandons the finished or stalled flow so another
+     * check-in can be started.
+     */
+    function getRestartAction(title: string): LauncherAction {
+        return {
+            title,
+            key: "restart",
+            type: "primary",
+            disabled: false,
+            handler: onStartOverClick,
+            isFullWidthAllowed: true
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Shows the screen the flow moved to.
+     */
+    function onNextScreen(session: CheckInSession): void {
+        emit("update", session);
+    }
+
+    /**
+     * Takes the buttons a screen asked for, ignoring any that arrive from a
+     * screen already left behind.
+     */
+    function onUpdateActions(screenActionList: KioskButton[], source: Screen): void {
+        if (screen.value === source) {
+            screenActions.value = screenActionList;
+        }
+    }
+
+    /**
+     * Returns to the start so another check-in can be run.
+     */
+    function onStartOverClick(): void {
+        emit("restart");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(screen, value => {
+        // Buttons belong to the screen that asked for them, and the next
+        // screen supplies its own once it mounts.
+        screenActions.value = [];
+
+        // The imported flow owns more screens than the launcher presents, so
+        // name any it reaches for us rather than for the individual, whose
+        // only useful move is to start over.
+        if (!presentedScreens.includes(value)) {
+            console.error(`Mobile check-in reached the ${Screen[value]} screen, which it does not present.`);
+        }
+    }, { immediate: true });
+
+    // The page chrome lives above this component, so what belongs in it is
+    // handed up rather than rendered here.
+    watch(actions, value => emit("updateActions", value), { immediate: true });
+
+    watch(isBackShown, value => emit("updateBack", value), { immediate: true });
+
+    // #endregion Watchers
+</script>

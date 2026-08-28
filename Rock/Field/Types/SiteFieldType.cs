@@ -205,6 +205,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The integer Id of a row in the Site table. This field type is unusual in storing an id rather than a guid.",
+                Instructions = "To find the correct value, look up the sites and take the numeric Id of the one you want, not its guid."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 

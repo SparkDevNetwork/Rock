@@ -41,13 +41,16 @@ internal sealed partial class GroupSkill
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;
         var groupMemberService = new GroupMemberService( rockContext );
-        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
+        var groupTypeIds = GetAvailableGroupTypes().Select( gt => gt.Id ).ToList();
 
         var existingGroupMember = helper.GetRequiredEntity<GroupMember>( groupMemberIdKey, checkSecurity: false );
 
-        if ( existingGroupMember != null && !groupTypeIds.Contains( existingGroupMember.Group.GroupTypeId ) )
+        if ( existingGroupMember != null && !groupTypeIds.Contains( existingGroupMember.GroupTypeId ) )
         {
-            helper.AddError( "The specified group member does not belong to a valid group type." );
+            if ( !CanGroupTypeBeConfiguredForRequest( existingGroupMember.GroupTypeId, helper ) )
+            {
+                helper.AddError( "The specified group member does not belong to a valid group type." );
+            }
         }
 
         if ( existingGroupMember?.Group != null )
