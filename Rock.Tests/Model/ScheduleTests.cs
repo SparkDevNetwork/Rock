@@ -445,6 +445,78 @@ namespace Rock.Tests.Model
         }
 
         /// <summary>
+        /// Requesting occurrences up to DateTime.MaxValue for an infinite weekly recurrence
+        /// should not throw. This mirrors the Sign-Up blocks' fallback for schedules with no
+        /// next start date. See issue #6999.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_GetScheduledStartTimes_WithInfiniteWeeklyRecurrenceAndMaxEndDate_DoesNotThrow()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var schedule = GetInfiniteRecurrenceSchedule( "WEEKLY" );
+
+                var startDateTimes = schedule.GetScheduledStartTimes( RockDateTime.Now, DateTime.MaxValue );
+
+                Assert.IsNotNull( startDateTimes );
+            } );
+        }
+
+        /// <summary>
+        /// Requesting occurrences up to DateTime.MaxValue for an infinite monthly recurrence
+        /// should not throw. This mirrors the Sign-Up blocks' fallback for schedules with no
+        /// next start date. See issue #6999.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_GetScheduledStartTimes_WithInfiniteMonthlyRecurrenceAndMaxEndDate_DoesNotThrow()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var schedule = GetInfiniteRecurrenceSchedule( "MONTHLY" );
+
+                var startDateTimes = schedule.GetScheduledStartTimes( RockDateTime.Now, DateTime.MaxValue );
+
+                Assert.IsNotNull( startDateTimes );
+            } );
+        }
+
+        /// <summary>
+        /// Getting iCal occurrences up to DateTime.MaxValue for an infinite recurrence should
+        /// not throw. This is the shared method underneath GetScheduledStartTimes and is where
+        /// the overflow originates. See issue #6999.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_GetICalOccurrences_WithInfiniteRecurrenceAndMaxEndDate_DoesNotThrow()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var schedule = GetInfiniteRecurrenceSchedule( "WEEKLY" );
+
+                var occurrences = schedule.GetICalOccurrences( RockDateTime.Now, DateTime.MaxValue );
+
+                Assert.IsNotNull( occurrences );
+            } );
+        }
+
+        /// <summary>
+        /// Getting occurrences (excluding the start date) up to DateTime.MaxValue for an infinite
+        /// recurrence should not throw. This method is used by group scheduling and event calendar
+        /// logic and has the same unbounded-recurrence overflow risk. See issue #6999.
+        /// </summary>
+        [TestMethod]
+        public void InetCalendarHelper_GetOccurrencesExcludingStartDate_WithInfiniteRecurrenceAndMaxEndDate_DoesNotThrow()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var schedule = GetInfiniteRecurrenceSchedule( "WEEKLY" );
+
+                var occurrences = InetCalendarHelper.GetOccurrencesExcludingStartDate( schedule.iCalendarContent, RockDateTime.Now, DateTime.MaxValue );
+
+                Assert.IsNotNull( occurrences );
+            } );
+        }
+
+        /// <summary>
         /// Get the current Rock date and time as an Unspecified DateTime type.
         /// </summary>
         /// <returns></returns>
@@ -492,6 +564,34 @@ END:VCALENDAR
             schedule.iCalendarContent = iCalendarContent;
             schedule.CheckInStartOffsetMinutes = 30;
             schedule.CheckInEndOffsetMinutes = 30;
+            return schedule;
+        }
+
+        /// <summary>
+        /// Builds a schedule whose recurrence has no end condition (no UNTIL and no COUNT),
+        /// mirroring the "Continue Until: No end" default in the Schedule Builder.
+        /// </summary>
+        /// <param name="frequency">The RRULE frequency (e.g. "DAILY", "WEEKLY", "MONTHLY").</param>
+        /// <returns>A schedule with an unbounded recurrence pattern.</returns>
+        private static Schedule GetInfiniteRecurrenceSchedule( string frequency )
+        {
+            var iCalendarContent = $@"
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
+BEGIN:VEVENT
+DTEND:20200101T090000
+DTSTAMP:20200101T080000
+DTSTART:20200101T080000
+RRULE:FREQ={frequency}
+SEQUENCE:0
+UID:f30b6d53-7166-4d25-a5b3-5e28461bbb7f
+END:VEVENT
+END:VCALENDAR
+";
+            var schedule = new Schedule();
+            schedule.iCalendarContent = iCalendarContent;
+            schedule.EnsureEffectiveStartEndDates();
             return schedule;
         }
     }
