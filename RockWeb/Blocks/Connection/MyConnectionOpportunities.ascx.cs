@@ -111,8 +111,8 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private static class PageParameterKey
         {
-            public const string ConnectionRequestId = "ConnectionRequestId";
-            public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+            public const string Request = "Request";
+            public const string ConnectionOpportunity = "ConnectionOpportunity";
         }
 
         #endregion
@@ -1326,19 +1326,41 @@ namespace RockWeb.Blocks.Connection
         private void NavigateToConnectionPage( int connectionRequestId )
         {
             var connectionType = SummaryState.Where( t => t.Opportunities.Any( o => o.Id == SelectedOpportunityId.Value ) ).FirstOrDefault();
+            var parameters = GetDetailPageParameters( connectionRequestId );
+
             if ( GetAttributeValue( AttributeKey.UseConnectionRequestDetailPageFromConnectionType ).AsBoolean() &&
                  ( connectionType.ConnectionRequestDetailPageId.HasValue || connectionType.ConnectionRequestDetailPageRouteId.HasValue ) )
             {
-                Dictionary<string, string> pageParameters = new Dictionary<string, string>();
-                pageParameters.Add( PageParameterKey.ConnectionRequestId, connectionRequestId.ToString() );
-                pageParameters.Add( PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId.ToStringSafe() );
-                var pageReference = new Rock.Web.PageReference( connectionType.ConnectionRequestDetailPageId ?? 0, connectionType.ConnectionRequestDetailPageRouteId ?? 0, pageParameters );
+                var pageReference = new Rock.Web.PageReference( connectionType.ConnectionRequestDetailPageId ?? 0, connectionType.ConnectionRequestDetailPageRouteId ?? 0, parameters );
                 NavigateToPage( pageReference );
             }
             else
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionRequestId, connectionRequestId, PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId );
+                NavigateToLinkedPage( AttributeKey.DetailPage, parameters );
             }
+        }
+
+        /// <summary>
+        /// Gets the page parameter values for a connection request detail page link. A request identifier
+        /// of zero is the add indicator rather than an identifier, so it is passed through.
+        /// </summary>
+        /// <param name="connectionRequestId">The connection request identifier, or zero to add.</param>
+        /// <returns>The page parameter values.</returns>
+        private Dictionary<string, string> GetDetailPageParameters( int connectionRequestId )
+        {
+            var requestParameter = connectionRequestId > 0
+                ? IdHasher.Instance.GetHash( connectionRequestId )
+                : "0";
+
+            var opportunityParameter = SelectedOpportunityId.HasValue
+                ? IdHasher.Instance.GetHash( SelectedOpportunityId.Value )
+                : string.Empty;
+
+            return new Dictionary<string, string>
+            {
+                { PageParameterKey.Request, requestParameter },
+                { PageParameterKey.ConnectionOpportunity, opportunityParameter }
+            };
         }
 
         #endregion
