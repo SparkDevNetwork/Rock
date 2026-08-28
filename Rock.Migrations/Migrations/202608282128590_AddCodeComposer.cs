@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,14 +21,12 @@ namespace Rock.Migrations
     using System.Linq;
 
     using Rock.Security;
+    using Rock.Security;
 
     /// <summary>
-    /// Adds the ForgeContent table and the Forge Content block, then seeds the
-    /// skills that build Forge Content and the two agents that expose
-    /// them: the Code Composer MCP Agent for external AI clients and the Code Composer Chat Agent for
-    /// Rock's own chat.
+    ///
     /// </summary>
-    public partial class AddForgeContent : Rock.Migrations.RockMigration
+    public partial class AddCodeComposer : Rock.Migrations.RockMigration
     {
         #region Constants
 
@@ -211,32 +209,32 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             CreateTable(
                 "dbo.ForgeContent",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        BlockId = c.Int(),
-                        Name = c.String(maxLength: 100),
-                        Source = c.String(),
-                        CompiledContent = c.String(),
-                        CompiledVueVersion = c.String(maxLength: 50),
-                        CompiledDateTime = c.DateTime(),
-                        IsActive = c.Boolean(nullable: false),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonAliasId = c.Int(),
-                        ModifiedByPersonAliasId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String(maxLength: 100),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Block", t => t.BlockId, cascadeDelete: true)
-                .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
-                .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
-                .Index(t => t.BlockId)
-                .Index(t => t.CreatedByPersonAliasId)
-                .Index(t => t.ModifiedByPersonAliasId)
-                .Index(t => t.Guid, unique: true);
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    BlockId = c.Int(),
+                    Name = c.String( maxLength: 100 ),
+                    Source = c.String(),
+                    CompiledContent = c.String(),
+                    CompiledVueVersion = c.String( maxLength: 50 ),
+                    CompiledDateTime = c.DateTime(),
+                    IsActive = c.Boolean( nullable: false ),
+                    CreatedDateTime = c.DateTime(),
+                    ModifiedDateTime = c.DateTime(),
+                    CreatedByPersonAliasId = c.Int(),
+                    ModifiedByPersonAliasId = c.Int(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.Block", t => t.BlockId, cascadeDelete: true )
+                .ForeignKey( "dbo.PersonAlias", t => t.CreatedByPersonAliasId )
+                .ForeignKey( "dbo.PersonAlias", t => t.ModifiedByPersonAliasId )
+                .Index( t => t.BlockId )
+                .Index( t => t.CreatedByPersonAliasId )
+                .Index( t => t.ModifiedByPersonAliasId )
+                .Index( t => t.Guid, unique: true );
 
             RegisterForgeContentEntityTypes_Up();
             AddForgeContentBlockType_Up();
@@ -258,7 +256,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
                 8/17/2026 - CLAUDE
 
                 The agent row and its security are deliberately left in place: an
-                administrator may have retuned the instructions or enabled tools,
+                administrator may retuned the instructions or enabled tools,
                 and there is no IsSystem flag on AIAgent to protect that work, so
                 a downgrade must not discard it. The skill and tool rows are
                 removed because startup registration recreates them on the next
@@ -274,14 +272,14 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             RemoveSkillsAndTools_Down();
             AddForgeContentBlockType_Down();
 
-            DropForeignKey("dbo.ForgeContent", "ModifiedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.ForgeContent", "CreatedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.ForgeContent", "BlockId", "dbo.Block");
-            DropIndex("dbo.ForgeContent", new[] { "Guid" });
-            DropIndex("dbo.ForgeContent", new[] { "ModifiedByPersonAliasId" });
-            DropIndex("dbo.ForgeContent", new[] { "CreatedByPersonAliasId" });
-            DropIndex("dbo.ForgeContent", new[] { "BlockId" });
-            DropTable("dbo.ForgeContent");
+            DropForeignKey( "dbo.ForgeContent", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.ForgeContent", "CreatedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.ForgeContent", "BlockId", "dbo.Block" );
+            DropIndex( "dbo.ForgeContent", new[] { "Guid" } );
+            DropIndex( "dbo.ForgeContent", new[] { "ModifiedByPersonAliasId" } );
+            DropIndex( "dbo.ForgeContent", new[] { "CreatedByPersonAliasId" } );
+            DropIndex( "dbo.ForgeContent", new[] { "BlockId" } );
+            DropTable( "dbo.ForgeContent" );
         }
 
         #region Entity Types and Block Type
