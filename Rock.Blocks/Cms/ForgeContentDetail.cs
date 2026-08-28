@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
@@ -24,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Cms.ForgeContentDetail;
+using Rock.ViewModels.Cms;
 
 namespace Rock.Blocks.Cms
 {
@@ -49,7 +51,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "8C7E29E5-E2C5-4331-B7F7-06EF894E7316" )]
     [Rock.SystemGuid.BlockTypeGuid( "D4A5F720-493C-4DE8-B4B6-D6667D7ED2A2" )]
-    public class ForgeContentDetail : RockBlockType
+    public class ForgeContentDetail : RockBlockType, IHasCustomActions
     {
         #region Methods
 
@@ -61,19 +63,13 @@ namespace Rock.Blocks.Cms
             using ( var rockContext = new RockContext() )
             {
                 var content = new ForgeContentService( rockContext ).GetByBlockId( BlockId );
-                var isEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-                box.IsEditable = isEditable;
+                box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
                 // Every viewer receives the precompiled output for rendering.
+                // The clean source is never sent in view mode; the editor
+                // requests it on demand through GetEditContent.
                 box.CompiledContent = content?.CompiledContent;
-
-                // The clean source is only sent to authors so they can re-edit it.
-                // A plain visitor never receives the source.
-                if ( isEditable )
-                {
-                    box.Source = content?.Source;
-                }
             }
 
             return box;
@@ -81,7 +77,54 @@ namespace Rock.Blocks.Cms
 
         #endregion Methods
 
+        #region IHasCustomActions
+
+        /// <inheritdoc/>
+        List<BlockCustomActionBag> IHasCustomActions.GetCustomActions( bool canEdit, bool canAdministrate )
+        {
+            var actions = new List<BlockCustomActionBag>();
+
+            if ( canEdit )
+            {
+                actions.Add( new BlockCustomActionBag
+                {
+                    IconCssClass = "ti ti-pencil",
+                    Tooltip = "Edit Content",
+                    ComponentFileUrl = "/Obsidian/Blocks/Cms/forgeContentDetailEditContent.obs"
+                } );
+            }
+
+            return actions;
+        }
+
+        #endregion IHasCustomActions
+
         #region Block Actions
+
+        /// <summary>
+        /// Gets the authored source for the editor opened from the block's
+        /// configuration bar. The source is only ever delivered through this
+        /// action so a plain visitor never receives it.
+        /// </summary>
+        /// <returns>The stored source, or null when the block has no component yet.</returns>
+        [BlockAction]
+        public BlockActionResult GetEditContent()
+        {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this component." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var content = new ForgeContentService( rockContext ).GetByBlockId( BlockId );
+
+                return ActionOk( new ForgeContentSourceBag
+                {
+                    Source = content?.Source
+                } );
+            }
+        }
 
         /// <summary>
         /// Compiles and upserts the authored component for this block placement.

@@ -53,7 +53,7 @@ internal sealed partial class ForgeContentBuilderSkill
             Version = Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
             FullVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber()
         } )
-            .WithInstructions( "Before authoring any component UI, read the Composition Rules article: call the Community Knowledge Base skill's GetArticle tool with articleKey 'coding-guide/conventions-and-guardrails/composition-rules'. It governs which control to use, in which mode, composed how. When the design matches one of the guide's recipes, also read that recipe and follow its Composition table; a recipe never overrides the rules." );
+            .WithInstructions( "Before authoring any component UI, read the Composition Rules article: call the Community Knowledge Base skill's GetArticle tool with articleKey 'coding-guide/conventions-and-guardrails/composition-rules'. It governs which control to use, in which mode, composed how. When the design matches one of the guide's recipes, also read that recipe and follow its Composition table; a recipe never overrides the rules. Verify each framework control in the guide's Controls Catalog (GetArticle with articleKey 'coding-guide/controls', then the control's own child article for its verified props); the catalog is authoritative for the controls it covers even when no source code is indexed for this Rock release, so use source-code search only for what the guide does not cover." );
     }
 
     #endregion

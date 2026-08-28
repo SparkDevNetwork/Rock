@@ -18,23 +18,16 @@
 namespace Rock.ViewModels.Blocks.Cms.ForgeContentDetail
 {
     /// <summary>
-    /// The box that contains all the initialization information for the
-    /// Forge Content block.
+    /// The response returned by the GetEditContent block action, carrying the
+    /// authored source to the editor opened from the block's configuration bar.
     /// </summary>
-    public class ForgeContentDetailInitializationBox : BlockBox
+    public class ForgeContentSourceBag
     {
         /// <summary>
-        /// Gets or sets the compiled SystemJS module string used to render the
-        /// component in view mode.
+        /// Gets or sets the clean Vue source the author wrote, or null when
+        /// the block has no component yet.
         /// </summary>
-        /// <value>The compiled component module.</value>
-        public string CompiledContent { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the current person may edit
-        /// this component through the block configuration bar.
-        /// </summary>
-        /// <value><c>true</c> if the current person may edit; otherwise <c>false</c>.</value>
-        public bool IsEditable { get; set; }
+        /// <value>The authored Vue source.</value>
+        public string Source { get; set; }
     }
 }
