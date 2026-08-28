@@ -12,6 +12,7 @@
           :title="panelTitle"
           stickyHeader
           :disablePaging="true"
+          :isFooterHidden="true"
           :showExport="false"
           :showMergeTemplate="false"
           :showLaunchWorkflow="false"
