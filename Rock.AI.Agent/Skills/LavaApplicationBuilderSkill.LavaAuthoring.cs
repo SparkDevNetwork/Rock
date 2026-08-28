@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,7 @@
 using System;
 using System.Linq;
 
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Lava;
@@ -31,9 +31,9 @@ namespace Rock.AI.Agent.Skills;
 /*
     8/17/2026 - CLAUDE
 
-    The Lava-authoring half of CodeBuilderSkill (formerly its own skill,
-    LavaApplicationSkill, merged in the Forge Content rename; the class-level
-    attributes and constructor live in CodeBuilderSkill.cs). An authored
+    The shared helpers of LavaApplicationBuilderSkill (the class-level
+    attributes and constructor live in LavaApplicationBuilderSkill.cs; the
+    tool methods live in the per-tool partials). An authored
     Forge Content component needs data, and hunting for an existing REST
     endpoint is the worst-shaped step in that flow: Rock has hundreds of
     endpoints, almost none return the shape a specific dashboard wants, and
@@ -62,7 +62,7 @@ namespace Rock.AI.Agent.Skills;
     flow, gated on ADMINISTRATE and scoped by provenance.
 */
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class LavaApplicationBuilderSkill
 {
     #region Fields
 

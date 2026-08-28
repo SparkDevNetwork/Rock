@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,7 @@
 using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.ForgeContentBuilderSkill;
 using Rock.Cms;
 using Rock.Configuration;
 using Rock.Model;
@@ -27,14 +27,15 @@ using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class ForgeContentBuilderSkill
 {
     #region Tool(s)
 
     [Description( "Compiles and saves the authored source of a Forge Content block placement. A failed compile stores nothing and returns the compiler's errors." )]
     [AgentToolPreamble( "Compiling and saving the component source." )]
     [AgentUsage( "blockId is the block placement to write; source is the authored Vue single-file-component. The server compiles the source and either stores the result or returns the compile errors for you to fix and retry. Nothing is stored when the compile fails." )]
-    [AgentToolGuid( "26FFEE94-4868-4DEC-BE40-68FBE30DAEB8" )]
+    [AgentUsage( "Never save a component whose data is hardcoded, mocked, or invented while presenting it as real. If the endpoints it needs could not be created, stop and report what failed instead of shipping fake numbers." )]
+    [AgentToolGuid( "3E97A0C5-48D2-4F16-85B9-C1D7E63A2F40" )]
     public AgentToolResult AddOrUpdateForgeContent(
         [Description( "The id of the Forge Content block placement to write." )]
         string blockId,
@@ -119,7 +120,17 @@ internal sealed partial class CodeBuilderSkill
 
         if ( !compileResult.IsSuccess )
         {
-            helper.AddError( "The source failed to compile. Fix the source and call AddOrUpdateForgeContent again. Compiler errors:\n" + string.Join( "\n", compileResult.Errors ) );
+            var compileError = "The source failed to compile. Fix the source and call AddOrUpdateForgeContent again. Compiler errors:\n" + string.Join( "\n", compileResult.Errors );
+
+            // TypeScript syntax is the single most common weak-model compile
+            // failure, and the raw compiler error rarely names it. Detect the
+            // telltales and say the fix plainly so the retry succeeds.
+            if ( System.Text.RegularExpressions.Regex.IsMatch( source, "lang=\"ts\"|lang='ts'|:\\s*(string|number|boolean|any|void)\\b|\\binterface\\s+\\w+|\\bas\\s+(string|number|boolean|any)\\b" ) )
+            {
+                compileError += "\nThe source appears to contain TypeScript syntax. Authored components are plain JavaScript: remove lang=\"ts\" from the script tag and strip every type annotation, interface declaration, generic, and 'as' cast, then save again.";
+            }
+
+            helper.AddError( compileError );
 
             return helper.ErrorResult;
         }
@@ -133,12 +144,28 @@ internal sealed partial class CodeBuilderSkill
 
         rockContext.SaveChanges();
 
+/*
+            8/28/2026 - CLAUDE
+
+            The verify instruction exists because "compiled" was being reported
+            to users as "done", and the user then spent five or six prompts
+            acting as the test harness for endpoint mismatches the agent could
+            have caught itself. A compile proves syntax; it proves nothing
+            about the contract between the component's invoke payloads and the
+            endpoints' templates. Re-saving each endpoint with testParameters
+            shaped like the component's payload is the only self-serve way to
+            exercise that contract today, so the instruction names it.
+
+            Reason: Push the agent to verify the component-endpoint contract
+            before declaring the build done.
+        */
         return Success( new ForgeContentSaveResult
         {
             BlockIdKey = block.IdKey,
             CompiledVueVersion = compileResult.VueVersion
         } )
-            .WithInstructions( "The component compiled and saved. Remind the user to view the page as a normal member, not as an administrator, before trusting it: the component runs as whoever views the page." );
+            .WithInstructions( "The component compiled and saved. Compiling proves syntax only; it does not prove the component works. Before telling the user it is done, verify the data contract yourself: for each endpoint this component invokes, call AddOrUpdateLavaEndpoint again with the same template plus testParameters shaped exactly like the payload the component sends, and confirm the test output is valid JSON whose property names match what the component reads (including casing). Fix mismatches now rather than letting the user discover them." )
+            .WithInstructions( "Then remind the user to view the page as a normal member, not as an administrator, before trusting it: the component runs as whoever views the page." );
     }
 
     #endregion

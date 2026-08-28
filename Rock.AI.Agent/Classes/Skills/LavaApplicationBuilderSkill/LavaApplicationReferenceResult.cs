@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,21 +14,24 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Entity;
+
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 
 /// <summary>
-/// Result model describing the Rock version this instance is running.
+/// Trimmed reference to a Lava application, used as the history content for
+/// results whose full payload (the endpoint list) is too large to keep in
+/// session context.
 /// </summary>
-internal class RockVersionResult
+internal class LavaApplicationReferenceResult : EntityResultBase
 {
     /// <summary>
-    /// The semantic version of this Rock instance, e.g. <c>1.20.0</c>. Pass this
-    /// to release-scoped knowledge base lookups.
+    /// The name of the application.
     /// </summary>
-    public string Version { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
-    /// The full product version string of this Rock instance.
+    /// The slug the application is addressed by.
     /// </summary>
-    public string FullVersion { get; set; }
+    public string ApplicationSlug { get; set; }
 }

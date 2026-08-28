@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 
 /// <summary>
-/// Result model for a Lava endpoint that was created or updated, including
-/// the outcome of test-executing its template.
+/// Trimmed reference to a Lava endpoint, used as the history content for
+/// results whose full payload (templates, test output) is too large to keep
+/// in session context.
 /// </summary>
-internal class LavaEndpointSaveResult
+internal class LavaEndpointReferenceResult
 {
     /// <summary>
     /// The slug of the Lava application the endpoint belongs to.
@@ -28,7 +29,7 @@ internal class LavaEndpointSaveResult
     public string ApplicationSlug { get; set; }
 
     /// <summary>
-    /// The slug of the endpoint that was saved.
+    /// The slug of the endpoint.
     /// </summary>
     public string EndpointSlug { get; set; }
 
@@ -41,10 +42,4 @@ internal class LavaEndpointSaveResult
     /// The URL a client uses to call the endpoint.
     /// </summary>
     public string Url { get; set; }
-
-    /// <summary>
-    /// The result of test-executing the saved template, or the reason the
-    /// test was skipped.
-    /// </summary>
-    public TestExecutionResult TestExecution { get; set; }
 }

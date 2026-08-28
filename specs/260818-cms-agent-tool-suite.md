@@ -180,7 +180,7 @@ flowchart TD
     J --> K[AddOrUpdateForgeContent]
 ```
 
-`AddOrUpdateForgeContent` lives on `CodeBuilderSkill` and is unchanged by this spec. It is shown because it is the reason the block tools exist.
+`AddOrUpdateForgeContent` lives on `ForgeContentBuilderSkill` and is unchanged by this spec. It is shown because it is the reason the block tools exist.
 
 ### File layout
 
@@ -246,7 +246,7 @@ No behavior changes in this phase. It is deliberately separable so a regression 
 
 11. Rename `AddPage` to `AddOrUpdatePage`, keeping guid `4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633`. Add the update branch, `layoutIdKey`, the extra `SetOrClear` properties, and `attributeValues`.
 12. Rename `AddBlock` to `AddOrUpdateBlock`, keeping guid `05C9C108-4516-46B7-85FB-5C8FE6212CCF`. Add the update branch, `BlockLocation` placement, `blockTypeIdKey` in place of the block type name string, and `attributeValues`.
-13. Update `CodeBuilderSkill`'s usage annotations so the flow reads `ListBlockTypes`, then `AddOrUpdateBlock`, then `AddOrUpdateForgeContent`.
+13. Update `ForgeContentBuilderSkill`'s usage annotations so the flow reads `ListBlockTypes`, then `AddOrUpdateBlock`, then `AddOrUpdateForgeContent`.
 
 ### Phase 4: registration and security
 
@@ -309,7 +309,7 @@ Rejected. A recursive call on a large install returns thousands of pages and blo
 Rejected. `202608172102127_AddForgeContent` has not shipped and lives only on the feature branch, so it can still be corrected at the source. A follow-up migration would leave the branch permanently carrying a seed of `PageSkill` followed by a seed that undoes it, and would make `Down()` harder to reason about across two files. The cost is that developers on the branch have to roll back and re-run.
 
 ### Provenance-gated deletes
-Rejected after being briefly implemented. The first cut stamped `ForeignKey = "AI-Agent:CmsSkill"` on records the upserts created and had the delete tools refuse anything without the stamp, mirroring `CodeBuilderSkill`. It was replaced with the authorization-only shape because that is the established pattern across the shipped delete tools (`DeleteNote`, `DeleteStep`, `DeletePrayerRequest`, `DeleteGroupMember`), because agent-parity with the admin UI is the intent of the tool suite, and because the provenance gate made the tools useless against anything created before the stamp landed or through the admin pages. The blast-radius concerns it addressed are covered instead by the admin-only tool security, the per-entity ADMINISTRATE check, the child-pages refusal on `DeletePage`, and confirm-first usage annotations on both tools.
+Rejected after being briefly implemented. The first cut stamped `ForeignKey = "AI-Agent:CmsSkill"` on records the upserts created and had the delete tools refuse anything without the stamp, mirroring the Builder skills. It was replaced with the authorization-only shape because that is the established pattern across the shipped delete tools (`DeleteNote`, `DeleteStep`, `DeletePrayerRequest`, `DeleteGroupMember`), because agent-parity with the admin UI is the intent of the tool suite, and because the provenance gate made the tools useless against anything created before the stamp landed or through the admin pages. The blast-radius concerns it addressed are covered instead by the admin-only tool security, the per-entity ADMINISTRATE check, the child-pages refusal on `DeletePage`, and confirm-first usage annotations on both tools.
 
 ### Lock CmsSkill to administrators
 Rejected. `LookupSites` already distinguishes internal from external audiences and is usable by public agents. A skill-level deny would remove that capability to protect two tools that can be protected individually.
@@ -319,7 +319,7 @@ Rejected. `LookupSites` already distinguishes internal from external audiences a
 - `GetSiteAvailableAttributes`, `GetPageAvailableAttributes`, `GetBlockAvailableAttributes` (see Open Questions).
 - `AddOrUpdateSite`, `ListShortcodes`, personalization segment and request filter tools. These are on the parent planning task but are not assigned to Kyle. (`ListLayouts` was originally in this list; it was pulled in because `AddOrUpdatePage` takes a `layoutIdKey` the model otherwise had no way to discover.)
 - Moving a page to a new parent.
-- Any change to `CodeBuilderSkill` or `CodeBuilderSkill` beyond the usage annotation update in step 13.
+- Any change to `ForgeContentBuilderSkill` or `LavaApplicationBuilderSkill` beyond the usage annotation update in step 13.
 
 ## Related
 

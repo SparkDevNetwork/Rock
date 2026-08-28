@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,12 +17,12 @@
 using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.ForgeContentBuilderSkill;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class ForgeContentBuilderSkill
 {
     #region Tool(s)
 
@@ -30,7 +30,7 @@ internal sealed partial class CodeBuilderSkill
     [AgentToolPreamble( "Checking the Rock version." )]
     [AgentUsage( "Call this before looking up any control, filter, or API in the Rock knowledge base, and pass the returned version to that lookup. Control APIs change between releases, so an unscoped lookup can describe props this instance does not have." )]
     [AgentUsage( "This is the version of the Rock instance you are connected to. It is not the newest Rock release, and it is not the version any documentation defaults to." )]
-    [AgentToolGuid( "3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508" )]
+    [AgentToolGuid( "8A51C3E9-674D-4B02-93F8-2E6B9D40A715" )]
     public AgentToolResult GetRockVersion()
     {
         /*

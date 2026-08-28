@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,7 @@
 using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.ForgeContentBuilderSkill;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
@@ -26,14 +26,14 @@ using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class ForgeContentBuilderSkill
 {
     #region Tool(s)
 
     [Description( "Reads the current authored source of a Forge Content block placement so it can be iterated on." )]
     [AgentToolPreamble( "Reading the current component source." )]
     [AgentUsage( "blockId is the id of the Forge Content block placement to read." )]
-    [AgentToolGuid( "7D3A8200-3A90-44CC-9E30-B600383E835F" )]
+    [AgentToolGuid( "D24F8B61-9C07-4E5A-B173-60A4F2C8E9D3" )]
     public AgentToolResult GetForgeContent(
         [Description( "The id of the Forge Content block placement to read." )]
         string blockId )

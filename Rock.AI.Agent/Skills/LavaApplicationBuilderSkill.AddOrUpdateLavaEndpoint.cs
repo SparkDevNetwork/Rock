@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Cms;
 using Rock.Configuration;
 using Rock.Enums.Cms;
@@ -27,7 +27,7 @@ using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class LavaApplicationBuilderSkill
 {
     #region Fields
 
@@ -79,7 +79,7 @@ internal sealed partial class CodeBuilderSkill
     [AgentUsage( "Do not request 'Sql'. It is refused unless you also pass sqlJustification, which you may only supply after telling the user why the entity commands cannot do the job and getting their explicit approval. Rewriting the template with entity commands is nearly always the correct response to that refusal." )]
     [AgentUsage( "Always pass testParameters when the template reads Body or QueryString, with realistic values, so the parameter path is proven rather than assumed. Without it the test renders with no request data and a template that reads Body.x is only exercised down its missing-parameter branch." )]
     [AgentUsage( "Enabling RockEntityModify or RockEntityDelete turns test execution off for that endpoint, because running it would perform real writes. You get no syntax check at all, so keep write endpoints small and put any read logic in a separate RockEntity-only endpoint that can still be tested." )]
-    [AgentToolGuid( "9066DD4A-2158-4B1C-87E3-4058CBEE1E5C" )]
+    [AgentToolGuid( "5F1E8C29-A47B-4D63-B905-E26A1D79F4C8" )]
     public AgentToolResult AddOrUpdateLavaEndpoint(
         [Description( "The slug of the Lava application the endpoint belongs to. Reuse one slug per dashboard so all of its endpoints group under one application." )]
         string applicationSlug,

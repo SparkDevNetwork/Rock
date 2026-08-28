@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,21 +18,21 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class LavaApplicationBuilderSkill
 {
     #region Tool(s)
 
     [Description( "Reads a Lava application and lists its endpoints so existing work can be discovered before adding more." )]
     [AgentToolPreamble( "Reading the Lava application." )]
     [AgentUsage( "Call before adding endpoints to an application you did not create in this conversation, so an existing endpoint is updated rather than duplicated. Read a listed endpoint's template with GetLavaEndpoint." )]
-    [AgentToolGuid( "9A078C57-946C-4D5F-8EBE-5009E6390EF2" )]
+    [AgentToolGuid( "B83A2D64-15F7-4C09-8E51-9C3B6F04D7A2" )]
     public AgentToolResult GetLavaApplication(
         [Description( "The slug of the Lava application to read." )]
         string applicationSlug )

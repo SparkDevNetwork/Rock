@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,21 +18,21 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class LavaApplicationBuilderSkill
 {
     #region Tool(s)
 
     [Description( "Deletes a Lava endpoint this skill previously created, so exploration and diagnostics can clean up after themselves." )]
     [AgentToolPreamble( "Deleting the Lava endpoint." )]
     [AgentUsage( "Only endpoints created by this skill can be deleted; anything a person authored has to be removed through the Lava Applications admin pages. Use this to clean up diagnostic and scratch endpoints instead of leaving them for the user." )]
-    [AgentToolGuid( "B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9" )]
+    [AgentToolGuid( "49A7D3E1-8F60-4B25-96C4-B1E5A08D3F72" )]
     public AgentToolResult DeleteLavaEndpoint(
         [Description( "The slug of the Lava application the endpoint belongs to." )]
         string applicationSlug,

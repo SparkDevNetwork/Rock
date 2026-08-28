@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 
 /// <summary>
 /// Result model for a Lava application, returned by GetLavaApplication and

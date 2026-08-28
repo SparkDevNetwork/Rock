@@ -63,9 +63,14 @@ namespace Rock.Migrations
         private const string CmsSkillGuid = "613D7110-6453-4BAB-892B-064222F8397C";
 
         /// <summary>
-        /// The AISkill Guid of the Code Builder skill.
+        /// The AISkill Guid of the Forge Content Builder skill.
         /// </summary>
-        private const string CodeBuilderSkillGuid = "647770A9-F3D7-4924-B046-5C9C43959ECB";
+        private const string ForgeContentBuilderSkillGuid = "0F3D6B8A-52C1-4E97-A6D3-84B2E7F91C05";
+
+        /// <summary>
+        /// The AISkill Guid of the Lava Application Builder skill.
+        /// </summary>
+        private const string LavaApplicationBuilderSkillGuid = "71B4E9D2-C685-4A30-BF17-5D208C4E96A1";
 
         /// <summary>
         /// The EntityType Guid of <c>Rock.AI.Agent.Skills.CmsSkill</c>.
@@ -73,9 +78,14 @@ namespace Rock.Migrations
         private const string CmsSkillEntityTypeGuid = "7A63570D-6FC3-4573-BDF2-89CFF605D5AB";
 
         /// <summary>
-        /// The EntityType Guid of <c>Rock.AI.Agent.Skills.CodeBuilderSkill</c>.
+        /// The EntityType Guid of <c>Rock.AI.Agent.Skills.ForgeContentBuilderSkill</c>.
         /// </summary>
-        private const string CodeBuilderSkillEntityTypeGuid = "4C833FA4-A7EF-4D49-9549-B24CBB629A73";
+        private const string ForgeContentBuilderSkillEntityTypeGuid = "6C2E94D7-1B58-4A3F-9E60-D74A5C813F29";
+
+        /// <summary>
+        /// The EntityType Guid of <c>Rock.AI.Agent.Skills.LavaApplicationBuilderSkill</c>.
+        /// </summary>
+        private const string LavaApplicationBuilderSkillEntityTypeGuid = "94D07F3B-6E21-45C8-A5B4-1F8E3D62C079";
 
         /// <summary>
         /// The AISkill Guid of the Community Knowledge Base skill.
@@ -109,13 +119,15 @@ Confirm the parent page, route, and block type before creating anything. Those c
 
 A successful save means the source compiled. It does not mean the component works. Never report otherwise.
 
+Never present hardcoded, mock, or sample data as if it were real instance data. If an endpoint cannot be created or a tool keeps failing, stop and say plainly what failed and what is missing; a dashboard of invented numbers is worse than no dashboard.
+
 # Design Lock-In
 
 If the user has not described the appearance concretely, do not build yet. Offer a short menu of design shapes with a one-line plain-English description each: a stat-card dashboard with a chart, a searchable table with a detail view, a single chart over time, a data entry form, or a kanban board. The user may pick one or describe their own; a design does not have to match a shape. Once the design is locked in, state your plan in two or three lines (the Panel decision, the grid mode, the key controls), then build without waiting unless the user objects. A locked-in design plus a fast first version beats a long questionnaire.
 
 # Coding Conventions
 
-Consult the Coding Guide topic in the community knowledge base before writing any code, and prefer what it says over your own knowledge or any other source. Before writing any component source, read the Composition Rules article: call GetArticle with articleKey 'coding-guide/conventions-and-guardrails/composition-rules'. It governs which control to use, in which mode, composed how; do not author UI without it in context this session. Retrieval keys inside the guide are stable; if that key ever returns not found, locate the article through GetTopic rather than guessing a new key. If the locked-in design matches one of the guide's recipes, also read that recipe and follow its Composition table. A recipe never overrides the Composition Rules, and a design with no matching recipe is built directly from the rules plus control lookups.
+Consult the Coding Guide topic in the community knowledge base before writing any code, and prefer what it says over your own knowledge or any other source. Before writing any component source, read the Composition Rules article: call GetArticle with articleKey 'coding-guide/conventions-and-guardrails/composition-rules'. It governs which control to use, in which mode, composed how; do not author UI without it in context this session. Retrieval keys inside the guide are stable; if that key ever returns not found, locate the article through GetTopic rather than guessing a new key. If the locked-in design matches one of the guide's recipes, also read that recipe and follow its Composition table. A recipe never overrides the Composition Rules, and a design with no matching recipe is built directly from the rules plus control lookups. The Lava counterpart is 'coding-guide/data-and-endpoints/writing-endpoint-lava': read it before writing any endpoint template, and read 'coding-guide/data-and-endpoints/security-and-permissions' before an endpoint that writes data or returns personal data.
 
 # Build Order
 
@@ -155,13 +167,15 @@ Confirm the parent page, route, and block type before creating anything. Those c
 
 A successful save means the source compiled. It does not mean the component works. Never report otherwise.
 
+Never present hardcoded, mock, or sample data as if it were real instance data. If an endpoint cannot be created or a tool keeps failing, stop and say plainly what failed and what is missing; a dashboard of invented numbers is worse than no dashboard.
+
 # Design Lock-In
 
 If the user has not described the appearance concretely, do not build yet. Offer a short menu of design shapes with a one-line plain-English description each: a stat-card dashboard with a chart, a searchable table with a detail view, a single chart over time, a data entry form, or a kanban board. The user may pick one or describe their own; a design does not have to match a shape. Once the design is locked in, state your plan in two or three lines (the Panel decision, the grid mode, the key controls), then build without waiting unless the user objects. A locked-in design plus a fast first version beats a long questionnaire.
 
 # Coding Conventions
 
-Consult the Coding Guide topic in the community knowledge base before writing any code, and prefer what it says over your own knowledge or any other source. Before writing any component source, read the Composition Rules article: call GetArticle with articleKey 'coding-guide/conventions-and-guardrails/composition-rules'. It governs which control to use, in which mode, composed how; do not author UI without it in context this session. Retrieval keys inside the guide are stable; if that key ever returns not found, locate the article through GetTopic rather than guessing a new key. If the locked-in design matches one of the guide's recipes, also read that recipe and follow its Composition table. A recipe never overrides the Composition Rules, and a design with no matching recipe is built directly from the rules plus control lookups.
+Consult the Coding Guide topic in the community knowledge base before writing any code, and prefer what it says over your own knowledge or any other source. Before writing any component source, read the Composition Rules article: call GetArticle with articleKey 'coding-guide/conventions-and-guardrails/composition-rules'. It governs which control to use, in which mode, composed how; do not author UI without it in context this session. Retrieval keys inside the guide are stable; if that key ever returns not found, locate the article through GetTopic rather than guessing a new key. If the locked-in design matches one of the guide's recipes, also read that recipe and follow its Composition table. A recipe never overrides the Composition Rules, and a design with no matching recipe is built directly from the rules plus control lookups. The Lava counterpart is 'coding-guide/data-and-endpoints/writing-endpoint-lava': read it before writing any endpoint template, and read 'coding-guide/data-and-endpoints/security-and-permissions' before an endpoint that writes data or returns personal data.
 
 # Control Discovery
 
@@ -227,7 +241,8 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             RegisterForgeContentEntityTypes_Up();
             AddForgeContentBlockType_Up();
             AddCmsSkill_Up();
-            AddCodeBuilderSkill_Up();
+            AddForgeContentBuilderSkill_Up();
+            AddLavaApplicationBuilderSkill_Up();
             AddCommunityKnowledgeBaseSkill_Up();
             AddCodeComposerMcpAgent_Up();
             AddCodeComposerChatAgent_Up();
@@ -303,8 +318,14 @@ Give the user the page URL and tell them to check it as a normal member, not as 
                 false );
 
             RockMigrationHelper.AddOrUpdateEntityType(
-                "Rock.AI.Agent.Skills.CodeBuilderSkill",
-                CodeBuilderSkillEntityTypeGuid,
+                "Rock.AI.Agent.Skills.ForgeContentBuilderSkill",
+                ForgeContentBuilderSkillEntityTypeGuid,
+                false,
+                false );
+
+            RockMigrationHelper.AddOrUpdateEntityType(
+                "Rock.AI.Agent.Skills.LavaApplicationBuilderSkill",
+                LavaApplicationBuilderSkillEntityTypeGuid,
                 false,
                 false );
 
@@ -432,7 +453,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
             AddOrUpdateCodeAISkillTool(
                 CmsSkillGuid,
                 "Add Or Update Block",
-                "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the Code Builder skill's AddOrUpdateForgeContent tool needs.",
+                "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the Forge Content Builder skill's AddOrUpdateForgeContent tool needs.",
                 "05C9C108-4516-46B7-85FB-5C8FE6212CCF" );
 
             AddOrUpdateCodeAISkillTool(
@@ -472,78 +493,97 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         }
 
         /// <summary>
-        /// Registers the Code Builder skill, its security, and its tools: the
-        /// Forge Content authoring tools plus the Lava application tools it
-        /// absorbed when the former Custom Component and Lava Application
-        /// skills merged. The skill keeps the former Custom Component skill's
-        /// guids, and the Lava tool rows re-parent onto it by guid.
+        /// Registers the Forge Content Builder skill, its security, and its
+        /// tools: the component authoring loop. The skill was briefly merged
+        /// with the Lava Application Builder skill as one Code Builder skill;
+        /// a side-by-side evaluation kept the split, so each skill carries
+        /// focused guidance and its own guids.
         /// </summary>
-        private void AddCodeBuilderSkill_Up()
+        private void AddForgeContentBuilderSkill_Up()
         {
             AddOrUpdateCodeAISkill(
-                "Code Builder Skill",
-                "Author the Vue source rendered by a Forge Content block placement and the Lava applications and endpoints that feed it data.",
-                CodeBuilderSkillEntityTypeGuid,
-                CodeBuilderSkillGuid );
+                "Forge Content Builder Skill",
+                "Author and edit the Vue source rendered by a Forge Content block placement.",
+                ForgeContentBuilderSkillEntityTypeGuid,
+                ForgeContentBuilderSkillGuid );
 
             AddAdministratorOnlySecurityForAISkill(
-                CodeBuilderSkillGuid,
-                "4E646B3E-E483-48C0-9B5B-5D01FEFC2406",
-                "E0BE5EA7-452F-4FF8-9552-545F3EDE58FC" );
+                ForgeContentBuilderSkillGuid,
+                "5D3B7A20-94E6-4C18-B0F5-27A4D9C1E863",
+                "A9E64C17-3B85-4D02-96E1-C50F8B27D4A9" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                ForgeContentBuilderSkillGuid,
                 "Get Rock Version",
                 "Reports the Rock version this instance is running, so control and API lookups can be scoped to the release actually deployed here.",
-                "3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508" );
+                "8A51C3E9-674D-4B02-93F8-2E6B9D40A715" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                ForgeContentBuilderSkillGuid,
                 "Get Forge Content",
                 "Reads the current authored source of a Forge Content block placement so it can be iterated on.",
-                "7D3A8200-3A90-44CC-9E30-B600383E835F" );
+                "D24F8B61-9C07-4E5A-B173-60A4F2C8E9D3" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                ForgeContentBuilderSkillGuid,
                 "Add Or Update Forge Content",
                 "Compiles and saves the authored source of a Forge Content block placement. A failed compile stores nothing and returns the compiler's errors.",
-                "26FFEE94-4868-4DEC-BE40-68FBE30DAEB8" );
+                "3E97A0C5-48D2-4F16-85B9-C1D7E63A2F40" );
+        }
+
+        /// <summary>
+        /// Registers the Lava Application Builder skill, its security, and its
+        /// tools: the endpoint authoring loop that feeds Forge Content
+        /// components their data.
+        /// </summary>
+        private void AddLavaApplicationBuilderSkill_Up()
+        {
+            AddOrUpdateCodeAISkill(
+                "Lava Application Builder Skill",
+                "Create and edit Lava applications and endpoints that return JSON data to authored components.",
+                LavaApplicationBuilderSkillEntityTypeGuid,
+                LavaApplicationBuilderSkillGuid );
+
+            AddAdministratorOnlySecurityForAISkill(
+                LavaApplicationBuilderSkillGuid,
+                "1C78E5B3-D40A-4F96-82D7-63B9A0F5C214",
+                "F2A91D68-7C35-4E80-B41A-09D6E3C7825F" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                LavaApplicationBuilderSkillGuid,
                 "Add Or Update Lava Application",
                 "Adds a new Lava application or updates one this skill created. Applications group a block's endpoints and must exist before endpoints can be added.",
-                "A82B55AE-16A6-4321-95E1-59762C7CED14" );
+                "26C5F1A8-3D94-4E67-90B2-7A45D8E1C6F3" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                LavaApplicationBuilderSkillGuid,
                 "Get Lava Application",
                 "Reads a Lava application and lists its endpoints so existing work can be discovered before adding more.",
-                "9A078C57-946C-4D5F-8EBE-5009E6390EF2" );
+                "B83A2D64-15F7-4C09-8E51-9C3B6F04D7A2" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                LavaApplicationBuilderSkillGuid,
                 "Add Or Update Lava Endpoint",
                 "Adds a new Lava endpoint or updates an existing one, keyed by slug and HTTP method, within an existing Lava application. Returns the result of test-executing the template.",
-                "9066DD4A-2158-4B1C-87E3-4058CBEE1E5C" );
+                "5F1E8C29-A47B-4D63-B905-E26A1D79F4C8" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                LavaApplicationBuilderSkillGuid,
                 "Get Lava Endpoint",
                 "Reads the current template and configuration of a Lava endpoint so it can be iterated on.",
-                "11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9" );
+                "E64B9F07-2C58-41DA-A83F-05D9C7B24E61" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                LavaApplicationBuilderSkillGuid,
                 "Delete Lava Endpoint",
                 "Deletes a Lava endpoint this skill previously created, so exploration and diagnostics can clean up after themselves.",
-                "B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9" );
+                "49A7D3E1-8F60-4B25-96C4-B1E5A08D3F72" );
 
             AddOrUpdateCodeAISkillTool(
-                CodeBuilderSkillGuid,
+                LavaApplicationBuilderSkillGuid,
                 "Delete Lava Application",
                 "Deletes a Lava application this skill previously created, along with any endpoints it created inside it.",
-                "9A47C2D1-83B5-4E60-A7F3-1B58C90D24E6" );
+                "C08E5A93-D1B6-4F74-82D0-46F3C9E17B58" );
         }
 
         /// <summary>
@@ -627,7 +667,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         /// </summary>
         private void RemoveSkillsAndTools_Down()
         {
-            var skillGuids = $"'{CmsSkillGuid}', '{CodeBuilderSkillGuid}'";
+            var skillGuids = $"'{CmsSkillGuid}', '{ForgeContentBuilderSkillGuid}', '{LavaApplicationBuilderSkillGuid}'";
 
             // The Community Knowledge Base skill's links are removed with the
             // others, but its AISkill and AISkillTool rows are deliberately NOT
@@ -646,8 +686,10 @@ WHERE [AIAgentId] IN (SELECT [Id] FROM [AIAgent] WHERE [Guid] IN ('{CodeComposer
             RockMigrationHelper.DeleteSecurityAuth( "A4118437-30B1-48C7-88D9-89E34E0C4B46" );
             RockMigrationHelper.DeleteSecurityAuth( "AFBD660A-35C7-48BB-8A82-15099CF595AE" );
             RockMigrationHelper.DeleteSecurityAuth( "557884F7-F369-4FE5-9F18-6C41FBE13900" );
-            RockMigrationHelper.DeleteSecurityAuth( "4E646B3E-E483-48C0-9B5B-5D01FEFC2406" );
-            RockMigrationHelper.DeleteSecurityAuth( "E0BE5EA7-452F-4FF8-9552-545F3EDE58FC" );
+            RockMigrationHelper.DeleteSecurityAuth( "5D3B7A20-94E6-4C18-B0F5-27A4D9C1E863" );
+            RockMigrationHelper.DeleteSecurityAuth( "A9E64C17-3B85-4D02-96E1-C50F8B27D4A9" );
+            RockMigrationHelper.DeleteSecurityAuth( "1C78E5B3-D40A-4F96-82D7-63B9A0F5C214" );
+            RockMigrationHelper.DeleteSecurityAuth( "F2A91D68-7C35-4E80-B41A-09D6E3C7825F" );
 
             Sql( $@"
 DELETE FROM [AISkillTool]
@@ -797,21 +839,26 @@ END" );
         };
 
         /// <summary>
-        /// The enabled tools of the Code Builder skill, shared by both agents:
-        /// the Forge Content authoring tools plus the Lava application tools
-        /// absorbed from the former Lava Application skill.
+        /// The enabled tools of the Forge Content Builder skill, shared by both agents.
         /// </summary>
-        private static readonly string[] CodeBuilderSkillEnabledTools = new[]
+        private static readonly string[] ForgeContentBuilderSkillEnabledTools = new[]
         {
-            "3E7A1C42-8B95-4D06-A1F3-2C64D9B7E508", // Get Rock Version
-            "7D3A8200-3A90-44CC-9E30-B600383E835F", // Get Forge Content
-            "26FFEE94-4868-4DEC-BE40-68FBE30DAEB8", // Add Or Update Forge Content
-            "A82B55AE-16A6-4321-95E1-59762C7CED14", // Add Or Update Lava Application
-            "9A078C57-946C-4D5F-8EBE-5009E6390EF2", // Get Lava Application
-            "9066DD4A-2158-4B1C-87E3-4058CBEE1E5C", // Add Or Update Lava Endpoint
-            "11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9", // Get Lava Endpoint
-            "B3E1A5C7-6F24-4D1B-9C88-05D7F42A61E9", // Delete Lava Endpoint
-            "9A47C2D1-83B5-4E60-A7F3-1B58C90D24E6"  // Delete Lava Application
+            "8A51C3E9-674D-4B02-93F8-2E6B9D40A715", // Get Rock Version
+            "D24F8B61-9C07-4E5A-B173-60A4F2C8E9D3", // Get Forge Content
+            "3E97A0C5-48D2-4F16-85B9-C1D7E63A2F40"  // Add Or Update Forge Content
+        };
+
+        /// <summary>
+        /// The enabled tools of the Lava Application Builder skill, shared by both agents.
+        /// </summary>
+        private static readonly string[] LavaApplicationBuilderSkillEnabledTools = new[]
+        {
+            "26C5F1A8-3D94-4E67-90B2-7A45D8E1C6F3", // Add Or Update Lava Application
+            "B83A2D64-15F7-4C09-8E51-9C3B6F04D7A2", // Get Lava Application
+            "5F1E8C29-A47B-4D63-B905-E26A1D79F4C8", // Add Or Update Lava Endpoint
+            "E64B9F07-2C58-41DA-A83F-05D9C7B24E61", // Get Lava Endpoint
+            "49A7D3E1-8F60-4B25-96C4-B1E5A08D3F72", // Delete Lava Endpoint
+            "C08E5A93-D1B6-4F74-82D0-46F3C9E17B58"  // Delete Lava Application
         };
 
         /// <summary>
@@ -830,17 +877,19 @@ END" );
         };
 
         /// <summary>
-        /// Attaches the three skills to both agents with explicit enabled-tool
+        /// Attaches the four skills to both agents with explicit enabled-tool
         /// lists. Attaching a skill alone does not expose its tools.
         /// </summary>
         private void AttachSkillsToAgents_Up()
         {
             AttachSkillToAgent( CodeComposerMcpAgentGuid, CmsSkillGuid, CmsSkillEnabledTools );
-            AttachSkillToAgent( CodeComposerMcpAgentGuid, CodeBuilderSkillGuid, CodeBuilderSkillEnabledTools );
+            AttachSkillToAgent( CodeComposerMcpAgentGuid, ForgeContentBuilderSkillGuid, ForgeContentBuilderSkillEnabledTools );
+            AttachSkillToAgent( CodeComposerMcpAgentGuid, LavaApplicationBuilderSkillGuid, LavaApplicationBuilderSkillEnabledTools );
             AttachSkillToAgent( CodeComposerMcpAgentGuid, CommunityKnowledgeBaseSkillGuid, CommunityKnowledgeBaseSkillEnabledTools );
 
             AttachSkillToAgent( CodeComposerChatAgentGuid, CmsSkillGuid, CmsSkillEnabledTools );
-            AttachSkillToAgent( CodeComposerChatAgentGuid, CodeBuilderSkillGuid, CodeBuilderSkillEnabledTools );
+            AttachSkillToAgent( CodeComposerChatAgentGuid, ForgeContentBuilderSkillGuid, ForgeContentBuilderSkillEnabledTools );
+            AttachSkillToAgent( CodeComposerChatAgentGuid, LavaApplicationBuilderSkillGuid, LavaApplicationBuilderSkillEnabledTools );
             AttachSkillToAgent( CodeComposerChatAgentGuid, CommunityKnowledgeBaseSkillGuid, CommunityKnowledgeBaseSkillEnabledTools );
         }
 

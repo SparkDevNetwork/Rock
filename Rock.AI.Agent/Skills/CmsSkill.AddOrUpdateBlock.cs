@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,9 +36,9 @@ internal sealed partial class CmsSkill
 {
     #region Tool(s)
 
-    [Description( "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the Code Builder skill's AddOrUpdateForgeContent tool needs." )]
+    [Description( "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the Forge Content Builder skill's AddOrUpdateForgeContent tool needs." )]
     [AgentToolPreamble( "Saving the block." )]
-    [AgentUsage( "When adding, resolve the block type with ListBlockTypes and provide exactly one of pageIdKey, layoutIdKey, or siteIdKey. For AI-authored content use the 'Forge Content' block type. Returns the block IdKey to pass as blockId to the Code Builder skill's AddOrUpdateForgeContent tool." )]
+    [AgentUsage( "When adding, resolve the block type with ListBlockTypes and provide exactly one of pageIdKey, layoutIdKey, or siteIdKey. For AI-authored content use the 'Forge Content' block type. Returns the block IdKey to pass as blockId to the Forge Content Builder skill's AddOrUpdateForgeContent tool." )]
     [AgentUsage( "Blocks placed on a layout or site render on every page that uses the layout or site; place on a page unless the user asks otherwise." )]
     [AgentToolGuid( "05C9C108-4516-46B7-85FB-5C8FE6212CCF" )]
     public AgentToolResult AddOrUpdateBlock(

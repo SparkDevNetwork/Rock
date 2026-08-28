@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,30 +14,20 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+namespace Rock.AI.Agent.Classes.Skills.ForgeContentBuilderSkill;
 
 /// <summary>
-/// Result model for a Lava endpoint that was deleted by the skill.
+/// Result model for a successful Forge Content compile and save.
 /// </summary>
-internal class LavaEndpointDeleteResult
+internal class ForgeContentSaveResult
 {
     /// <summary>
-    /// Whether the endpoint was deleted.
+    /// The IdKey of the block placement whose component was saved.
     /// </summary>
-    public bool IsDeleted { get; set; }
+    public string BlockIdKey { get; set; }
 
     /// <summary>
-    /// The slug of the Lava application the endpoint belonged to.
+    /// The Vue version the stored output was compiled against.
     /// </summary>
-    public string ApplicationSlug { get; set; }
-
-    /// <summary>
-    /// The slug of the endpoint that was deleted.
-    /// </summary>
-    public string EndpointSlug { get; set; }
-
-    /// <summary>
-    /// How many endpoints remain in the application after the delete.
-    /// </summary>
-    public int RemainingEndpointCount { get; set; }
+    public string CompiledVueVersion { get; set; }
 }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,7 @@
 
 using System.ComponentModel;
 
-namespace Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 
 /// <summary>
 /// The definition of a Lava endpoint being added or updated by the Lava

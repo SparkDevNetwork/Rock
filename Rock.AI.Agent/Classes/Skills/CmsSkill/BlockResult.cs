@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Classes.Skills.CmsSkill;
 
 /// <summary>
 /// Result model for a block placement. The IdKey is the block id to pass to
-/// the Code Builder skill's AddOrUpdateForgeContent tool.
+/// the Forge Content Builder skill's AddOrUpdateForgeContent tool.
 /// </summary>
 internal class BlockResult : EntityResultBase
 {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,14 +19,14 @@ using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes;
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class LavaApplicationBuilderSkill
 {
     #region Fields
 
@@ -65,7 +65,7 @@ internal sealed partial class CodeBuilderSkill
     [AgentToolPreamble( "Saving the Lava application." )]
     [AgentUsage( "Create one application per block, named after the dashboard, then pass its slug to every AddOrUpdateLavaEndpoint call so security is rigged once for the whole block." )]
     [AgentUsage( "The slug cannot be changed after creation; it is the address every component's useLavaApp binding uses. To rename what the user sees, update the name." )]
-    [AgentToolGuid( "A82B55AE-16A6-4321-95E1-59762C7CED14" )]
+    [AgentToolGuid( "26C5F1A8-3D94-4E67-90B2-7A45D8E1C6F3" )]
     public AgentToolResult AddOrUpdateLavaApplication(
         [Description( "Required when editing an existing Lava application. Do not provide when adding a new one." )]
         string lavaApplicationIdKey = null,
@@ -208,6 +208,21 @@ internal sealed partial class CodeBuilderSkill
         if ( isAdd )
         {
             result.WithInstructions( $"The '{application.Slug}' Lava application was created with no security rules and deliberately does not inherit any. Only the Rock Administrators and Lava Application Developers roles can execute its endpoints until someone grants rights on the application through the Lava Applications admin pages. Tell the user this before they test the page as a normal visitor." );
+
+            /*
+                8/28/2026 - CLAUDE
+
+                Same delivery pattern as the composition-rules pointer on
+                GetRockVersion: creating the application is the one step every
+                data-backed build passes through before its first endpoint, and
+                tool results always land in the client's context, so the Lava
+                guidance reaches even clients that never read the seeded
+                instructions.
+
+                Reason: Mandate the endpoint-Lava article on the channel that
+                survives instruction drift.
+            */
+            result.WithInstructions( "Before writing any endpoint template for this application, read the Writing Endpoint Lava article: call the Community Knowledge Base skill's GetArticle tool with articleKey 'coding-guide/data-and-endpoints/writing-endpoint-lava'. It governs entity commands versus sql, aggregates with groupby and count, parameters under Body and QueryString, explicit limits, and the JSON output pattern; do not author a template without it in context this session. If any endpoint writes data or returns personal data, also read 'coding-guide/data-and-endpoints/security-and-permissions'." );
         }
 
         return result;

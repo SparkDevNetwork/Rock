@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,7 @@ namespace Rock.AI.Agent.Skills;
     types, and blocks. The tool guids were kept, so the AISkillTool rows
     re-parent themselves to this skill on startup registration.
 
-    The mutating tools compose with CodeBuilderSkill: AddOrUpdateBlock
+    The mutating tools compose with ForgeContentBuilderSkill: AddOrUpdateBlock
     returns the new block's IdKey, which is exactly what the ForgeContent
     skill's AddOrUpdateForgeContent tool needs
     (AddOrUpdatePage -> AddOrUpdateBlock -> AddOrUpdateForgeContent).
@@ -65,7 +65,7 @@ namespace Rock.AI.Agent.Skills;
 [Description( "Explore and manage sites, pages, and blocks in Rock's CMS." )]
 [AgentPurpose( "Explore the CMS structure of this Rock instance (sites, pages, block types, blocks) and create or update pages and blocks." )]
 [AgentUsage( "When the user wants a new page but does not say where it should live, ask them for the parent page, then use SearchPages or ListPages to locate and confirm it before calling AddOrUpdatePage." )]
-[AgentUsage( "When the user wants to add a block but does not say which block type, ask them which one, then resolve it with ListBlockTypes. For AI-authored content use the 'Forge Content' block type, then call the Code Builder skill's AddOrUpdateForgeContent with the block id AddOrUpdateBlock returns." )]
+[AgentUsage( "When the user wants to add a block but does not say which block type, ask them which one, then resolve it with ListBlockTypes. For AI-authored content use the 'Forge Content' block type, then call the Forge Content Builder skill's AddOrUpdateForgeContent with the block id AddOrUpdateBlock returns." )]
 [AgentUsage( "Before adding a block to a page, call GetPage or ListBlocks to see what is already there, and update the existing block instead of adding a duplicate." )]
 [AgentUsage( "The mutating tools change site structure. Confirm the parent page, page name, block type, and zone with the user before creating." )]
 [AgentUsage( "Use DeletePage and DeleteBlock to clean up scratch pages and blocks when a build is abandoned. Deletes are permanent, so confirm the exact page or block with the user first. A page with child pages is refused; delete or move the children first." )]

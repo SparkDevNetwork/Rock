@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,32 +14,26 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 
 /// <summary>
-/// Trimmed reference to a Lava endpoint, used as the history content for
-/// results whose full payload (templates, test output) is too large to keep
-/// in session context.
+/// Result model for a Lava application that was deleted by the skill.
 /// </summary>
-internal class LavaEndpointReferenceResult
+internal class LavaApplicationDeleteResult
 {
     /// <summary>
-    /// The slug of the Lava application the endpoint belongs to.
+    /// Whether the application was deleted.
+    /// </summary>
+    public bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// The slug of the application that was deleted.
     /// </summary>
     public string ApplicationSlug { get; set; }
 
     /// <summary>
-    /// The slug of the endpoint.
+    /// How many of the skill's own endpoints were deleted along with the
+    /// application.
     /// </summary>
-    public string EndpointSlug { get; set; }
-
-    /// <summary>
-    /// The HTTP method the endpoint answers.
-    /// </summary>
-    public string Method { get; set; }
-
-    /// <summary>
-    /// The URL a client uses to call the endpoint.
-    /// </summary>
-    public string Url { get; set; }
+    public int DeletedEndpointCount { get; set; }
 }

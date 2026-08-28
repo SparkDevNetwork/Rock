@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,21 +17,21 @@
 using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Skills.CodeBuilderSkill;
+using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Cms;
 using Rock.Configuration;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
 
-internal sealed partial class CodeBuilderSkill
+internal sealed partial class LavaApplicationBuilderSkill
 {
     #region Tool(s)
 
     [Description( "Reads the current template and configuration of a Lava endpoint so it can be iterated on." )]
     [AgentToolPreamble( "Reading the Lava endpoint." )]
     [AgentUsage( "Read the endpoint before changing it, so an AddOrUpdateLavaEndpoint call replaces the template you expect. Endpoints are keyed by slug AND method." )]
-    [AgentToolGuid( "11AE1557-1EF3-4E03-9E8E-FCF99F72FCD9" )]
+    [AgentToolGuid( "E64B9F07-2C58-41DA-A83F-05D9C7B24E61" )]
     public AgentToolResult GetLavaEndpoint(
         [Description( "The slug of the Lava application the endpoint belongs to." )]
         string applicationSlug,
