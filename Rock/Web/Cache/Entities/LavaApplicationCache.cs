@@ -237,9 +237,11 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            // If the person is a Rock Admin always allow
-            var isInOverrideRole = ( person != null ) && (RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).IsPersonInRole( person.Guid )
-                                || RoleCache.Get( SystemGuid.Group.GROUP_LAVA_APPLICATION_DEVELOPERS.AsGuid() ).IsPersonInRole( person.Guid) );
+            // If the person is a Rock Admin or Lava Application Developer always allow. The
+            // RoleCache.Get() calls can return null when a role is inactive or missing, so the
+            // results must be null-checked before testing role membership.
+            var isInOverrideRole = ( person != null ) && ( RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() )?.IsPersonInRole( person.Guid ) == true
+                                || RoleCache.Get( SystemGuid.Group.GROUP_LAVA_APPLICATION_DEVELOPERS.AsGuid() )?.IsPersonInRole( person.Guid ) == true );
 
             if ( isInOverrideRole )
             {
