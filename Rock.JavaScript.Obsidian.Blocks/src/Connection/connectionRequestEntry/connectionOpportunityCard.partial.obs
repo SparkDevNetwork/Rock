@@ -125,13 +125,40 @@
         return !!props.opportunity.attributes && Object.keys(props.opportunity.attributes).length > 0;
     });
 
+    /*
+        08/17/26 - JMH
+
+        The expanded region stays mounted while the card is collapsed, so a required attribute on an
+        unselected opportunity would keep its validation rule registered with the form and block
+        submission over a field the visitor cannot see. Dropping the required flag while the card is
+        unselected retires the rule without unmounting the editors, which preserves both the collapse
+        animation and any values already entered should the visitor select the card again.
+
+        Reason: An unselected opportunity must not be able to fail form validation.
+    */
+    const effectiveAttributes = computed<Record<string, PublicAttributeBag>>(() => {
+        const source = props.opportunity.attributes ?? {};
+
+        if (props.selected) {
+            return source;
+        }
+
+        const optional: Record<string, PublicAttributeBag> = {};
+
+        for (const key of Object.keys(source)) {
+            optional[key] = { ...source[key], isRequired: false };
+        }
+
+        return optional;
+    });
+
     /**
      * The opportunity attributes grouped into category sections. Each attribute
      * is placed in its first (lowest-order) category; uncategorized attributes
      * fall into a single leading group with no heading.
      */
     const attributeCategories = computed<AttributeCategoryGroup[]>(() => {
-        const source = props.opportunity.attributes ?? {};
+        const source = effectiveAttributes.value;
         const groups = new Map<string, AttributeCategoryGroup>();
 
         for (const key of Object.keys(source)) {
