@@ -1976,12 +1976,32 @@ namespace Rock.Blocks.Group
                 RockContext.SaveChanges();
             }
 
+            memberRequirement = groupMemberRequirementService.GetInclude( memberRequirement.Guid, r => r.GroupMember );
+
             var workflow = Model.Workflow.Activate( workflowType, workflowType.Name );
+
             workflow.SetAttributeValue( "Person", entity.Person?.PrimaryAlias?.Guid );
 
-            if ( !new WorkflowService( RockContext ).Process( workflow, memberRequirement, out var workflowErrors ) )
+            var workflowService = new WorkflowService( RockContext );
+
+            if ( !workflowService.Process( workflow, memberRequirement, out var workflowErrors ) )
             {
                 return ActionBadRequest( $"Unable to start the workflow: {workflowErrors.AsDelimited( " " )}" );
+            }
+
+            var interactiveAction = workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, null, false );
+            var showHtmlGuard = 0;
+
+            while ( interactiveAction?.ActionTypeCache?.WorkflowAction is Rock.Workflow.Action.ShowHtml && showHtmlGuard++ < 10 )
+            {
+                interactiveAction.MarkComplete();
+
+                if ( !workflowService.Process( workflow, memberRequirement, out workflowErrors ) )
+                {
+                    break;
+                }
+
+                interactiveAction = workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, null, false );
             }
 
             if ( isWarningWorkflow )
@@ -1997,8 +2017,9 @@ namespace Rock.Blocks.Group
 
             RockContext.SaveChanges();
 
-            // With an active entry form the client shows the message, then opens the entry page.
-            if ( workflow.HasActiveEntryForm( RequestContext.CurrentPerson ) )
+            var nextInteractiveAction = workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, null, false );
+
+            if ( nextInteractiveAction?.ActionTypeCache?.WorkflowAction is Rock.Workflow.Action.UserEntryForm )
             {
                 return ActionOk( new LaunchRequirementWorkflowResponseBag
                 {

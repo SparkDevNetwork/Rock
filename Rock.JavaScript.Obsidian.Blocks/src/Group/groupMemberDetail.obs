@@ -416,13 +416,7 @@
         }
 
         if (result.data.workflowEntryUrl) {
-            // An existing workflow navigates directly; a newly started one opens in a new tab.
-            if (result.data.message) {
-                window.open(makeUrlRedirectSafe(result.data.workflowEntryUrl));
-            }
-            else {
-                window.location.href = makeUrlRedirectSafe(result.data.workflowEntryUrl);
-            }
+            window.open(makeUrlRedirectSafe(result.data.workflowEntryUrl), "_blank");
         }
     }
 
