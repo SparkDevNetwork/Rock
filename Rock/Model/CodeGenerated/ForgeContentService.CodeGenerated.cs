@@ -117,7 +117,6 @@ namespace Rock.Model
             target.CompiledDateTime = source.CompiledDateTime;
             target.CompiledVueVersion = source.CompiledVueVersion;
             target.IsActive = source.IsActive;
-            target.Name = source.Name;
             target.Source = source.Source;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

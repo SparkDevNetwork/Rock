@@ -63,7 +63,6 @@ namespace Rock.Migrations
                 {
                     Id = c.Int( nullable: false, identity: true ),
                     BlockId = c.Int(),
-                    Name = c.String( maxLength: 100 ),
                     Source = c.String(),
                     CompiledContent = c.String(),
                     CompiledVueVersion = c.String( maxLength: 50 ),

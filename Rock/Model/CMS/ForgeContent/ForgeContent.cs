@@ -73,20 +73,6 @@ namespace Rock.Model
         public int? BlockId { get; set; }
 
         /// <summary>
-        /// Gets or sets an optional name for this content.
-        /// </summary>
-        /// <remarks>
-        /// Unused in the per-instance flow; present for the future reusable library.
-        /// </remarks>
-        /// <value>
-        /// A <see cref="System.String"/> representing the name of the content.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        [StringValidation( StringValidationProfile.Name )]
-        public string Name { get; set; }
-
-        /// <summary>
         /// Gets or sets the clean Vue source the author wrote.
         /// </summary>
         /// <remarks>
@@ -159,21 +145,6 @@ namespace Rock.Model
         public virtual Block Block { get; set; }
 
         #endregion Navigation Properties
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.IsNullOrWhiteSpace( Name ) ? base.ToString() : Name;
-        }
-
-        #endregion Methods
     }
 
     #region Entity Configuration
