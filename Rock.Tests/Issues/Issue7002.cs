@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,11 +17,10 @@
 using System;
 using System.Collections.Generic;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -36,13 +35,9 @@ namespace Rock.Tests.Issues
     /// <see cref="LavaApplicationCache.IsAuthorized(string, Person)"/> dereferenced
     /// the result of <see cref="RoleCache.Get(Guid)"/> without a null check, and
     /// <see cref="RoleCache.Get(Guid)"/> returns <c>null</c> for an inactive role.
-    ///
-    /// This is the mocked-database counterpart to the integration test of the same
-    /// name in Rock.Tests.Integration; both exercise the same real authorization
-    /// code path.
     /// </summary>
     [TestClass]
-    public class Issue7002 : MockDatabaseTestsBase
+    public class Issue7002
     {
         #region Tests
 
@@ -56,8 +51,8 @@ namespace Rock.Tests.Issues
         [TestMethod]
         public void LavaApplicationIsAuthorized_WithInactiveDeveloperRole_DoesNotThrow()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             // The security role group type is required by RoleCache.LoadById() so it can
             // recognize the seeded groups as security roles.
@@ -67,7 +62,7 @@ namespace Rock.Tests.Issues
                 Guid = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(),
                 Name = "Security Role"
             };
-            rockContextMock.Object.Set<GroupType>().Add( securityRoleGroupType );
+            rockContext.Set<GroupType>().Add( securityRoleGroupType );
 
             // The Administrators role must resolve to a non-null RoleCache so that the first
             // operand of the override-role check evaluates normally (and returns false for our
@@ -81,7 +76,7 @@ namespace Rock.Tests.Issues
                 IsSecurityRole = true,
                 GroupTypeId = securityRoleGroupType.Id
             };
-            rockContextMock.Object.Set<Group>().Add( administratorsRole );
+            rockContext.Set<Group>().Add( administratorsRole );
 
             // The Lava Application Developer role is INACTIVE. RoleCache.LoadById() returns null
             // for an inactive group, which is the exact condition that triggers the bug.
@@ -94,7 +89,7 @@ namespace Rock.Tests.Issues
                 IsSecurityRole = true,
                 GroupTypeId = securityRoleGroupType.Id
             };
-            rockContextMock.Object.Set<Group>().Add( lavaApplicationDeveloperRole );
+            rockContext.Set<Group>().Add( lavaApplicationDeveloperRole );
 
             // Seed the Lava Application's entity type so that resolving TypeId during
             // SetFromEntity() does not need to fabricate one.
@@ -104,7 +99,7 @@ namespace Rock.Tests.Issues
                 Guid = "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7".AsGuid(),
                 Name = typeof( LavaApplication ).FullName
             };
-            rockContextMock.Object.Set<EntityType>().Add( lavaApplicationEntityType );
+            rockContext.Set<EntityType>().Add( lavaApplicationEntityType );
 
             // A non-administrator person who is not a member of any override role.
             var nonAdministrator = new Person
@@ -124,20 +119,17 @@ namespace Rock.Tests.Issues
                 AttributeValues = new Dictionary<string, AttributeValueCache>()
             };
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var lavaApplicationCache = new LavaApplicationCache();
-                lavaApplicationCache.SetFromEntity( lavaApplication );
+            var lavaApplicationCache = new LavaApplicationCache();
+            lavaApplicationCache.SetFromEntity( lavaApplication );
 
-                // Before the fix this throws a NullReferenceException because the inactive
-                // developer role resolves to a null RoleCache, which is then dereferenced.
-                var isAuthorized = lavaApplicationCache.IsAuthorized( LavaApplication.EXECUTE_VIEW, nonAdministrator );
+            // Before the fix this throws a NullReferenceException because the inactive
+            // developer role resolves to a null RoleCache, which is then dereferenced.
+            var isAuthorized = lavaApplicationCache.IsAuthorized( LavaApplication.EXECUTE_VIEW, nonAdministrator );
 
-                // The non-administrator has no explicit grant on this application and Lava
-                // Applications intentionally break security inheritance, so access is denied.
-                // The important part of this test is simply that the call completed without throwing.
-                Assert.IsFalse( isAuthorized, "A non-administrator with no explicit grant should not be authorized." );
-            }
+            // The non-administrator has no explicit grant on this application and Lava
+            // Applications intentionally break security inheritance, so access is denied.
+            // The important part of this test is simply that the call completed without throwing.
+            Assert.IsFalse( isAuthorized, "A non-administrator with no explicit grant should not be authorized." );
         }
 
         #endregion
