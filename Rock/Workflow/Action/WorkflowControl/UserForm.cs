@@ -414,6 +414,7 @@ namespace Rock.Workflow.Action
                     .Where( c => !formPersonEntrySettings.CampusStatusValueId.HasValue || c.CampusStatusValueId == formPersonEntrySettings.CampusStatusValueId.Value )
                     .Where( c => !formPersonEntrySettings.CampusTypeValueId.HasValue || c.CampusTypeValueId == formPersonEntrySettings.CampusTypeValueId.Value )
                     .Where( c => formPersonEntrySettings.IncludeInactiveCampus || c.IsActive == true )
+                    .OrderBy( c => c.Order )
                     .ToListItemBagList();
 
                 if ( campusBags.Count == 0 )

@@ -409,6 +409,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE OBJECT_ID = OBJECT_ID(N'[dbo].[spComm
             var newCommunicationPreviewPageGuid = "9F7AE226-CC95-4E6A-B333-C0294A2024BC";
 
             // Create the New Communication (Preview) page from the New Communication page.
+#pragma warning disable CS0618 // Type or member is obsolete
             Sql( $@"
 DECLARE @SourcePageGuid UNIQUEIDENTIFIER = '{SystemGuid.Page.NEW_COMMUNICATION}';
 DECLARE @NewPageGuid UNIQUEIDENTIFIER = '{newCommunicationPreviewPageGuid}';
@@ -569,6 +570,7 @@ INSERT INTO [dbo].[Auth]
            ,[ForeignId]
     FROM [dbo].[Auth]
     WHERE [EntityTypeId] = @PageEntityTypeId AND [EntityId] = @SourcePageId" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Create page routes.
             this.RockMigrationHelper.AddOrUpdatePageRoute( newCommunicationPreviewPageGuid, "Communication/Preview/{CommunicationId}", "07E4E970-8C2B-46B3-900C-F12E7EF00E14" );

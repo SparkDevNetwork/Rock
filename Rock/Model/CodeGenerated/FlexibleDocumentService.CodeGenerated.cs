@@ -29,15 +29,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ForgeContent Service class
+    /// FlexibleDocument Service class
     /// </summary>
-    public partial class ForgeContentService : Service<ForgeContent>
+    public partial class FlexibleDocumentService : Service<FlexibleDocument>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ForgeContentService"/> class
+        /// Initializes a new instance of the <see cref="FlexibleDocumentService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ForgeContentService(RockContext context) : base(context)
+        public FlexibleDocumentService(RockContext context) : base(context)
         {
         }
 
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ForgeContent item, out string errorMessage )
+        public bool CanDelete( FlexibleDocument item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -59,36 +59,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ForgeContentExtensionMethods
+    public static partial class FlexibleDocumentExtensionMethods
     {
         /// <summary>
-        /// Clones this ForgeContent object to a new ForgeContent object
+        /// Clones this FlexibleDocument object to a new FlexibleDocument object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ForgeContent Clone( this ForgeContent source, bool deepCopy )
+        public static FlexibleDocument Clone( this FlexibleDocument source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ForgeContent;
+                return source.Clone() as FlexibleDocument;
             }
             else
             {
-                var target = new ForgeContent();
+                var target = new FlexibleDocument();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this ForgeContent object to a new ForgeContent object with default values for the properties in the Entity and Model base classes.
+        /// Clones this FlexibleDocument object to a new FlexibleDocument object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static ForgeContent CloneWithoutIdentity( this ForgeContent source )
+        public static FlexibleDocument CloneWithoutIdentity( this FlexibleDocument source )
         {
-            var target = new ForgeContent();
+            var target = new FlexibleDocument();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -105,19 +105,26 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another ForgeContent object to this ForgeContent object
+        /// Copies the properties from another FlexibleDocument object to this FlexibleDocument object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ForgeContent target, ForgeContent source )
+        public static void CopyPropertiesFrom( this FlexibleDocument target, FlexibleDocument source )
         {
             target.Id = source.Id;
-            target.BlockId = source.BlockId;
-            target.CompiledContent = source.CompiledContent;
-            target.CompiledDateTime = source.CompiledDateTime;
-            target.CompiledVueVersion = source.CompiledVueVersion;
+            target.CategoryId = source.CategoryId;
+            target.ContentJson = source.ContentJson;
+            target.ExpireDateTime = source.ExpireDateTime;
+            target.FlexibleDocumentModelId = source.FlexibleDocumentModelId;
+            target.IndexedDate1 = source.IndexedDate1;
+            target.IndexedDecimal1 = source.IndexedDecimal1;
+            target.IndexedInteger1 = source.IndexedInteger1;
+            target.IndexedText1 = source.IndexedText1;
+            target.IndexedText2 = source.IndexedText2;
             target.IsActive = source.IsActive;
-            target.Source = source.Source;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.OwnerPersonAliasId = source.OwnerPersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

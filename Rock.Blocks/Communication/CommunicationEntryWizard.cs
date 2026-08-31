@@ -213,7 +213,8 @@ namespace Rock.Blocks.Communication
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "26917C58-C8A2-4BF5-98CB-378A02761CD7" )]
-    [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0" )]
     public class CommunicationEntryWizard : RockBlockType
     {
         #region Attribute Keys

@@ -29,15 +29,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ForgeContent Service class
+    /// FlexibleDocumentModel Service class
     /// </summary>
-    public partial class ForgeContentService : Service<ForgeContent>
+    public partial class FlexibleDocumentModelService : Service<FlexibleDocumentModel>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ForgeContentService"/> class
+        /// Initializes a new instance of the <see cref="FlexibleDocumentModelService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ForgeContentService(RockContext context) : base(context)
+        public FlexibleDocumentModelService(RockContext context) : base(context)
         {
         }
 
@@ -49,9 +49,15 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ForgeContent item, out string errorMessage )
+        public bool CanDelete( FlexibleDocumentModel item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<FlexibleDocument>( Context ).Queryable().Any( a => a.FlexibleDocumentModelId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FlexibleDocumentModel.FriendlyTypeName, FlexibleDocument.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -59,36 +65,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ForgeContentExtensionMethods
+    public static partial class FlexibleDocumentModelExtensionMethods
     {
         /// <summary>
-        /// Clones this ForgeContent object to a new ForgeContent object
+        /// Clones this FlexibleDocumentModel object to a new FlexibleDocumentModel object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ForgeContent Clone( this ForgeContent source, bool deepCopy )
+        public static FlexibleDocumentModel Clone( this FlexibleDocumentModel source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ForgeContent;
+                return source.Clone() as FlexibleDocumentModel;
             }
             else
             {
-                var target = new ForgeContent();
+                var target = new FlexibleDocumentModel();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this ForgeContent object to a new ForgeContent object with default values for the properties in the Entity and Model base classes.
+        /// Clones this FlexibleDocumentModel object to a new FlexibleDocumentModel object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static ForgeContent CloneWithoutIdentity( this ForgeContent source )
+        public static FlexibleDocumentModel CloneWithoutIdentity( this FlexibleDocumentModel source )
         {
-            var target = new ForgeContent();
+            var target = new FlexibleDocumentModel();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -105,19 +111,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another ForgeContent object to this ForgeContent object
+        /// Copies the properties from another FlexibleDocumentModel object to this FlexibleDocumentModel object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ForgeContent target, ForgeContent source )
+        public static void CopyPropertiesFrom( this FlexibleDocumentModel target, FlexibleDocumentModel source )
         {
             target.Id = source.Id;
-            target.BlockId = source.BlockId;
-            target.CompiledContent = source.CompiledContent;
-            target.CompiledDateTime = source.CompiledDateTime;
-            target.CompiledVueVersion = source.CompiledVueVersion;
+            target.Description = source.Description;
+            target.Documentation = source.Documentation;
             target.IsActive = source.IsActive;
-            target.Source = source.Source;
+            target.IsSystem = source.IsSystem;
+            target.Key = source.Key;
+            target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

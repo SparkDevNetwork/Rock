@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -65,6 +66,15 @@ internal sealed partial class CmsSkill
             .Select( b => CreateSummaryBlockResult( b, rockContext ) )
             .ToList();
 
+        // The zones come from the layout markup so the caller can name a real
+        // zone when adding a block instead of guessing one.
+        var zones = GetLayoutZones( layout );
+
+        foreach ( var zone in zones )
+        {
+            zone.BlockCount = blocks.Count( b => zone.Name.Equals( b.Zone, StringComparison.OrdinalIgnoreCase ) );
+        }
+
         return Success( new PageResult
         {
             Id = pageCache.Id,
@@ -84,7 +94,8 @@ internal sealed partial class CmsSkill
                     Id = layout.Id,
                     Guid = layout.Guid,
                     Name = layout.Name,
-                    SiteName = layout.Site?.Name
+                    SiteName = layout.Site?.Name,
+                    Zones = zones
                 }
                 : null,
             Routes = pageCache.PageRoutes.Select( r => r.Route ).ToList(),

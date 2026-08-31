@@ -14,36 +14,29 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-
-using Rock.AI.Agent.Classes.Entity;
-
 namespace Rock.AI.Agent.Classes.Skills.CmsSkill;
 
 /// <summary>
-/// Result model for a page layout, returned by the ListLayouts tool and
-/// nested inside <see cref="PageResult"/> and <see cref="BlockResult"/>.
+/// Result model for a single zone of a page layout, nested inside
+/// <see cref="LayoutResult"/>.
 /// </summary>
-internal class LayoutResult : EntityResultBase
+internal class ZoneResult
 {
     /// <summary>
-    /// The name of the layout.
+    /// The name of the zone with spaces removed, which is the form a block
+    /// stores its zone in and the value AddOrUpdateBlock expects.
     /// </summary>
     public string Name { get; set; }
 
     /// <summary>
-    /// The name of the site the layout belongs to.
+    /// The zone name as the theme declares it, present only when it differs
+    /// from <see cref="Name"/> by spacing, such as "Badge Bar" for "BadgeBar".
     /// </summary>
-    public string SiteName { get; set; }
+    public string DisplayName { get; set; }
 
     /// <summary>
-    /// What the layout looks like or is for. ListLayouts only.
+    /// How many blocks already render in this zone on the page being looked
+    /// at, counting the page, layout and site scopes together.
     /// </summary>
-    public string Description { get; set; }
-
-    /// <summary>
-    /// The zones this layout renders, each with the number of blocks already
-    /// in it. Populated by GetPage only; null elsewhere.
-    /// </summary>
-    public List<ZoneResult> Zones { get; set; }
+    public int BlockCount { get; set; }
 }

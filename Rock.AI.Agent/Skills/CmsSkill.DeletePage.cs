@@ -20,7 +20,6 @@ using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Skills.CmsSkill;
-using Rock.Bus.Message;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
@@ -188,7 +187,9 @@ internal sealed partial class CmsSkill
         {
             // The routing table only forgets the route when told; without
             // this the dead route lingers until the next application restart.
-            PageRouteWasUpdatedMessage.Publish();
+            // Publishing the bus message alone would not rebuild this node's
+            // table, because the consumer ignores messages from its own node.
+            PageRouteService.RefreshRouteTable();
         }
 
         if ( deleteInteractions )

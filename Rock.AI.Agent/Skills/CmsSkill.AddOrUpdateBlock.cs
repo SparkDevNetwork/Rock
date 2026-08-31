@@ -36,9 +36,9 @@ internal sealed partial class CmsSkill
 {
     #region Tool(s)
 
-    [Description( "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the Forge Content Builder skill's AddOrUpdateForgeContent tool needs." )]
+    [Description( "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which other skills need to configure the block's content." )]
     [AgentToolPreamble( "Saving the block." )]
-    [AgentUsage( "When adding, resolve the block type with ListBlockTypes and provide exactly one of pageIdKey, layoutIdKey, or siteIdKey. For AI-authored content use the 'Forge Content' block type. Returns the block IdKey to pass as blockId to the Forge Content Builder skill's AddOrUpdateForgeContent tool." )]
+    [AgentUsage( "When adding, resolve the block type with ListBlockTypes and provide exactly one of pageIdKey, layoutIdKey, or siteIdKey. Returns the block IdKey, which is what a skill that configures this kind of block needs." )]
     [AgentUsage( "Blocks placed on a layout or site render on every page that uses the layout or site; place on a page unless the user asks otherwise." )]
     [AgentToolGuid( "05C9C108-4516-46B7-85FB-5C8FE6212CCF" )]
     public AgentToolResult AddOrUpdateBlock(
@@ -57,13 +57,13 @@ internal sealed partial class CmsSkill
         [Description( "The IdKey or guid of the site to add the block to. The block renders on every page of the site." )]
         string siteIdKey = null,
 
-        [Description( "The IdKey or guid of the block type to add. Required when adding; use ListBlockTypes to find it. For AI-authored content use the 'Forge Content' block type." )]
+        [Description( "The IdKey or guid of the block type to add. Required when adding; use ListBlockTypes to find it." )]
         string blockTypeIdKey = null,
 
         [Description( "An administrative name for the block. Defaults to the block type name when adding." )]
         SetOrClear<string> name = null,
 
-        [Description( "The zone to place the block in. Defaults to 'Main' when adding." )]
+        [Description( "The zone to place the block in, which is a named region within the layout and not a layout name. Call GetPage to see the zones a page's layout has. Defaults to 'Main' when adding." )]
         SetOrClear<string> zone = null,
 
         [Description( "The block settings to set, as attribute key and value pairs." )]
@@ -182,6 +182,21 @@ internal sealed partial class CmsSkill
                 return helper.ErrorResult;
             }
 
+            // A zone the layout does not declare would save the block somewhere
+            // that never renders, so it is resolved against the real zones here.
+            var requestedZone = zone?.Value.IsNotNullOrWhiteSpace() == true ? zone.Value : "Main";
+            var placementZones = GetPlacementZones(
+                placementEntity is Model.Page ? placementEntity.Id : ( int? ) null,
+                placementEntity is Model.Layout ? placementEntity.Id : ( int? ) null,
+                placementEntity is Model.Site ? placementEntity.Id : ( int? ) null,
+                rockContext );
+            var resolvedZone = ResolveZoneName( requestedZone, placementZones, helper );
+
+            if ( helper.HasErrors )
+            {
+                return helper.ErrorResult;
+            }
+
             var blockService = new BlockService( rockContext );
 
             block = new Model.Block
@@ -190,7 +205,7 @@ internal sealed partial class CmsSkill
                 LayoutId = placementEntity is Model.Layout ? placementEntity.Id : ( int? ) null,
                 SiteId = placementEntity is Model.Site ? placementEntity.Id : ( int? ) null,
                 BlockTypeId = blockTypeCache.Id,
-                Zone = zone?.Value.IsNotNullOrWhiteSpace() == true ? zone.Value : "Main",
+                Zone = resolvedZone,
                 Name = name?.Value.IsNotNullOrWhiteSpace() == true ? name.Value : blockTypeCache.Name
             };
 
@@ -213,7 +228,16 @@ internal sealed partial class CmsSkill
             blockTypeCache = BlockTypeCache.Get( block.BlockTypeId, rockContext );
 
             helper.UpdateProperty( block, b => b.Name, name );
-            helper.UpdateProperty( block, b => b.Zone, zone );
+
+            if ( zone?.Value.IsNotNullOrWhiteSpace() == true )
+            {
+                block.Zone = ResolveZoneName( zone.Value, GetPlacementZones( block.PageId, block.LayoutId, block.SiteId, rockContext ), helper );
+
+                if ( helper.HasErrors )
+                {
+                    return helper.ErrorResult;
+                }
+            }
         }
 
         helper.SetAttributeValues( block, attributeValues );

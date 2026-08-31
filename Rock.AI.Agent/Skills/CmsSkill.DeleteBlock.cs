@@ -30,9 +30,9 @@ internal sealed partial class CmsSkill
 {
     #region Tool(s)
 
-    [Description( "Deletes a block from its page, layout, or site, along with any Forge Content stored against it." )]
+    [Description( "Deletes a block from its page, layout, or site, along with any content stored against it." )]
     [AgentToolPreamble( "Deleting the block." )]
-    [AgentUsage( "Deleting a block is permanent and takes its settings and any authored Forge Content source with it. Confirm the exact block with the user before deleting, and never delete a block the user did not name explicitly." )]
+    [AgentUsage( "Deleting a block is permanent and takes its settings and any authored content with it. Confirm the exact block with the user before deleting, and never delete a block the user did not name explicitly." )]
     [AgentToolGuid( "B30F66EA-0D9E-4854-BB82-A96BE7719D00" )]
     public AgentToolResult DeleteBlock(
         [Description( "The IdKey or guid of the block to delete." )]

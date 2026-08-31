@@ -465,9 +465,11 @@ namespace Rock.Migrations
                 rock_SystemGuid_Attribute_COMMUNICATION_HISTORY_PERSONALIZED_COMMUNICATION_TEMPLATE_DETAIL_PAGE,
                 rock_SystemGuid_Page_COMMUNICATION_TEMPLATE_DETAIL );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddBlockAttributeValue( rock_SystemGuid_Block_PERSON_COMMUNICATION_HISTORY_PERSONALIZED,
                 rock_SystemGuid_Attribute_COMMUNICATION_HISTORY_PERSONALIZED_COMMUNICATION_DETAIL_PAGE,
                 Rock.SystemGuid.Page.NEW_COMMUNICATION );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Remove Block Communication History from Page: Person/History, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "27F84ADB-AA13-439E-A130-FBF73698B172" );

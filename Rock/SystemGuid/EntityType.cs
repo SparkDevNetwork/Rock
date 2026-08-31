@@ -259,6 +259,16 @@ namespace Rock.SystemGuid
         public const string CONTENT_TOPIC_DOMAIN = "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.FlexibleDocument"/>
+        /// </summary>
+        public const string FLEXIBLE_DOCUMENT = "962D0C52-FA32-4863-977F-D6A4B2DF0C09";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.FlexibleDocumentModel"/>
+        /// </summary>
+        public const string FLEXIBLE_DOCUMENT_MODEL = "28A1D38E-333C-46C5-A896-7500DFFEAB74";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.ForgeContent"/>
         /// </summary>
         public const string FORGE_CONTENT = "38F182A7-9FE4-4D7B-B483-59F615BDE41C";

@@ -4,8 +4,9 @@ date_created: 2026-08-05
 summary: >-
   Convert the Mobile Check-in Launcher block to Obsidian with feature parity,
   wire its attendance and QR code output into the next-gen check-in and label
-  pipeline (the legacy fallback is removed in v21), and add a setting to
-  complete check-in on the phone with no QR code displayed.
+  pipeline (the legacy fallback is removed in v21), add a setting to complete
+  check-in on the phone with no QR code displayed, and print server-routed
+  labels the moment check-in completes.
 contributors: []
 ---
 
@@ -13,7 +14,7 @@ contributors: []
 
 ## Summary
 
-Rebuild the WebForms Mobile Check-in Launcher block (RockWeb/Blocks/CheckIn/MobileLauncher.ascx) as an Obsidian block. The launcher lets an individual check in from their own phone: it identifies them, resolves a kiosk device by geo-fence or campus selection, records attendance, and displays a QR code that a physical kiosk scans to print labels. The conversion must record attendance through the next-gen check-in engine so the QR code works at next-gen kiosks without the legacy label fallback, and must add an option to skip the QR code entirely for events that do not need labels.
+Rebuild the WebForms Mobile Check-in Launcher block (RockWeb/Blocks/CheckIn/MobileLauncher.ascx) as an Obsidian block. The launcher lets an individual check in from their own phone: it identifies them, resolves a kiosk device by geo-fence or campus selection, records attendance, and displays a QR code that a physical kiosk scans to print labels; a device configured to print from the server also prints them the moment check-in completes. The conversion must record attendance through the next-gen check-in engine so the QR code works at next-gen kiosks without the legacy label fallback, must print server-routed labels at completion the same way, and must add an option to skip the QR code entirely for events that do not need labels.
 
 ## Motivation
 
@@ -34,6 +35,7 @@ The legacy block also depends on the site theme system (it swaps the page into a
   - **Check-in.** Let the individual select family members (their family is pre-selected) and complete check-in at the resolved kiosk, presenting the same template-driven selection steps the next-gen kiosk presents (auto-select vs manual selection, ability levels, schedules, etc. per the configured template and areas). Checkout is not offered (parity with `AllowCheckout = false`).
   - **Status handling.** When the resolved kiosk is inactive, temporarily closed, or closed, show the configured "no services" message with a try-again action instead of the check-in button.
   - **Success.** After check-in, show the welcome-back state with the label QR code (see Part 2.1) and a "Check-in Additional Individuals" action.
+  - **Immediate printing.** Labels a `PrintFrom = Server` device routes to the server MUST print the moment check-in completes, before any QR code is scanned, with the printer chosen by the device's `PrintTo` override falling back to the area's `AttendancePrintTo`. Client-routed labels are discarded, which is also parity: the legacy block emitted them into a Zebra print plugin that exists only in the kiosk shells, so a phone browser never printed them. A server-routed configuration therefore prints at completion and again when its code is scanned, exactly as legacy did; pairing it with the QR opt-out is the configuration that prints exactly once with nothing to scan. Added 2026-08-27: the conversion originally dropped this on the belief that the QR code was the only label path, and label testing surfaced the legacy behavior.
 - MUST carry over the block settings: Devices, Check-in Configuration (template), Check-in Areas, Disable Location Services, Check-in Theme, Log In Page, Phone Identification Page, and the Lava text templates (header, identify-you prompt, allow-location prompt, location progress, welcome back, no services, can't determine location, no devices found, no people, no campuses found).
 - MUST render well on a phone with self-contained styling, rather than being written against one theme's markup. The Check-in Theme setting carries over, restricted to themes whose purpose is check-in; what is dropped is the legacy handoff it existed to serve, since the check-in screens are now inside this block rather than on theme pages downstream of it. See [Theme selection](#theme-selection).
 - SHOULD keep the Lava templates' merge fields working (`CurrentPerson`, `Kiosk`, `NextActiveTime`).
@@ -81,6 +83,7 @@ Three consequences shape the implementation:
 - **Only check-in themes are offered.** The `Theme` entity carries a purpose, so the list is filtered to the check-in defined value rather than scanning folders the way legacy's `BindThemes` did, which offered every theme including ones with no `Checkin` layout. Selecting one of those would leave the page resolving against a layout file that does not exist, and there is no `Rock` theme in this repo for [RockRouteHandler](Rock/Web/RockRouteHandler.cs:369) to fall back to.
 
 Two things were weighed against carrying it and lost. The setting is block-scoped while the cookie is site-scoped, so two launcher pages on one site with different themes would contend over one value; and the kiosk has no such setting, so this is a deliberate divergence. Both are acceptable here: the site hosts only check-in pages, the cookie lives on the individual's own phone, and the legacy block carried the same exposure on a site far likelier to hold other pages. The cost when the setting is used is one extra page load per device, and none when it is blank.
+- **Immediate printing:** the completion actions print through the same pipeline the native mobile block uses. `ConfirmAttendance` always, and `SaveAttendance` when the request is not pending, call [RenderAndPrintCheckInLabelsAsync](Rock/CheckIn/v2/DefaultLabelProvider.cs:81) with the resolved kiosk and a five second timeout, so a dead printer delays completion rather than blocking it. The engine stamps `PrintFrom` from the device and resolves the printer through the same `PrintTo` cascade legacy used ([DefaultLabelProvider.cs:684](Rock/CheckIn/v2/DefaultLabelProvider.cs:684)), so a partner's existing device configuration produces the same routing with no new block setting. The family flow prints at confirm, which hands the engine the whole session in one pass, so family and person labels come out once each. Client-routed labels, which the method returns for a kiosk to print, are discarded, and print failures land on the result's messages, which the response bags already carry to the imported screens.
 - **QR code:** generated from the saved session guids as `PCL+{shortGuid,shortGuid}` (same encoding as [CheckInBlock.cs:929](Rock/CheckIn/CheckInBlock.cs:929)), rendered via `GetQRCode.ashx`. Session guids persist in a cookie (parity with `CheckInCookieKey.AttendanceSessionGuids`) so the QR survives a page refresh while sessions remain recent. The code renders beneath the imported success screen and again on the welcome back state whenever the cookie still holds a printable session, which is both where a refresh lands and where the legacy block showed it; the check-in action reads "Check In Additional Individuals" once a check-in has been completed, which is legacy parity and holds in both variants, since it describes what the individual has already done rather than whether a code is showing. Sessions are recorded whether or not codes are shown, and the QR opt-out is honored in the one place the code is built, so turning codes on partway through an event prints for everyone who checked in before the change rather than only for those who arrive after it. That also keeps the two variants identical everywhere except the code itself, including across a refresh. The cookie is client-asserted, so a session is encoded only when its attendance still exists and every record in it was checked in by this individual: a guid somebody else's check-in owns produces no code rather than that family's labels. A session whose attendance is gone drops out for the same reason the legacy block filtered them, since only an individual's latest attendance carries a session and a dead guid would make the code denser for nothing.
 
 ### Settled decisions
@@ -104,6 +107,7 @@ sequenceDiagram
     P->>S: Lat-long or campus selection
     S-->>P: Matched kiosk + opportunities
     P->>S: Save check-in (selected people)
+    S->>S: Print server-routed labels (device config)
     S-->>P: Session guids
     P->>P: Show PCL+ QR code (unless disabled)
     P->>K: Scan QR at kiosk
@@ -123,13 +127,14 @@ Each row is a discrete implementation slice. **Implemented** means the code is w
 | 5 | Kiosk resolution: geolocation-based | [T3](#t3-kiosk-resolution) | ✅ | ✅ |
 | 6 | Kiosk resolution: campus picker | [T3](#t3-kiosk-resolution) | ✅ | ✅ |
 | 7 | Kiosk status block action with "no services" messaging; establishes the shared template/areas resolution slice 8 builds on | [T4](#t4-kiosk-status-states) | ✅ | ✅ |
-| 8a | Family load: block actions speaking the REST contract, the adapter, and a session constructed from the block's `KioskConfigurationBag` that lists the family | [T5a](#t5a-family-load) | ✅ | 🔄️ |
+| 8a | Family load: block actions speaking the REST contract, the adapter, and a session constructed from the block's `KioskConfigurationBag` that lists the family | [T5a](#t5a-family-load) | ✅ | ✅ |
 | 8b | Selection screens (person, ability level, area, group, location, schedule), imported from the kiosk | [T5b](#t5b-selection-steps) | ✅ | ✅ |
 | 8c | Saving attendance, the success confirmation, and the unhandled-screen fallback | [T5c](#t5c-saving-attendance) | ✅ | ✅ |
 | 9 | Success: QR variant | [T6](#t6-qr-at-kiosk-end-to-end) | ✅ | ✅ |
 | 10 | Success: non-QR variant | [T7](#t7-non-qr-variant) | ✅ | ✅ |
 | 11 | Mobile-first styling across all states, using block-namespaced classes rather than legacy check-in theme classes | [T9](#t9-mobile-devicebrowser-pass) | ✅ | ✅ |
-| 12 | Chop the WebForms block | [T10](#t10-legacy-regression) | | |
+| 12 | Sneak the block into Rock v20 | [T10](#t10-legacy-regression) | ✅ | ✅ |
+| 13 | Immediate printing of server-routed labels at check-in completion | [T12](#t12-immediate-printing) | ✅ | ✅ |
 
 [T11](#t11-final-behavior-and-data-validation) is deliberately not linked from any slice. It is a cross-cutting pass over behavior and recorded data, run after slice 12 against a fully configured environment, so no slice waits on it.
 
@@ -201,7 +206,7 @@ Each row is a discrete implementation slice. **Implemented** means the code is w
 
 - [x] Family members listed with correct eligibility filtering.
 - [x] "No people" message when nobody is eligible.
-- [ ] That message leaves the welcome back state up rather than replacing it: the welcome back text stays, the check-in action stays in the footer reading what it read before, and taking it again re-runs the family load. Recover end to end without reloading, by making somebody eligible (open a schedule, or add an eligible child) and taking the action again, which must reach person select with the message gone. Reaching a screen with no footer action at all is the failure this row exists to catch.
+- [x] That message leaves the welcome back state up rather than replacing it: the welcome back text stays, the check-in action stays in the footer reading what it read before, and taking it again re-runs the family load. Recover end to end without reloading, by making somebody eligible (open a schedule, or add an eligible child) and taking the action again, which must reach person select with the message gone. Reaching a screen with no footer action at all is the failure this row exists to catch.
 - [x] A person tied to the family by a "can check in" known relationship, such as a grandchild, is listed.
 - [x] A request naming a different configuration template or different areas is ignored, and the list still reflects the block's configured template and areas.
 - [x] A request naming a kiosk outside the Devices setting is rejected.
@@ -231,7 +236,7 @@ Each row is a discrete implementation slice. **Implemented** means the code is w
 
 - [x] Attendance saves with an `AttendanceCheckInSession` and no `AttendanceData` rows; records verified in Check-in Manager.
 - [x] A "can check in" relationship, such as a grandchild, can be checked in and not only listed.
-- [x] No labels print at the phone, and neither saving nor confirming stalls waiting on a printer.
+- [x] No labels print at the phone when the resolved device prints from the client, and neither saving nor confirming stalls waiting on a printer. Server-routed devices print at completion by design; that variant is [T12](#t12-immediate-printing).
 - [x] A family check-in of two or more writes each attendee as `Pending` as they finish, and once the last one is done no record is left `Pending`: they read `NotPresent` where the template enables presence and `Present` where it does not.
 - [x] The success screen aggregates by person, so someone checked into two schedules is one card with two lines.
 - [x] A family check-in of two or more attendees saves them all under one session guid, with no later attendee rejected.
@@ -281,7 +286,7 @@ Each row is a discrete implementation slice. **Implemented** means the code is w
 The first row is runnable now, while the WebForms block is still in place, and is worth running before slice 12 removes the means to.
 
 - [x] Existing legacy launcher QR still prints at a next-gen kiosk (pre-v21 fallback intact). This is also the control for the classic label rows in [T6](#t6-qr-at-kiosk-end-to-end): the legacy pipeline writes `AttendanceData`, which is the only thing [CheckInKiosk.cs:739](Rock.Blocks/CheckIn/CheckInKiosk.cs:739) branches on, so the same configuration that prints from the legacy launcher prints nothing from this one.
-- [ ] Legacy block removal (chop) leaves no dangling routes/pages. Waits on slice 12.
+- [x] Sneak block into Rock v20.
 
 ### T11. Final behavior and data validation
 
@@ -301,6 +306,19 @@ To tamper with a request: reach the screen before the one under test, then in th
 - [x] Saved attendance records show a Family Id search type and an empty search value regardless of what was sent. Send a save with `session.searchMode` and `session.searchTerm` set to anything; the row's `SearchTypeValueId` reads Family Id and `SearchValue` is empty ([MobileCheckInLauncher.cs:1316](Rock.Blocks/CheckIn/MobileCheckInLauncher.cs:1316)).
 - [x] A request naming a different configuration template or different areas is ignored in favor of block settings, on every action that takes them. The template and areas are never read off the bag; they come from `GetConfiguredCheckInConfiguration()`.
 - [x] A request naming a kiosk outside the Devices setting is refused with 400 "Kiosk was not found." rather than ignored, on family load, opportunities, save, and confirm alike ([:654](Rock.Blocks/CheckIn/MobileCheckInLauncher.cs:654), [:738](Rock.Blocks/CheckIn/MobileCheckInLauncher.cs:738)). This differs from the template and areas deliberately: a kiosk the individual is not entitled to is an attempt rather than noise.
+
+### T12. Immediate printing
+
+Requires a kiosk device whose Print From is Server and a reachable Zebra printer; the device's Print To override selects the printer per row below.
+
+- [x] A family check-in of two or more prints at the moment the last attendee confirms, before any QR code is scanned, with family and person labels printed once each rather than once per attendee or schedule.
+- [x] An individual-mode template prints when its save completes, since no confirm step follows.
+- [x] Print To routing holds: Kiosk prints at the device's printer, Location at the room's printer, and Default follows the area's `AttendancePrintTo`.
+- [x] A device whose Print From is Client prints nothing at the phone, leaving the QR scan as the only print path.
+- [x] Scanning the QR after an immediate print prints the labels again. This is the legacy pairing; the QR opt-out is the configuration that prints exactly once.
+- [x] With the QR opt-out on and a server-routed device, check-in completes with no code shown and the labels already printed, which is the full no-touch flow.
+- [x] An unreachable printer delays completion by at most the five second timeout, check-in still succeeds, and the failure appears as a message on the success screen rather than blocking it.
+- [x] Cancelling a family check-in partway prints nothing, since pending saves do not print and the confirm never runs.
 
 ## Reusing the kiosk's check-in screens
 
@@ -336,7 +354,7 @@ From `../CheckInKiosk/`: `personSelectScreen`, `autoModeOpportunitySelectScreen`
 
 Three defects, found by tracing the imported flow rather than by running it. Only the second was caused by the swap; the other two were latent in slice 8c and would have read as the swap breaking routing.
 
-1. **Family mode never reached Success.** [withNextScreenFromLocationSelect](Rock.JavaScript.Obsidian.Blocks/src/CheckIn/CheckInKiosk/checkInSession.partial.ts:1612) sends family mode to `withNextFamilyAttendee`, which saves each attendee as pending and then calls `withConfirmAttendance()` after the last one. `ConfirmAttendance` was unmapped, so it threw in the adapter before reaching the server, after attendance had already been written. `withNextScreenBySkippingAttendee` ends in the same call. Fixed by adding a `ConfirmAttendance` block action modelled on [CheckIn.cs:539](Rock.Blocks/Mobile/CheckIn/CheckIn.cs:539) minus its label rendering, since labels print at the kiosk from the QR code.
+1. **Family mode never reached Success.** [withNextScreenFromLocationSelect](Rock.JavaScript.Obsidian.Blocks/src/CheckIn/CheckInKiosk/checkInSession.partial.ts:1612) sends family mode to `withNextFamilyAttendee`, which saves each attendee as pending and then calls `withConfirmAttendance()` after the last one. `ConfirmAttendance` was unmapped, so it threw in the adapter before reaching the server, after attendance had already been written. `withNextScreenBySkippingAttendee` ends in the same call. Fixed by adding a `ConfirmAttendance` block action modelled on [CheckIn.cs:539](Rock.Blocks/Mobile/CheckIn/CheckIn.cs:539) minus its label rendering, since labels print at the kiosk from the QR code. That premise was half right, and the rendering has since been restored for server-routed labels; see the Immediate printing requirement under Part 1.
 2. **Person select's Change button had nowhere to go.** It is gated on `isAutoSelect` and `isMultipleSelectionsAvailable`, both of which `GetFamilyMembers` populates because it returns the engine's attendee bags verbatim. Tapping it set `currentAttendeeId` and routed to `AutoModeOpportunitySelect`, which the launcher did not present, so the individual got the start-over fallback. Fixed by importing the screen; `withNextScreenFromAutoModeOpportunitySelect` returns to person select, closing the loop.
 3. **A family of two or more was rejected at the second attendee.** `sessionGuid` is generated once and carried through every derived session, so each attendee's save reuses it. The old guard rejected any guid already present in `AttendanceCheckInSession`, which is exactly what the second save presents. Fixed by the ownership test described above.
 
@@ -358,7 +376,7 @@ Testing found three the audit missed:
 
 8. **The availability re-check before saving created a dead end nothing else has.** The block re-read `IsCheckInActive` before every save and refused with the no-services message when check-in had closed. That stranded the individual on a selection screen with no path forward, since every room they tapped produced the same message, and it left the attendees already staged as pending rows that only Cancel would clear. Neither the next-gen kiosk nor the native mobile app does this: the REST controller checks the configuration and the kiosk and nothing else ([CheckInController.cs](Rock.Rest/v2/CheckInController.cs), where `GetKioskStatus` appears only in the status endpoint), and [CheckIn.cs:465](Rock.Blocks/Mobile/CheckIn/CheckIn.cs:465) has no such guard either. So this block was the only one of the three that manufactured the failure, and the only one that then had to decide what to do with a half-finished family. The guard was also leaky: `ConfirmAttendance` is ungated in all three, so a staged batch could be completed after close regardless, meaning the guard prevented adding attendees rather than preventing post-close attendance. Removed, which deletes the scenario rather than handling it. Closing mid-flow now empties the next attendee's opportunities, since [OpportunityCollection.cs:156](Rock/CheckIn/v2/OpportunityCollection.cs:156) filters on `WasCheckInActive` per request, so they reach the unavailable message with Skip and the flow completes with whatever was legitimately staged. That is the kiosk's behavior, which is what this block is meant to feel like. The legacy block offered nothing to model: it re-checked status at the moment of the tap ([MobileLauncher.ascx.cs:1060](RockWeb/Blocks/CheckIn/MobileLauncher.ascx.cs:1060)) and then redirected into the legacy theme pages, and legacy check-in wrote a family's attendance in one shot with no staged state, so a half-finished family could not exist there.
 
-A pre-chop audit found one more:
+A pre-sneak audit found one more:
 
 9. **The no-people message was a dead end.** Nobody in the family being eligible replaced the screen with the launcher's message state and withheld retry, which renders no footer actions at all, so reloading the page was the only way forward. Retry was withheld for a reason: the message state's Try Again restarts the kiosk match, and the kiosk is right and check-in is open, so it would recover nothing. Legacy raised the same text as a dismissable modal over the welcome back screen ([MobileLauncher.ascx.cs:1149](RockWeb/Blocks/CheckIn/MobileLauncher.ascx.cs:1149)), with the check-in button still behind it. The message now renders beneath the welcome back text rather than in place of it, so the action stays available and can be taken again once someone becomes eligible. It is cleared whenever availability is re-evaluated, so it cannot outlive the check that produced it.
 

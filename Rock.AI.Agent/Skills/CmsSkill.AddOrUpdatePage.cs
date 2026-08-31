@@ -23,7 +23,6 @@ using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.CmsSkill;
-using Rock.Bus.Message;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
@@ -254,11 +253,14 @@ internal sealed partial class CmsSkill
 
                 The routing table is only rebuilt when told about the new
                 route; without this the friendly URL 404s until the next
-                application restart.
+                application restart. RefreshRouteTable rebuilds this node's
+                table and tells the rest of the farm to do the same; publishing
+                the bus message alone does not, because the consumer ignores
+                messages sent from its own node.
 
                 Reason: The route must be registered with the running routing table.
             */
-            PageRouteWasUpdatedMessage.Publish();
+            PageRouteService.RefreshRouteTable();
         }
 
         if ( isAdd )
