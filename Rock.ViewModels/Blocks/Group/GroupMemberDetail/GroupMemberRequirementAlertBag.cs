@@ -39,7 +39,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public string Summary { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the member meets the requirement. Drives
+        /// Gets or sets whether the member meets the requirement, with a
+        /// stored manual completion or override presenting as met. Drives
         /// the alert style (met, not met, warning).
         /// </summary>
         public MeetsGroupRequirement MeetsGroupRequirement { get; set; }
@@ -51,19 +52,26 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public string StatusText { get; set; }
 
         /// <summary>
+        /// Gets or sets the status line shown when the requirement's
+        /// checkbox is checked client-side, from the requirement type's
+        /// positive label.
+        /// </summary>
+        public string MetStatusText { get; set; }
+
+        /// <summary>
         /// Gets or sets the requirement type's icon CSS class.
         /// </summary>
         public string TypeIconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the current person may
-        /// manually override this requirement.
+        /// override this requirement, which renders the override checkbox.
         /// </summary>
         public bool CanOverride { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this is a manual check
-        /// type requirement, which renders the mark-as-met checkbox link.
+        /// type requirement, which renders the mark-as-met checkbox.
         /// </summary>
         public bool IsManualRequirement { get; set; }
 

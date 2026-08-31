@@ -80,36 +80,34 @@
                                         <span v-if="requirementAlert.typeIconCssClass" class="flex-shrink-0 mr-2">
                                             <i :class="requirementAlert.typeIconCssClass"></i>
                                         </span>
-                                        <div class="flex-fill">
-                                            <strong>{{ requirementAlert.title }}</strong>
-                                            <span v-if="requirementAlert.dueDateText" class="small ml-2">{{ requirementAlert.dueDateText }}</span>
-                                            <i v-if="requirementAlert.overriddenText"
-                                               class="ti ti-user-check ml-1"
-                                               :title="requirementAlert.overriddenText"></i>
-                                            <div>{{ requirementAlert.statusText }}</div>
+                                        <div class="flex-fill d-flex flex-column">
+                                            <div>
+                                                <strong>{{ requirementAlert.title }}</strong>
+                                                <span v-if="requirementAlert.dueDateText && !isRequirementResolved(requirementAlert)" class="small ml-2">{{ requirementAlert.dueDateText }}</span>
+                                                <i v-if="requirementAlert.overriddenText"
+                                                   class="ti ti-user-check ml-1"
+                                                   :title="requirementAlert.overriddenText"></i>
+                                            </div>
+                                            <div>{{ getRequirementStatusText(requirementAlert) }}</div>
                                             <div v-if="requirementAlert.summary" class="mt-3">{{ requirementAlert.summary }}</div>
-                                            <ul v-if="isRequirementInteractionShown(requirementAlert)" class="list-unstyled list-requirements mt-2 mb-0">
-                                                <li v-if="isManualLinkShown(requirementAlert)">
-                                                    <a href="#" @click.prevent="onMarkManualRequirement(requirementAlert)">
-                                                        <i class="ti ti-square"></i> {{ requirementAlert.manualCheckboxLabel }}
-                                                    </a>
-                                                </li>
-                                                <li v-if="requirementAlert.doesNotMeetWorkflowLinkText">
-                                                    <a href="#" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, false)">
+                                            <div v-if="isRequirementInteractionShown(requirementAlert)" class="d-flex flex-wrap gap-3 mt-auto pt-3">
+                                                <InlineCheckBox v-if="isManualCheckboxShown(requirementAlert)"
+                                                                :label="requirementAlert.manualCheckboxLabel ?? ''"
+                                                                :modelValue="isManualChecked(requirementAlert)"
+                                                                @update:modelValue="onToggleManualRequirement(requirementAlert, $event)" />
+                                                <InlineCheckBox v-if="requirementAlert.canOverride"
+                                                                label="Mark as Met"
+                                                                :modelValue="isOverrideChecked(requirementAlert)"
+                                                                @update:modelValue="onToggleOverrideRequirement(requirementAlert, $event)" />
+                                                <template v-if="areWorkflowLinksShown(requirementAlert)">
+                                                    <a v-if="requirementAlert.doesNotMeetWorkflowLinkText" href="#" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, false)">
                                                         <i class="ti ti-player-play"></i> {{ requirementAlert.doesNotMeetWorkflowLinkText }}
                                                     </a>
-                                                </li>
-                                                <li v-if="requirementAlert.warningWorkflowLinkText">
-                                                    <a href="#" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, true)">
+                                                    <a v-if="requirementAlert.warningWorkflowLinkText" href="#" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, true)">
                                                         <i class="ti ti-player-play"></i> {{ requirementAlert.warningWorkflowLinkText }}
                                                     </a>
-                                                </li>
-                                                <li v-if="requirementAlert.canOverride">
-                                                    <a href="#" @click.prevent="onOverrideRequirement(requirementAlert)">
-                                                        <i class="ti ti-circle-check"></i> Mark as Met
-                                                    </a>
-                                                </li>
-                                            </ul>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -186,6 +184,7 @@
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
@@ -201,7 +200,7 @@
     import { GroupMemberStatus } from "@Obsidian/Enums/Group/groupMemberStatus";
     import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
     import { useConfigurationValues, useInvokeBlockAction, setPropertiesBoxValue } from "@Obsidian/Utility/block";
-    import { alert as showAlert, confirm as showConfirm } from "@Obsidian/Utility/dialogs";
+    import { alert as showAlert } from "@Obsidian/Utility/dialogs";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -264,6 +263,12 @@
     const roleId = ref(config.entity?.groupRoleId?.toString() ?? "");
     const memberStatus = ref(config.entity?.groupMemberStatus?.toString() ?? "");
     const note = ref(config.entity?.note ?? "");
+
+    // Requirement resolution checkboxes, held client-side and written with the member on save.
+    // A resolution already stored in the database presents as met with no checkbox, so these
+    // only ever hold unsaved toggles.
+    const checkedManualRequirementGuids = ref<string[]>([]);
+    const checkedOverrideRequirementGuids = ref<string[]>([]);
 
     // #endregion Values
 
@@ -375,21 +380,17 @@
     }
 
     /**
-     * Marks a manual requirement as met.
+     * Toggles the manual mark-as-met checkbox for a requirement.
      */
-    async function onMarkManualRequirement(requirementAlert: GroupMemberRequirementAlertBag): Promise<void> {
-        await markRequirementAsMet(requirementAlert, false);
+    function onToggleManualRequirement(requirementAlert: GroupMemberRequirementAlertBag, isChecked: boolean): void {
+        toggleRequirementGuid(checkedManualRequirementGuids.value, requirementAlert.groupRequirementGuid, isChecked);
     }
 
     /**
-     * Overrides a requirement as met after confirmation.
+     * Toggles the override checkbox for a requirement.
      */
-    async function onOverrideRequirement(requirementAlert: GroupMemberRequirementAlertBag): Promise<void> {
-        if (!await showConfirm("Are you sure you want to manually mark this requirement as met?")) {
-            return;
-        }
-
-        await markRequirementAsMet(requirementAlert, true);
+    function onToggleOverrideRequirement(requirementAlert: GroupMemberRequirementAlertBag, isChecked: boolean): void {
+        toggleRequirementGuid(checkedOverrideRequirementGuids.value, requirementAlert.groupRequirementGuid, isChecked);
     }
 
     /**
@@ -430,9 +431,14 @@
     // #region Functions
 
     /**
-     * Gets the alert style for a requirement alert based on its met state.
+     * Gets the alert style for a requirement alert. A checked resolution
+     * presents as met regardless of the calculated state.
      */
     function getRequirementAlertClass(alert: GroupMemberRequirementAlertBag): string {
+        if (isRequirementResolved(alert)) {
+            return "alert-success";
+        }
+
         switch (alert.meetsGroupRequirement) {
             case MeetsGroupRequirement.Meets:
                 return "alert-success";
@@ -442,6 +448,51 @@
 
             default:
                 return "alert-danger";
+        }
+    }
+
+    /**
+     * Gets the status line for a requirement alert, honoring the checked
+     * resolution state.
+     */
+    function getRequirementStatusText(alert: GroupMemberRequirementAlertBag): string {
+        return isRequirementResolved(alert)
+            ? alert.metStatusText ?? ""
+            : alert.statusText ?? "";
+    }
+
+    /**
+     * Gets whether either resolution checkbox is checked for the alert.
+     */
+    function isRequirementResolved(alert: GroupMemberRequirementAlertBag): boolean {
+        return isManualChecked(alert) || isOverrideChecked(alert);
+    }
+
+    /**
+     * Gets whether the manual mark-as-met checkbox is checked.
+     */
+    function isManualChecked(alert: GroupMemberRequirementAlertBag): boolean {
+        return checkedManualRequirementGuids.value.includes(alert.groupRequirementGuid);
+    }
+
+    /**
+     * Gets whether the override checkbox is checked.
+     */
+    function isOverrideChecked(alert: GroupMemberRequirementAlertBag): boolean {
+        return checkedOverrideRequirementGuids.value.includes(alert.groupRequirementGuid);
+    }
+
+    /**
+     * Adds or removes a requirement guid from a checked-guid list.
+     */
+    function toggleRequirementGuid(checkedGuids: string[], requirementGuid: string, isChecked: boolean): void {
+        const index = checkedGuids.indexOf(requirementGuid);
+
+        if (isChecked && index < 0) {
+            checkedGuids.push(requirementGuid);
+        }
+        else if (!isChecked && index >= 0) {
+            checkedGuids.splice(index, 1);
         }
     }
 
@@ -462,6 +513,8 @@
             setPropertiesBoxValue(box, "groupRoleId", toNumberOrNull(roleId.value));
             setPropertiesBoxValue(box, "groupMemberStatus", (toNumberOrNull(memberStatus.value) ?? GroupMemberStatus.Active) as GroupMemberStatus);
             setPropertiesBoxValue(box, "note", note.value);
+            setPropertiesBoxValue(box, "manuallyMetRequirementGuids", checkedManualRequirementGuids.value);
+            setPropertiesBoxValue(box, "overriddenRequirementGuids", checkedOverrideRequirementGuids.value);
 
             const result = await invokeBlockAction<SaveGroupMemberResponseBag>("Save", {
                 box,
@@ -491,56 +544,49 @@
     }
 
     /**
-     * Gets whether the requirement alert's interaction links are shown.
+     * Gets whether the requirement alert's interaction row is shown.
+     * Checkboxes only need edit rights, since they write nothing until save.
      */
     function isRequirementInteractionShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
-        if (!isEditable.value || options.value.isRequirementInteractionDisabled) {
+        if (!isEditable.value) {
             return false;
         }
 
-        return isManualLinkShown(requirementAlert)
-            || !!requirementAlert.doesNotMeetWorkflowLinkText
-            || !!requirementAlert.warningWorkflowLinkText
-            || requirementAlert.canOverride;
+        return isManualCheckboxShown(requirementAlert)
+            || requirementAlert.canOverride
+            || areWorkflowLinksShown(requirementAlert);
     }
 
     /**
-     * Gets whether the manual mark-as-met link is shown for the alert.
+     * Gets whether the manual mark-as-met checkbox is shown for the alert.
      */
-    function isManualLinkShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+    function isManualCheckboxShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
         return requirementAlert.isManualRequirement
             && requirementAlert.meetsGroupRequirement !== MeetsGroupRequirement.Meets;
     }
 
     /**
-     * Marks the requirement as met, manually or as an override, and applies
-     * the refreshed alerts.
+     * Gets whether the alert's workflow links are shown. Launching writes a
+     * workflow immediately, so a saved, unchanged member is required, and a
+     * checked resolution supersedes the unmet state the links describe.
      */
-    async function markRequirementAsMet(requirementAlert: GroupMemberRequirementAlertBag, isOverride: boolean): Promise<void> {
-        errorMessage.value = "";
-
-        const result = await invokeBlockAction<RefreshRequirementsResponseBag>("MarkRequirementAsMet", {
-            groupMemberIdKey: groupMemberIdKey.value,
-            groupRequirementGuid: requirementAlert.groupRequirementGuid,
-            isOverride
-        });
-
-        if (!result.isSuccess || !result.data) {
-            errorMessage.value = result.errorMessage ?? "Unable to mark the requirement as met.";
-            return;
-        }
-
-        applyRequirementState(result.data);
+    function areWorkflowLinksShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+        return isExistingMember.value
+            && !options.value.isRequirementInteractionDisabled
+            && !isRequirementResolved(requirementAlert)
+            && (!!requirementAlert.doesNotMeetWorkflowLinkText || !!requirementAlert.warningWorkflowLinkText);
     }
 
     /**
      * Applies a recalculated requirement and archived state to the options.
+     * Fresh alerts supersede any unsaved checkbox toggles, so those reset.
      */
     function applyRequirementState(state: RefreshRequirementsResponseBag): void {
         options.value.requirementAlerts = state.requirementAlerts ?? [];
         options.value.requirementCalculationErrors = state.calculationErrors;
         options.value.isRequirementInteractionDisabled = state.isRequirementInteractionDisabled;
         options.value.hasArchivedRecord = state.hasArchivedRecord;
+        clearRequirementResolutions();
     }
 
     /**
@@ -552,6 +598,15 @@
         options.value.requirementCalculationErrors = null;
         options.value.isRequirementInteractionDisabled = true;
         options.value.hasArchivedRecord = false;
+        clearRequirementResolutions();
+    }
+
+    /**
+     * Drops the unsaved resolution checkbox toggles.
+     */
+    function clearRequirementResolutions(): void {
+        checkedManualRequirementGuids.value = [];
+        checkedOverrideRequirementGuids.value = [];
     }
 
     /**
@@ -625,6 +680,7 @@
         options.value = box.options ?? ({} as GroupMemberDetailOptionsBag);
         isEditable.value = box.isEditable === true;
         groupMemberIdKey.value = box.entity?.idKey ?? "";
+        clearRequirementResolutions();
 
         person.value = box.entity?.person ?? undefined;
         roleId.value = box.entity?.groupRoleId?.toString() ?? "";

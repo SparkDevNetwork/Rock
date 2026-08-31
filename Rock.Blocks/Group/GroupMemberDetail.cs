@@ -443,8 +443,9 @@ namespace Rock.Blocks.Group
             options.GroupMemberGuid = entity.Id != 0 ? entity.Guid : ( Guid? ) null;
             options.PersonGuid = entity.Person?.Guid;
 
-            // Interaction stays disabled until the member is saved and unchanged, since requirement writes need a member record.
-            options.IsRequirementInteractionDisabled = entity.Id == 0 || entity.IsNewOrChangedGroupMember( RockContext );
+            // While adding, requirement resolutions are held client-side and written on save, so interaction stays enabled.
+            // For an existing member, interaction is disabled until the member is saved and unchanged.
+            options.IsRequirementInteractionDisabled = entity.Id != 0 && entity.IsNewOrChangedGroupMember( RockContext );
 
             // Don't check or show requirements until a person is selected.
             if ( entity.PersonId == 0 )
@@ -537,6 +538,7 @@ namespace Rock.Blocks.Group
                     {
                         r.Id,
                         r.Guid,
+                        r.WasManuallyCompleted,
                         r.WasOverridden,
                         r.OverriddenDateTime,
                         OverriddenByPersonName = r.OverriddenByPersonAlias.Person.NickName + " " + r.OverriddenByPersonAlias.Person.LastName
@@ -558,9 +560,11 @@ namespace Rock.Blocks.Group
                     ? foundRequirement
                     : null;
 
-                // An overridden requirement presents as met, matching the WebForms card.
+                // A stored resolution presents as met with no checkbox, matching the WebForms
+                // card; only an unresolved requirement offers a checkbox, held client-side until save.
                 var isOverridden = memberRequirement?.WasOverridden == true;
-                var effectiveStatus = isOverridden ? MeetsGroupRequirement.Meets : status.MeetsGroupRequirement;
+                var isResolved = memberRequirement?.WasManuallyCompleted == true || isOverridden;
+                var effectiveStatus = isResolved ? MeetsGroupRequirement.Meets : status.MeetsGroupRequirement;
                 var isMet = effectiveStatus == MeetsGroupRequirement.Meets;
 
                 var hasDoesNotMeetWorkflow = hasWorkflowEntryPage
@@ -578,6 +582,7 @@ namespace Rock.Blocks.Group
                     Title = requirementType.Name,
                     Summary = isSummaryHidden ? string.Empty : requirementType.Summary,
                     StatusText = GetRequirementStatusText( requirementType, effectiveStatus ),
+                    MetStatusText = GetRequirementStatusText( requirementType, MeetsGroupRequirement.Meets ),
                     MeetsGroupRequirement = effectiveStatus,
                     TypeIconCssClass = requirementType.IconCssClass,
                     CanOverride = !isMet
@@ -613,7 +618,7 @@ namespace Rock.Blocks.Group
         /// the same defaults the WebForms requirement card used.
         /// </summary>
         /// <param name="requirementType">The group requirement type.</param>
-        /// <param name="meetsGroupRequirement">The effective met state, with an override presenting as met.</param>
+        /// <param name="meetsGroupRequirement">The met state to describe.</param>
         /// <returns>The status text.</returns>
         private string GetRequirementStatusText( GroupRequirementType requirementType, MeetsGroupRequirement meetsGroupRequirement )
         {
@@ -650,6 +655,148 @@ namespace Rock.Blocks.Group
                 .Where( m => m.GroupRole.IsLeader )
                 .Select( m => m.PersonId )
                 .Contains( RequestContext.CurrentPerson.Id );
+        }
+
+        /// <summary>
+        /// Validates that every must-meet requirement is satisfied for a member being added or
+        /// changed, treating the requirements resolved client-side (manual mark or leader
+        /// override) as met. This closes the manual-requirement enforcement gap, where the
+        /// entity's own check excludes manual types because the WebForms card wrote resolutions
+        /// straight to the database and had nothing to write to while adding.
+        /// </summary>
+        /// <returns><c>true</c> when all must-meet requirements are satisfied or resolved.</returns>
+        private bool TryValidateMustMeetRequirements( GroupMember entity, GroupMemberBag bag, out string errorMessage )
+        {
+            errorMessage = null;
+
+            // Nothing to enforce when the group has no must-meet requirements, matching the entity's own guard.
+            if ( !entity.Group.GetGroupRequirements( RockContext ).Any( r => r.MustMeetRequirementToAddMember ) )
+            {
+                return true;
+            }
+
+            var authorizedResolutions = GetAuthorizedRequirementResolutions( entity, bag );
+            var resolvedRequirementGuids = new HashSet<Guid>( authorizedResolutions.ManualGuids );
+            resolvedRequirementGuids.UnionWith( authorizedResolutions.OverrideGuids );
+
+            var unmetRequirementNames = entity.Group
+                .PersonMeetsGroupRequirements( RockContext, entity.PersonId, entity.GroupRoleId )
+                .Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
+                    && s.GroupRequirement.MustMeetRequirementToAddMember
+                    && !resolvedRequirementGuids.Contains( s.GroupRequirement.Guid ) )
+                .Select( s => s.GroupRequirement.GroupRequirementType.Name )
+                .ToList();
+
+            if ( unmetRequirementNames.Any() )
+            {
+                errorMessage = $"{entity.Person.FullName} must meet the following requirements before being added or made an active member in group '{entity.Group.Name}': {unmetRequirementNames.AsDelimited( ", " )}";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Builds the sets of group requirement guids the current person is actually allowed to
+        /// resolve from the client-supplied lists, applying the manual-type gate for manual marks
+        /// and the override authorization gate for overrides. Shared by validation and the save so
+        /// a crafted request cannot pass must-meet validation with a resolution that would not be
+        /// written.
+        /// </summary>
+        /// <returns>The authorized manual and override requirement guids.</returns>
+        private ( HashSet<Guid> ManualGuids, HashSet<Guid> OverrideGuids ) GetAuthorizedRequirementResolutions( GroupMember entity, GroupMemberBag bag )
+        {
+            var manualGuids = new HashSet<Guid>();
+            var overrideGuids = new HashSet<Guid>();
+
+            var requestedManualGuids = bag.ManuallyMetRequirementGuids ?? new List<Guid>();
+            var requestedOverrideGuids = bag.OverriddenRequirementGuids ?? new List<Guid>();
+
+            if ( !requestedManualGuids.Any() && !requestedOverrideGuids.Any() )
+            {
+                return ( manualGuids, overrideGuids );
+            }
+
+            foreach ( var groupRequirement in entity.Group.GetGroupRequirements( RockContext ) )
+            {
+                if ( requestedManualGuids.Contains( groupRequirement.Guid )
+                    && groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+                {
+                    manualGuids.Add( groupRequirement.Guid );
+                }
+
+                if ( requestedOverrideGuids.Contains( groupRequirement.Guid )
+                    && ( ( groupRequirement.AllowLeadersToOverride && IsCurrentPersonLeaderOfGroup( entity.GroupId ) )
+                        || groupRequirement.GroupRequirementType.IsAuthorized( Authorization.OVERRIDE, RequestContext.CurrentPerson ) ) )
+                {
+                    overrideGuids.Add( groupRequirement.Guid );
+                }
+            }
+
+            return ( manualGuids, overrideGuids );
+        }
+
+        /// <summary>
+        /// Writes the GroupMemberRequirement rows for the resolutions checked client-side and
+        /// held until save. Resolutions are add-only: a stored resolution offers no checkbox,
+        /// so nothing here is ever cleared. Only resolutions the current person is authorized to
+        /// write are applied.
+        /// </summary>
+        /// <param name="entity">The saved group member the requirement rows attach to.</param>
+        /// <param name="bag">The bag carrying the checked requirement resolutions.</param>
+        private void ReconcileRequirementResolutions( GroupMember entity, GroupMemberBag bag )
+        {
+            var authorizedResolutions = GetAuthorizedRequirementResolutions( entity, bag );
+
+            if ( !authorizedResolutions.ManualGuids.Any() && !authorizedResolutions.OverrideGuids.Any() )
+            {
+                return;
+            }
+
+            var groupMemberRequirementService = new GroupMemberRequirementService( RockContext );
+            var existingRows = groupMemberRequirementService.Queryable()
+                .Where( r => r.GroupMemberId == entity.Id )
+                .ToList();
+
+            foreach ( var groupRequirement in entity.Group.GetGroupRequirements( RockContext ) )
+            {
+                var isManualDesired = authorizedResolutions.ManualGuids.Contains( groupRequirement.Guid );
+                var isOverrideDesired = authorizedResolutions.OverrideGuids.Contains( groupRequirement.Guid );
+
+                if ( !isManualDesired && !isOverrideDesired )
+                {
+                    continue;
+                }
+
+                var memberRequirement = existingRows.FirstOrDefault( r => r.GroupRequirementId == groupRequirement.Id );
+
+                if ( memberRequirement == null )
+                {
+                    memberRequirement = new GroupMemberRequirement
+                    {
+                        GroupRequirementId = groupRequirement.Id,
+                        GroupMemberId = entity.Id
+                    };
+                    groupMemberRequirementService.Add( memberRequirement );
+                }
+
+                // Stamp only on the unresolved-to-resolved transition so an existing resolution keeps its original who and when.
+                if ( isManualDesired && !memberRequirement.WasManuallyCompleted )
+                {
+                    memberRequirement.WasManuallyCompleted = true;
+                    memberRequirement.ManuallyCompletedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                    memberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
+                }
+
+                if ( isOverrideDesired && !memberRequirement.WasOverridden )
+                {
+                    memberRequirement.WasOverridden = true;
+                    memberRequirement.OverriddenByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                    memberRequirement.OverriddenDateTime = RockDateTime.Now;
+                }
+
+                memberRequirement.RequirementMetDateTime = memberRequirement.RequirementMetDateTime ?? RockDateTime.Now;
+            }
         }
 
         /// <summary>
@@ -1530,16 +1677,33 @@ namespace Rock.Blocks.Group
                 } );
             }
 
+            // The entity's own must-meet check runs under this same condition, but excludes manual
+            // requirement types and cannot see the client-held resolutions, so this block runs its
+            // own complete check and skips the entity's.
+            if ( entity.Id == 0 || entity.IsNewOrChangedGroupMember( RockContext ) )
+            {
+                if ( !TryValidateMustMeetRequirements( entity, box.Bag, out var requirementError ) )
+                {
+                    return ActionBadRequest( requirementError );
+                }
+
+                entity.IsSkipRequirementsCheckingDuringValidationCheck = true;
+            }
+
             try
             {
                 RockContext.WrapTransaction( () =>
                 {
                     RockContext.SaveChanges();
+
+                    // Requirement rows need the member's Id, so they are reconciled after the insert but in the same transaction.
+                    ReconcileRequirementResolutions( entity, box.Bag );
+                    RockContext.SaveChanges();
                 } );
             }
             catch ( GroupMemberValidationException ex )
             {
-                // The model's own rules (duplicate member, must-meet requirements) failed.
+                // The model's own rules (duplicate member, capacity, etc.) failed.
                 return ActionBadRequest( ex.Message );
             }
 
@@ -1728,95 +1892,7 @@ namespace Rock.Blocks.Group
             {
                 RequirementAlerts = alerts,
                 CalculationErrors = calculationErrors,
-                IsRequirementInteractionDisabled = entity.Id == 0 || entity.IsNewOrChangedGroupMember( RockContext ),
-                HasArchivedRecord = HasArchivedRecord( entity )
-            } );
-        }
-
-        /// <summary>
-        /// Marks a requirement as met for the member, either by completing a
-        /// manual requirement or by overriding, and returns refreshed alerts.
-        /// </summary>
-        /// <param name="groupMemberIdKey">The IdKey of the member.</param>
-        /// <param name="groupRequirementGuid">The unique identifier of the group requirement.</param>
-        /// <param name="isOverride">Whether this is an override rather than a manual completion.</param>
-        /// <returns>A <see cref="RefreshRequirementsResponseBag"/> with the refreshed alerts.</returns>
-        [BlockAction]
-        public BlockActionResult MarkRequirementAsMet( string groupMemberIdKey, Guid groupRequirementGuid, bool isOverride )
-        {
-            var entity = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
-            }
-
-            if ( !IsAuthorizedToEdit( entity.Group ) )
-            {
-                return ActionBadRequest( $"Not authorized to edit {GroupMember.FriendlyTypeName}." );
-            }
-
-            var groupRequirement = entity.Group.GetGroupRequirements( RockContext )
-                .FirstOrDefault( r => r.Guid == groupRequirementGuid );
-
-            if ( groupRequirement == null )
-            {
-                return ActionBadRequest( "Group Requirement not found." );
-            }
-
-            if ( isOverride )
-            {
-                var canOverride = ( groupRequirement.AllowLeadersToOverride && IsCurrentPersonLeaderOfGroup( entity.GroupId ) )
-                    || groupRequirement.GroupRequirementType.IsAuthorized( Authorization.OVERRIDE, RequestContext.CurrentPerson );
-
-                if ( !canOverride )
-                {
-                    return ActionBadRequest( "Not authorized to override this requirement." );
-                }
-            }
-            else if ( groupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
-            {
-                return ActionBadRequest( "Only manual requirements can be marked as met directly." );
-            }
-
-            var groupMemberRequirementService = new GroupMemberRequirementService( RockContext );
-            var memberRequirement = groupMemberRequirementService.Queryable()
-                .FirstOrDefault( r => r.GroupMemberId == entity.Id && r.GroupRequirementId == groupRequirement.Id );
-
-            if ( memberRequirement == null )
-            {
-                memberRequirement = new GroupMemberRequirement
-                {
-                    GroupRequirementId = groupRequirement.Id,
-                    GroupMemberId = entity.Id
-                };
-                groupMemberRequirementService.Add( memberRequirement );
-            }
-
-            if ( isOverride )
-            {
-                memberRequirement.WasOverridden = true;
-                memberRequirement.OverriddenByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
-                memberRequirement.OverriddenDateTime = RockDateTime.Now;
-            }
-            else
-            {
-                memberRequirement.WasManuallyCompleted = true;
-                memberRequirement.ManuallyCompletedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
-                memberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
-            }
-
-            memberRequirement.RequirementMetDateTime = RockDateTime.Now;
-
-            RockContext.SaveChanges();
-
-            var alerts = GetRequirementAlerts( entity, entity.GroupRoleId, out var calculationErrors );
-
-            return ActionOk( new RefreshRequirementsResponseBag
-            {
-                RequirementAlerts = alerts,
-                CalculationErrors = calculationErrors,
-                IsRequirementInteractionDisabled = false,
+                IsRequirementInteractionDisabled = entity.Id != 0 && entity.IsNewOrChangedGroupMember( RockContext ),
                 HasArchivedRecord = HasArchivedRecord( entity )
             } );
         }

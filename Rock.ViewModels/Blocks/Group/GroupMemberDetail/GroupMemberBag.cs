@@ -113,6 +113,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public List<Guid> ManuallyMetRequirementGuids { get; set; }
 
         /// <summary>
+        /// Gets or sets the group requirement guids a leader has overridden as
+        /// met while adding. Held client-side and persisted as overridden
+        /// GroupMemberRequirement rows in the same transaction as the save.
+        /// </summary>
+        public List<Guid> OverriddenRequirementGuids { get; set; }
+
+        /// <summary>
         /// Gets or sets the group member assignment attribute values. Only
         /// used in sign-up mode.
         /// </summary>

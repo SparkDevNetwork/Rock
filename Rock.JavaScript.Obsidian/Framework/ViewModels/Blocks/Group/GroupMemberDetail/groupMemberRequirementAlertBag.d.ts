@@ -31,7 +31,7 @@ import { Guid } from "@Obsidian/Types";
 export type GroupMemberRequirementAlertBag = {
     /**
      * Gets or sets a value indicating whether the current person may
-     * manually override this requirement.
+     * override this requirement, which renders the override checkbox.
      */
     canOverride: boolean;
 
@@ -69,10 +69,18 @@ export type GroupMemberRequirementAlertBag = {
     manualCheckboxLabel?: string | null;
 
     /**
-     * Gets or sets whether the member meets the requirement. Drives
+     * Gets or sets whether the member meets the requirement, with a
+     * stored manual completion or override presenting as met. Drives
      * the alert style (met, not met, warning).
      */
     meetsGroupRequirement: MeetsGroupRequirement;
+
+    /**
+     * Gets or sets the status line shown when the requirement's
+     * checkbox is checked client-side, from the requirement type's
+     * positive label.
+     */
+    metStatusText?: string | null;
 
     /**
      * Gets or sets the tooltip describing who overrode the requirement

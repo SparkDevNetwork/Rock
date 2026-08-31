@@ -87,6 +87,13 @@ export type GroupMemberBag = {
     note?: string | null;
 
     /**
+     * Gets or sets the group requirement guids a leader has overridden as
+     * met while adding. Held client-side and persisted as overridden
+     * GroupMemberRequirement rows in the same transaction as the save.
+     */
+    overriddenRequirementGuids?: Guid[] | null;
+
+    /**
      * Gets or sets the person this membership belongs to. Only
      * changeable while adding a new member.
      */
