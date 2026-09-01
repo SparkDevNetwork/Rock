@@ -203,7 +203,7 @@
                     </ContentStack>
                 </ContentSection>
 
-                <ContentSection v-if="options.isSchedulingEnabled" title="Scheduling" icon="ti ti-calendar">
+                <ContentSection v-if="options.isSchedulingEnabled" title="Scheduling" icon="ti ti-calendar" isCollapsed>
                     <ContentStack title="Schedule Settings"
                                   description="Configure this member's serving schedule.">
                         <div class="row">
@@ -238,13 +238,41 @@
                     </ContentStack>
                 </ContentSection>
 
-                <ContentSection title="Communication" icon="ti ti-message">
-                    <!-- TODO: Preferences stack (Communication Preference radios) and Notifications & Reminders
-                         stack (Group Leaders Notified checkbox, Email Reminder Lead Time (Days) number box) per
-                         conversion plan §9.5. -->
+                <ContentSection title="Communication" icon="ti ti-message" isCollapsed>
+                    <ContentStack title="Preferences"
+                                  description="Set how this member prefers to be contacted.">
+                        <RadioButtonList v-model="communicationPreference"
+                                         label="Communication Preference"
+                                         help="How this member prefers to be contacted about group communications."
+                                         :items="options.communicationPreferenceItems ?? []"
+                                         :disabled="isFormDisabled" />
+                    </ContentStack>
+
+                    <ContentStack v-if="options.isNotifiedShown || options.isSchedulingEnabled"
+                                  title="Notifications & Reminders"
+                                  description="Set when group leaders are notified and how far in advance reminder emails go out.">
+                        <InlineCheckBox v-if="options.isNotifiedShown"
+                                        v-model="isNotified"
+                                        label="Group Leaders Notified"
+                                        help="Whether the group's leaders have already been notified about this member. Leave unchecked to let the notification job announce them."
+                                        :disabled="isFormDisabled" />
+
+                        <div v-if="options.isSchedulingEnabled" class="row">
+                            <div class="col-md-3">
+                                <NumberBox v-model="scheduleReminderEmailOffsetDays"
+                                           label="Email Reminder Lead Time"
+                                           help="Days before a scheduled occurrence to send this member's reminder. Leave blank to use the group's default."
+                                           :disabled="isFormDisabled">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">Days</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                        </div>
+                    </ContentStack>
                 </ContentSection>
 
-                <ContentSection title="Administration" icon="ti ti-settings">
+                <ContentSection title="Administration" icon="ti ti-settings" isCollapsed>
                     <!-- TODO: Required Signed Documents stack (Signed Document uploader; the unsigned-document
                          warning alert renders above the sections instead) and Chat Settings stack (Chat Muted,
                          Chat Banned) per conversion plan §9.6. -->
@@ -292,6 +320,7 @@
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import Grid, { TextColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import AssignmentPreferenceModal from "./GroupMemberDetail/assignmentPreferenceModal.partial.obs";
     import RestoreArchivedModal from "./GroupMemberDetail/restoreArchivedModal.partial.obs";
@@ -300,6 +329,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { GroupMemberStatus } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
     import { useConfigurationValues, useInvokeBlockAction, setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { alert as showAlert } from "@Obsidian/Utility/dialogs";
@@ -394,6 +424,11 @@
 
     /** The assignment row being edited in the Assignment Preference modal, or null while adding. */
     const editingAssignment = ref<GroupScheduleAssignmentBag | null>(null);
+
+    // Communication section.
+    const communicationPreference = ref(config.entity?.communicationPreference?.toString() ?? "");
+    const isNotified = ref(config.entity?.isNotified === true);
+    const scheduleReminderEmailOffsetDays = ref<number | null>(config.entity?.scheduleReminderEmailOffsetDays ?? null);
 
     // Requirement resolution checkboxes, held client-side and written with the member on save.
     // A resolution already stored in the database presents as met with no checkbox, so these
@@ -777,6 +812,9 @@
             setPropertiesBoxValue(box, "scheduleTemplateId", toNumberOrNull(scheduleTemplateId.value));
             setPropertiesBoxValue(box, "scheduleStartDate", scheduleStartDate.value || null);
             setPropertiesBoxValue(box, "scheduleAssignments", scheduleAssignments.value);
+            setPropertiesBoxValue(box, "communicationPreference", (toNumberOrNull(communicationPreference.value) ?? 0) as CommunicationType);
+            setPropertiesBoxValue(box, "isNotified", isNotified.value);
+            setPropertiesBoxValue(box, "scheduleReminderEmailOffsetDays", scheduleReminderEmailOffsetDays.value);
             setPropertiesBoxValue(box, "manuallyMetRequirementGuids", checkedManualRequirementGuids.value);
             setPropertiesBoxValue(box, "overriddenRequirementGuids", checkedOverrideRequirementGuids.value);
 
@@ -956,6 +994,9 @@
         scheduleTemplateId.value = box.entity?.scheduleTemplateId?.toString() ?? "";
         scheduleStartDate.value = box.entity?.scheduleStartDate ?? "";
         scheduleAssignments.value = box.entity?.scheduleAssignments ?? [];
+        communicationPreference.value = box.entity?.communicationPreference?.toString() ?? "";
+        isNotified.value = box.entity?.isNotified === true;
+        scheduleReminderEmailOffsetDays.value = box.entity?.scheduleReminderEmailOffsetDays ?? null;
 
         // Watchers flush on the next tick, so the guard has to outlive this call to suppress them.
         nextTick(() => {

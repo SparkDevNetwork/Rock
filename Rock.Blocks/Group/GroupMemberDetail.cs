@@ -1647,6 +1647,18 @@ namespace Rock.Blocks.Group
                 entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => editableKeys.Contains( a.Key ) );
             } );
 
+            box.IfValidProperty( nameof( box.Bag.CommunicationPreference ), () =>
+                entity.CommunicationPreference = ( CommunicationType ) box.Bag.CommunicationPreference );
+
+            box.IfValidProperty( nameof( box.Bag.IsNotified ), () =>
+            {
+                // Only ADMINISTRATE sees or saves the notified flag (WebForms parity).
+                if ( BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    entity.IsNotified = box.Bag.IsNotified;
+                }
+            } );
+
             // Scheduling only applies when the section was shown: scheduling enabled and not sign-up mode (WebForms parity).
             var groupType = GroupTypeCache.Get( entity.Group.GroupTypeId );
 
@@ -1658,12 +1670,15 @@ namespace Rock.Blocks.Group
                 box.IfValidProperty( nameof( box.Bag.ScheduleStartDate ), () =>
                     entity.ScheduleStartDate = box.Bag.ScheduleStartDate?.DateTime );
 
+                box.IfValidProperty( nameof( box.Bag.ScheduleReminderEmailOffsetDays ), () =>
+                    entity.ScheduleReminderEmailOffsetDays = box.Bag.ScheduleReminderEmailOffsetDays );
+
                 box.IfValidProperty( nameof( box.Bag.ScheduleAssignments ), () =>
                     SyncScheduleAssignments( entity, box.Bag.ScheduleAssignments ) );
             }
 
-            // TODO: Apply the remaining bag properties (communication preference, chat flags,
-            // signed document, reminder lead time) as their sections are built.
+            // TODO: Apply the remaining bag properties (chat flags, signed document) as their
+            // sections are built.
             return true;
         }
 
