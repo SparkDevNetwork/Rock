@@ -53,7 +53,7 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.RegistrationPage )]
 
     [BooleanField(
-        "Show \"Move To Another Group\" Button",
+        "Show Move To Group Button",
         Description = "Whether the button for moving this member to another group is shown.",
         DefaultBooleanValue = true,
         Order = 1,
@@ -74,7 +74,7 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.IsSummaryHidden )]
 
     [BooleanField(
-        "Are Requirements Refreshed When Block Is Loaded",
+        "Refresh Requirements on Load",
         Description = "Whether group requirements are recalculated every time the block loads, instead of using cached results.",
         DefaultBooleanValue = false,
         Order = 4,
@@ -102,7 +102,7 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.EnableSMS )]
 
     [BooleanField(
-        "Append Organization Email Header/Footer",
+        "Append Email Header/Footer",
         Description = "Whether the organization's email header and footer are appended to the message.",
         DefaultBooleanValue = true,
         Order = 8,
