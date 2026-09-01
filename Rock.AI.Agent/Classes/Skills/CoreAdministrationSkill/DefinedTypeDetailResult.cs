@@ -48,12 +48,6 @@ internal class DefinedTypeDetailResult : EntityResultBase
     public KeyNameResult Category { get; set; }
 
     /// <summary>
-    /// The field type class used to edit values of this type. Output only; no
-    /// tool accepts a class name as a parameter.
-    /// </summary>
-    public string FieldTypeClass { get; set; }
-
-    /// <summary>
     /// Indicates that the defined type is part of Rock's core configuration and
     /// cannot be deleted.
     /// </summary>

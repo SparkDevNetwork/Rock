@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Enums.AI.Agent;
 using Rock.Tests.Shared;
 
-namespace Rock.AI.Agent.Tests.Skills.Utility;
+namespace Rock.AI.Agent.Tests.Skills.UtilitySkill;
 
 [TestClass]
 [MethodIgnoreIf( nameof( HasRequiredConfiguration ), "Missing configuration settings in app.TestSettings.config file." )]

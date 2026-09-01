@@ -38,7 +38,6 @@ internal sealed partial class CmsSkill
     [AgentUsage( "Deleting a page is permanent and destructive: the page, its blocks, and its routes are removed and cannot be recovered, and when deleteInteractions is true the page's interaction (page view) history is permanently removed as well. Before calling this tool, warn the user about exactly what will be deleted, name the exact page being deleted, and get their explicit confirmation. Ask the user whether the interaction history should also be deleted rather than deciding for them. Never delete a page the user did not name explicitly." )]
     [AgentToolGuid( "BB6C42F3-C448-49D5-BB85-4072960178FC" )]
     public AgentToolResult DeletePage(
-        [Description( "The IdKey or guid of the page to delete." )]
         string pageIdKey,
         [Description( "Whether the page's interaction (page view) history is also permanently deleted. Defaults to true, matching the administrative UI. Ask the user before choosing." )]
         bool deleteInteractions = true )

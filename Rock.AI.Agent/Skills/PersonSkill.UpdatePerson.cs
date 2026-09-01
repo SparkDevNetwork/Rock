@@ -75,7 +75,8 @@ internal sealed partial class PersonSkill
         string suffixValueIdKey = null,           // Clearable
         string titleValueIdKey = null,            // Clearable
         string preferredLanguageValueIdKey = null,// Clearable
-        string maritalStatusValueIdKey = null     // Clearable
+        string maritalStatusValueIdKey = null,    // Clearable
+        List<AttributeValueResult> attributeValues = null
     )
     {
         // Quick pre-scan: build a list of parameters explicitly requesting lookups.
@@ -242,6 +243,10 @@ internal sealed partial class PersonSkill
                 person.InactiveReasonNote = inactiveReasonNote;
             }
         }
+
+        // Person attributes are staged here and persisted by SaveChangesIfNoErrors
+        // along with the property changes.
+        helper.SetAttributeValues( person, attributeValues );
 
         helper.SaveChangesIfNoErrors();
 

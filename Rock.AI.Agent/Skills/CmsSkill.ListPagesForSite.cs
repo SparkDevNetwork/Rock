@@ -33,7 +33,6 @@ internal sealed partial class CmsSkill
     [AgentUsage( "Use ListPages instead when you want to walk the page tree one level at a time." )]
     [AgentToolGuid( "8968B4EF-3A1D-472A-9BC6-17A80B8F824F" )]
     public AgentToolResult ListPagesForSite(
-        [Description( "The IdKey or guid of the site whose pages should be listed." )]
         string siteIdKey,
 
         string cursor = null )
