@@ -21,6 +21,21 @@
             </NotificationBox>
             <NotificationBox v-if="options.editModeMessage" alertType="info" v-html="options.editModeMessage" />
 
+            <NotificationBox v-if="isSignatureDocumentWarningShown" alertType="warning">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <div class="flex-grow-1">
+                        <strong>Signed Document Required</strong>
+                        <div v-html="options.signatureDocument?.message"></div>
+                    </div>
+                    <RockButton v-if="isEditable"
+                                :btnType="BtnType.Warning"
+                                :disabled="isSendingSignatureRequest"
+                                @click="onSendSignatureRequest">
+                        {{ options.signatureDocument?.buttonText }}
+                    </RockButton>
+                </div>
+            </NotificationBox>
+
             <ContentSectionContainer :sidebar="false">
                 <ContentSection disableCollapse
                                 light>
@@ -156,9 +171,9 @@
                 </ContentSection>
 
                 <ContentSection title="Administration" icon="ti ti-settings" isCollapsed>
-                    <!-- TODO: Required Signed Documents stack (warning alert + Send/Resend button pending Open
-                         Decision A + Signed Document uploader) and Chat Settings stack (Chat Muted, Chat Banned)
-                         per conversion plan §9.6. -->
+                    <!-- TODO: Required Signed Documents stack (Signed Document uploader; the unsigned-document
+                         warning alert renders above the sections instead) and Chat Settings stack (Chat Muted,
+                         Chat Banned) per conversion plan §9.6. -->
                 </ContentSection>
             </ContentSectionContainer>
 
@@ -216,6 +231,7 @@
     import { RefreshRequirementsResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/refreshRequirementsResponseBag";
     import { LaunchRequirementWorkflowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/launchRequirementWorkflowResponseBag";
     import { SaveGroupMemberResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/saveGroupMemberResponseBag";
+    import { SignatureDocumentStatusBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/signatureDocumentStatusBag";
 
     // #region Types
 
@@ -253,6 +269,8 @@
 
     const isRefreshSuccessShown = ref(false);
     const isRefreshingRequirements = ref(false);
+
+    const isSendingSignatureRequest = ref(false);
 
     /** True while the data for a newly selected person is loading, locking the form until it lands. */
     const isPersonDataLoading = ref(false);
@@ -323,6 +341,11 @@
     /** True when the form inputs are disabled, from read-only rights or a person data load in flight. */
     const isFormDisabled = computed((): boolean => {
         return !isEditable.value || isPersonDataLoading.value;
+    });
+
+    /** True when the group requires a signature document that has not been signed yet. */
+    const isSignatureDocumentWarningShown = computed((): boolean => {
+        return options.value.signatureDocument?.isRequired === true;
     });
 
     // #endregion Computed Values
@@ -407,6 +430,31 @@
      */
     function onToggleOverrideRequirement(requirementAlert: GroupMemberRequirementAlertBag, isChecked: boolean): void {
         toggleRequirementGuid(checkedOverrideRequirementGuids.value, requirementAlert.groupRequirementGuid, isChecked);
+    }
+
+    /**
+     * Sends (or resends) the required signature document request and applies
+     * the refreshed document status to the warning alert.
+     */
+    async function onSendSignatureRequest(): Promise<void> {
+        formErrors.value = [];
+        isSendingSignatureRequest.value = true;
+
+        try {
+            const result = await invokeBlockAction<SignatureDocumentStatusBag>("SendSignatureRequest", {
+                groupMemberIdKey: groupMemberIdKey.value
+            });
+
+            if (!result.isSuccess || !result.data) {
+                setFormError(result.errorMessage ?? "Unable to send the signature request.");
+                return;
+            }
+
+            options.value.signatureDocument = result.data;
+        }
+        finally {
+            isSendingSignatureRequest.value = false;
+        }
     }
 
     /**

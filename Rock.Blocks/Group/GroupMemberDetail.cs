@@ -967,15 +967,16 @@ namespace Rock.Blocks.Group
                 ? documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.LastInviteDate )
                 : null;
 
+            // The message renders as HTML on the client, so the data-driven parts are encoded.
             if ( lastSent.HasValue )
             {
                 statusBag.ButtonText = "Resend Signature Request";
-                statusBag.Message = $"A signed {template.Name} document has not yet been received for {entity.Person.NickName}. The last request was sent {lastSent.Value.ToElapsedString()}.";
+                statusBag.Message = $"A signed {template.Name.EncodeHtml()} document has not yet been received for {entity.Person.FullName.EncodeHtml()}. The last request was sent <strong>{lastSent.Value.ToElapsedString()}</strong>.";
             }
             else
             {
                 statusBag.ButtonText = "Send Signature Request";
-                statusBag.Message = $"The required {template.Name} document has not yet been sent to {entity.Person.NickName} for signing.";
+                statusBag.Message = $"The required {template.Name.EncodeHtml()} document has not yet been sent to {entity.Person.NickName.EncodeHtml()} for signing.";
             }
 
             return statusBag;
@@ -1816,7 +1817,7 @@ namespace Rock.Blocks.Group
         /// member. Pending Open Decision A in the conversion plan.
         /// </summary>
         /// <param name="groupMemberIdKey">The IdKey of the member to send the request to.</param>
-        /// <returns>A success or error result.</returns>
+        /// <returns>The refreshed <see cref="SignatureDocumentStatusBag"/> on success, or an error result.</returns>
         [BlockAction]
         public BlockActionResult SendSignatureRequest( string groupMemberIdKey )
         {
