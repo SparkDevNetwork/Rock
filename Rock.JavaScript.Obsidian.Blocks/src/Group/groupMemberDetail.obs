@@ -155,10 +155,46 @@
                     </div>
                 </ContentSection>
 
-                <ContentSection title="Attributes" icon="ti ti-list-details">
-                    <!-- TODO: Group Member Attributes stack (editable + viewable) and Group Member Assignment
-                         Attributes stack (sign-up mode only) per conversion plan §9.3. Render the whole section
-                         only when either stack has attributes. -->
+                <ContentSection v-if="isAttributesSectionShown" title="Attributes" icon="ti ti-list-details">
+                    <ContentStack v-if="hasEditableAttributes || hasViewableAttributes"
+                                  title="Group Member Attributes"
+                                  description="Additional information tracked for this member within the group.">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <AttributeValuesContainer v-if="hasEditableAttributes"
+                                                          v-model="attributeValues"
+                                                          :attributes="attributes"
+                                                          isEditMode
+                                                          :numberOfColumns="1" />
+                            </div>
+                            <div class="col-md-6">
+                                <AttributeValuesContainer v-if="hasViewableAttributes"
+                                                          :modelValue="options.viewableAttributeValues ?? {}"
+                                                          :attributes="options.viewableAttributes ?? {}"
+                                                          :numberOfColumns="1" />
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack v-if="hasEditableAssignmentAttributes || hasViewableAssignmentAttributes"
+                                  title="Group Member Assignment Attributes"
+                                  description="Additional information tracked for this member's assignment.">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <AttributeValuesContainer v-if="hasEditableAssignmentAttributes"
+                                                          v-model="assignmentAttributeValues"
+                                                          :attributes="options.assignmentAttributes ?? {}"
+                                                          isEditMode
+                                                          :numberOfColumns="1" />
+                            </div>
+                            <div class="col-md-6">
+                                <AttributeValuesContainer v-if="hasViewableAssignmentAttributes"
+                                                          :modelValue="options.viewableAssignmentAttributeValues ?? {}"
+                                                          :attributes="options.viewableAssignmentAttributes ?? {}"
+                                                          :numberOfColumns="1" />
+                            </div>
+                        </div>
+                    </ContentStack>
                 </ContentSection>
 
                 <ContentSection v-if="options.isSchedulingEnabled" title="Scheduling" icon="ti ti-calendar" isCollapsed>
@@ -206,6 +242,8 @@
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
@@ -297,6 +335,14 @@
     const memberStatus = ref(config.entity?.groupMemberStatus?.toString() ?? "");
     const note = ref(config.entity?.note ?? "");
 
+    // Attributes section. The entity bag carries the editable set; the
+    // view-only set rides in the options bag since it never posts back.
+    const attributes = ref(config.entity?.attributes ?? {});
+    const attributeValues = ref(config.entity?.attributeValues ?? {});
+
+    /** Sign-up assignment attribute values; the definitions ride in the options bag. */
+    const assignmentAttributeValues = ref(config.entity?.assignmentAttributeValues ?? {});
+
     // Requirement resolution checkboxes, held client-side and written with the member on save.
     // A resolution already stored in the database presents as met with no checkbox, so these
     // only ever hold unsaved toggles.
@@ -350,6 +396,31 @@
     /** True when the group requires a signature document that has not been signed yet. */
     const isSignatureDocumentWarningShown = computed((): boolean => {
         return options.value.signatureDocument?.isRequired === true;
+    });
+
+    const hasEditableAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    const hasViewableAttributes = computed((): boolean => {
+        return Object.keys(options.value.viewableAttributes ?? {}).length > 0;
+    });
+
+    const hasEditableAssignmentAttributes = computed((): boolean => {
+        return Object.keys(options.value.assignmentAttributes ?? {}).length > 0;
+    });
+
+    /** The assignment sets are only populated in sign-up mode, which also gates that stack to the mode. */
+    const hasViewableAssignmentAttributes = computed((): boolean => {
+        return Object.keys(options.value.viewableAssignmentAttributes ?? {}).length > 0;
+    });
+
+    /** True when any attribute stack has attributes to show. */
+    const isAttributesSectionShown = computed((): boolean => {
+        return hasEditableAttributes.value
+            || hasViewableAttributes.value
+            || hasEditableAssignmentAttributes.value
+            || hasViewableAssignmentAttributes.value;
     });
 
     // #endregion Computed Values
@@ -590,6 +661,8 @@
             setPropertiesBoxValue(box, "groupRoleId", toNumberOrNull(roleId.value));
             setPropertiesBoxValue(box, "groupMemberStatus", (toNumberOrNull(memberStatus.value) ?? GroupMemberStatus.Active) as GroupMemberStatus);
             setPropertiesBoxValue(box, "note", note.value);
+            setPropertiesBoxValue(box, "attributeValues", attributeValues.value);
+            setPropertiesBoxValue(box, "assignmentAttributeValues", assignmentAttributeValues.value);
             setPropertiesBoxValue(box, "manuallyMetRequirementGuids", checkedManualRequirementGuids.value);
             setPropertiesBoxValue(box, "overriddenRequirementGuids", checkedOverrideRequirementGuids.value);
 
@@ -763,6 +836,9 @@
         roleId.value = box.entity?.groupRoleId?.toString() ?? "";
         memberStatus.value = box.entity?.groupMemberStatus?.toString() ?? "";
         note.value = box.entity?.note ?? "";
+        attributes.value = box.entity?.attributes ?? {};
+        attributeValues.value = box.entity?.attributeValues ?? {};
+        assignmentAttributeValues.value = box.entity?.assignmentAttributeValues ?? {};
 
         // Watchers flush on the next tick, so the guard has to outlive this call to suppress them.
         nextTick(() => {

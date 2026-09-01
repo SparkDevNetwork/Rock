@@ -1441,6 +1441,69 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Gets the sign-up GroupMemberAssignment for the member and the
+        /// sign-up location and schedule, creating one when none exists, and
+        /// applies the editable assignment attribute values from the bag.
+        /// Returns null outside sign-up mode.
+        /// </summary>
+        /// <param name="entity">The group member being saved.</param>
+        /// <param name="bag">The bag carrying the assignment attribute values.</param>
+        /// <returns>The assignment whose attribute values need saving, or null.</returns>
+        private GroupMemberAssignment GetOrCreateSignUpAssignment( GroupMember entity, GroupMemberBag bag )
+        {
+            if ( !IsSignUpMode )
+            {
+                return null;
+            }
+
+            var assignmentService = new GroupMemberAssignmentService( RockContext );
+            var groupId = entity.GroupId;
+            var personId = entity.PersonId;
+
+            var assignment = assignmentService
+                .Queryable()
+                .FirstOrDefault( a =>
+                    a.GroupMember.GroupId == groupId
+                    && a.GroupMember.PersonId == personId
+                    && a.LocationId == LocationId.Value
+                    && a.ScheduleId == ScheduleId.Value );
+
+            if ( assignment == null )
+            {
+                assignment = new GroupMemberAssignment
+                {
+                    GroupId = entity.GroupId,
+                    LocationId = LocationId.Value,
+                    ScheduleId = ScheduleId.Value
+                };
+
+                // A new member has no Id yet, so the navigation property carries the relationship.
+                if ( entity.Id == 0 )
+                {
+                    assignment.GroupMember = entity;
+                }
+                else
+                {
+                    assignment.GroupMemberId = entity.Id;
+                }
+
+                assignmentService.Add( assignment );
+            }
+
+            if ( bag.AssignmentAttributeValues != null )
+            {
+                assignment.LoadAttributes( RockContext );
+
+                // Only the keys this person may edit are applied; the split matches the sets sent to the client.
+                var editableKeys = GetEditableAttributeKeys( assignment, entity.Group, isReadOnly: false );
+
+                assignment.SetPublicAttributeValues( bag.AssignmentAttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => editableKeys.Contains( a.Key ) );
+            }
+
+            return assignment;
+        }
+
+        /// <summary>
         /// Gets the workflow entry page URL for a requirement workflow.
         /// </summary>
         /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
@@ -1521,8 +1584,18 @@ namespace Rock.Blocks.Group
             box.IfValidProperty( nameof( box.Bag.Note ), () =>
                 entity.Note = box.Bag.Note );
 
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ), () =>
+            {
+                entity.LoadAttributes( RockContext );
+
+                // Only the keys this person may edit are applied; the split matches the sets sent to the client.
+                var editableKeys = GetEditableAttributeKeys( entity, entity.Group, isReadOnly: false );
+
+                entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => editableKeys.Contains( a.Key ) );
+            } );
+
             // TODO: Apply the remaining bag properties (communication preference, chat flags,
-            // scheduling, signed document, attribute values) as their sections are built.
+            // scheduling, signed document) as their sections are built.
             return true;
         }
 
@@ -1701,11 +1774,15 @@ namespace Rock.Blocks.Group
                 entity.IsSkipRequirementsCheckingDuringValidationCheck = true;
             }
 
+            var signUpAssignment = GetOrCreateSignUpAssignment( entity, box.Bag );
+
             try
             {
                 RockContext.WrapTransaction( () =>
                 {
                     RockContext.SaveChanges();
+                    entity.SaveAttributeValues( RockContext );
+                    signUpAssignment?.SaveAttributeValues( RockContext );
 
                     // Requirement rows need the member's Id, so they are reconciled after the insert but in the same transaction.
                     ReconcileRequirementResolutions( entity, box.Bag );
