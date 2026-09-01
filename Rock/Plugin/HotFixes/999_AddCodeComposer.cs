@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,19 +14,62 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Migrations
-{
-    using System;
-    using System.Data.Entity.Migrations;
-    using System.Linq;
 
-    using Rock.Security;
-    using Rock.Security;
+using System;
+using System.Linq;
+
+using Rock.Security;
+
+namespace Rock.Plugin.HotFixes
+{
+    /*
+        8/31/2026 - CLAUDE
+
+        Seeds the Code Composer agents: an MCP agent and a chat agent preconfigured
+        with the skills that make up the authoring flow (Cms, Forge Content Builder,
+        Lava Application Builder and Community Knowledge Base), plus the Forge
+        Content block type they place on a page.
+
+        This migration deliberately does NOT create the ForgeContent table or seed
+        the Cms skill. Both belong to the AddForgeContentAndCmsSkill EF migration,
+        which runs before any plugin migration; duplicating them here would either
+        fight that migration for ownership of the rows or fail outright. The Cms
+        skill's guid is still referenced below, because the agents have to attach
+        the skill and enumerate its enabled tools.
+
+        Three things here are easy to get wrong and are deliberate:
+
+        1. The skill and block EntityTypes are registered explicitly before the rows
+           that reference them. EntityType registration normally happens during
+           application startup, which runs AFTER migrations, so on a fresh install
+           the CodeEntityTypeId lookup would resolve to NULL and produce a skill
+           that silently exposes no tools, and AddOrUpdateEntityBlockType would
+           quietly no-op.
+
+        2. Attaching a skill to an agent does NOT enable its tools. Each
+           AIAgentSkill row carries an explicit EnabledTools allowlist in its
+           AdditionalSettingsJson, so every tool guid has to be enumerated.
+
+        3. The agent rows are created only when absent, never updated apart from the
+           pre-release rename. There is no IsSystem flag on AIAgent, so an
+           administrator is free to retune the instructions or the enabled tools;
+           re-running this migration must not stomp that. The skills and tools ARE
+           upserted, because their names and descriptions are ours to correct.
+
+        Security is administrator-only rather than the staff-wide default the Staff
+        Agent uses. These tools create pages, write code that runs in visitors'
+        browsers, and can execute privileged Lava.
+
+        Reason: Ship the Code Composer agents preconfigured instead of hand-assembled.
+    */
 
     /// <summary>
-    ///
+    /// Adds the Code Composer MCP and chat agents, the Forge Content block type, and
+    /// the code-based skills the agents carry.
     /// </summary>
-    public partial class AddCodeComposer : Rock.Migrations.RockMigration
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 999, "20.0" )]
+    public class AddCodeComposer : Migration
     {
         #region Constants
 
@@ -56,7 +99,9 @@ namespace Rock.Migrations
         private const string CodeComposerChatAgentGuid = "5A2BC280-C12E-4C13-AA1F-D169DB27D3FE";
 
         /// <summary>
-        /// The AISkill Guid of the Cms skill.
+        /// The AISkill Guid of the Cms skill. The skill and its tools are seeded by
+        /// the AddForgeContentAndCmsSkill EF migration; this migration only attaches
+        /// the skill to the two agents.
         /// </summary>
         private const string CmsSkillGuid = "613D7110-6453-4BAB-892B-064222F8397C";
 
@@ -69,11 +114,6 @@ namespace Rock.Migrations
         /// The AISkill Guid of the Lava Application Builder skill.
         /// </summary>
         private const string LavaApplicationBuilderSkillGuid = "71B4E9D2-C685-4A30-BF17-5D208C4E96A1";
-
-        /// <summary>
-        /// The EntityType Guid of <c>Rock.AI.Agent.Skills.CmsSkill</c>.
-        /// </summary>
-        private const string CmsSkillEntityTypeGuid = "7A63570D-6FC3-4573-BDF2-89CFF605D5AB";
 
         /// <summary>
         /// The EntityType Guid of <c>Rock.AI.Agent.Skills.ForgeContentBuilderSkill</c>.
@@ -201,85 +241,25 @@ Give the user the page URL and tell them to check it as a normal member, not as 
 
         #endregion Instructions
 
-        /// <summary>
-        /// Operations to be performed during the upgrade process.
-        /// </summary>
+        /// <inheritdoc/>
         public override void Up()
         {
-            CreateTable(
-                "dbo.ForgeContent",
-                c => new
-                {
-                    Id = c.Int( nullable: false, identity: true ),
-                    BlockId = c.Int(),
-                    Name = c.String( maxLength: 100 ),
-                    Source = c.String(),
-                    CompiledContent = c.String(),
-                    CompiledVueVersion = c.String( maxLength: 50 ),
-                    CompiledDateTime = c.DateTime(),
-                    IsActive = c.Boolean( nullable: false ),
-                    CreatedDateTime = c.DateTime(),
-                    ModifiedDateTime = c.DateTime(),
-                    CreatedByPersonAliasId = c.Int(),
-                    ModifiedByPersonAliasId = c.Int(),
-                    Guid = c.Guid( nullable: false ),
-                    ForeignId = c.Int(),
-                    ForeignGuid = c.Guid(),
-                    ForeignKey = c.String( maxLength: 100 ),
-                } )
-                .PrimaryKey( t => t.Id )
-                .ForeignKey( "dbo.Block", t => t.BlockId, cascadeDelete: true )
-                .ForeignKey( "dbo.PersonAlias", t => t.CreatedByPersonAliasId )
-                .ForeignKey( "dbo.PersonAlias", t => t.ModifiedByPersonAliasId )
-                .Index( t => t.BlockId )
-                .Index( t => t.CreatedByPersonAliasId )
-                .Index( t => t.ModifiedByPersonAliasId )
-                .Index( t => t.Guid, unique: true );
-
-            RegisterForgeContentEntityTypes_Up();
-            AddForgeContentBlockType_Up();
-            AddCmsSkill_Up();
-            AddForgeContentBuilderSkill_Up();
-            AddLavaApplicationBuilderSkill_Up();
-            AddCommunityKnowledgeBaseSkill_Up();
-            AddCodeComposerMcpAgent_Up();
-            AddCodeComposerChatAgent_Up();
-            AttachSkillsToAgents_Up();
+            RegisterEntityTypes();
+            AddForgeContentBlockType();
+            AddForgeContentBuilderSkill();
+            AddLavaApplicationBuilderSkill();
+            AddCommunityKnowledgeBaseSkill();
+            AddCodeComposerMcpAgent();
+            AddCodeComposerChatAgent();
+            AttachSkillsToAgents();
         }
 
-        /// <summary>
-        /// Operations to be performed during the downgrade process.
-        /// </summary>
+        /// <inheritdoc/>
         public override void Down()
         {
-            /*
-                8/17/2026 - CLAUDE
-
-                The agent row and its security are deliberately left in place: an
-                administrator may retuned the instructions or enabled tools,
-                and there is no IsSystem flag on AIAgent to protect that work, so
-                a downgrade must not discard it. The skill and tool rows are
-                removed because startup registration recreates them on the next
-                run of a build that still contains the skill classes.
-
-                The EntityType rows are also left in place. They are recreated by
-                startup registration, carry no configuration of their own, and
-                deleting them would orphan anything else that came to reference
-                them.
-
-                Reason: A downgrade must not destroy administrator tuning of the agent.
-            */
-            RemoveSkillsAndTools_Down();
-            AddForgeContentBlockType_Down();
-
-            DropForeignKey( "dbo.ForgeContent", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
-            DropForeignKey( "dbo.ForgeContent", "CreatedByPersonAliasId", "dbo.PersonAlias" );
-            DropForeignKey( "dbo.ForgeContent", "BlockId", "dbo.Block" );
-            DropIndex( "dbo.ForgeContent", new[] { "Guid" } );
-            DropIndex( "dbo.ForgeContent", new[] { "ModifiedByPersonAliasId" } );
-            DropIndex( "dbo.ForgeContent", new[] { "CreatedByPersonAliasId" } );
-            DropIndex( "dbo.ForgeContent", new[] { "BlockId" } );
-            DropTable( "dbo.ForgeContent" );
+            // Intentionally empty. Removing the agents would discard any tuning an
+            // administrator has done to their instructions or enabled tools, and the
+            // skills may be attached to other agents by then.
         }
 
         #region Entity Types and Block Type
@@ -290,17 +270,11 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         /// against must be registered explicitly here first: a missing EntityType
         /// yields a null CodeEntityTypeId and a skill that exposes nothing, and
         /// AddOrUpdateEntityBlockType silently no-ops without the block EntityType.
+        /// The ForgeContent and Cms skill EntityTypes are registered by the
+        /// AddForgeContentAndCmsSkill EF migration and are not repeated here.
         /// </summary>
-        private void RegisterForgeContentEntityTypes_Up()
+        private void RegisterEntityTypes()
         {
-            RockMigrationHelper.UpdateEntityType(
-                "Rock.Model.ForgeContent",
-                "Forge Content",
-                "Rock.Model.ForgeContent, Rock, Version=20.0.5.0, Culture=neutral, PublicKeyToken=null",
-                true,
-                true,
-                SystemGuid.EntityType.FORGE_CONTENT );
-
             RockMigrationHelper.UpdateEntityType(
                 "Rock.Blocks.Cms.ForgeContentDetail",
                 "Forge Content",
@@ -308,12 +282,6 @@ Give the user the page URL and tell them to check it as a normal member, not as 
                 false,
                 false,
                 BlockEntityTypeGuid );
-
-            RockMigrationHelper.AddOrUpdateEntityType(
-                "Rock.AI.Agent.Skills.CmsSkill",
-                CmsSkillEntityTypeGuid,
-                false,
-                false );
 
             RockMigrationHelper.AddOrUpdateEntityType(
                 "Rock.AI.Agent.Skills.ForgeContentBuilderSkill",
@@ -339,7 +307,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         /// UpdateBlockTypeByGuid is intentionally avoided because it deletes by
         /// path and can wipe entity-based block types.
         /// </summary>
-        private void AddForgeContentBlockType_Up()
+        private void AddForgeContentBlockType()
         {
             RockMigrationHelper.AddOrUpdateEntityBlockType(
                 "Forge Content",
@@ -347,14 +315,6 @@ Give the user the page URL and tell them to check it as a normal member, not as 
                 "Rock.Blocks.Cms.ForgeContentDetail",
                 "CMS",
                 BlockTypeGuid );
-        }
-
-        /// <summary>
-        /// Removes the Forge Content block type.
-        /// </summary>
-        private void AddForgeContentBlockType_Down()
-        {
-            RockMigrationHelper.DeleteBlockType( BlockTypeGuid );
         }
 
         #endregion Entity Types and Block Type
@@ -375,129 +335,13 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         */
 
         /// <summary>
-        /// Registers the Cms skill, its tools, and administrator-only security
-        /// on the two mutating tools. The skill itself carries no security
-        /// rules: its read tools (LookupSites and friends) are usable by any
-        /// audience, so the lockdown is per tool rather than per skill.
-        /// </summary>
-        private void AddCmsSkill_Up()
-        {
-            AddOrUpdateCodeAISkill(
-                "Cms Skill",
-                "Explore and manage sites, pages, and blocks in Rock's CMS.",
-                CmsSkillEntityTypeGuid,
-                CmsSkillGuid );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "Lookup Sites",
-                "Retrieves all configured websites in Rock.",
-                "6234BB68-99B8-4B7C-884D-0D760B1F081C" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "Get Site",
-                "Gets the details of a single site, including its theme, default page, and login page.",
-                "16C84C00-62DC-4AE9-9A85-F7CDE7D20FC8" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "List Pages",
-                "Lists one level of the page tree: the root pages of every site, or the immediate children of a parent page. Call repeatedly with a returned page's IdKey to walk deeper.",
-                "1F7C1F00-F481-468A-860F-314D1B43A477" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "List Pages For Site",
-                "Lists every page belonging to one site as a flat list. Each page includes its parent page so the hierarchy can be reconstructed.",
-                "8968B4EF-3A1D-472A-9BC6-17A80B8F824F" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "Search Pages",
-                "Searches CMS pages by a partial name match so a page can be resolved and confirmed with the user before adding a child page under it or adding a block to it.",
-                "C668CAE0-CFA7-4AFF-87FF-5025860170BA" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "Get Page",
-                "Gets the details of a single page, including its routes, layout, and the blocks already placed on it.",
-                "E2CFF69F-C4B2-47F5-B322-4041D841F37C" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "Add Or Update Page",
-                "Adds a new child page under a parent page or updates an existing page. New pages inherit the parent's layout unless a layout is specified. Pass a kebab-case route so the page gets a friendly URL.",
-                "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "List Layouts",
-                "Lists the layouts pages can render with, optionally filtered to one site. Returns the layoutIdKey that AddOrUpdatePage accepts.",
-                "82C06D71-800E-4064-B72D-98F1B2A684D7" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "List Block Types",
-                "Lists the block types available to place on a page, filtered by a partial name or category. Returns the blockTypeIdKey that AddOrUpdateBlock needs.",
-                "F9A5AC4D-E40C-4FAF-895D-8C0E10A37EEC" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "List Blocks",
-                "Lists the blocks placed on a page, a layout, or a site. At least one filter is required.",
-                "98F33433-0712-4248-9C71-EAE4D9F9CA38" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "Add Or Update Block",
-                "Adds a block to a page, layout, or site, or updates an existing block. Returns the block's IdKey, which is the block id the Forge Content Builder skill's AddOrUpdateForgeContent tool needs.",
-                "05C9C108-4516-46B7-85FB-5C8FE6212CCF" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "Delete Page",
-                "Deletes a page along with its blocks, routes, and optionally its interaction history. Pages with child pages are refused; delete or move the children first.",
-                "BB6C42F3-C448-49D5-BB85-4072960178FC" );
-
-            AddOrUpdateCodeAISkillTool(
-                CmsSkillGuid,
-                "Delete Block",
-                "Deletes a block from its page, layout, or site, along with any Forge Content stored against it.",
-                "B30F66EA-0D9E-4854-BB82-A96BE7719D00" );
-
-            // Only the mutating tools are locked to administrators. The read
-            // tools stay visible and rely on per-person VIEW filtering inside
-            // each tool.
-            AddAdministratorOnlySecurityForAISkillTool(
-                "4A64B0B9-0DF9-42CF-BF5C-8FE24EFA4633", // Add Or Update Page
-                "4A95B31D-A629-4F76-B68A-6D74B7C578EE",
-                "C2D66CDA-336D-4D1E-BF29-B2960A25AAB6" );
-
-            AddAdministratorOnlySecurityForAISkillTool(
-                "05C9C108-4516-46B7-85FB-5C8FE6212CCF", // Add Or Update Block
-                "3FC10ED8-FF27-4B28-9C11-19B4F1993A80",
-                "70241AD4-ED95-4757-A19D-ECD27FDB430A" );
-
-            AddAdministratorOnlySecurityForAISkillTool(
-                "BB6C42F3-C448-49D5-BB85-4072960178FC", // Delete Page
-                "7483110B-1155-45FC-A7F7-B77959DB3982",
-                "A4118437-30B1-48C7-88D9-89E34E0C4B46" );
-
-            AddAdministratorOnlySecurityForAISkillTool(
-                "B30F66EA-0D9E-4854-BB82-A96BE7719D00", // Delete Block
-                "AFBD660A-35C7-48BB-8A82-15099CF595AE",
-                "557884F7-F369-4FE5-9F18-6C41FBE13900" );
-        }
-
-        /// <summary>
         /// Registers the Forge Content Builder skill, its security, and its
         /// tools: the component authoring loop. The skill was briefly merged
         /// with the Lava Application Builder skill as one Code Builder skill;
         /// a side-by-side evaluation kept the split, so each skill carries
         /// focused guidance and its own guids.
         /// </summary>
-        private void AddForgeContentBuilderSkill_Up()
+        private void AddForgeContentBuilderSkill()
         {
             AddOrUpdateCodeAISkill(
                 "Forge Content Builder Skill",
@@ -534,7 +378,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         /// tools: the endpoint authoring loop that feeds Forge Content
         /// components their data.
         /// </summary>
-        private void AddLavaApplicationBuilderSkill_Up()
+        private void AddLavaApplicationBuilderSkill()
         {
             AddOrUpdateCodeAISkill(
                 "Lava Application Builder Skill",
@@ -589,7 +433,7 @@ Give the user the page URL and tell them to check it as a normal member, not as 
         /// itself carries no security rules: every tool is read-only and both
         /// agents that receive it are already administrator-gated.
         /// </summary>
-        private void AddCommunityKnowledgeBaseSkill_Up()
+        private void AddCommunityKnowledgeBaseSkill()
         {
             /*
                 8/18/2026 - CLAUDE
@@ -659,44 +503,6 @@ Give the user the page URL and tell them to check it as a normal member, not as 
                 "BCE7AD22-3768-4DEE-A2E1-71BC324905EE" );
         }
 
-        /// <summary>
-        /// Removes the seeded skill links, security, tools, and skills. Runs before
-        /// the block type and table are removed.
-        /// </summary>
-        private void RemoveSkillsAndTools_Down()
-        {
-            var skillGuids = $"'{CmsSkillGuid}', '{ForgeContentBuilderSkillGuid}', '{LavaApplicationBuilderSkillGuid}'";
-
-            // The Community Knowledge Base skill's links are removed with the
-            // others, but its AISkill and AISkillTool rows are deliberately NOT
-            // deleted below: the skill belongs to core, and another agent may
-            // have attached it by the time this migration is rolled back.
-            Sql( $@"
-DELETE FROM [AIAgentSkill]
-WHERE [AIAgentId] IN (SELECT [Id] FROM [AIAgent] WHERE [Guid] IN ('{CodeComposerMcpAgentGuid}', '{CodeComposerChatAgentGuid}'))
-    AND [AISkillId] IN (SELECT [Id] FROM [AISkill] WHERE [Guid] IN ({skillGuids}, '{CommunityKnowledgeBaseSkillGuid}'))" );
-
-            RockMigrationHelper.DeleteSecurityAuth( "4A95B31D-A629-4F76-B68A-6D74B7C578EE" );
-            RockMigrationHelper.DeleteSecurityAuth( "C2D66CDA-336D-4D1E-BF29-B2960A25AAB6" );
-            RockMigrationHelper.DeleteSecurityAuth( "3FC10ED8-FF27-4B28-9C11-19B4F1993A80" );
-            RockMigrationHelper.DeleteSecurityAuth( "70241AD4-ED95-4757-A19D-ECD27FDB430A" );
-            RockMigrationHelper.DeleteSecurityAuth( "7483110B-1155-45FC-A7F7-B77959DB3982" );
-            RockMigrationHelper.DeleteSecurityAuth( "A4118437-30B1-48C7-88D9-89E34E0C4B46" );
-            RockMigrationHelper.DeleteSecurityAuth( "AFBD660A-35C7-48BB-8A82-15099CF595AE" );
-            RockMigrationHelper.DeleteSecurityAuth( "557884F7-F369-4FE5-9F18-6C41FBE13900" );
-            RockMigrationHelper.DeleteSecurityAuth( "5D3B7A20-94E6-4C18-B0F5-27A4D9C1E863" );
-            RockMigrationHelper.DeleteSecurityAuth( "A9E64C17-3B85-4D02-96E1-C50F8B27D4A9" );
-            RockMigrationHelper.DeleteSecurityAuth( "1C78E5B3-D40A-4F96-82D7-63B9A0F5C214" );
-            RockMigrationHelper.DeleteSecurityAuth( "F2A91D68-7C35-4E80-B41A-09D6E3C7825F" );
-
-            Sql( $@"
-DELETE FROM [AISkillTool]
-WHERE [AISkillId] IN (SELECT [Id] FROM [AISkill] WHERE [Guid] IN ({skillGuids}))
-
-DELETE FROM [AISkill]
-WHERE [Guid] IN ({skillGuids})" );
-        }
-
         #endregion Skills
 
         #region Agent
@@ -704,7 +510,7 @@ WHERE [Guid] IN ({skillGuids})" );
         /// <summary>
         /// Creates the Code Composer MCP Agent as an MCP server, if it does not already exist.
         /// </summary>
-        private void AddCodeComposerMcpAgent_Up()
+        private void AddCodeComposerMcpAgent()
         {
             // Create-only, never update. An administrator may retune the
             // instructions, and re-running this migration must not discard that.
@@ -767,7 +573,7 @@ END" );
         /// pre-release rename from 'Vibe Chat Agent'), no additional settings,
         /// markdown presentation guidance in the instructions.
         /// </summary>
-        private void AddCodeComposerChatAgent_Up()
+        private void AddCodeComposerChatAgent()
         {
             Sql( $@"
 IF NOT EXISTS (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{CodeComposerChatAgentGuid}')
@@ -878,7 +684,7 @@ END" );
         /// Attaches the four skills to both agents with explicit enabled-tool
         /// lists. Attaching a skill alone does not expose its tools.
         /// </summary>
-        private void AttachSkillsToAgents_Up()
+        private void AttachSkillsToAgents()
         {
             AttachSkillToAgent( CodeComposerMcpAgentGuid, CmsSkillGuid, CmsSkillEnabledTools );
             AttachSkillToAgent( CodeComposerMcpAgentGuid, ForgeContentBuilderSkillGuid, ForgeContentBuilderSkillEnabledTools );
@@ -951,37 +757,6 @@ END" );
 
             RockMigrationHelper.AddSecurityAuthForAISkill(
                 skillGuid,
-                1,
-                Authorization.VIEW,
-                false,
-                null,
-                ( int ) Model.SpecialRole.AllUsers,
-                denyAuthGuid );
-        }
-
-        /// <summary>
-        /// Grants VIEW on a single tool to Rock administrators and denies it to
-        /// everyone else. Used for mutating tools on a skill whose read tools
-        /// stay open, so the lockdown lands on the tool rather than the skill.
-        /// A tool a person is not authorized to VIEW is simply never offered to
-        /// the model.
-        /// </summary>
-        /// <param name="toolGuid">The Guid of the AISkillTool to secure.</param>
-        /// <param name="allowAuthGuid">The Guid of the administrator allow rule.</param>
-        /// <param name="denyAuthGuid">The Guid of the all-users deny rule.</param>
-        private void AddAdministratorOnlySecurityForAISkillTool( string toolGuid, string allowAuthGuid, string denyAuthGuid )
-        {
-            RockMigrationHelper.AddSecurityAuthForAISkillTool(
-                toolGuid,
-                0,
-                Authorization.VIEW,
-                true,
-                SystemGuid.Group.GROUP_ADMINISTRATORS,
-                ( int ) Model.SpecialRole.None,
-                allowAuthGuid );
-
-            RockMigrationHelper.AddSecurityAuthForAISkillTool(
-                toolGuid,
                 1,
                 Authorization.VIEW,
                 false,

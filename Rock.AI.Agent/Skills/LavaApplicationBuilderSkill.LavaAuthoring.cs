@@ -710,32 +710,33 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             call, failing as a bare 401, and every agent hit it. The default
             is now ApplicationView so the endpoint defers to the application.
 
-            REVISIT: ApplicationView has not fixed this, only moved it. This
-            skill rigs no security at all. AddOrUpdateLavaEndpoint builds the
-            application with an empty ConfigurationRigging and no Auth rows:
+            REVISIT: ApplicationView has not fixed this, only narrowed it.
+            This skill rigs no security at all. AddOrUpdateLavaApplication
+            builds the application with no Auth rows:
 
             - ApplicationView authorizes against the application's
               EXECUTE_VIEW action.
-            - A new application has no Auth rows, LavaApplication's
+            - LavaApplicationCache.IsAuthorized grants every action,
+              Execute* included, to Rock Administrators and Lava Application
+              Developers before Auth rules are consulted.
+            - For everyone else: no Auth rows, LavaApplication's
               ParentAuthority is deliberately null (see
               LavaApplication.Logic.cs), and Model.IsAllowedByDefault grants
               only VIEW and TAG, so EXECUTE_VIEW denies.
-            - LavaApplication.IsAuthorized overrides for Rock Administrators
-              and Lava Application Developers on View/Edit/Administrate but
-              explicitly NOT on Execute.
 
-            So a freshly created endpoint still cannot be called by anyone,
-            administrators included, and the default path is silent because
-            the WithInstructions warning in AddOrUpdateLavaEndpoint fires
-            only for EndpointExecute. The fix is for these tools to set the
-            authorization rather than describe it, likely by taking the
-            intended audience as a parameter (staff, all authenticated
-            people, or public) and writing the matching EXECUTE_VIEW Auth
-            rows when the application is created. Until then, do not tell the
-            user security is handled.
+            So a freshly created endpoint works for the administrator who is
+            building it and 401s for every other visitor. That failure mode
+            is silent in the worst way: the builder tests it, it works, and
+            the page breaks only for the real audience. The fix is for these
+            tools to set the authorization rather than describe it, likely
+            by taking the intended audience as a parameter (staff, all
+            authenticated people, or public) and writing the matching
+            EXECUTE_VIEW Auth rows when the application is created. Until
+            then, do not tell the user security is handled.
 
-            Reason: The default security mode still yields an uncallable
-            endpoint, and does so without warning.
+            Reason: The default security mode yields an endpoint only
+            administrators and Lava Application Developers can call, and it
+            fails for the real audience without warning.
         */
         if ( securityMode.IsNullOrWhiteSpace() )
         {
