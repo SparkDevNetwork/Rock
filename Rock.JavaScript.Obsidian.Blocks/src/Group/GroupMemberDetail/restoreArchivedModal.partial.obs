@@ -1,12 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Modal v-model="isShown" title="Restore Archived Member">
-        {{ message }}
+    <Modal v-model="isShown" title="Restore Group Member">
+        <span class="text-semibold">{{ message }}</span> Do you want to restore the previous settings? Notes will be retained.
 
         <template #customButtons>
-            <div class="d-flex gap-3 justify-content-end">
-                <RockButton @click="onDecline">Don't Restore</RockButton>
+            <div class="d-flex gap-3 justify-content-end align-items-center">
                 <RockButton :btnType="BtnType.Primary" @click="onRestore">Restore</RockButton>
+                <RockButton @click="onDecline">Don't Restore</RockButton>
             </div>
         </template>
     </Modal>

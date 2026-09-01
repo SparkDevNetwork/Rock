@@ -1682,7 +1682,8 @@ namespace Rock.Blocks.Group
                 return ActionOk( new SaveGroupMemberResponseBag
                 {
                     IsRestorePromptShown = true,
-                    RestorePromptMessage = $"There is an archived record for {entity.Person.FullName} as a {role.Name.ToLower()} in this group. Do you want to restore the previous settings? Notes will be retained.",
+                    // The message renders as HTML on the client, so the data-driven parts are encoded.
+                    RestorePromptMessage = $"{entity.Person.FullName.EncodeHtml()} has an archived record as a {role.Name.EncodeHtml()} in this group.",
                     ArchivedGroupMemberIdKey = archivedGroupMember.IdKey
                 } );
             }
