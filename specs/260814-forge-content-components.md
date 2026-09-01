@@ -281,6 +281,18 @@ The revision makes the application a first-class entity with a single create pat
 
 The cost is one extra tool call when starting a new dashboard. The seeding (layer 7) gains two tool rows and two entries in the agent's `EnabledTools` list, and the Code Composer MCP Agent's Build Order instruction text changes to `AddOrUpdateLavaApplication` then `AddOrUpdateLavaEndpoint`. Because the seeding migration is still unreleased, it is edited in place, matching how the Cms skill consolidation was handled.
 
+#### Revision: the application audience parameter (2026-09-01)
+
+As first shipped, the tools created applications with no `Auth` rows and rigged no security. Because `LavaApplicationCache.IsAuthorized` grants every action, the `Execute*` actions included, to Rock Administrators and Lava Application Developers before Auth rules are consulted, the failure mode was quiet in the worst way: the administrator building the dashboard could call every endpoint, and every other visitor got a bare 401. (An earlier revision of this analysis claimed a fresh endpoint was uncallable by anyone; that repeated a stale "but not Execute" comment in `LavaApplication.Logic.cs` that the code never implemented.)
+
+The revision makes the tools set the authorization rather than describe it:
+
+- **`AddOrUpdateLavaApplication` takes an `audience` parameter**, required when adding and optional when updating. It accepts `Public` (everyone, including anonymous visitors), `AllAuthenticatedPeople` (anyone who is logged in), or the name of a security role, matched case-insensitively against active groups with `IsSecurityRole = true` (exact name first, then contains).
+- **An unknown or ambiguous role name errors with the candidate roles**, names and descriptions, capped. That error path is the role discovery, so no role-listing tool is added and the model only sees the list when it actually needs it.
+- **Rigging writes `EXECUTE_VIEW` `Auth` rows on the application**: an allow row for the audience, plus a deny-all-users tail for the two non-public audiences. Both rows carry the skill's provenance `ForeignKey`, and an audience change rewrites only rows carrying it. If an administrator has added their own `EXECUTE_VIEW` rules, the tool refuses to change the audience and points at the admin pages, per the provenance safety model.
+- **The scope is `EXECUTE_VIEW` only.** `EXECUTE_EDIT` and `EXECUTE_ADMINISTRATE` are never granted, so a write endpoint in `ApplicationEdit` mode stays callable only by Rock Administrators and Lava Application Developers (through the cache override) until an administrator grants rights by hand. Defaulting write access to the read audience would be a footgun, not a feature.
+- **`AddOrUpdateLavaEndpoint` warns when a write-capable endpoint is left in `ApplicationView` mode**, because that mode exposes the endpoint's writes to the whole read audience.
+
 Behavior worth specifying:
 
 - **`AddOrUpdatePage` takes a kebab-case route** and publishes `PageRouteWasUpdatedMessage`, or the friendly URL 404s until restart.
@@ -413,7 +425,7 @@ That is why every write tool is administrator-gated: you control who writes the 
 
 Known consequences to design around:
 
-- A newly created Lava application **has no security rules**. `LavaApplication` deliberately breaks security inheritance, so an agent-created endpoint is governed by nothing until an administrator adds rules. The tools do not currently set them; see [Open Questions](#open-questions).
+- `LavaApplication` deliberately breaks security inheritance, and Rock Administrators and Lava Application Developers pass every action through a cache override, so an unrigged application works for its builder and 401s for everyone else. `AddOrUpdateLavaApplication` therefore requires an intended audience at creation and writes the matching `EXECUTE_VIEW` rules; see [the audience revision](#revision-the-application-audience-parameter-2026-09-01).
 - Authored code shares a DOM with every other block on its page and can read form values there. **Block placement is a security decision.**
 - The component mounts inside the host block's tree, so `useInvokeBlockAction()` resolves to the host block's `SaveContent`. That action re-checks permissions, so it is not an escalation, but it is not an intended surface.
 - Anything built this way needs one pass **viewed as a non-administrator** before it is trusted.
@@ -449,13 +461,15 @@ Things that fail silently, in rough order of how much time they cost.
 8. `AddOrUpdateForgeContent` with a syntax error. Nothing is stored, and the compiler's error text comes back.
 9. `AddOrUpdateForgeContent` with pathologically deep nesting (several hundred levels). It returns an error and **the site keeps serving**. This is the regression test for the whole compile design.
 10. `AddOrUpdateLavaEndpoint` returns a test execution result. Point a component at it with `useLavaApp` and confirm the data renders.
+    - `AddOrUpdateLavaApplication` without an audience errors; with a misspelled role name it errors listing the security roles with descriptions; with `Public` the endpoint is callable **while logged out**. Changing the audience to a role restricts it again, and the Security dialog on the application shows the `ExecuteView` rules the tool wrote.
 11. Rename the Chromium install directory and call `AddOrUpdateForgeContent`, then save from the block editor. Both report a retryable condition rather than hanging or reporting a source error.
 
 ## Open Questions
 
-1. **Lava application security.** The tools create applications with no rules and do not set any. Likely fix: take the intended audience as a parameter and write the matching `EXECUTE_VIEW` `Auth` rows at creation. `AddOrUpdateLavaApplication` (the layer 6 revision) is the natural home for that parameter once it exists. Until then the tools must not claim security is handled.
-2. **No compile circuit breaker.** If a compile ever does kill something, nothing records it, so a retrying client repeats it.
-3. **No version history.** Repeated saves overwrite `Source`; audit columns record who, never what.
+1. **No compile circuit breaker.** If a compile ever does kill something, nothing records it, so a retrying client repeats it.
+2. **No version history.** Repeated saves overwrite `Source`; audit columns record who, never what.
+
+(A third question, Lava application security, was resolved and built on 2026-09-01; see [the audience revision](#revision-the-application-audience-parameter-2026-09-01).)
 
 ## Considered but Rejected
 

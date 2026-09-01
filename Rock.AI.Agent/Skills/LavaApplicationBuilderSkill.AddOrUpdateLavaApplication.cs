@@ -65,6 +65,7 @@ internal sealed partial class LavaApplicationBuilderSkill
     [AgentToolPreamble( "Saving the Lava application." )]
     [AgentUsage( "Create one application per block, named after the dashboard, then pass its slug to every AddOrUpdateLavaEndpoint call so security is rigged once for the whole block." )]
     [AgentUsage( "The slug cannot be changed after creation; it is the address every component's useLavaApp binding uses. To rename what the user sees, update the name." )]
+    [AgentUsage( "audience decides who may call the application's endpoints and is required when adding. Ask the user who the page is for: pass 'Public' for anonymous visitors, 'AllAuthenticatedPeople' for anyone who is logged in, or a security role name for restricted data. If a role name does not match, the error lists the roles to choose from." )]
     [AgentToolGuid( "26C5F1A8-3D94-4E67-90B2-7A45D8E1C6F3" )]
     public AgentToolResult AddOrUpdateLavaApplication(
         [Description( "Required when editing an existing Lava application. Do not provide when adding a new one." )]
@@ -78,6 +79,9 @@ internal sealed partial class LavaApplicationBuilderSkill
 
         [Description( "What the application is for." )]
         SetOrClear<string> description = null,
+
+        [Description( "Who may call the application's read endpoints: 'Public' (everyone, including anonymous visitors), 'AllAuthenticatedPeople' (anyone who is logged in), or the name of a security role. Required when adding. On an update, provide it only to change the audience." )]
+        string audience = null,
 
         [Description( "Whether the application and its endpoints can be called." )]
         bool? isActive = null )
@@ -109,6 +113,16 @@ internal sealed partial class LavaApplicationBuilderSkill
             {
                 helper.AddError( "A name is required when adding a Lava application." );
             }
+
+            // Requiring the audience up front is the whole point of the
+            // parameter: creation is the one moment the intended audience is
+            // reliably known, and an application with no execute-view rules
+            // works for the administrator building it (the cache's role
+            // override) while returning 401 to every real visitor.
+            if ( audience.IsNullOrWhiteSpace() )
+            {
+                helper.AddError( $"An audience is required when adding a Lava application, so its endpoints are callable by the people the page is for. Pass '{PublicAudienceKeyword}', '{AllAuthenticatedAudienceKeyword}', or the name of a security role." );
+            }
         }
         else
         {
@@ -128,7 +142,22 @@ internal sealed partial class LavaApplicationBuilderSkill
                 {
                     helper.AddError( $"The slug of a Lava application cannot be changed; it is the address every component's useLavaApp binding uses. Update the name instead, or create a new application." );
                 }
+
+                // Once an administrator has authored their own execute-view
+                // rules, the audience belongs to them; rewriting it here
+                // would silently undo a decision made in the admin pages.
+                if ( audience.IsNotNullOrWhiteSpace() && HasHandAuthoredReadRules( rockContext, application ) )
+                {
+                    helper.AddError( $"An administrator has added their own security rules to the '{application.Slug}' Lava application, so its audience cannot be changed here. Ask the user to adjust the ExecuteView rules through the Lava Applications admin pages." );
+                }
             }
+        }
+
+        AudienceGrant audienceGrant = null;
+
+        if ( audience.IsNotNullOrWhiteSpace() && !TryResolveAudience( rockContext, audience, out audienceGrant, out var audienceError ) )
+        {
+            helper.AddError( audienceError );
         }
 
         if ( helper.HasErrors )
@@ -196,6 +225,14 @@ internal sealed partial class LavaApplicationBuilderSkill
             return helper.ErrorResult;
         }
 
+        // The application has to be saved before it can be rigged, because
+        // the Auth rows reference its Id. Failures above mean no rigging,
+        // and rigging failures surface as the tool call's own exception.
+        if ( audienceGrant != null )
+        {
+            SetApplicationReadAudience( rockContext, application, audienceGrant );
+        }
+
         var result = Success( CreateApplicationDetailResult( application ) )
             .WithHistoryContent( new LavaApplicationReferenceResult
             {
@@ -205,10 +242,16 @@ internal sealed partial class LavaApplicationBuilderSkill
             }, "lava-application" )
             .WithInstructions( $"The '{application.Slug}' Lava application has been {( isAdd ? "created" : "updated" )}." );
 
+        // Spell out what was and was not granted, because the read and
+        // write boundaries differ: the audience covers ApplicationView
+        // endpoints only, and the two override roles always pass.
+        if ( audienceGrant != null )
+        {
+            result.WithInstructions( $"The application's read endpoints (security mode ApplicationView) can be executed by {audienceGrant.Description}. Rock Administrators and Lava Application Developers can always execute them, so verify the page as a person outside those roles. Write access was not granted: an endpoint using the ApplicationEdit security mode is callable only by those two roles until an administrator grants ExecuteEdit rights through the Lava Applications admin pages. To change the audience later, call this tool again with a different audience value." );
+        }
+
         if ( isAdd )
         {
-            result.WithInstructions( $"The '{application.Slug}' Lava application was created with no security rules and deliberately does not inherit any. Only the Rock Administrators and Lava Application Developers roles can execute its endpoints until someone grants rights on the application through the Lava Applications admin pages. Tell the user this before they test the page as a normal visitor." );
-
             /*
                 8/28/2026 - CLAUDE
 

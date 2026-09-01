@@ -319,6 +319,22 @@ internal sealed partial class LavaApplicationBuilderSkill
             result.WithInstructions( $"The '{endpoint.Slug}' endpoint uses the EndpointExecute security mode and has no authorization rules, so nobody can call it yet, administrators included. Either grant Execute on the endpoint through the Lava Applications admin pages, or call AddOrUpdateLavaEndpoint again with the definition's securityMode set to ApplicationView so it defers to the application. Tell the user this before they test the page, because the call will fail with a 401 rather than an error they can read." );
         }
 
+        // A write endpoint left in ApplicationView mode is runnable by the
+        // application's whole read audience, which AddOrUpdateLavaApplication
+        // may have rigged as broadly as the anonymous public. Only speak up
+        // when this call created that state (a new endpoint, or a change to
+        // the commands or mode), so template-only edits are not nagged.
+        var isSecurityShapeChangedByThisCall = isNewEndpoint
+            || isSettingCommands
+            || definition.SecurityMode.IsNotNullOrWhiteSpace();
+
+        if ( isSecurityShapeChangedByThisCall
+            && endpoint.SecurityMode == LavaEndpointSecurityMode.ApplicationView
+            && IsWriteCapable( endpoint.EnabledLavaCommands ) )
+        {
+            result.WithInstructions( $"The '{endpoint.Slug}' endpoint can write data but uses the ApplicationView security mode, so everyone in the application's read audience can trigger its writes. If the read audience is broader than the people who should write, call AddOrUpdateLavaEndpoint again with the definition's securityMode set to ApplicationEdit, and tell the user that ApplicationEdit endpoints are callable only by Rock Administrators and Lava Application Developers until an administrator grants ExecuteEdit rights on the application." );
+        }
+
         // Only when this call is what asked for SQL: on a new endpoint that
         // is whatever the definition enabled, and on an update it is only a
         // change to the commands. An endpoint that already had SQL approved
