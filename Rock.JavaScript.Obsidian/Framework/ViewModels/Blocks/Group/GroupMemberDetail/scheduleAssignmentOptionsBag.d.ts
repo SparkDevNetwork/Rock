@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { GroupScheduleAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupScheduleAssignmentBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
@@ -32,8 +33,9 @@ export type ScheduleAssignmentOptionsBag = {
     locationItems?: ListItemBag[] | null;
 
     /**
-     * Gets or sets the schedules available for assignment, formatted
-     * per the Schedule List Format block setting.
+     * Gets or sets the schedules available for assignment, carrying the
+     * formatted name and sort metadata the client grid needs. Schedules
+     * already assigned are filtered client-side, where that state lives.
      */
-    scheduleItems?: ListItemBag[] | null;
+    schedules?: GroupScheduleAssignmentBag[] | null;
 };

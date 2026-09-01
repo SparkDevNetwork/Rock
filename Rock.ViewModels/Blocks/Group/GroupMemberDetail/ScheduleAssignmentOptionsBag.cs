@@ -28,10 +28,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
     public class ScheduleAssignmentOptionsBag
     {
         /// <summary>
-        /// Gets or sets the schedules available for assignment, formatted
-        /// per the Schedule List Format block setting.
+        /// Gets or sets the schedules available for assignment, carrying the
+        /// formatted name and sort metadata the client grid needs. Schedules
+        /// already assigned are filtered client-side, where that state lives.
         /// </summary>
-        public List<ListItemBag> ScheduleItems { get; set; }
+        public List<GroupScheduleAssignmentBag> Schedules { get; set; }
 
         /// <summary>
         /// Gets or sets the locations available for the selected schedule.

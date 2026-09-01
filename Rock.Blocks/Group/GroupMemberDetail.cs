@@ -1441,6 +1441,59 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Syncs the member's GroupMemberAssignment records with the
+        /// client-edited assignment preference rows, mirroring the WebForms
+        /// grid save. Rows the client grid never showed (orphaned location or
+        /// schedule pairings) are left alone.
+        /// </summary>
+        private void SyncScheduleAssignments( GroupMember entity, List<GroupScheduleAssignmentBag> assignments )
+        {
+            assignments = assignments ?? new List<GroupScheduleAssignmentBag>();
+
+            var assignmentService = new GroupMemberAssignmentService( RockContext );
+
+            // The visible pairings are materialized up front so the removal loop stays in memory.
+            var groupId = entity.GroupId;
+            var visiblePairs = new GroupLocationService( RockContext )
+                .Queryable()
+                .Where( gl => gl.GroupId == groupId )
+                .SelectMany( gl => gl.Schedules, ( gl, s ) => new { gl.LocationId, ScheduleId = s.Id } )
+                .ToList();
+
+            var clientGuids = assignments.Select( a => a.Guid ).ToList();
+
+            var removedAssignments = entity.GroupMemberAssignments
+                .Where( a =>
+                    !clientGuids.Contains( a.Guid )
+                    && ( !a.LocationId.HasValue
+                        || visiblePairs.Any( p => p.LocationId == a.LocationId.Value && p.ScheduleId == a.ScheduleId ) ) )
+                .ToList();
+
+            foreach ( var removedAssignment in removedAssignments )
+            {
+                entity.GroupMemberAssignments.Remove( removedAssignment );
+                assignmentService.Delete( removedAssignment );
+            }
+
+            foreach ( var assignmentBag in assignments )
+            {
+                var assignment = entity.GroupMemberAssignments.FirstOrDefault( a => a.Guid == assignmentBag.Guid );
+
+                if ( assignment == null )
+                {
+                    assignment = new GroupMemberAssignment
+                    {
+                        Guid = assignmentBag.Guid
+                    };
+                    entity.GroupMemberAssignments.Add( assignment );
+                }
+
+                assignment.ScheduleId = assignmentBag.ScheduleId;
+                assignment.LocationId = assignmentBag.LocationId;
+            }
+        }
+
+        /// <summary>
         /// Gets the sign-up GroupMemberAssignment for the member and the
         /// sign-up location and schedule, creating one when none exists, and
         /// applies the editable assignment attribute values from the bag.
@@ -1594,8 +1647,23 @@ namespace Rock.Blocks.Group
                 entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => editableKeys.Contains( a.Key ) );
             } );
 
+            // Scheduling only applies when the section was shown: scheduling enabled and not sign-up mode (WebForms parity).
+            var groupType = GroupTypeCache.Get( entity.Group.GroupTypeId );
+
+            if ( groupType.IsSchedulingEnabled && !IsSignUpMode )
+            {
+                box.IfValidProperty( nameof( box.Bag.ScheduleTemplateId ), () =>
+                    entity.ScheduleTemplateId = box.Bag.ScheduleTemplateId );
+
+                box.IfValidProperty( nameof( box.Bag.ScheduleStartDate ), () =>
+                    entity.ScheduleStartDate = box.Bag.ScheduleStartDate?.DateTime );
+
+                box.IfValidProperty( nameof( box.Bag.ScheduleAssignments ), () =>
+                    SyncScheduleAssignments( entity, box.Bag.ScheduleAssignments ) );
+            }
+
             // TODO: Apply the remaining bag properties (communication preference, chat flags,
-            // scheduling, signed document) as their sections are built.
+            // signed document, reminder lead time) as their sections are built.
             return true;
         }
 
@@ -2139,14 +2207,70 @@ namespace Rock.Blocks.Group
         /// Gets the schedule and location options for the Assignment
         /// Preference modal.
         /// </summary>
-        /// <param name="groupIdKey">The IdKey of the group.</param>
-        /// <param name="selectedScheduleId">The selected schedule identifier, when loading locations.</param>
         /// <returns>A <see cref="ScheduleAssignmentOptionsBag"/>.</returns>
         [BlockAction]
-        public BlockActionResult GetScheduleAssignmentOptions( string groupIdKey, int? selectedScheduleId )
+        public BlockActionResult GetScheduleAssignmentOptions( string groupMemberIdKey, int? selectedScheduleId )
         {
-            // TODO: Implement per conversion plan §8.
-            return ActionBadRequest( "Not implemented." );
+            var group = groupMemberIdKey.IsNotNullOrWhiteSpace()
+                ? new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds )?.Group
+                : GetGroupFromPageParameter();
+
+            if ( group == null )
+            {
+                return ActionBadRequest( $"{Model.Group.FriendlyTypeName} not found." );
+            }
+
+            if ( !group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) && !IsAuthorizedToEdit( group ) )
+            {
+                return ActionBadRequest( "Not authorized to view this group." );
+            }
+
+            var groupId = group.Id;
+
+            var schedules = new GroupLocationService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( gl => gl.GroupId == groupId )
+                .SelectMany( gl => gl.Schedules )
+                .Distinct()
+                .ToList()
+                .OrderByOrderAndNextScheduledDateTime()
+                .Where( s => s.IsActive && s.IsPublic == true )
+                .ToList();
+
+            // Base the next start date on the start of the week so schedules order consistently.
+            var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
+
+            var options = new ScheduleAssignmentOptionsBag
+            {
+                Schedules = schedules
+                    .Select( s => new GroupScheduleAssignmentBag
+                    {
+                        ScheduleId = s.Id,
+                        ScheduleName = s.Name,
+                        FormattedScheduleName = GetFormattedScheduleForListing( s.Name, s.StartTimeOfDay ),
+                        ScheduleOrder = s.Order,
+                        ScheduleNextStartDateTime = s.GetNextStartDateTime( occurrenceDate )?.ToRockDateTimeOffset()
+                    } )
+                    .ToList(),
+                LocationItems = new List<ListItemBag>()
+            };
+
+            if ( selectedScheduleId.HasValue )
+            {
+                options.LocationItems = new LocationService( RockContext )
+                    .GetByGroupSchedule( selectedScheduleId.Value, groupId )
+                    .OrderBy( l => l.Name )
+                    .ToList()
+                    .Select( l => new ListItemBag
+                    {
+                        Text = l.Name,
+                        Value = l.Id.ToString()
+                    } )
+                    .ToList();
+            }
+
+            return ActionOk( options );
         }
 
         #endregion Block Actions

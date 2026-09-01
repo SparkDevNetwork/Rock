@@ -167,10 +167,13 @@
                                                           isEditMode
                                                           :numberOfColumns="1" />
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6">
                                 <AttributeValuesContainer v-if="hasViewableAttributes"
                                                           :modelValue="options.viewableAttributeValues ?? {}"
                                                           :attributes="options.viewableAttributes ?? {}"
+                                                          :showCategoryLabel="false"
                                                           :numberOfColumns="1" />
                             </div>
                         </div>
@@ -187,29 +190,61 @@
                                                           isEditMode
                                                           :numberOfColumns="1" />
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6">
                                 <AttributeValuesContainer v-if="hasViewableAssignmentAttributes"
                                                           :modelValue="options.viewableAssignmentAttributeValues ?? {}"
                                                           :attributes="options.viewableAssignmentAttributes ?? {}"
+                                                          :showCategoryLabel="false"
                                                           :numberOfColumns="1" />
                             </div>
                         </div>
                     </ContentStack>
                 </ContentSection>
 
-                <ContentSection v-if="options.isSchedulingEnabled" title="Scheduling" icon="ti ti-calendar" isCollapsed>
-                    <!-- TODO: Schedule Settings stack (Schedule Template, Schedule Start Date required when a
-                         template is set) and Assignment Preferences stack (grid + add/edit/delete) per conversion
-                         plan §9.4. -->
+                <ContentSection v-if="options.isSchedulingEnabled" title="Scheduling" icon="ti ti-calendar">
+                    <ContentStack title="Schedule Settings"
+                                  description="Configure this member's serving schedule.">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <DropDownList v-model="scheduleTemplateId"
+                                              label="Schedule Template"
+                                              help="The recurring schedule template this member follows for serving."
+                                              :items="options.scheduleTemplateItems ?? []"
+                                              :disabled="isFormDisabled" />
+
+                                <DatePicker v-model="scheduleStartDate"
+                                            label="Schedule Start Date"
+                                            help="The date this member's schedule template takes effect."
+                                            :rules="scheduleStartDateRules"
+                                            :disabled="isFormDisabled" />
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Assignment Preferences"
+                                  description="Set the times and locations this member prefers to be scheduled for.">
+                        <Grid light
+                              keyField="guid"
+                              :data="assignmentGridData"
+                              itemTerm="Assignment Preference"
+                              :onAddItem="isEditable ? onAddAssignment : undefined">
+                            <TextColumn name="schedule" title="Schedule" field="schedule" />
+                            <TextColumn name="location" title="Location" field="location" />
+                            <EditColumn v-if="isEditable" @click="onEditAssignment" />
+                            <DeleteColumn v-if="isEditable" disableConfirmation @click="onDeleteAssignment" />
+                        </Grid>
+                    </ContentStack>
                 </ContentSection>
 
-                <ContentSection title="Communication" icon="ti ti-message" isCollapsed>
+                <ContentSection title="Communication" icon="ti ti-message">
                     <!-- TODO: Preferences stack (Communication Preference radios) and Notifications & Reminders
                          stack (Group Leaders Notified checkbox, Email Reminder Lead Time (Days) number box) per
                          conversion plan §9.5. -->
                 </ContentSection>
 
-                <ContentSection title="Administration" icon="ti ti-settings" isCollapsed>
+                <ContentSection title="Administration" icon="ti ti-settings">
                     <!-- TODO: Required Signed Documents stack (Signed Document uploader; the unsigned-document
                          warning alert renders above the sections instead) and Chat Settings stack (Chat Muted,
                          Chat Banned) per conversion plan §9.6. -->
@@ -224,7 +259,11 @@
         </Panel>
     </RockForm>
 
-    <AssignmentPreferenceModal v-model="isAssignmentModalShown" />
+    <AssignmentPreferenceModal v-model="isAssignmentModalShown"
+                               :groupMemberIdKey="groupMemberIdKey"
+                               :assignment="editingAssignment"
+                               :usedScheduleIds="usedScheduleIds"
+                               @save="onSaveAssignment" />
     <RestoreArchivedModal v-model="isRestoreModalShown"
                           :message="restorePromptMessage"
                           @restore="onRestoreArchivedMember"
@@ -250,6 +289,8 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import Grid, { TextColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import AssignmentPreferenceModal from "./GroupMemberDetail/assignmentPreferenceModal.partial.obs";
@@ -274,6 +315,8 @@
     import { LaunchRequirementWorkflowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/launchRequirementWorkflowResponseBag";
     import { SaveGroupMemberResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/saveGroupMemberResponseBag";
     import { SignatureDocumentStatusBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/signatureDocumentStatusBag";
+    import { GroupScheduleAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupScheduleAssignmentBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
     // #region Types
 
@@ -342,6 +385,15 @@
 
     /** Sign-up assignment attribute values; the definitions ride in the options bag. */
     const assignmentAttributeValues = ref(config.entity?.assignmentAttributeValues ?? {});
+
+    // Scheduling section. Assignment rows are edited client-side and
+    // reconciled against GroupMemberAssignment records on save.
+    const scheduleTemplateId = ref(config.entity?.scheduleTemplateId?.toString() ?? "");
+    const scheduleStartDate = ref(config.entity?.scheduleStartDate ?? "");
+    const scheduleAssignments = ref<GroupScheduleAssignmentBag[]>(config.entity?.scheduleAssignments ?? []);
+
+    /** The assignment row being edited in the Assignment Preference modal, or null while adding. */
+    const editingAssignment = ref<GroupScheduleAssignmentBag | null>(null);
 
     // Requirement resolution checkboxes, held client-side and written with the member on save.
     // A resolution already stored in the database presents as met with no checkbox, so these
@@ -413,6 +465,28 @@
     /** The assignment sets are only populated in sign-up mode, which also gates that stack to the mode. */
     const hasViewableAssignmentAttributes = computed((): boolean => {
         return Object.keys(options.value.viewableAssignmentAttributes ?? {}).length > 0;
+    });
+
+    /** Schedule Start Date is only required once a template is chosen (WebForms parity). */
+    const scheduleStartDateRules = computed((): string => {
+        return scheduleTemplateId.value ? "required" : "";
+    });
+
+    /** The assignment rows sorted like the WebForms grid: schedule order, then next start. */
+    const assignmentGridData = computed((): GridDataBag => ({
+        rows: [...scheduleAssignments.value]
+            .sort((a, b) => (a.scheduleOrder - b.scheduleOrder)
+                || (a.scheduleNextStartDateTime ?? "").localeCompare(b.scheduleNextStartDateTime ?? ""))
+            .map(a => ({
+                guid: a.guid,
+                schedule: a.formattedScheduleName,
+                location: a.locationName
+            }))
+    }));
+
+    /** Schedule ids already assigned, so the modal offers each schedule once. */
+    const usedScheduleIds = computed((): number[] => {
+        return scheduleAssignments.value.map(a => a.scheduleId);
     });
 
     /** True when any attribute stack has attributes to show. */
@@ -505,6 +579,43 @@
      */
     function onToggleOverrideRequirement(requirementAlert: GroupMemberRequirementAlertBag, isChecked: boolean): void {
         toggleRequirementGuid(checkedOverrideRequirementGuids.value, requirementAlert.groupRequirementGuid, isChecked);
+    }
+
+    /**
+     * Opens the Assignment Preference modal to add a new row.
+     */
+    function onAddAssignment(): void {
+        editingAssignment.value = null;
+        isAssignmentModalShown.value = true;
+    }
+
+    /**
+     * Opens the Assignment Preference modal on the clicked row.
+     */
+    function onEditAssignment(key: string): void {
+        editingAssignment.value = scheduleAssignments.value.find(a => a.guid === key) ?? null;
+        isAssignmentModalShown.value = true;
+    }
+
+    /**
+     * Removes the clicked row. Nothing is deleted until save.
+     */
+    function onDeleteAssignment(key: string): void {
+        scheduleAssignments.value = scheduleAssignments.value.filter(a => a.guid !== key);
+    }
+
+    /**
+     * Applies the modal's saved row back into the assignment list.
+     */
+    function onSaveAssignment(assignment: GroupScheduleAssignmentBag): void {
+        const index = scheduleAssignments.value.findIndex(a => a.guid === assignment.guid);
+
+        if (index >= 0) {
+            scheduleAssignments.value.splice(index, 1, assignment);
+        }
+        else {
+            scheduleAssignments.value.push(assignment);
+        }
     }
 
     /**
@@ -663,6 +774,9 @@
             setPropertiesBoxValue(box, "note", note.value);
             setPropertiesBoxValue(box, "attributeValues", attributeValues.value);
             setPropertiesBoxValue(box, "assignmentAttributeValues", assignmentAttributeValues.value);
+            setPropertiesBoxValue(box, "scheduleTemplateId", toNumberOrNull(scheduleTemplateId.value));
+            setPropertiesBoxValue(box, "scheduleStartDate", scheduleStartDate.value || null);
+            setPropertiesBoxValue(box, "scheduleAssignments", scheduleAssignments.value);
             setPropertiesBoxValue(box, "manuallyMetRequirementGuids", checkedManualRequirementGuids.value);
             setPropertiesBoxValue(box, "overriddenRequirementGuids", checkedOverrideRequirementGuids.value);
 
@@ -839,6 +953,9 @@
         attributes.value = box.entity?.attributes ?? {};
         attributeValues.value = box.entity?.attributeValues ?? {};
         assignmentAttributeValues.value = box.entity?.assignmentAttributeValues ?? {};
+        scheduleTemplateId.value = box.entity?.scheduleTemplateId?.toString() ?? "";
+        scheduleStartDate.value = box.entity?.scheduleStartDate ?? "";
+        scheduleAssignments.value = box.entity?.scheduleAssignments ?? [];
 
         // Watchers flush on the next tick, so the guard has to outlive this call to suppress them.
         nextTick(() => {
