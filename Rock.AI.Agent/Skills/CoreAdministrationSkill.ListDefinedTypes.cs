@@ -72,9 +72,7 @@ internal sealed partial class CoreAdministrationSkill
                 Id = dt.Id,
                 Guid = dt.Guid,
                 Name = dt.Name,
-                Category = dt.Category != null
-                    ? new KeyNameResult { Id = dt.Category.Id, Guid = dt.Category.Guid, Name = dt.Category.Name }
-                    : null
+                Category = KeyNameResult.FromCache( dt.Category )
             } );
 
         var page = helper.GetPaginatedItems( orderedTypes, pageNumber );

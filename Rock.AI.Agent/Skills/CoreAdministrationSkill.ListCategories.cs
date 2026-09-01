@@ -90,14 +90,12 @@ internal sealed partial class CoreAdministrationSkill
 
                 // The parent stays in the list result. Without it a flat
                 // rendering of a deep tree is unreadable.
-                ParentCategory = c.ParentCategory != null
-                    ? new KeyNameResult { Id = c.ParentCategory.Id, Guid = c.ParentCategory.Guid, Name = c.ParentCategory.Name }
-                    : null
+                ParentCategory = KeyNameResult.FromCache( c.ParentCategory )
             } )
             .ToList() );
 
         var historyPage = page.WithItems( page.Items
-            .Select( c => new KeyNameResult { Id = c.Id, Guid = c.Guid, Name = c.Name } ) );
+            .Select( c => KeyNameResult.FromCache( c ) ) );
 
         return helper.GetPaginatedResult( resultPage, historyPage );
     }

@@ -136,9 +136,7 @@ internal sealed partial class CmsSkill : AgentSkillComponent
             PageTitle = page.PageTitle,
             SiteName = page.Site,
             Url = GetPageUrl( page ),
-            ParentPage = parentPage != null
-                ? new KeyNameResult { Id = parentPage.Id, Name = parentPage.InternalName }
-                : null,
+            ParentPage = KeyNameResult.FromCache( parentPage ),
             ChildPageCount = page.GetPages( rockContext ).Count
         };
     }

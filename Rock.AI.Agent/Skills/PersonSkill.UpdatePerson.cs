@@ -117,7 +117,7 @@ internal sealed partial class PersonSkill
             var definedValues = definedType.DefinedValues
                 .OrderBy( dv => dv.Order )
                 .ThenBy( dv => dv.Value )
-                .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } )
+                .Select( dv => KeyNameResult.FromCache( dv ) )
                 .ToList();
 
             lookupResults[resultKey] = definedValues;

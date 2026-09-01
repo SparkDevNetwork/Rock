@@ -87,7 +87,7 @@ internal sealed partial class CoreAdministrationSkill
         };
 
         return Success( result )
-            .WithHistoryContent( new KeyNameResult( attributeCache.Id, attributeCache.Guid, attributeCache.Name ) );
+            .WithHistoryContent( KeyNameResult.FromCache( attributeCache ) );
     }
 
     #endregion

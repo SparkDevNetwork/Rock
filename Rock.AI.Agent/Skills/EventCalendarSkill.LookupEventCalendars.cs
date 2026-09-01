@@ -37,7 +37,7 @@ internal sealed partial class EventCalendarSkill
     public AgentToolResult LookupEventCalendars()
     {
         var calendarResults = GetConfiguredCalendars()
-            .Select( c => new KeyNameResult( c.Id, c.Name ) )
+            .Select( c => KeyNameResult.FromCache( c ) )
             .OrderBy( kn => kn.Name )
             .ToList();
 

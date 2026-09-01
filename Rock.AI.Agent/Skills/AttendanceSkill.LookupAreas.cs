@@ -55,7 +55,7 @@ internal sealed partial class AttendanceSkill
         var areaResults = checkInConfiguration.GetDescendentGroupTypes()
             .Where( a => a.TakesAttendance )
             .OrderBy( a => a.Name )
-            .Select( a => new KeyNameResult( a.Id, a.Name ) )
+            .Select( a => KeyNameResult.FromCache( a ) )
             .ToList();
 
         var result = Success( areaResults );

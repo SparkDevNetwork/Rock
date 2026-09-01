@@ -259,7 +259,7 @@ internal sealed partial class CoreAdministrationSkill
             .WithInstructions( isNew
                 ? "The global attribute has been created."
                 : "The global attribute has been updated." )
-            .WithHistoryContent( new KeyNameResult( attributeCache.Id, attributeCache.Guid, attributeCache.Name ) );
+            .WithHistoryContent( KeyNameResult.FromCache( attributeCache ) );
     }
 
     #endregion

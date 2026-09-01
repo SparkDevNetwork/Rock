@@ -272,9 +272,7 @@ internal sealed partial class CoreAdministrationSkill
             return new AuthorizationSubjectResult
             {
                 Kind = "Group",
-                Group = group != null
-                    ? new KeyNameResult { Id = group.Id, Guid = group.Guid, Name = group.Name }
-                    : null
+                Group = KeyNameResult.FromCache( group )
             };
         }
 

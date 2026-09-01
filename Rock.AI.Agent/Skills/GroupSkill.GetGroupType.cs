@@ -109,19 +109,17 @@ internal sealed partial class GroupSkill
             EnableGroupHistory = groupTypeCache.EnableGroupHistory,
             AllowGroupSync = groupTypeCache.AllowGroupSync,
             AllowAnyChildGroupType = groupTypeCache.AllowAnyChildGroupType,
-            DefaultGroupRole = defaultRole != null
-                ? new KeyNameResult { Id = defaultRole.Id, Guid = defaultRole.Guid, Name = defaultRole.Name }
-                : null,
+            DefaultGroupRole = KeyNameResult.FromCache( defaultRole ),
             Roles = groupTypeCache.Roles
-                .Select( r => new KeyNameResult { Id = r.Id, Guid = r.Guid, Name = r.Name } )
+                .Select( r => KeyNameResult.FromCache( r ) )
                 .ToList(),
             ChildGroupTypes = groupTypeCache.ChildGroupTypes
-                .Select( ct => new KeyNameResult { Id = ct.Id, Guid = ct.Guid, Name = ct.Name } )
+                .Select( ct => KeyNameResult.FromCache( ct ) )
                 .ToList()
         };
 
         return Success( result )
-            .WithHistoryContent( new KeyNameResult( groupTypeCache.Id, groupTypeCache.Guid, groupTypeCache.Name ) );
+            .WithHistoryContent( KeyNameResult.FromCache( groupTypeCache ) );
     }
 
     #endregion

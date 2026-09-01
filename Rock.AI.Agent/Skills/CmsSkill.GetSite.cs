@@ -66,12 +66,8 @@ internal sealed partial class CmsSkill
             ExternalUrl = site.ExternalUrl,
             IsActive = site.IsActive,
             Theme = site.Theme,
-            DefaultPage = defaultPage != null
-                ? new KeyNameResult { Id = defaultPage.Id, Name = defaultPage.InternalName }
-                : null,
-            LoginPage = loginPage != null
-                ? new KeyNameResult { Id = loginPage.Id, Name = loginPage.InternalName }
-                : null,
+            DefaultPage = KeyNameResult.FromCache( defaultPage ),
+            LoginPage = KeyNameResult.FromCache( loginPage ),
             AttributeValues = site.GetAttributeValueResults( AgentRequestContext ).ToList()
         } )
             .WithHistoryContent( new KeyNameResult

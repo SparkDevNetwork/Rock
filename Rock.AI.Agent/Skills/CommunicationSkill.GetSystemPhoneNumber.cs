@@ -123,12 +123,7 @@ internal sealed partial class CommunicationSkill
 
             if ( workflowType != null )
             {
-                result.SmsReceivedWorkflowType = new KeyNameResult
-                {
-                    Id = workflowType.Id,
-                    Guid = workflowType.Guid,
-                    Name = workflowType.Name
-                };
+                result.SmsReceivedWorkflowType = KeyNameResult.FromCache( workflowType );
             }
         }
 
@@ -154,12 +149,7 @@ internal sealed partial class CommunicationSkill
 
             if ( site != null )
             {
-                result.MobileApplicationSite = new KeyNameResult
-                {
-                    Id = site.Id,
-                    Guid = site.Guid,
-                    Name = site.Name
-                };
+                result.MobileApplicationSite = KeyNameResult.FromCache( site );
             }
         }
     }
