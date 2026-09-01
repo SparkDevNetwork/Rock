@@ -13,8 +13,12 @@
                 <!-- TODO: Communicate and Move header buttons, ellipsis menu with Audit Details modal. -->
             </template>
 
-            <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
-            <NotificationBox v-if="successMessage" alertType="success">{{ successMessage }}</NotificationBox>
+            <NotificationBox v-if="formErrors.length" alertType="validation">
+                Please correct the following:
+                <ul>
+                    <li v-for="formError in formErrors" :key="formError" v-html="formError"></li>
+                </ul>
+            </NotificationBox>
             <NotificationBox v-if="options.editModeMessage" alertType="info" v-html="options.editModeMessage" />
 
             <ContentSectionContainer :sidebar="false">
@@ -227,8 +231,9 @@
     // #region Values
 
     const blockError = ref(config.errorMessage ?? "");
-    const errorMessage = ref("");
-    const successMessage = ref("");
+
+    /** Form-level errors from block actions, shown together in the validation summary box. */
+    const formErrors = ref<string[]>([]);
     const submitForm = ref(false);
 
     const options = ref(config.options ?? ({} as GroupMemberDetailOptionsBag));
@@ -346,7 +351,7 @@
         });
 
         if (!result.isSuccess || !result.data) {
-            errorMessage.value = result.errorMessage ?? "Unable to restore the archived group member.";
+            setFormError(result.errorMessage ?? "Unable to restore the archived group member.");
             return;
         }
 
@@ -398,7 +403,7 @@
      * navigates to one already started.
      */
     async function onLaunchRequirementWorkflow(requirementAlert: GroupMemberRequirementAlertBag, isWarningWorkflow: boolean): Promise<void> {
-        errorMessage.value = "";
+        formErrors.value = [];
 
         const result = await invokeBlockAction<LaunchRequirementWorkflowResponseBag>("LaunchRequirementWorkflow", {
             groupMemberIdKey: groupMemberIdKey.value,
@@ -407,7 +412,7 @@
         });
 
         if (!result.isSuccess || !result.data) {
-            errorMessage.value = result.errorMessage ?? "Unable to start the workflow.";
+            setFormError(result.errorMessage ?? "Unable to start the workflow.");
             return;
         }
 
@@ -423,6 +428,16 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /**
+     * Shows a server error in the form-level validation summary, splitting a
+     * combined message into individual items.
+     */
+    function setFormError(message: string): void {
+        formErrors.value = message.split(/<br\s*\/?>/i)
+            .map(e => e.trim())
+            .filter(e => !!e);
+    }
 
     /**
      * Gets the alert style for a requirement alert. A checked resolution
@@ -495,7 +510,7 @@
      * handles navigation, validation errors, and the restore prompt.
      */
     async function saveGroupMember(isRestoreDeclined: boolean): Promise<void> {
-        errorMessage.value = "";
+        formErrors.value = [];
         isSaving.value = true;
 
         try {
@@ -517,7 +532,7 @@
             });
 
             if (!result.isSuccess || !result.data) {
-                errorMessage.value = result.errorMessage ?? "Unable to save the group member.";
+                setFormError(result.errorMessage ?? "Unable to save the group member.");
                 return;
             }
 
@@ -629,7 +644,7 @@
             });
 
             if (!result.isSuccess || !result.data) {
-                errorMessage.value = result.errorMessage ?? "Unable to refresh the group requirements.";
+                setFormError(result.errorMessage ?? "Unable to refresh the group requirements.");
                 return false;
             }
 

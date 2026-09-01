@@ -443,9 +443,8 @@ namespace Rock.Blocks.Group
             options.GroupMemberGuid = entity.Id != 0 ? entity.Guid : ( Guid? ) null;
             options.PersonGuid = entity.Person?.Guid;
 
-            // While adding, requirement resolutions are held client-side and written on save, so interaction stays enabled.
-            // For an existing member, interaction is disabled until the member is saved and unchanged.
-            options.IsRequirementInteractionDisabled = entity.Id != 0 && entity.IsNewOrChangedGroupMember( RockContext );
+            // Workflow links write immediately, so they are only offered on a saved member; a pending role change does not disable them (WebForms parity).
+            options.IsRequirementInteractionDisabled = entity.Id == 0;
 
             // Don't check or show requirements until a person is selected.
             if ( entity.PersonId == 0 )
@@ -459,6 +458,12 @@ namespace Rock.Blocks.Group
                 && !entity.IsNewOrChangedGroupMember( RockContext ) )
             {
                 entity.CalculateRequirements( RockContext, true );
+            }
+
+            // Hidden requirements are enforced here so their data is never serialized to the client, matching WebForms never rendering it.
+            if ( options.AreRequirementsHidden )
+            {
+                return;
             }
 
             options.RequirementAlerts = GetRequirementAlerts( entity, entity.GroupRoleId, out var calculationErrors );
@@ -482,10 +487,7 @@ namespace Rock.Blocks.Group
 
             List<GroupRequirementStatus> statusList = null;
 
-            // Use the stored requirement results when the member's saved role matches the
-            // selected role; otherwise calculate on demand for the person and role.
-            // Materialized immediately so later enumeration cannot re-run the calculations.
-            if ( entity.Id != 0 && entity.GroupRoleId == selectedRoleId )
+            if ( entity.Id != 0 && !entity.IsNewOrChangedGroupMember( RockContext ) )
             {
                 statusList = entity.GetGroupRequirementsStatuses( RockContext )?.ToList();
             }
@@ -668,6 +670,13 @@ namespace Rock.Blocks.Group
         private bool TryValidateMustMeetRequirements( GroupMember entity, GroupMemberBag bag, out string errorMessage )
         {
             errorMessage = null;
+
+            // Businesses and REST users are exempt, matching the entity's own IsValidGroupMember check.
+            var restUserRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
+            if ( entity.Person != null && ( entity.Person.IsBusiness() || entity.Person.RecordTypeValueId == restUserRecordTypeId ) )
+            {
+                return true;
+            }
 
             // Nothing to enforce when the group has no must-meet requirements, matching the entity's own guard.
             if ( !entity.Group.GetGroupRequirements( RockContext ).Any( r => r.MustMeetRequirementToAddMember ) )
@@ -1703,8 +1712,8 @@ namespace Rock.Blocks.Group
             }
             catch ( GroupMemberValidationException ex )
             {
-                // The model's own rules (duplicate member, capacity, etc.) failed.
-                return ActionBadRequest( ex.Message );
+                // The model's own rules (duplicate member, capacity, etc.) failed; the break lets the client list each error separately.
+                return ActionBadRequest( ex.Message.Replace( "; ", "<br>" ) );
             }
 
             return ActionOk( new SaveGroupMemberResponseBag
@@ -1881,18 +1890,31 @@ namespace Rock.Blocks.Group
                 } );
             }
 
-            if ( entity.Id != 0 && !entity.IsNewOrChangedGroupMember( RockContext ) )
+            if ( !entity.Group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) && !IsAuthorizedToEdit( entity.Group ) )
             {
-                entity.CalculateRequirements( RockContext, true );
+                return ActionBadRequest( "Not authorized to view this group." );
             }
 
-            var alerts = GetRequirementAlerts( entity, selectedRoleId, out var calculationErrors );
+            // With requirements hidden, the archived-record state still refreshes but the requirement data stays server-side.
+            var areRequirementsHidden = GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBoolean();
+            var alerts = new List<GroupMemberRequirementAlertBag>();
+            string calculationErrors = null;
+
+            if ( !areRequirementsHidden )
+            {
+                if ( entity.Id != 0 && !entity.IsNewOrChangedGroupMember( RockContext ) )
+                {
+                    entity.CalculateRequirements( RockContext, true );
+                }
+
+                alerts = GetRequirementAlerts( entity, selectedRoleId, out calculationErrors );
+            }
 
             return ActionOk( new RefreshRequirementsResponseBag
             {
                 RequirementAlerts = alerts,
                 CalculationErrors = calculationErrors,
-                IsRequirementInteractionDisabled = entity.Id != 0 && entity.IsNewOrChangedGroupMember( RockContext ),
+                IsRequirementInteractionDisabled = entity.Id == 0,
                 HasArchivedRecord = HasArchivedRecord( entity )
             } );
         }
