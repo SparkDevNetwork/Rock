@@ -13,7 +13,7 @@
                 <!-- TODO: Communicate and Move header buttons, ellipsis menu with Audit Details modal. -->
             </template>
 
-            <NotificationBox v-if="formErrors.length" alertType="validation">
+            <NotificationBox v-if="formErrors.length" ref="formErrorNotificationBox" alertType="validation">
                 Please correct the following:
                 <ul>
                     <li v-for="formError in formErrors" :key="formError" v-html="formError"></li>
@@ -31,7 +31,7 @@
                                               v-model="person"
                                               label="Person"
                                               rules="required"
-                                              :disabled="!isEditable" />
+                                              :disabled="isFormDisabled" />
                                 <StaticFormControl v-else label="Person" :modelValue="personName">
                                     <div class="d-flex align-items-center">
                                         <PersonAvatar :personIdKey="options.personIdKey ?? ''"
@@ -56,14 +56,14 @@
                                               :items="options.roleItems ?? []"
                                               :showBlankItem="false"
                                               rules="required"
-                                              :disabled="!isEditable || options.isRoleLockedBySync" />
+                                              :disabled="isFormDisabled || options.isRoleLockedBySync" />
                             </div>
                         </div>
 
                         <template v-if="areRequirementsShown">
                             <div class="mb-3">
                                 <RockButton :btnSize="BtnSize.Small" :disabled="isRefreshingRequirements" @click="onRefreshRequirements">
-                                    <i class="ti ti-refresh"></i> Refresh Requirements
+                                    <i class="ti ti-refresh" :class="{ 'ti-spin': isRefreshingRequirements }"></i> Refresh Requirements
                                 </RockButton>
                                 <span v-if="isRefreshSuccessShown" class="text-success ml-2">
                                     <i class="ti ti-circle-check"></i> Successfully Refreshed
@@ -124,7 +124,7 @@
                                                  label="Member Status"
                                                  help="Whether this member is pending, active, or inactive in the group."
                                                  :items="options.statusItems ?? []"
-                                                 :disabled="!isEditable" />
+                                                 :disabled="isFormDisabled" />
                             </div>
                         </div>
 
@@ -133,7 +133,7 @@
                                  help="Internal notes about this member's involvement in the group."
                                  textMode="multiline"
                                  :rows="4"
-                                 :disabled="!isEditable" />
+                                 :disabled="isFormDisabled" />
                     </div>
                 </ContentSection>
 
@@ -163,8 +163,8 @@
             </ContentSectionContainer>
 
             <template #footerActions>
-                <RockButton :btnType="BtnType.Primary" :disabled="isSaving" @click="onStartSubmitForm">Save</RockButton>
-                <RockButton v-if="options.isSaveThenAddShown" :btnType="BtnType.Link" :disabled="isSaving" @click="onSaveThenAdd">Save Then Add</RockButton>
+                <RockButton :btnType="BtnType.Primary" :disabled="isSaving || isPersonDataLoading" @click="onStartSubmitForm">Save</RockButton>
+                <RockButton v-if="options.isSaveThenAddShown" :btnType="BtnType.Link" :disabled="isSaving || isPersonDataLoading" @click="onSaveThenAdd">Save Then Add</RockButton>
                 <RockButton :btnType="BtnType.Link" @click="onCancel">Cancel</RockButton>
             </template>
         </Panel>
@@ -234,6 +234,9 @@
 
     /** Form-level errors from block actions, shown together in the validation summary box. */
     const formErrors = ref<string[]>([]);
+
+    // The top-of-block error summary, scrolled into view when an action fails (it only exists while formErrors is set).
+    const formErrorNotificationBox = ref<InstanceType<typeof NotificationBox> | null>(null);
     const submitForm = ref(false);
 
     const options = ref(config.options ?? ({} as GroupMemberDetailOptionsBag));
@@ -250,6 +253,9 @@
 
     const isRefreshSuccessShown = ref(false);
     const isRefreshingRequirements = ref(false);
+
+    /** True while the data for a newly selected person is loading, locking the form until it lands. */
+    const isPersonDataLoading = ref(false);
 
     const isSaving = ref(false);
 
@@ -312,6 +318,11 @@
 
     const requirementAlerts = computed((): GroupMemberRequirementAlertBag[] => {
         return options.value.requirementAlerts ?? [];
+    });
+
+    /** True when the form inputs are disabled, from read-only rights or a person data load in flight. */
+    const isFormDisabled = computed((): boolean => {
+        return !isEditable.value || isPersonDataLoading.value;
     });
 
     // #endregion Computed Values
@@ -431,12 +442,17 @@
 
     /**
      * Shows a server error in the form-level validation summary, splitting a
-     * combined message into individual items.
+     * combined message into individual items and scrolling it into view.
      */
     function setFormError(message: string): void {
         formErrors.value = message.split(/<br\s*\/?>/i)
             .map(e => e.trim())
             .filter(e => !!e);
+
+        // Bring the error summary into view; the user may have scrolled down to the Save button.
+        nextTick(() => {
+            formErrorNotificationBox.value?.$el?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
     }
 
     /**
@@ -722,13 +738,19 @@
         }
 
         isRefreshSuccessShown.value = false;
+        isPersonDataLoading.value = true;
 
-        // The swap brings its own requirement state, so only recalculate when no member was loaded.
-        if (await tryLoadExistingSignUpGroupMember()) {
-            return;
+        try {
+            // The swap brings its own requirement state, so only recalculate when no member was loaded.
+            if (await tryLoadExistingSignUpGroupMember()) {
+                return;
+            }
+
+            await refreshRequirements();
         }
-
-        await refreshRequirements();
+        finally {
+            isPersonDataLoading.value = false;
+        }
     });
 
     watch(roleId, async () => {
