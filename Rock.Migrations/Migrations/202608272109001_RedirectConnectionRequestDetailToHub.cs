@@ -23,11 +23,16 @@ namespace Rock.Migrations
     public partial class RedirectConnectionRequestDetailToHub : Rock.Migrations.RockMigration
     {
         /// <summary>
+        /// The Connections Hub's "people/connections/hub" system route.
+        /// </summary>
+        private const string ConnectionsHubPageRouteGuid = "565DFC73-E223-4C52-9174-11BB65700B7B";
+
+        /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            MoveDetailPageAttributeValues( Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, Rock.SystemGuid.Page.CONNECTIONS_HUB );
+            MoveDetailPageAttributeValues( Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, Rock.SystemGuid.Page.CONNECTIONS_HUB, ConnectionsHubPageRouteGuid );
         }
 
         /// <summary>
@@ -35,7 +40,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            MoveDetailPageAttributeValues( Rock.SystemGuid.Page.CONNECTIONS_HUB, Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL );
+            // The Connection Request Detail page has no route, so the value moves back to a bare page reference.
+            MoveDetailPageAttributeValues( Rock.SystemGuid.Page.CONNECTIONS_HUB, Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, null );
         }
 
         /// <summary>
@@ -45,8 +51,14 @@ namespace Rock.Migrations
         /// </summary>
         /// <param name="fromPageGuid">The page the setting must currently hold to be changed.</param>
         /// <param name="toPageGuid">The page to point the setting at.</param>
-        private void MoveDetailPageAttributeValues( string fromPageGuid, string toPageGuid )
+        /// <param name="toPageRouteGuid">The route to pair with the page in configured values, or <c>null</c> when the page has no route.</param>
+        private void MoveDetailPageAttributeValues( string fromPageGuid, string toPageGuid, string toPageRouteGuid )
         {
+            // A page reference is stored as "Page.Guid" or "Page.Guid,PageRoute.Guid". Only the
+            // configured value takes the route; [DefaultValue] is rewritten from the block's code
+            // declaration, which holds the page on its own.
+            var toValue = toPageRouteGuid.IsNullOrWhiteSpace() ? toPageGuid : $"{toPageGuid},{toPageRouteGuid}";
+
             /*
                 8/27/26 - JPH
 
@@ -59,11 +71,12 @@ namespace Rock.Migrations
                 Reason: Repointing a partner's configured detail page would discard their setting.
             */
             Sql( $@"
-DECLARE @FromPageGuid UNIQUEIDENTIFIER = '{fromPageGuid}';
-DECLARE @ToPageGuid UNIQUEIDENTIFIER = '{toPageGuid}';
+DECLARE @FromPageGuid NVARCHAR(50) = '{fromPageGuid}';
+DECLARE @ToPageGuid NVARCHAR(50) = '{toPageGuid}';
+DECLARE @ToValue NVARCHAR(100) = '{toValue}';
 
 UPDATE a
-SET a.[DefaultValue] = CAST(@ToPageGuid AS NVARCHAR(50))
+SET a.[DefaultValue] = @ToPageGuid
     , a.[DefaultPersistedTextValue] = NULL
     , a.[DefaultPersistedHtmlValue] = NULL
     , a.[DefaultPersistedCondensedTextValue] = NULL
@@ -71,17 +84,20 @@ SET a.[DefaultValue] = CAST(@ToPageGuid AS NVARCHAR(50))
     , a.[IsDefaultPersistedValueDirty] = 1
     , a.[ModifiedDateTime] = GETDATE()
 FROM [Attribute] a
-INNER JOIN [BlockType] bt
-    ON a.[EntityTypeQualifierColumn] = 'BlockTypeId'
-    AND a.[EntityTypeQualifierValue] = CAST(bt.[Id] AS NVARCHAR(20))
-WHERE TRY_CAST(a.[DefaultValue] AS UNIQUEIDENTIFIER) = @FromPageGuid
-    AND (
-        (bt.[Guid] = '1B8E50A0-7AC4-475F-857C-50D0809A3F04' AND a.[Key] = 'DetailPage')                         -- My Connection Opportunities Lava
-        OR (bt.[Guid] = '8D3E5A9C-7B2F-4E1D-A6C0-3F9B8D2E5A7C' AND a.[Key] = 'ConnectionRequestDetailPage')     -- Connection Celebrations Report
-    );
+WHERE EXISTS (
+        SELECT 1
+        FROM [BlockType] bt
+        WHERE a.[EntityTypeQualifierColumn] = 'BlockTypeId'
+            AND a.[EntityTypeQualifierValue] = CAST(bt.[Id] AS NVARCHAR(20))
+            AND (
+                (bt.[Guid] = '1B8E50A0-7AC4-475F-857C-50D0809A3F04' AND a.[Key] = 'DetailPage')                         -- My Connection Opportunities Lava
+                OR (bt.[Guid] = '8D3E5A9C-7B2F-4E1D-A6C0-3F9B8D2E5A7C' AND a.[Key] = 'ConnectionRequestDetailPage')     -- Connection Celebrations Report
+            )
+    )
+    AND (a.[DefaultValue] = @FromPageGuid OR a.[DefaultValue] LIKE @FromPageGuid + ',%');
 
 UPDATE av
-SET av.[Value] = CAST(@ToPageGuid AS NVARCHAR(50))
+SET av.[Value] = @ToValue
     , av.[PersistedTextValue] = NULL
     , av.[PersistedHtmlValue] = NULL
     , av.[PersistedCondensedTextValue] = NULL
@@ -89,18 +105,21 @@ SET av.[Value] = CAST(@ToPageGuid AS NVARCHAR(50))
     , av.[IsPersistedValueDirty] = 1
     , av.[ModifiedDateTime] = GETDATE()
 FROM [AttributeValue] av
-INNER JOIN [Attribute] a
-    ON a.[Id] = av.[AttributeId]
-INNER JOIN [BlockType] bt
-    ON a.[EntityTypeQualifierColumn] = 'BlockTypeId'
-    AND a.[EntityTypeQualifierValue] = CAST(bt.[Id] AS NVARCHAR(20))
-WHERE TRY_CAST(av.[Value] AS UNIQUEIDENTIFIER) = @FromPageGuid
-    AND (
-        (bt.[Guid] = '3F69E04F-F966-4CAE-B89D-F97DFEF6407A' AND a.[Key] = 'DetailPage')                         -- My Connection Opportunities
-        OR (bt.[Guid] = '1B8E50A0-7AC4-475F-857C-50D0809A3F04' AND a.[Key] = 'DetailPage')                      -- My Connection Opportunities Lava
-        OR (bt.[Guid] = '39C53B93-C75A-45DE-B9E7-DFA4EE6B7027' AND a.[Key] = 'ConnectionRequestDetail')         -- Connection Requests
-        OR (bt.[Guid] = '8D3E5A9C-7B2F-4E1D-A6C0-3F9B8D2E5A7C' AND a.[Key] = 'ConnectionRequestDetailPage')     -- Connection Celebrations Report
-    );" );
+WHERE EXISTS (
+        SELECT 1
+        FROM [Attribute] a
+        INNER JOIN [BlockType] bt
+            ON a.[EntityTypeQualifierColumn] = 'BlockTypeId'
+            AND a.[EntityTypeQualifierValue] = CAST(bt.[Id] AS NVARCHAR(20))
+        WHERE a.[Id] = av.[AttributeId]
+            AND (
+                (bt.[Guid] = '3F69E04F-F966-4CAE-B89D-F97DFEF6407A' AND a.[Key] = 'DetailPage')                         -- My Connection Opportunities
+                OR (bt.[Guid] = '1B8E50A0-7AC4-475F-857C-50D0809A3F04' AND a.[Key] = 'DetailPage')                      -- My Connection Opportunities Lava
+                OR (bt.[Guid] = '39C53B93-C75A-45DE-B9E7-DFA4EE6B7027' AND a.[Key] = 'ConnectionRequestDetail')         -- Connection Requests
+                OR (bt.[Guid] = '8D3E5A9C-7B2F-4E1D-A6C0-3F9B8D2E5A7C' AND a.[Key] = 'ConnectionRequestDetailPage')     -- Connection Celebrations Report
+            )
+    )
+    AND (av.[Value] = @FromPageGuid OR av.[Value] LIKE @FromPageGuid + ',%');" );
         }
     }
 }
