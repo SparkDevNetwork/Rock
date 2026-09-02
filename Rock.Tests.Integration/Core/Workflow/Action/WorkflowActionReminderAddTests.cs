@@ -116,7 +116,7 @@ namespace Rock.Tests.Integration.Core.Workflow
             var reminderService = new ReminderService( rockContext );
             var reminder = reminderService.Queryable().FirstOrDefault( r => r.Note == note );
 
-            Assert.That.AreEqualDate( now, reminder.ReminderDate, "Reminder Date is invalid." );
+            Assert.AreEqual( now.Date, reminder.ReminderDate.Date, "Reminder Date is invalid." );
         }
 
         [TestMethod]
@@ -143,7 +143,7 @@ namespace Rock.Tests.Integration.Core.Workflow
             var reminderService = new ReminderService( rockContext );
             var reminder = reminderService.Queryable().FirstOrDefault( r => r.Note == note );
 
-            Assert.That.AreEqualDate( reminderDate, reminder.ReminderDate, "Reminder Date is invalid." );
+            Assert.AreEqual( reminderDate.Date, reminder.ReminderDate.Date, "Reminder Date is invalid." );
         }
 
         [TestMethod]
@@ -169,7 +169,7 @@ namespace Rock.Tests.Integration.Core.Workflow
             var reminderService = new ReminderService( rockContext );
             var reminder = reminderService.Queryable().FirstOrDefault( r => r.Note == note );
 
-            Assert.That.AreEqualDate( reminderDate, reminder.ReminderDate, "Reminder Date is invalid." );
+            Assert.AreEqual( reminderDate.Date, reminder.ReminderDate.Date, "Reminder Date is invalid." );
         }
 
         /// <summary>

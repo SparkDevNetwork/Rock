@@ -116,7 +116,11 @@ namespace Rock.Blocks.Engagement.Steps
 
         public List<ListItemBag> Campuses { get; set; }
         private int currentColorIndex = 0;
-        private string[] defaultColors = { "#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45", "#27aeef", "#b33dc6" };
+
+        // Fallback colors for step types that don't have their own configured HighlightColor. Each node in
+        // this flow diagram is only distinguishable by color, so this cycles through the categorical
+        // palette in sequence rather than a single flat color.
+        private string[] defaultColors = { "--color-categorical-1", "--color-categorical-2", "--color-categorical-3", "--color-categorical-4", "--color-categorical-5", "--color-categorical-6", "--color-categorical-7", "--color-categorical-8" };
 
         #region Base Overrides
 

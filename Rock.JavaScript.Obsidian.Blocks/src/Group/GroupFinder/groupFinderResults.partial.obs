@@ -1,14 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="group-finder-results-pane" :class="`is-columns-${columns}`">
-        <div v-if="!isResultCountHidden" class="group-finder-result-count">
+    <div class="groupfinder-results-pane" :class="`is-columns-${columns}`">
+        <div v-if="!isResultCountHidden" class="groupfinder-result-count">
             <span>{{ resultCountText }}</span>
             <!-- Only while refreshing an already-populated list; the empty/initial load shows the single
                  centered indicator in the body instead, so the two never appear at once. -->
             <LoadingIndicator v-if="isLoading && cards.length > 0" isSmall />
         </div>
 
-        <div v-if="cards.length" class="group-finder-results">
+        <div v-if="cards.length" class="groupfinder-results">
             <GroupFinderCard v-for="card in cards"
                              :key="card.groupGuid ?? ''"
                              :card="card"
@@ -23,32 +23,32 @@
              wide screen; a refresh that already has cards keeps them and signals loading via the small count
              spinner instead. The skeleton shape follows the card chrome (media, title, text, optional CTA)
              without parsing the configurable Lava, so it approximates rather than mirrors the real card. -->
-        <div v-else-if="isLoading" class="group-finder-results" aria-hidden="true">
-            <div v-for="index in skeletonCount" :key="index" class="group-finder-skeleton-card">
-                <div v-if="hasCardImage" class="skeleton skeleton-block group-finder-skeleton-media"></div>
-                <div class="group-finder-skeleton-body">
+        <div v-else-if="isLoading" class="groupfinder-results" aria-hidden="true">
+            <div v-for="index in skeletonCount" :key="index" class="groupfinder-skeleton-card">
+                <div v-if="hasCardImage" class="skeleton skeleton-block groupfinder-skeleton-media"></div>
+                <div class="groupfinder-skeleton-body">
                     <div class="skeleton skeleton-heading"></div>
                     <div class="skeleton skeleton-text"></div>
                     <div class="skeleton skeleton-text"></div>
-                    <div v-if="hasCardCta" class="skeleton skeleton-button group-finder-skeleton-cta"></div>
+                    <div v-if="hasCardCta" class="skeleton skeleton-button groupfinder-skeleton-cta"></div>
                 </div>
             </div>
         </div>
 
-        <div v-else class="group-finder-empty">
+        <div v-else class="groupfinder-empty">
             No groups match your filters. Try adjusting them.
         </div>
 
         <!-- Sits under the card list (so it never lands between the cards and a side-by-side map). Each
              page swaps its cards and markers together, so the map stays in step with the list. The first,
              last, and current +/- one page always show; the rest collapse behind ellipses. -->
-        <nav v-if="isPagerShown" class="group-finder-pager" aria-label="Results pages">
+        <nav v-if="isPagerShown" class="groupfinder-pager" aria-label="Results pages">
             <RockButton btnType="default" btnSize="sm" :disabled="currentPage === 0" title="Previous page" @click="$emit('pageChange', currentPage - 1)">
                 <i class="ti ti-chevron-left"></i>
             </RockButton>
 
             <template v-for="(item, index) in pageButtons" :key="item.isEllipsis ? `ellipsis-${index}` : `page-${item.page}`">
-                <span v-if="item.isEllipsis" class="group-finder-pager-ellipsis">&hellip;</span>
+                <span v-if="item.isEllipsis" class="groupfinder-pager-ellipsis">&hellip;</span>
                 <RockButton v-else
                             :btnType="item.page === currentPage ? 'primary' : 'default'"
                             btnSize="sm"
@@ -66,107 +66,6 @@
         </nav>
     </div>
 </template>
-
-<style scoped>
-.group-finder-results-pane {
-    min-width: 0;
-}
-
-.group-finder-result-count {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    padding: var(--spacing-xsmall) 0;
-    font-size: var(--font-size-h5);
-    font-weight: 600;
-}
-
-/*
-    Skeleton loading card. Uses Rock's shared .skeleton kit for the gray bars and pulse; the wrapper
-    mirrors the real card's padded, rounded chrome so the placeholder holds the same footprint in the grid.
-*/
-.group-finder-skeleton-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-small);
-    height: 100%;
-    padding: var(--spacing-medium);
-    background: var(--color-interface-softest, #fff);
-    border: 1px solid transparent;
-    border-radius: var(--rounded-xlarge);
-}
-
-/* The media band matches the real cover's 21:9 frame rather than the kit's default block height. */
-.group-finder-skeleton-media.skeleton.skeleton-block {
-    aspect-ratio: 21 / 9;
-    height: auto;
-    border-radius: var(--rounded-xlarge);
-}
-
-.group-finder-skeleton-body {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    padding: 0 var(--spacing-medium);
-}
-
-/* The CTA placeholder sits at the end like the real footer's register button. */
-.group-finder-skeleton-cta {
-    align-self: flex-end;
-    margin-top: auto;
-}
-
-.group-finder-results {
-    display: grid;
-    gap: var(--spacing-medium);
-}
-
-/*
-    Wide/stacked tiers: up to three flexible columns, left-aligned, each stretching to fill its track
-    (roughly 340-370px). The min(340px, 100%) floor lets a column narrower than the min (a phone with the
-    map hidden) shrink to the container width instead of overflowing, so the single column sizes to the
-    device. auto-fill keeps the three-track shape, so a lone card stays one track wide rather than
-    stretching across the whole row.
-*/
-.group-finder-results-pane.is-columns-auto .group-finder-results {
-    grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
-    justify-content: start;
-    max-width: calc(3 * 370px + 2 * var(--spacing-medium));
-}
-
-/* Toggle tier: two flexible columns, since 2x370 will not fit. */
-.group-finder-results-pane.is-columns-two .group-finder-results {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-/* Drawer tier: a single full-width column so cards are not skinny in the narrow panel. */
-.group-finder-results-pane.is-columns-one .group-finder-results {
-    grid-template-columns: minmax(0, 1fr);
-}
-
-.group-finder-empty {
-    padding: var(--spacing-large) 0;
-    color: var(--color-interface-medium, #6c6c6c);
-}
-
-/*
-    Results pager, under the card list. Shown when the set spans more than one page; each page swaps
-    its cards and markers together, so it never accumulates or churns markers the way infinite scroll would.
-*/
-.group-finder-pager {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xsmall);
-    padding: var(--spacing-medium);
-}
-
-.group-finder-pager-ellipsis {
-    padding: 0 var(--spacing-xsmall);
-    color: var(--color-interface-medium, #6c6c6c);
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";

@@ -36,7 +36,7 @@ internal sealed partial class StreakSkill
     {
         var achievementTypeResults = AchievementTypeCache.All( AgentRequestContext.RockContext )
             .Where( at => at.IsActive )
-            .Select( at => new KeyNameResult( at.Id, at.Name ) )
+            .Select( at => KeyNameResult.FromCache( at ) )
             .OrderBy( at => at.Name )
             .ToList();
 

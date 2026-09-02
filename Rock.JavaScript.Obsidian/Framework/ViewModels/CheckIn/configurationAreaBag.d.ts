@@ -30,6 +30,16 @@ export type ConfigurationAreaBag = {
     name?: string | null;
 
     /**
+     * Gets or sets a value indicating whether this area is outside the
+     * current kiosk's scope. When true, the area is only present in the
+     * result because the caller asked for it to be force-included (typically
+     * an area from another campus on a shared saved kiosk template). The UI
+     * uses this to visually indicate that the item is not part of the
+     * current kiosk's normal selection set.
+     */
+    isOutOfScope?: boolean;
+
+    /**
      * Gets or sets the configuration template identifiers that are
      * considered primary for this area. A primary configuration template
      * is one that this area is a descendant of.

@@ -42,6 +42,7 @@ internal sealed partial class EventRegistrationSkill
             .Select( rt => new RegistrationTemplateResult
             {
                 Id = rt.Id,
+                Guid = rt.Guid,
                 Name = rt.Name,
             } )
             .OrderBy( kn => kn.Name )

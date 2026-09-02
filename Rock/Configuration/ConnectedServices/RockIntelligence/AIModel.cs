@@ -33,7 +33,7 @@ namespace Rock.Configuration.ConnectedServices.RockIntelligence
         /// The <see cref="Type"/> value that represents the code-specific
         /// model for programming tasks.
         /// </summary>
-        public static readonly string CodeType = "Code";
+        public static readonly string HighType = "High";
 
         /// <summary>
         /// The <see cref="Type"/> value that represents the moderation

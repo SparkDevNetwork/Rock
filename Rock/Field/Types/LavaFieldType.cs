@@ -154,6 +154,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A Lava template, stored exactly as written rather than as the text it produces. It is resolved when the value is displayed, so a value containing curly brace tags is intentional and must not be pre-rendered before storing."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

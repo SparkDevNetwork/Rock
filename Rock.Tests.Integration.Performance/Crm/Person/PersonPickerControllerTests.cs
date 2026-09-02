@@ -136,12 +136,10 @@ namespace Rock.Tests.Integration.Performance.Crm.Person
                 {
                     using ( var request = simulator.SimulateRequest( new Uri( "http://www.rocksolidchurch.com/" ) ) )
                     {
-                        TestHelper.StartTimer( $"** Search {i}: [{searchField}]='{searchText}'" );
                         var controller = new PeopleController();
                         var result = controller.Search( name: nameSearchText,
                             includeDetails: includeDetails,
                             address: addressSearchText );
-                        TestHelper.EndTimer( $"** Search {i}: [{searchField}]='{searchText}'" );
 
                         var resultItems = result.ToList();
 

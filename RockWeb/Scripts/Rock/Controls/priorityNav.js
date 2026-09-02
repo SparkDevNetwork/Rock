@@ -57,6 +57,18 @@
                   MenuLabel = MenuLabelDefault
                 }
 
+                // If an overflow-nav already exists on this menu (e.g. from a prior
+                // initialization triggered by an ASP.NET partial postback), remove it and
+                // restore any nav items it had hidden so the menu can be rebuilt cleanly
+                // instead of appending a duplicate "More" tab on every postback.
+                var $existingOverflowNav = this._$menu.find('.overflow-nav');
+                if ($existingOverflowNav.length) {
+                    var $hiddenItems = this._$menu.find(Selector.NAV_ELEMENTS).filter('.' + ClassName.HIDE);
+                    $hiddenItems.removeClass(ClassName.HIDE);
+                    $hiddenItems.find('a').attr('tabindex', 0);
+                    $existingOverflowNav.remove();
+                }
+
                 // add menu template
                 this._$menu.append(MenuTemplate(MenuLabel));
             },
@@ -139,6 +151,17 @@
             },
 
             _tearDown: function() {
+                // If the overflow menu's Bootstrap dropdown is currently open, close it before
+                // rebuilding. Any listener on hide.bs.dropdown (for example profile.js on the
+                // Person Profile, which toggles ".overflow-visible" on the parent .zone-nav)
+                // needs to run so the layout _setupMenu measures is the collapsed one.
+                // Otherwise the <ul> is allowed to stretch past its container, no wrap is
+                // detected, and the "More" tab stays hidden after a window resize.
+                var $overflowNav = this._$menu.find('.overflow-nav');
+                if ($overflowNav.hasClass('open')) {
+                    $overflowNav.find('.dropdown-toggle').dropdown('toggle');
+                }
+
                 this._$menu.find('.overflow-nav-list').empty();
                 this._$menu.find('.overflow-nav').addClass('d-none');
                 this._$allNavElements.removeClass(ClassName.HIDE);
@@ -147,7 +170,16 @@
 
             _bindUIActions: function() {
                 var self = this;
-                $(window).on('resize', function() {
+
+                // Namespace the resize handler so re-initializing (for example after a partial
+                // postback) can detach the previous handler instead of stacking N handlers on
+                // window, which would otherwise cause tearDown/setupMenu to run N times per resize.
+                var resizeNamespace = 'resize.priorityNav';
+                if (self._config && self._config.controlId) {
+                    resizeNamespace += '-' + self._config.controlId;
+                }
+
+                $(window).off(resizeNamespace).on(resizeNamespace, function() {
                     self._$menu.addClass(ClassName.RESIZING);
 
                     setTimeout( function() {

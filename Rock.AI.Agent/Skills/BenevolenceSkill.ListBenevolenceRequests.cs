@@ -69,6 +69,7 @@ internal sealed partial class BenevolenceSkill
             .Select( br => new BenevolenceRequestResult
             {
                 Id = br.Id,
+                Guid = br.Guid,
                 Person = PersonResult.NameOnly( br.RequestedByPersonAlias ),
                 FirstName = br.FirstName,
                 LastName = br.LastName,
@@ -79,6 +80,7 @@ internal sealed partial class BenevolenceSkill
                     ? new KeyNameResult
                     {
                         Id = br.RequestStatusValueId,
+                        Guid = br.RequestStatusValue.Guid,
                         Name = br.RequestStatusValue.Value,
                     }
                     : null,

@@ -22,8 +22,8 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The settings edited in the custom settings panel for the Group Finder block. */
 export type GroupFinderCustomSettingsBag = {
@@ -36,17 +36,13 @@ export type GroupFinderCustomSettingsBag = {
     /** Gets or sets the color of the "you are here" proximity marker on the map. */
     currentLocationMarkerColor?: string | null;
 
-    /**
-     * Gets or sets the attributes surfaced in the "More Filters" modal.
-     * Mutually exclusive with FeaturedAttributes.
-     */
+    /** Gets or sets how distance to each group is measured, as a Rock.Model.DistanceCalculationMode name. */
+    distanceCalculation?: string | null;
+
+    /** Gets or sets the attributes surfaced in the "More Filters" modal. */
     displayAttributeFilters?: Guid[] | null;
 
-    /**
-     * Gets or sets the attributes surfaced as "What" filter pills.
-     * Mutually exclusive with DisplayAttributeFilters, and limited to Single-select,
-     * Multi-select, and Boolean field types.
-     */
+    /** Gets or sets the attributes surfaced as "What" filter pills. */
     featuredAttributes?: Guid[] | null;
 
     /** Gets or sets the Lava template that renders the content of each result card. Blank falls back to the built-in default. */
@@ -76,20 +72,8 @@ export type GroupFinderCustomSettingsBag = {
     /** Gets or sets whether the results map is shown alongside the cards. */
     isMapShown: boolean;
 
-    /** Gets or sets whether proximity features (an address input and a Use Current Location action) are enabled. */
-    isProximityEnabled: boolean;
-
     /** Gets or sets whether the Time of Day filter is displayed. */
     isTimeOfDayFilterShown: boolean;
-
-    /** Gets or sets whether the What (attributes) filter is hidden. */
-    isWhatFilterHidden: boolean;
-
-    /** Gets or sets whether the When (schedule) filter is hidden. */
-    isWhenFilterHidden: boolean;
-
-    /** Gets or sets whether the Where (location) filter is hidden. */
-    isWhereFilterHidden: boolean;
 
     /** Gets or sets the map style applied to the results map. */
     mapStyle?: ListItemBag | null;

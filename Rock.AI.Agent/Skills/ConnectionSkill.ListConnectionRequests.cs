@@ -81,20 +81,24 @@ internal sealed partial class ConnectionSkill
             .Select( cr => new ConnectionRequestResult
             {
                 Id = cr.Id,
+                Guid = cr.Guid,
                 Requester = PersonResult.NameOnly( cr.PersonAlias ),
                 ConnectionState = cr.ConnectionState,
                 ConnectionStatus = new KeyNameResult
                 {
                     Id = cr.ConnectionStatus.Id,
+                    Guid = cr.ConnectionStatus.Guid,
                     Name = cr.ConnectionStatus.Name
                 },
                 ConnectionOpportunity = new ConnectionOpportunityResult
                 {
                     Id = cr.ConnectionOpportunity.Id,
+                    Guid = cr.ConnectionOpportunity.Guid,
                     Name = cr.ConnectionOpportunity.Name,
                     ConnectionType = new ConnectionTypeResult
                     {
                         Id = cr.ConnectionOpportunity.ConnectionType.Id,
+                        Guid = cr.ConnectionOpportunity.ConnectionType.Guid,
                         Name = cr.ConnectionOpportunity.ConnectionType.Name
                     }
                 },
@@ -107,6 +111,7 @@ internal sealed partial class ConnectionSkill
         var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cr => new KeyNameResult
         {
             Id = cr.Id,
+            Guid = cr.Guid,
             Name = cr.ToString()
         } ) );
 

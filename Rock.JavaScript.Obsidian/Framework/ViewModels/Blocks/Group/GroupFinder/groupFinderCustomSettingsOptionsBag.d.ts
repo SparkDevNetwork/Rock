@@ -33,4 +33,10 @@ export type GroupFinderCustomSettingsOptionsBag = {
 
     /** Gets or sets the attributes eligible to be featured as "What" pills: filterable attributes of the selected group types that are also Single-select, Multi-select, or Boolean. */
     availableFeaturedAttributes?: ListItemBag[] | null;
+
+    /** Gets or sets whether the Straight-Line Distance (Address or Zip Code) option can be chosen, established by a live geocoding call when the panel opens. */
+    isAddressSearchAvailable: boolean;
+
+    /** Gets or sets whether the Driving Distance option can be chosen, established by a live routing call when the panel opens. */
+    isDrivingDistanceAvailable: boolean;
 };

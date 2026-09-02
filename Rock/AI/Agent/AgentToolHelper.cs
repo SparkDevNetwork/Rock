@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
 
@@ -55,6 +56,12 @@ namespace Rock.AI.Agent
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// Matches a single Lava output block or tag, non greedy so that two blocks
+        /// in one value stay separate rather than merging into one match.
+        /// </summary>
+        private static readonly Regex _lavaBlockExpression = new Regex( @"\{\{.*?\}\}|\{%.*?%\}", RegexOptions.Singleline );
 
         /// <summary>
         /// The database context to use for reading and writing to the database.
@@ -606,7 +613,12 @@ namespace Rock.AI.Agent
                         continue;
                     }
 
-                    var value = kvp.Value ?? string.Empty;
+                    var value = NormalizeValueForFieldType( attribute, kvp.Value ?? string.Empty );
+
+                    if ( !TryValidateAgainstFieldHints( attribute, ref value ) )
+                    {
+                        continue;
+                    }
 
                     // Only update the attribute if the value has changed. This
                     // saves us from later saving the attribute values if they
@@ -654,11 +666,252 @@ namespace Rock.AI.Agent
         }
 
         /// <summary>
+        /// Repairs a supplied value into the form the attribute's field type stores,
+        /// where that form is something a caller writing the raw value is likely to
+        /// get wrong.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The callers here are models composing a raw stored value by hand, without
+        /// the editing screen that normally does the packing and escaping for them.
+        /// Where a field type's stored form has a mechanical rule that is easy to
+        /// state and easy to forget, applying it here is more reliable than
+        /// describing it in a hint and hoping, which was tried first and did not
+        /// hold.
+        /// </para>
+        /// <para>
+        /// Only repair what can be derived with certainty from the value itself. A
+        /// fix that has to guess at intent belongs in validation, where a caller can
+        /// be told what was wrong, rather than here, where a wrong guess silently
+        /// rewrites a value that was already correct.
+        /// </para>
+        /// <para>
+        /// One field type today. Add another as its own method below and dispatch to
+        /// it from here. If this grows past a handful, that is the point to promote
+        /// it to a virtual on <see cref="Field.FieldType"/> alongside
+        /// <c>GetFieldHints</c>, so the knowledge sits with the field type rather
+        /// than in a type test here.
+        /// </para>
+        /// </remarks>
+        /// <param name="attribute">The attribute being written, used to select the repair.</param>
+        /// <param name="value">The value supplied by the caller.</param>
+        /// <returns>The repaired value, or the original value when no repair applies.</returns>
+        private static string NormalizeValueForFieldType( AttributeCache attribute, string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return value;
+            }
+
+            if ( attribute?.FieldType?.Field is Field.Types.KeyValueListFieldType )
+            {
+                return EncodeLavaInDelimitedValue( value );
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Percent encodes the Key Value List delimiters that appear inside a Lava
+        /// block, so Lava written into one of those values survives being parsed.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// A delimiter inside <c>{{ }}</c> or <c>{% %}</c> is unambiguously part of
+        /// the Lava rather than a separator, which is what makes the repair safe to
+        /// apply without knowing the caller's intent. Text outside a Lava block is
+        /// left alone, because there a delimiter really may be a delimiter, and
+        /// guessing would corrupt values that were correct.
+        /// </para>
+        /// <para>
+        /// Idempotent. A caller that already encoded correctly has no bare delimiter
+        /// left inside the Lava for this to find, so running it again changes
+        /// nothing.
+        /// </para>
+        /// </remarks>
+        /// <param name="value">The packed value supplied by the caller.</param>
+        /// <returns>The value with Lava-internal delimiters encoded.</returns>
+        private static string EncodeLavaInDelimitedValue( string value )
+        {
+            return _lavaBlockExpression.Replace( value, match =>
+            {
+                return match.Value
+                    .Replace( "^", "%5E" )
+                    .Replace( "|", "%7C" )
+                    .Replace( ",", "%2C" );
+            } );
+        }
+
+        /// <summary>
+        /// Checks a value against the field type's own description of what it
+        /// accepts, when that description is complete enough to judge by.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// 8/19/26 - CLAUDE
+        ///
+        /// A value outside a select-backed attribute's list saves cleanly and then
+        /// cannot be shown: Rock's own editors bind the list, so a stored value that
+        /// matches no entry renders as an empty control and reports itself missing on
+        /// a required field. The next person to open and save that screen writes the
+        /// blank back. Nothing in that sequence produces an error, which is why it
+        /// needs catching at the point of writing.
+        ///
+        /// Reason: A value Rock's editors cannot display is a value that quietly
+        /// disappears.
+        /// </para>
+        /// <para>
+        /// This only judges a list the field type reports as complete. A sample, which
+        /// is what <see cref="Field.FieldTypeHints.IsCompleteList"/> being false means, is not
+        /// grounds to reject anything, so those attributes pass through untouched.
+        /// </para>
+        /// <para>
+        /// The value is rejected rather than corrected, even when it is recognisably
+        /// the label of a valid entry. The error names the value to use, so a caller
+        /// is one step from right, and the helper never stores something other than
+        /// what it was handed. Whitespace around a value is the single exception, and
+        /// is trimmed rather than refused, because Rock's own readers split these on
+        /// commas without trimming and a stray space would break the value in a way
+        /// no one could see.
+        /// </para>
+        /// </remarks>
+        /// <param name="attribute">The attribute being written.</param>
+        /// <param name="value">The value to check. Trimmed in place when it passes.</param>
+        /// <returns><c>true</c> when the value may be written; otherwise <c>false</c> and an error has been recorded.</returns>
+        private bool TryValidateAgainstFieldHints( AttributeCache attribute, ref string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
+            // Lava is not resolved until the value is used, so there is nothing here
+            // to compare against.
+            if ( value.Contains( "{{" ) || value.Contains( "{%" ) )
+            {
+                return true;
+            }
+
+            if ( !( attribute?.FieldType?.Field is Field.FieldType fieldType ) )
+            {
+                return true;
+            }
+
+            Field.FieldTypeHints hints;
+
+            try
+            {
+                hints = fieldType.GetFieldHints( attribute.ConfigurationValues );
+            }
+            catch
+            {
+                // Intentionally swallowed: a list sourced from SQL runs a query, and a
+                // list that cannot be read is only a list that cannot be judged
+                // against. The attribute is left exactly as permissive as before.
+                return true;
+            }
+
+            if ( hints?.Values == null || !hints.IsCompleteList || !hints.Values.Any() )
+            {
+                return true;
+            }
+
+            // Split so a multi-select value is judged entry by entry. An entry cannot
+            // itself contain a comma, because the lists these come from are comma
+            // separated.
+            var suppliedParts = value.Split( ',' )
+                .Select( p => p.Trim() )
+                .Where( p => p.IsNotNullOrWhiteSpace() )
+                .ToList();
+
+            var unmatchedParts = suppliedParts
+                .Where( p => !hints.Values.Any( v => v.Value.Equals( p, StringComparison.OrdinalIgnoreCase ) ) )
+                .ToList();
+
+            if ( !unmatchedParts.Any() )
+            {
+                value = string.Join( ",", suppliedParts );
+
+                return true;
+            }
+
+            AddError( BuildUnacceptedValueMessage( attribute, hints, unmatchedParts ) );
+
+            return false;
+        }
+
+        /// <summary>
+        /// Builds the error describing why a value was not accepted and what to send
+        /// instead.
+        /// </summary>
+        /// <remarks>
+        /// Composed from the hints rather than written per field type, so a defined
+        /// value and a single select produce appropriately different messages from the
+        /// same code. Whatever a field type puts in
+        /// <see cref="Field.FieldTypeHints.ValueFormat"/> and
+        /// <see cref="Field.FieldTypeHints.Instructions"/> is what makes the message specific.
+        /// </remarks>
+        /// <param name="attribute">The attribute being written.</param>
+        /// <param name="hints">The field type's description of what it accepts.</param>
+        /// <param name="unmatchedParts">The supplied values that were not accepted.</param>
+        /// <returns>The error message.</returns>
+        private static string BuildUnacceptedValueMessage( AttributeCache attribute, Field.FieldTypeHints hints, List<string> unmatchedParts )
+        {
+            var message = $"'{string.Join( "', '", unmatchedParts )}' is not something the '{attribute.Name}' attribute accepts.";
+
+            // A caller that sent the label rather than the value is one substitution
+            // away from correct, so name the substitution instead of making them work
+            // it out from the full list.
+            var labelMatches = unmatchedParts
+                .Select( p => hints.Values.FirstOrDefault( v => ( v.Text ?? string.Empty ).Replace( " ", string.Empty )
+                    .Equals( p.Replace( " ", string.Empty ), StringComparison.OrdinalIgnoreCase ) ) )
+                .Where( v => v != null )
+                .ToList();
+
+            if ( labelMatches.Any() )
+            {
+                message += $" That is the label rather than the stored value; send {string.Join( ", ", labelMatches.Select( v => $"'{v.Value}'" ) )} instead.";
+            }
+
+            if ( hints.ValueFormat.IsNotNullOrWhiteSpace() )
+            {
+                message += $" {hints.ValueFormat}";
+            }
+
+            message += $" It accepts: {string.Join( ", ", hints.Values.Select( v => $"'{v.Value}' for {v.Text}" ) )}.";
+
+            if ( hints.Instructions.IsNotNullOrWhiteSpace() )
+            {
+                message += $" {hints.Instructions}";
+            }
+
+            return message;
+        }
+
+        /// <summary>
         /// Gets the attributes that are available on the entity.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is the overload to reach for. Nearly every caller has an entity in
+        /// hand, and this one resolves that entity's attribute definitions before
+        /// describing them, loading them first when they are not already populated.
+        /// </para>
+        /// <para>
+        /// Use the <see cref="GetAvailableAttributes(IEnumerable{AttributeCache}, bool)"/>
+        /// overload only when there is no entity instance to work from, such as a
+        /// caller that has an entity type and reads definitions from the cache.
+        /// </para>
+        /// <para>
+        /// The two overloads cannot be told apart by a bare <c>null</c>, since
+        /// neither parameter type is more specific than the other. A caller passing
+        /// a null literal must cast it, as
+        /// <c>GetAvailableAttributes( ( IHasAttributes ) null )</c>.
+        /// </para>
+        /// </remarks>
         /// <param name="entity">The entity whose attributes are to be retrieved.</param>
         /// <param name="enforceSecurity">Determines if security should be enforced or not when getting attributes.</param>
-        /// <returns></returns>
+        /// <returns>A collection of results describing the attributes the current person may see, or an empty collection when <paramref name="entity"/> is <c>null</c>.</returns>
         public ICollection<AttributeResult> GetAvailableAttributes( IHasAttributes entity, bool enforceSecurity = true )
         {
             if ( entity == null )
@@ -671,9 +924,53 @@ namespace Rock.AI.Agent
                 entity.LoadAttributes( _rockContext );
             }
 
+            // Resolving the definitions is all this overload does on its own. The
+            // visibility and authorization filtering belongs to the overload below,
+            // so that it exists in exactly one place.
+            return GetAvailableAttributes( entity.Attributes.Values, enforceSecurity );
+        }
+
+        /// <summary>
+        /// Gets the attributes that are available from an already resolved set of
+        /// attribute definitions.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This exists for callers that work from an entity type rather than an
+        /// entity instance, where there is no object to hang <c>LoadAttributes</c>
+        /// on. <c>CoreAdministrationSkill.GetEntityAvailableAttributes</c> is the
+        /// case it was added for: it takes an entity type, reads the unqualified
+        /// definitions from <see cref="AttributeCache"/>, and never materializes an
+        /// entity at all.
+        /// </para>
+        /// <para>
+        /// It shares the visibility and authorization filtering with the entity
+        /// overload deliberately, and that sharing is the reason it is public rather
+        /// than a private helper. A caller that could not reach this method would
+        /// build the results itself, which means a second copy of those filters.
+        /// That copy would drift, and when it drifted it would leak attribute
+        /// definitions the person is not allowed to see. Silently, since a leaked
+        /// definition looks exactly like one the caller was entitled to.
+        /// </para>
+        /// <para>
+        /// Prefer <see cref="GetAvailableAttributes(IHasAttributes, bool)"/> whenever
+        /// an entity is available. See that overload for the note on passing
+        /// <c>null</c> to either one.
+        /// </para>
+        /// </remarks>
+        /// <param name="attributes">The attribute definitions to describe.</param>
+        /// <param name="enforceSecurity">Determines if security should be enforced or not.</param>
+        /// <returns>A collection of results describing the attributes the current person may see, or an empty collection when <paramref name="attributes"/> is <c>null</c>.</returns>
+        public ICollection<AttributeResult> GetAvailableAttributes( IEnumerable<AttributeCache> attributes, bool enforceSecurity = true )
+        {
+            if ( attributes == null )
+            {
+                return Array.Empty<AttributeResult>();
+            }
+
             var isInternal = _agentRequestContext.AudienceType == AudienceType.Internal;
 
-            return entity.Attributes.Values
+            return attributes
                 .Where( a => isInternal || a.IsPublic )
                 .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.VIEW, _agentRequestContext.CurrentPerson ) )
                 .Select( a =>
@@ -682,15 +979,40 @@ namespace Rock.AI.Agent
                     {
                         Key = a.Key,
                         Name = a.Name,
+                        Guid = a.Guid,
+                        Description = a.Description.IsNullOrWhiteSpace() ? null : a.Description,
+                        Order = a.Order,
                         IsRequired = a.IsRequired,
                         IsReadOnly = enforceSecurity && !a.IsAuthorized( Authorization.EDIT, _agentRequestContext.CurrentPerson ),
                     };
+
+                    if ( a.FieldType != null )
+                    {
+                        // Built with an object initializer rather than the three
+                        // argument constructor, which does not assign its guid.
+                        attr.FieldType = new KeyNameResult
+                        {
+                            Id = a.FieldType.Id,
+                            Guid = a.FieldType.Guid,
+                            Name = a.FieldType.Name
+                        };
+                    }
 
                     if ( a.FieldType?.Field is Field.FieldType fieldType )
                     {
                         var hints = fieldType.GetFieldHints( a.ConfigurationValues );
 
                         attr.ValueFormat = hints?.ValueFormat.ToStringOrDefault( null );
+                        attr.Instructions = hints?.Instructions.ToStringOrDefault( null );
+
+                        // Only report completeness when there is a list for it to
+                        // describe. A false value with no values reads as "there
+                        // are more values elsewhere", which is not what it means.
+                        if ( hints?.Values != null )
+                        {
+                            attr.Values = hints.Values;
+                            attr.IsCompleteList = hints.IsCompleteList;
+                        }
                     }
 
                     return attr;
@@ -1565,7 +1887,7 @@ namespace Rock.AI.Agent
                 propertyExpression,
                 lowerParameter,
                 upperParameter,
-                isRequired: false,
+                isRequired: true,
                 lowerParameterExpression: lowerParameterExpression,
                 upperParameterExpression: upperParameterExpression );
         }

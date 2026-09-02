@@ -75,33 +75,44 @@ internal partial class AttendanceSkill
             return helper.ErrorResult;
         }
 
+        // All five KeyNameResult projections below must set the same properties
+        // in the same order ({ Id, Guid, Name }). EF translates this whole Select
+        // to a single query, and it throws "structurally incompatible
+        // initializations" if one KeyNameResult is shaped differently from
+        // another in the same query. Keep them identical when editing.
         var orderedQry = qry
             .Select( a => new AttendanceResult
             {
                 Id = a.Id,
+                Guid = a.Guid,
                 GroupType = a.Occurrence.Group.GroupType != null ? new KeyNameResult
                 {
                     Id = a.Occurrence.Group.GroupType.Id,
+                    Guid = a.Occurrence.Group.GroupType.Guid,
                     Name = a.Occurrence.Group.GroupType.Name
                 } : null,
                 Group = a.Occurrence.Group != null ? new KeyNameResult
                 {
                     Id = a.Occurrence.Group.Id,
+                    Guid = a.Occurrence.Group.Guid,
                     Name = a.Occurrence.Group.Name
                 } : null,
                 Location = a.Occurrence.Location != null ? new KeyNameResult
                 {
                     Id = a.Occurrence.Location.Id,
+                    Guid = a.Occurrence.Location.Guid,
                     Name = a.Occurrence.Location.Name
                 } : null,
                 Schedule = a.Occurrence.Schedule != null ? new KeyNameResult
                 {
                     Id = a.Occurrence.Schedule.Id,
+                    Guid = a.Occurrence.Schedule.Guid,
                     Name = a.Occurrence.Schedule.Name
                 } : null,
                 Campus = a.Campus != null ? new KeyNameResult
                 {
                     Id = a.Campus.Id,
+                    Guid = a.Campus.Guid,
                     Name = a.Campus.Name
                 } : null,
                 StartDateTime = a.StartDateTime,

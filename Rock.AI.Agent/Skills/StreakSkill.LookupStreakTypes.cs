@@ -41,6 +41,7 @@ internal sealed partial class StreakSkill
             .Select( st => new StreakTypeResult
             {
                 Id = st.Id,
+                Guid = st.Guid,
                 Name = st.Name,
                 Description = st.Description,
                 OccurrenceFrequency = st.OccurrenceFrequency,

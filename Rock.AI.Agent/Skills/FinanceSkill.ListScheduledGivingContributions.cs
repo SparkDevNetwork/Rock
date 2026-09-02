@@ -91,6 +91,7 @@ internal sealed partial class FinanceSkill
         var projectedQry = qry.AsExpandable().Select( fst => new FinancialScheduledTransactionResult
         {
             Id = fst.Id,
+            Guid = fst.Guid,
             AuthorizedPerson = PersonResult.NameOnly( fst.AuthorizedPersonAlias ),
             NextPaymentDate = fst.NextPaymentDate,
 
@@ -115,6 +116,7 @@ internal sealed partial class FinanceSkill
                 ? new KeyNameResult
                 {
                     Id = fst.FinancialPaymentDetail.CurrencyTypeValue.Id,
+                    Guid = fst.FinancialPaymentDetail.CurrencyTypeValue.Guid,
                     Name = fst.FinancialPaymentDetail.CurrencyTypeValue.Value
                 }
                 : null,
@@ -123,6 +125,7 @@ internal sealed partial class FinanceSkill
                 ? new KeyNameResult
                 {
                     Id = fst.FinancialPaymentDetail.CreditCardTypeValue.Id,
+                    Guid = fst.FinancialPaymentDetail.CreditCardTypeValue.Guid,
                     Name = fst.FinancialPaymentDetail.CreditCardTypeValue.Value
                 }
                 : null,

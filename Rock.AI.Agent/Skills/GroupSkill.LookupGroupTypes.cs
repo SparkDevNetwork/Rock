@@ -21,6 +21,7 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 using GroupTypeResult = Rock.AI.Agent.Classes.Skills.GroupSkill.GroupTypeResult;
 
@@ -36,16 +37,26 @@ internal partial class GroupSkill
     public AgentToolResult LookupGroupTypes()
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var availableGroupTypeIds = GetAvailableGroupTypes().Select( gt => gt.Id ).ToList();
 
-        var groupTypeResults = GetConfiguredGroupTypes()
+        // Internal audience can see all group types on the system, but are
+        // flagged if they are available based on the configured group types.
+        // Public audience can only see the group types that are configured.
+        var groupTypes = AgentRequestContext.AudienceType == Enums.AI.Agent.AudienceType.Internal
+            ? GroupTypeCache.All( AgentRequestContext.RockContext )
+                .Where( gt => gt.IsAuthorized( Rock.Security.Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+            : GetAvailableGroupTypes();
+
+        var groupTypeResults = groupTypes
             .OrderBy( gt => gt.Name )
-            .Where( gt => gt.IsAuthorized( Rock.Security.Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             .Select( gt => new GroupTypeResult
             {
                 Id = gt.Id,
+                Guid = gt.Guid,
+                IsNotAvailable = !availableGroupTypeIds.Contains( gt.Id ),
                 Name = gt.Name,
                 Roles = gt.Roles
-                    .Select( r => new KeyNameResult( r.Id, r.Name ) )
+                    .Select( r => KeyNameResult.FromCache( r ) )
                     .ToList(),
             } )
             .ToList();

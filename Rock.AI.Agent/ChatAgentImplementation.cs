@@ -582,7 +582,7 @@ internal class ChatAgentImplementation : ChatAgent
         var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
         var result = await chat.GetChatMessageContentAsync(
             [new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt )],
-            executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+            executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings( _context ),
             kernel: _kernel
         );
 
@@ -632,7 +632,7 @@ internal class ChatAgentImplementation : ChatAgent
         {
             result = await chat.GetChatMessageContentAsync(
                 history,
-                executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+                executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings( _context ),
                 kernel: _kernel );
         }
         catch ( Exception ex )
@@ -668,7 +668,7 @@ internal class ChatAgentImplementation : ChatAgent
 
         var asyncEnumerable = chat.GetStreamingChatMessageContentsAsync(
             history,
-            executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+            executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings( _context ),
             kernel: _kernel,
             cancellationToken: cancellationToken );
 
@@ -900,7 +900,7 @@ internal class ChatAgentImplementation : ChatAgent
 
         var sessionResult = await chat.GetChatMessageContentAsync(
             [new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt )],
-            executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+            executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings( _context ),
             kernel: _kernel
         );
 

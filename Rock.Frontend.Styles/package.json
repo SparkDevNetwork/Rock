@@ -1,5 +1,9 @@
 {
   "private": true,
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "scripts": {
     "build": "obsidian-build",
     "watch": "obsidian-build --watch",
@@ -9,7 +13,7 @@
     "sass": "1.77.6"
   },
   "dependencies": {
-    "@sparkdevnetwork/obsidian-build-tools": "^1.0.9"
+    "@sparkdevnetwork/obsidian-build-tools": "^1.0.13"
   },
   "devDependencies": {
     "rimraf": "^5.0.10"

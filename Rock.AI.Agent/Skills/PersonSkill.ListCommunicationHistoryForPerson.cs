@@ -61,6 +61,7 @@ internal partial class PersonSkill
             .Select( cr => new CommunicationHistoryResult
             {
                 Id = cr.CommunicationId,
+                Guid = cr.Communication.Guid,
                 Name = cr.Communication.Name,
                 MediumEntityTypeId = cr.MediumEntityTypeId,
                 CreatedDateTime = cr.Communication.CreatedDateTime,

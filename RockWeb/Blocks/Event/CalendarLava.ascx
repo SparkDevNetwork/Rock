@@ -9,6 +9,8 @@
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" />
 
+        <Rock:NotificationBox ID="nbPersonalizationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+
         <asp:Panel id="pnlDetails" runat="server" CssClass="row">
 
             <asp:Panel ID="pnlFilters" CssClass="col-md-3 hidden-print" runat="server">

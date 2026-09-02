@@ -626,10 +626,16 @@ namespace Rock.SystemGuid
         public const string CONNECTIONS_HUB = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
 
         /// <summary>
-        /// Gets the My Connections page guid.
+        /// Gets the My Connection Requests page guid.
         /// ParentPage: Connections
         /// </summary>
         public const string MY_CONNECTIONS = "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B";
+
+        /// <summary>
+        /// Gets the My Connection Opportunities page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string MY_CONNECTION_OPPORTUNITIES = "29C23E3B-13E3-4FF6-883C-0EFA1C7C40B9";
 
         /// <summary>
         /// Gets the Connections List page guid.
@@ -686,6 +692,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Content Channel Detail
         /// </summary>
         public const string CONTENT_ITEM_DETAIL = "ABF26679-1051-4F4F-8A67-5958E5BF71F8";
+
+        /// <summary>
+        /// Gets the Content Item Metrics page guid
+        /// ParentPage: Content Channel Detail
+        /// </summary>
+        public const string CONTENT_ITEM_METRICS = "B917B620-C172-4E52-9695-917E3833DB09";
 
         /// <summary>
         /// Gets the Content Type Detail page guid
@@ -1429,6 +1441,8 @@ namespace Rock.SystemGuid
         /// Gets the New Communication page guid
         /// ParentPage: Communications
         /// </summary>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use NEW_COMMUNICATION_OBSIDIAN instead." )]
         public const string NEW_COMMUNICATION = "2A22D08D-73A8-4AAF-AC7E-220E8B2E7857";
 
         /// <summary>

@@ -136,6 +136,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "HTML markup, stored exactly as supplied and not stripped or escaped."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -133,6 +133,21 @@ namespace Rock.Field.Types
             return Helper.UnencryptAndCleanSocialSecurityNumber( encryptedValue );
         }
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "An encrypted social security number rather than the number itself. Rock encrypts the value on the way in and decrypts it on the way out, so digits written directly into storage cannot be read back. The decrypted form is digits only, without dashes.",
+                Instructions = "Set this through the normal attribute value path so the encryption is applied, and never by writing the stored column directly."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

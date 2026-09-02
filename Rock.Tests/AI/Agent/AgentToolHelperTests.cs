@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,30 +11,29 @@ using Rock.AI.Agent;
 using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Field.Types;
-using Rock.Lava;
 using Rock.Model;
-using Rock.Net;
 using Rock.Security;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
-using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.AI.Agent
 {
     [TestClass]
-    public class AgentToolHelperTests : MockDatabaseTestsBase
+    public class AgentToolHelperTests
     {
         #region Constructor
 
         [TestMethod]
         public void Constructor_WithNullAgentRequestContext_ThrowsArgumentNullException()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var logger = new Mock<ILogger>().Object;
 
             Assert.ThrowsExactly<ArgumentNullException>( () =>
@@ -54,7 +50,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void Constructor_WithNullLogger_ThrowsArgumentNullException()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
 
             Assert.ThrowsExactly<ArgumentNullException>( () =>
@@ -71,7 +68,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void Constructor_WithNullRockContext_ThrowsArgumentNullException()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -88,7 +86,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetErrorResult_WithoutErrors_ThrowsInvalidOperationException()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -103,7 +102,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetErrorResult_WithErrors_IncludesAllErrors()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -121,7 +121,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetErrorResult_WithInstructions_IncludesAllInstructions()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -140,7 +141,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetErrorResult_WithMetadata_IncludesAllMetadata()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -166,7 +168,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetPaginatedResult_WithEmptyItems_ReturnsNoDataResult()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -180,7 +183,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetPaginatedResult_WithItems_ReturnsSuccessResult()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -194,7 +198,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetPaginatedResult_WithInstructions_IncludesAllInstructions()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -212,7 +217,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetPaginatedResult_WithMetadata_IncludesAllMetadata()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -233,7 +239,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetPaginatedResult_WithQueryableAndSanitize_CallsSanitizeMethod()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -252,7 +259,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetPaginatedResult_WithQueryableAndNoSanitize_DoesNotCallSanitizeMethod()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -275,7 +283,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void AddError_WithValue_IncludesErrorInResult()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -295,7 +304,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void AddInstructions_WithValue_IncludesInstructionsInResult()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -316,7 +326,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void AddMetadata_WithValue_IncludesMetadataInResult()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -338,7 +349,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetPaginatedItems_WithQueryableAndPageNumber_ReturnsExpectedItems()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -360,7 +372,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetPaginatedItems_WithEnumerableAndPageNumber_ReturnsExpectedItems()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -385,7 +398,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetCursorPaginatedItems_WithCursor_ReturnsExpectedItems()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
@@ -415,8 +429,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetOptionalEntity_WithoutParameterExpression_ThrowsArgumentNullException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -430,8 +445,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetOptionalEntity_WithoutParameter_ReturnsNullWithoutError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -445,8 +461,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetOptionalEntity_WithMissingEntity_ReturnsNullWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -461,13 +478,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetOptionalEntity_WithoutAuthorization_ReturnsNullWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( false );
             campusMock.Object.Id = 1;
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -484,13 +502,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetOptionalEntity_WithAuthorization_ReturnsEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( true );
             campusMock.Object.Id = 1;
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -507,13 +526,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetOptionalEntity_WithoutCheckSecurity_ReturnsEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( false );
             campusMock.Object.Id = 1;
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -530,13 +550,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetOptionalEntity_WithPersonMissingPrimaryAliasId_ReturnsNullWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var personMock = new Mock<Person>();
             personMock.Object.Id = 1;
             personMock.Object.PrimaryAliasId = null;
-            rockContextMock.Object.Set<Person>().Add( personMock.Object );
+            rockContext.Set<Person>().Add( personMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -551,13 +572,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetOptionalEntity_WithPersonPrimaryAliasId_ReturnsEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var personMock = new Mock<Person>();
             personMock.Object.Id = 1;
             personMock.Object.PrimaryAliasId = 2;
-            rockContextMock.Object.Set<Person>().Add( personMock.Object );
+            rockContext.Set<Person>().Add( personMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -576,8 +598,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetOptionalEntity_WithoutParameterExpression_ThrowsArgumentNullException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -591,8 +614,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetOptionalEntity_WithoutParameter_ReturnsFalseWithoutError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -607,8 +631,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetOptionalEntity_WithMissingEntity_ReturnsFalseWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -624,13 +649,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetOptionalEntity_WithoutAuthorization_ReturnsFalseWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( false );
             campusMock.Object.Id = 1;
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -648,13 +674,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetOptionalEntity_WithAuthorization_ReturnsTrueWithEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( true );
             campusMock.Object.Id = 1;
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -672,13 +699,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetOptionalEntity_WithoutCheckSecurity_ReturnsTrueWithEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( false );
             campusMock.Object.Id = 1;
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -696,13 +724,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetOptionalEntity_WithPersonMissingPrimaryAliasId_ReturnsFalseWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var personMock = new Mock<Person>();
             personMock.Object.Id = 1;
             personMock.Object.PrimaryAliasId = null;
-            rockContextMock.Object.Set<Person>().Add( personMock.Object );
+            rockContext.Set<Person>().Add( personMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -718,13 +747,14 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetOptionalEntity_WithPersonPrimaryAliasId_ReturnsTrueWithEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var personMock = new Mock<Person>();
             personMock.Object.Id = 1;
             personMock.Object.PrimaryAliasId = 2;
-            rockContextMock.Object.Set<Person>().Add( personMock.Object );
+            rockContext.Set<Person>().Add( personMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -744,8 +774,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetRequiredEntity_WithoutParameterExpression_ThrowsArgumentNullException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -759,8 +790,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetRequiredEntity_WithoutParameter_ReturnsNullWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -774,8 +806,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetRequiredEntity_WithMissingEntity_ReturnsNullWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -790,16 +823,17 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetRequiredEntity_WithoutAuthorization_ReturnsNullWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( false );
             campusMock.Object.Id = 1;
             campusMock.Object.Guid = new Guid( "56f3aa9d-62d4-4925-af11-2d2cbe3fc647" );
 
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -816,16 +850,17 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetRequiredEntity_WithAuthorization_ReturnsEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( true );
             campusMock.Object.Id = 1;
             campusMock.Object.Guid = new Guid( "56f3aa9d-62d4-4925-af11-2d2cbe3fc647" );
 
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -842,16 +877,17 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetRequiredEntity_WithoutCheckSecurity_ReturnsEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( false );
             campusMock.Object.Id = 1;
             campusMock.Object.Guid = new Guid( "56f3aa9d-62d4-4925-af11-2d2cbe3fc647" );
 
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -868,7 +904,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetRequiredEntity_WithPersonMissingPrimaryAliasId_ReturnsNullWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var person = new Person
             {
@@ -877,9 +914,9 @@ namespace Rock.Tests.AI.Agent
                 PrimaryAliasId = null,
             };
 
-            rockContextMock.Object.Set<Person>().Add( person );
+            rockContext.Set<Person>().Add( person );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -894,7 +931,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetRequiredEntity_WithPersonPrimaryAliasId_ReturnsEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var person = new Person
             {
@@ -903,9 +941,9 @@ namespace Rock.Tests.AI.Agent
                 PrimaryAliasId = 2,
             };
 
-            rockContextMock.Object.Set<Person>().Add( person );
+            rockContext.Set<Person>().Add( person );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -924,8 +962,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetRequiredEntity_WithoutParameterExpression_ThrowsArgumentNullException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -939,8 +978,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetRequiredEntity_WithoutParameter_ReturnsFalseWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -955,8 +995,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetRequiredEntity_WithMissingEntity_ReturnsFalseWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -972,16 +1013,17 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetRequiredEntity_WithoutAuthorization_ReturnsFalseWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( false );
             campusMock.Object.Id = 1;
             campusMock.Object.Guid = new Guid( "56f3aa9d-62d4-4925-af11-2d2cbe3fc647" );
 
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -999,16 +1041,17 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetRequiredEntity_WithAuthorization_ReturnsTrueWithEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( true );
             campusMock.Object.Id = 1;
             campusMock.Object.Guid = new Guid( "56f3aa9d-62d4-4925-af11-2d2cbe3fc647" );
 
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1026,16 +1069,17 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetRequiredEntity_WithoutCheckSecurity_ReturnsTrueWithEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var campusMock = new Mock<Campus>();
             campusMock.Setup( m => m.IsAuthorized( Authorization.VIEW, null ) ).Returns( false );
             campusMock.Object.Id = 1;
             campusMock.Object.Guid = new Guid( "56f3aa9d-62d4-4925-af11-2d2cbe3fc647" );
 
-            rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
+            rockContext.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1053,7 +1097,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetRequiredEntity_WithPersonMissingPrimaryAliasId_ReturnsFalseWithError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var person = new Person
             {
@@ -1062,9 +1107,9 @@ namespace Rock.Tests.AI.Agent
                 PrimaryAliasId = null,
             };
 
-            rockContextMock.Object.Set<Person>().Add( person );
+            rockContext.Set<Person>().Add( person );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1080,7 +1125,8 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void TryGetRequiredEntity_WithPersonPrimaryAliasId_ReturnsTrueWithEntity()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
             var person = new Person
             {
@@ -1089,9 +1135,9 @@ namespace Rock.Tests.AI.Agent
                 PrimaryAliasId = 2,
             };
 
-            rockContextMock.Object.Set<Person>().Add( person );
+            rockContext.Set<Person>().Add( person );
 
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1111,13 +1157,18 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetAvailableAttributes_WithNullEntity_ReturnsEmpty()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
-            var result = helper.GetAvailableAttributes( null );
+            // The cast picks the overload under test. GetAvailableAttributes also
+            // accepts IEnumerable<AttributeCache>, and neither parameter type is
+            // more specific than the other, so a bare null matches both and does
+            // not compile. This test covers the entity overload.
+            var result = helper.GetAvailableAttributes( ( IHasAttributes ) null );
 
             Assert.IsEmpty( result );
         }
@@ -1125,329 +1176,289 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void GetAvailableAttributes_WithoutPreLoadedAttributes_LoadsAttributes()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "TestAttribute",
+                IsPublic = true,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "TestAttribute",
-                    IsPublic = true,
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
 
-                var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
-
-                Assert.IsNotEmpty( result );
-                Assert.AreEqual( "TestAttribute", result.First().Key );
-            }
+            Assert.IsNotEmpty( result );
+            Assert.AreEqual( "TestAttribute", result.First().Key );
         }
 
         [TestMethod]
         public void GetAvailableAttributes_WithInternalAudience_IncludesNonPublicAttributes()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "PrivateAttribute",
+                IsPublic = false,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "PrivateAttribute",
-                    IsPublic = false,
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Internal );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Internal );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LoadAttributes( rockContext );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                campus.LoadAttributes( rockContext );
+            var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
 
-                var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
-
-                Assert.IsNotEmpty( result );
-                Assert.AreEqual( "PrivateAttribute", result.First().Key );
-            }
+            Assert.IsNotEmpty( result );
+            Assert.AreEqual( "PrivateAttribute", result.First().Key );
         }
 
         [TestMethod]
         public void GetAvailableAttributes_WithPublicAudience_DoesNotIncludeNonPublicAttributes()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "PrivateAttribute",
+                IsPublic = false,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "PrivateAttribute",
-                    IsPublic = false,
-                } );
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            {
+                Id = 2,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "PublicAttribute",
+                IsPublic = true,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 2,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "PublicAttribute",
-                    IsPublic = true,
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LoadAttributes( rockContext );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                campus.LoadAttributes( rockContext );
+            var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
 
-                var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
-
-                Assert.HasCount( 1, result );
-                Assert.AreEqual( "PublicAttribute", result.First().Key );
-            }
+            Assert.HasCount( 1, result );
+            Assert.AreEqual( "PublicAttribute", result.First().Key );
         }
 
         [TestMethod]
         public void GetAvailableAttributes_WithoutEnforceSecurity_IncludesSecuredAttributes()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "SecuredAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "SecuredAttribute",
-                } );
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.VIEW,
+                AllowOrDeny = "D",
+            } );
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.VIEW,
-                    AllowOrDeny = "D",
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LoadAttributes( rockContext );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                campus.LoadAttributes( rockContext );
+            var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
 
-                var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
-
-                Assert.HasCount( 1, result );
-                Assert.AreEqual( "SecuredAttribute", result.First().Key );
-            }
+            Assert.HasCount( 1, result );
+            Assert.AreEqual( "SecuredAttribute", result.First().Key );
         }
 
         [TestMethod]
         public void GetAvailableAttributes_WithEnforceSecurity_DoesNotIncludeSecuredAttributes()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "SecuredAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "SecuredAttribute",
-                } );
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.VIEW,
+                AllowOrDeny = "D",
+            } );
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.VIEW,
-                    AllowOrDeny = "D",
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LoadAttributes( rockContext );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                campus.LoadAttributes( rockContext );
+            var result = helper.GetAvailableAttributes( campus, enforceSecurity: true );
 
-                var result = helper.GetAvailableAttributes( campus, enforceSecurity: true );
-
-                Assert.IsEmpty( result );
-            }
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void GetAvailableAttributes_WithoutEditPermission_MarksAttributeAsReadOnly()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "SecuredAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "SecuredAttribute",
-                } );
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.VIEW,
+                AllowOrDeny = "A",
+            } );
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.VIEW,
-                    AllowOrDeny = "A",
-                } );
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 2,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.EDIT,
+                AllowOrDeny = "D",
+            } );
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 2,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.EDIT,
-                    AllowOrDeny = "D",
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LoadAttributes( rockContext );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                campus.LoadAttributes( rockContext );
+            var result = helper.GetAvailableAttributes( campus, enforceSecurity: true );
 
-                var result = helper.GetAvailableAttributes( campus, enforceSecurity: true );
-
-                Assert.HasCount( 1, result );
-                Assert.IsTrue( result.First().IsReadOnly );
-            }
+            Assert.HasCount( 1, result );
+            Assert.IsTrue( result.First().IsReadOnly );
         }
 
         [TestMethod]
         public void GetAvailableAttributes_WithEditPermission_DoesNotMarkAttributeAsReadOnly()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "SecuredAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "SecuredAttribute",
-                } );
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.VIEW,
+                AllowOrDeny = "A",
+            } );
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.VIEW,
-                    AllowOrDeny = "A",
-                } );
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 2,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.EDIT,
+                AllowOrDeny = "A",
+            } );
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 2,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.EDIT,
-                    AllowOrDeny = "A",
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LoadAttributes( rockContext );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                campus.LoadAttributes( rockContext );
+            var result = helper.GetAvailableAttributes( campus, enforceSecurity: true );
 
-                var result = helper.GetAvailableAttributes( campus, enforceSecurity: true );
-
-                Assert.HasCount( 1, result );
-                Assert.IsFalse( result.First().IsReadOnly );
-            }
+            Assert.HasCount( 1, result );
+            Assert.IsFalse( result.First().IsReadOnly );
         }
 
         [TestMethod]
         public void GetAvailableAttributes_WithFieldType_IncludesValueFormat()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var fieldType = new FieldType
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                Class = typeof( RatingFieldType ).FullName,
+                Assembly = typeof( RatingFieldType ).Assembly.GetName().Name,
+            };
 
-                var fieldType = new FieldType
-                {
-                    Id = 1,
-                    Class = typeof( RatingFieldType ).FullName,
-                    Assembly = typeof( RatingFieldType ).Assembly.GetName().Name,
-                };
+            rockContext.Set<FieldType>().Add( fieldType );
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                FieldType = fieldType,
+                FieldTypeId = fieldType.Id,
+                Key = "RatingAttribute",
+            } );
 
-                rockContext.Set<FieldType>().Add( fieldType );
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    FieldType = fieldType,
-                    FieldTypeId = fieldType.Id,
-                    Key = "RatingAttribute",
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LoadAttributes( rockContext );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                campus.LoadAttributes( rockContext );
+            var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
 
-                var result = helper.GetAvailableAttributes( campus, enforceSecurity: false );
-
-                Assert.HasCount( 1, result );
-                Assert.IsNotNull( result.First().ValueFormat );
-                Assert.IsNotEmpty( result.First().ValueFormat );
-            }
+            Assert.HasCount( 1, result );
+            Assert.IsNotNull( result.First().ValueFormat );
+            Assert.IsNotEmpty( result.First().ValueFormat );
         }
 
         #endregion
@@ -1457,8 +1468,9 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void SetAttributeValues_WithNullEntity_DoesNotThrowException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -1469,528 +1481,463 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void SetAttributeValues_WithNullAttributeValues_DoesNotThrowException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            campus.LoadAttributes( rockContext );
 
-                campus.LoadAttributes( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-
-                helper.SetAttributeValues( campus, null );
-            }
+            helper.SetAttributeValues( campus, null );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithoutPreLoadedAttributes_LoadsAttributes()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "TestAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "TestAttribute",
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            helper.SetAttributeValues( campus, new List<AttributeValueResult>() );
 
-                helper.SetAttributeValues( campus, new List<AttributeValueResult>() );
-
-                Assert.IsNotNull( campus.Attributes );
-                Assert.IsNotEmpty( campus.Attributes );
-            }
+            Assert.IsNotNull( campus.Attributes );
+            Assert.IsNotEmpty( campus.Attributes );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithUnknownAttribute_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            campus.LoadAttributes( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
             {
-                var rockContext = rockContextMock.Object;
-
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                campus.LoadAttributes( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
+                new AttributeValueResult
                 {
-                    new AttributeValueResult
-                    {
-                        Key = "UnknownAttribute",
-                        Value = "SomeValue",
-                    },
-                };
+                    Key = "UnknownAttribute",
+                    Value = "SomeValue",
+                },
+            };
 
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
-                Assert.IsTrue( helper.HasErrors );
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "does not exist" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "does not exist" ) ) );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithInternalAudience_SetsNonPublicAttribute()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "PrivateAttribute",
+                IsPublic = false,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Internal );
+
+            campus.LoadAttributes( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
+            {
+                new AttributeValueResult
                 {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
                     Key = "PrivateAttribute",
-                    IsPublic = false,
-                } );
+                    Value = "SomeValue",
+                },
+            };
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Internal );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
-                campus.LoadAttributes( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
-                {
-                    new AttributeValueResult
-                    {
-                        Key = "PrivateAttribute",
-                        Value = "SomeValue",
-                    },
-                };
-
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreEqual( "SomeValue", campus.GetAttributeValue( "PrivateAttribute" ) );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreEqual( "SomeValue", campus.GetAttributeValue( "PrivateAttribute" ) );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithPublicAudienceAndNonPublicAttribute_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "PrivateAttribute",
+                IsPublic = false,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
+
+            campus.LoadAttributes( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
+            {
+                new AttributeValueResult
                 {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
                     Key = "PrivateAttribute",
-                    IsPublic = false,
-                } );
+                    Value = "SomeValue",
+                },
+            };
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
-                campus.LoadAttributes( rockContext );
+            Assert.IsTrue( helper.HasErrors );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
-                {
-                    new AttributeValueResult
-                    {
-                        Key = "PrivateAttribute",
-                        Value = "SomeValue",
-                    },
-                };
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
-
-                Assert.IsTrue( helper.HasErrors );
-
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not available" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not available" ) ) );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithPublicAudience_SetsPublicAttribute()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "PublicAttribute",
+                IsPublic = true,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
+
+            campus.LoadAttributes( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
+            {
+                new AttributeValueResult
                 {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
                     Key = "PublicAttribute",
-                    IsPublic = true,
-                } );
+                    Value = "SomeValue",
+                },
+            };
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
-                campus.LoadAttributes( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
-                {
-                    new AttributeValueResult
-                    {
-                        Key = "PublicAttribute",
-                        Value = "SomeValue",
-                    },
-                };
-
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreEqual( "SomeValue", campus.GetAttributeValue( "PublicAttribute" ) );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreEqual( "SomeValue", campus.GetAttributeValue( "PublicAttribute" ) );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithEnforceSecurityAndNoEditAuthorization_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "SecuredAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.EDIT,
+                AllowOrDeny = "D",
+            } );
+
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            campus.LoadAttributes( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
+            {
+                new AttributeValueResult
                 {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
                     Key = "SecuredAttribute",
-                } );
+                    Value = "SomeValue",
+                },
+            };
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.EDIT,
-                    AllowOrDeny = "D",
-                } );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            Assert.IsTrue( helper.HasErrors );
 
-                campus.LoadAttributes( rockContext );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
-                {
-                    new AttributeValueResult
-                    {
-                        Key = "SecuredAttribute",
-                        Value = "SomeValue",
-                    },
-                };
-
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
-
-                Assert.IsTrue( helper.HasErrors );
-
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "do not have permission" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "do not have permission" ) ) );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithEnforceSecurityAndEditAuthorization_SetsAttributeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "SecuredAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.EDIT,
+                AllowOrDeny = "A",
+            } );
+
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            campus.LoadAttributes( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
+            {
+                new AttributeValueResult
                 {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
                     Key = "SecuredAttribute",
-                } );
+                    Value = "SomeValue",
+                },
+            };
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.EDIT,
-                    AllowOrDeny = "A",
-                } );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                campus.LoadAttributes( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
-                {
-                    new AttributeValueResult
-                    {
-                        Key = "SecuredAttribute",
-                        Value = "SomeValue",
-                    },
-                };
-
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreEqual( "SomeValue", campus.GetAttributeValue( "SecuredAttribute" ) );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreEqual( "SomeValue", campus.GetAttributeValue( "SecuredAttribute" ) );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithNullAttributeValue_SetsValueToEmptyString()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "TestAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            campus.LoadAttributes( rockContext );
+            campus.SetAttributeValue( "TestAttribute", "some value" );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
+            {
+                new AttributeValueResult
                 {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
                     Key = "TestAttribute",
-                } );
+                    Value = null,
+                },
+            };
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
-                campus.LoadAttributes( rockContext );
-                campus.SetAttributeValue( "TestAttribute", "some value" );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
-                {
-                    new AttributeValueResult
-                    {
-                        Key = "TestAttribute",
-                        Value = null,
-                    },
-                };
-
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
-
-                // Check the AttributeValues collection directly. The GetAttributeValue()
-                // method will convert null to empty string.
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreEqual( string.Empty, campus.AttributeValues["TestAttribute"].Value );
-            }
+            // Check the AttributeValues collection directly. The GetAttributeValue()
+            // method will convert null to empty string.
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreEqual( string.Empty, campus.AttributeValues["TestAttribute"].Value );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithMissingRequiredValue_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "TestAttribute",
+                IsRequired = true,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "TestAttribute",
-                    IsRequired = true,
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            campus.LoadAttributes( rockContext );
 
-                campus.LoadAttributes( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>();
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>();
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithProvidedRequiredValue_ReportsNoErrors()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "TestAttribute",
+                IsRequired = true,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            campus.LoadAttributes( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
+            {
+                new AttributeValueResult
                 {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
                     Key = "TestAttribute",
-                    IsRequired = true,
-                } );
+                    Value = "SomeValue",
+                },
+            };
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
-                campus.LoadAttributes( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
-                {
-                    new AttributeValueResult
-                    {
-                        Key = "TestAttribute",
-                        Value = "SomeValue",
-                    },
-                };
-
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
-
-                Assert.IsFalse( helper.HasErrors );
-            }
+            Assert.IsFalse( helper.HasErrors );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithEnforceSecurityAndNoEditAuthorization_DoesNotReportRequiredAttribute()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "SecuredAttribute",
+                IsRequired = true,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "SecuredAttribute",
-                    IsRequired = true,
-                } );
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.EDIT,
+                AllowOrDeny = "D",
+            } );
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.EDIT,
-                    AllowOrDeny = "D",
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            campus.LoadAttributes( rockContext );
 
-                campus.LoadAttributes( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>();
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>();
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
 
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
-
-                Assert.IsFalse( helper.HasErrors );
-            }
+            Assert.IsFalse( helper.HasErrors );
         }
 
         [TestMethod]
         public void SetAttributeValues_WithEnforceSecurityAndEditAuthorization_ReportsRequiredAttribute()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "SecuredAttribute",
+                IsRequired = true,
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
-                    Key = "SecuredAttribute",
-                    IsRequired = true,
-                } );
+            rockContext.Set<Auth>().Add( new Auth
+            {
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
+                EntityId = 1,
+                SpecialRole = SpecialRole.AllUsers,
+                Action = Authorization.EDIT,
+                AllowOrDeny = "A",
+            } );
 
-                rockContext.Set<Auth>().Add( new Auth
-                {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>( true, rockContext ).Id,
-                    EntityId = 1,
-                    SpecialRole = SpecialRole.AllUsers,
-                    Action = Authorization.EDIT,
-                    AllowOrDeny = "A",
-                } );
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            campus.LoadAttributes( rockContext );
 
-                campus.LoadAttributes( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>();
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>();
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
 
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
         }
 
         #endregion
@@ -2000,49 +1947,44 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void UpdateProperty_WithNullParameterExpression_ThrowsArgumentNullException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
+                helper.UpdateProperty( campus, c => c.Name, ( SetOrClear<string> ) null, parameterExpression: null );
+            } );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+            {
+                helper.UpdateProperty( campus, c => c.Name, ( string ) null, parameterExpression: null );
+            } );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+            {
+                helper.UpdateProperty( campus, c => c.Id, null, parameterExpression: null );
+            } );
 
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateProperty( campus, c => c.Name, ( SetOrClear<string> ) null, parameterExpression: null );
-                } );
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+            {
+                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( int? ) null, parameterExpression: null );
+            } );
 
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateProperty( campus, c => c.Name, ( string ) null, parameterExpression: null );
-                } );
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+            {
+                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( SetOrClear<int> ) null, parameterExpression: null );
+            } );
 
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateProperty( campus, c => c.Id, null, parameterExpression: null );
-                } );
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( int? ) null, parameterExpression: null );
-                } );
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( SetOrClear<int> ) null, parameterExpression: null );
-                } );
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( SetOrClear<int?> ) null, parameterExpression: null );
-                } );
-            }
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+            {
+                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( SetOrClear<int?> ) null, parameterExpression: null );
+            } );
         }
 
         #region Nullable Int Property
@@ -2050,200 +1992,160 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void UpdateProperty_WithNullableIntPropertyAndNullSetOrClearParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAliasId = 2;
 
-                campus.LeaderPersonAliasId = 2;
-
-                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( SetOrClear<int?> ) null, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( 2, campus.LeaderPersonAliasId );
-            }
+            helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( SetOrClear<int?> ) null, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( 2, campus.LeaderPersonAliasId );
         }
 
         [TestMethod]
         public void UpdateProperty_WithNullableIntPropertyAndNullIntParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAliasId = 2;
 
-                campus.LeaderPersonAliasId = 2;
-
-                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( int? ) null, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( 2, campus.LeaderPersonAliasId );
-            }
+            helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, ( int? ) null, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( 2, campus.LeaderPersonAliasId );
         }
 
         [TestMethod]
         public void UpdateProperty_WithNullableIntPropertyAndClearValue_ClearsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAliasId = 2;
+            var value = new SetOrClear<int?> { ClearValue = true };
 
-                campus.LeaderPersonAliasId = 2;
-                var value = new SetOrClear<int?> { ClearValue = true };
-
-                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, value, parameterExpression: "parameterExpression" );
-                Assert.IsNull( campus.LeaderPersonAliasId );
-            }
+            helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, value, parameterExpression: "parameterExpression" );
+            Assert.IsNull( campus.LeaderPersonAliasId );
         }
 
         [TestMethod]
         public void UpdateProperty_WithNullableIntPropertyAndSetValue_UpdatesValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAliasId = 2;
+            var value = new SetOrClear<int?> { Value = 3 };
 
-                campus.LeaderPersonAliasId = 2;
-                var value = new SetOrClear<int?> { Value = 3 };
-
-                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, value, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( 3, campus.LeaderPersonAliasId );
-            }
+            helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, value, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( 3, campus.LeaderPersonAliasId );
         }
 
         [TestMethod]
         public void UpdateProperty_WithNullableIntPropertyAndNullValue_ClearsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAliasId = 2;
+            var value = new SetOrClear<int?> { Value = null };
 
-                campus.LeaderPersonAliasId = 2;
-                var value = new SetOrClear<int?> { Value = null };
-
-                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, value, parameterExpression: "parameterExpression" );
-                Assert.IsNull( campus.LeaderPersonAliasId );
-            }
+            helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, value, parameterExpression: "parameterExpression" );
+            Assert.IsNull( campus.LeaderPersonAliasId );
         }
 
         [TestMethod]
         public void UpdateProperty_WithNullableIntPropertyAndSetOrClearNullableIntExceptionOnSet_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<int?> { Value = 0 };
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<int?> { Value = 0 };
+            helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
         }
 
         [TestMethod]
         public void UpdateProperty_WithNullableIntPropertyAndSetOrClearIntExceptionOnSet_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<int> { Value = 0 };
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<int> { Value = 0 };
+            helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
         }
 
         [TestMethod]
         public void UpdateProperty_WithNullableIntPropertyAndNullableIntExceptionOnSet_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = ( int? ) 2;
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = ( int? ) 2;
+            helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
         }
 
         #endregion
@@ -2253,168 +2155,133 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void UpdateProperty_WithIntPropertyAndNullSetOrClearParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Id = 1;
 
-                campus.Id = 1;
-
-                helper.UpdateProperty( campus, c => c.Id, ( SetOrClear<int> ) null, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( 1, campus.Id );
-            }
+            helper.UpdateProperty( campus, c => c.Id, ( SetOrClear<int> ) null, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( 1, campus.Id );
         }
 
         [TestMethod]
         public void UpdateProperty_WithIntPropertyAndNullIntParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Id = 1;
 
-                campus.Id = 1;
-
-                helper.UpdateProperty( campus, c => c.Id, null, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( 1, campus.Id );
-            }
+            helper.UpdateProperty( campus, c => c.Id, null, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( 1, campus.Id );
         }
 
         [TestMethod]
         public void UpdateProperty_WithIntPropertyAndClearValue_SetsDefaultValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Id = 2;
+            var value = new SetOrClear<int?> { ClearValue = true };
 
-                campus.Id = 2;
-                var value = new SetOrClear<int?> { ClearValue = true };
-
-                helper.UpdateProperty( campus, c => c.Id, value, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( default, campus.Id );
-            }
+            helper.UpdateProperty( campus, c => c.Id, value, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( default, campus.Id );
         }
 
         [TestMethod]
         public void UpdateProperty_WithIntPropertyAndSetOrClearWithValue_UpdatesValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAliasId = 2;
+            var value = new SetOrClear<int> { Value = 3 };
 
-                campus.LeaderPersonAliasId = 2;
-                var value = new SetOrClear<int> { Value = 3 };
-
-                helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, value, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( 3, campus.LeaderPersonAliasId );
-            }
+            helper.UpdateProperty( campus, c => c.LeaderPersonAliasId, value, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( 3, campus.LeaderPersonAliasId );
         }
 
         [TestMethod]
         public void UpdateProperty_WithIntPropertyAndSetOrClearNullValue_SetsDefaultValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Id = 2;
+            var value = new SetOrClear<int?> { Value = null };
 
-                campus.Id = 2;
-                var value = new SetOrClear<int?> { Value = null };
-
-                helper.UpdateProperty( campus, c => c.Id, value, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( default, campus.Id );
-            }
+            helper.UpdateProperty( campus, c => c.Id, value, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( default, campus.Id );
         }
 
         [TestMethod]
         public void UpdateProperty_WithIntPropertyAndSetNullableValue_UpdatesValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Id = 2;
 
-                campus.Id = 2;
-
-                helper.UpdateProperty( campus, c => c.Id, 3, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( 3, campus.Id );
-            }
+            helper.UpdateProperty( campus, c => c.Id, 3, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( 3, campus.Id );
         }
 
         [TestMethod]
         public void UpdateProperty_WithIntPropertyAndSetIntExceptionOnSet_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            helper.UpdateProperty( errorClass, e => e.IntProperty, 3, parameterExpression: "parameterExpression" );
 
-                helper.UpdateProperty( errorClass, e => e.IntProperty, 3, parameterExpression: "parameterExpression" );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
         }
 
         #endregion
@@ -2424,173 +2291,138 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void UpdateProperty_WithStringPropertyAndNullSetOrClearParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Name = "Test";
 
-                campus.Name = "Test";
-
-                helper.UpdateProperty( campus, c => c.Name, ( SetOrClear<string> ) null, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( "Test", campus.Name );
-            }
+            helper.UpdateProperty( campus, c => c.Name, ( SetOrClear<string> ) null, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( "Test", campus.Name );
         }
 
         [TestMethod]
         public void UpdateProperty_WithStringPropertyAndNullStringParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Name = "Test";
 
-                campus.Name = "Test";
-
-                helper.UpdateProperty( campus, c => c.Name, ( string ) null, parameterExpression: "parameterExpression" );
-                Assert.AreEqual( "Test", campus.Name );
-            }
+            helper.UpdateProperty( campus, c => c.Name, ( string ) null, parameterExpression: "parameterExpression" );
+            Assert.AreEqual( "Test", campus.Name );
         }
 
         [TestMethod]
         public void UpdateProperty_WithStringPropertyAndClearValueParameter_ClearsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Name = "Test";
+            var value = new SetOrClear<string> { ClearValue = true };
 
-                campus.Name = "Test";
-                var value = new SetOrClear<string> { ClearValue = true };
-
-                helper.UpdateProperty( campus, c => c.Name, value, parameterExpression: "parameterExpression" );
-                Assert.IsNull( campus.Name );
-            }
+            helper.UpdateProperty( campus, c => c.Name, value, parameterExpression: "parameterExpression" );
+            Assert.IsNull( campus.Name );
         }
 
         [TestMethod]
         public void UpdateProperty_WithStringPropertyAndSetOrClearValueParameter_SetsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Name = "Test";
+            var value = new SetOrClear<string> { Value = "new value" };
 
-                campus.Name = "Test";
-                var value = new SetOrClear<string> { Value = "new value" };
+            helper.UpdateProperty( campus, c => c.Name, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateProperty( campus, c => c.Name, value, parameterExpression: "parameterExpression" );
-
-                Assert.AreEqual( "new value", campus.Name );
-            }
+            Assert.AreEqual( "new value", campus.Name );
         }
 
         [TestMethod]
         public void UpdateProperty_WithStringPropertyAndStringParameter_SetsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.Name = "Test";
 
-                campus.Name = "Test";
+            helper.UpdateProperty( campus, c => c.Name, "new value", parameterExpression: "parameterExpression" );
 
-                helper.UpdateProperty( campus, c => c.Name, "new value", parameterExpression: "parameterExpression" );
-
-                Assert.AreEqual( "new value", campus.Name );
-            }
+            Assert.AreEqual( "new value", campus.Name );
         }
 
         [TestMethod]
         public void UpdateProperty_WithStringPropertyAndSetStringExceptionOnSet_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            helper.UpdateProperty( errorClass, e => e.StringProperty, "value", parameterExpression: "parameterExpression" );
 
-                helper.UpdateProperty( errorClass, e => e.StringProperty, "value", parameterExpression: "parameterExpression" );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
         }
 
         [TestMethod]
         public void UpdateProperty_WithStringPropertyAndSetOrClearValueExceptionOnSet_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { Value = "value" };
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { Value = "value" };
+            helper.UpdateProperty( errorClass, e => e.StringProperty, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateProperty( errorClass, e => e.StringProperty, value, parameterExpression: "parameterExpression" );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
         }
 
         #endregion
@@ -2602,323 +2434,263 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void UpdateNavigationProperty_WithNullParameterExpression_ThrowsArgumentNullException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
+                helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, ( SetOrClear<string> ) null, parameterExpression: null );
+            } );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, ( SetOrClear<string> ) null, parameterExpression: null );
-                } );
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, ( string ) null, parameterExpression: null );
-                } );
-            }
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+            {
+                helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, ( string ) null, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithNullSetOrClearParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAlias = new PersonAlias { Id = 2 };
+            campus.LeaderPersonAliasId = 2;
 
-                campus.LeaderPersonAlias = new PersonAlias { Id = 2 };
-                campus.LeaderPersonAliasId = 2;
+            helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, ( SetOrClear<string> ) null, parameterExpression: "parameterExpression" );
 
-                helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, ( SetOrClear<string> ) null, parameterExpression: "parameterExpression" );
-
-                Assert.AreEqual( 2, campus.LeaderPersonAliasId );
-                Assert.AreEqual( 2, campus.LeaderPersonAlias.Id );
-            }
+            Assert.AreEqual( 2, campus.LeaderPersonAliasId );
+            Assert.AreEqual( 2, campus.LeaderPersonAlias.Id );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithNullStringParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAlias = new PersonAlias { Id = 2 };
+            campus.LeaderPersonAliasId = 2;
 
-                campus.LeaderPersonAlias = new PersonAlias { Id = 2 };
-                campus.LeaderPersonAliasId = 2;
+            helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, ( string ) null, parameterExpression: "parameterExpression" );
 
-                helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, ( string ) null, parameterExpression: "parameterExpression" );
-
-                Assert.AreEqual( 2, campus.LeaderPersonAliasId );
-                Assert.AreEqual( 2, campus.LeaderPersonAlias.Id );
-            }
+            Assert.AreEqual( 2, campus.LeaderPersonAliasId );
+            Assert.AreEqual( 2, campus.LeaderPersonAlias.Id );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithEmptyStringParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.LeaderPersonAlias = new PersonAlias { Id = 2 };
+            campus.LeaderPersonAliasId = 2;
 
-                campus.LeaderPersonAlias = new PersonAlias { Id = 2 };
-                campus.LeaderPersonAliasId = 2;
+            helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, string.Empty, parameterExpression: "parameterExpression" );
 
-                helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, string.Empty, parameterExpression: "parameterExpression" );
-
-                Assert.AreEqual( 2, campus.LeaderPersonAliasId );
-                Assert.AreEqual( 2, campus.LeaderPersonAlias.Id );
-            }
+            Assert.AreEqual( 2, campus.LeaderPersonAliasId );
+            Assert.AreEqual( 2, campus.LeaderPersonAlias.Id );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithMissingForeignKeyParameter_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { Value = "123" };
+
+            var exception = Assert.Throws<Exception>( () =>
             {
-                var rockContext = rockContextMock.Object;
+                helper.UpdateNavigationProperty( errorClass, e => e.MissingForeignKey, value, parameterExpression: "parameterExpression" );
+            } );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { Value = "123" };
-
-                var exception = Assert.Throws<Exception>( () =>
-                {
-                    helper.UpdateNavigationProperty( errorClass, e => e.MissingForeignKey, value, parameterExpression: "parameterExpression" );
-                } );
-
-                Assert.Contains( "MissingForeignKey is not valid.", exception.Message );
-            }
+            Assert.Contains( "MissingForeignKey is not valid.", exception.Message );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithInvalidForeignKeyParameter_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { Value = "123" };
+
+            var exception = Assert.Throws<Exception>( () =>
             {
-                var rockContext = rockContextMock.Object;
+                helper.UpdateNavigationProperty( errorClass, e => e.InvalidForeignKey, value, parameterExpression: "parameterExpression" );
+            } );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { Value = "123" };
-
-                var exception = Assert.Throws<Exception>( () =>
-                {
-                    helper.UpdateNavigationProperty( errorClass, e => e.InvalidForeignKey, value, parameterExpression: "parameterExpression" );
-                } );
-
-                Assert.Contains( "InvalidForeignKeyId is not valid.", exception.Message );
-            }
+            Assert.Contains( "InvalidForeignKeyId is not valid.", exception.Message );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithRequiredForeignKeyParameterAndClearValue_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { ClearValue = true };
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { ClearValue = true };
+            helper.UpdateNavigationProperty( errorClass, e => e.RequiredForeignKey, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateNavigationProperty( errorClass, e => e.RequiredForeignKey, value, parameterExpression: "parameterExpression" );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithOptionalForeignKeyAndClearValue_ClearsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { ClearValue = true };
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { ClearValue = true };
+            campus.LeaderPersonAlias = new PersonAlias { Id = 2 };
+            campus.LeaderPersonAliasId = 2;
 
-                campus.LeaderPersonAlias = new PersonAlias { Id = 2 };
-                campus.LeaderPersonAliasId = 2;
+            helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, value, parameterExpression: "parameterExpression" );
-
-                Assert.IsNull( campus.LeaderPersonAliasId );
-                Assert.IsNull( campus.LeaderPersonAlias );
-            }
+            Assert.IsNull( campus.LeaderPersonAliasId );
+            Assert.IsNull( campus.LeaderPersonAlias );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithMissingTarget_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            helper.UpdateNavigationProperty( campus, c => c.TeamGroup, 123.AsIdKey(), parameterExpression: "parameterExpression" );
 
-                helper.UpdateNavigationProperty( campus, c => c.TeamGroup, 123.AsIdKey(), parameterExpression: "parameterExpression" );
-
-                Assert.IsTrue( helper.HasErrors );
-            }
+            Assert.IsTrue( helper.HasErrors );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithValidTarget_SetsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            rockContext.Set<Group>().Add( new Group
             {
-                var rockContext = rockContextMock.Object;
+                Id = 123,
+            } );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                rockContext.Set<Group>().Add( new Group
-                {
-                    Id = 123,
-                } );
+            helper.UpdateNavigationProperty( campus, c => c.TeamGroup, 123.AsIdKey(), parameterExpression: "parameterExpression" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-
-                helper.UpdateNavigationProperty( campus, c => c.TeamGroup, 123.AsIdKey(), parameterExpression: "parameterExpression" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreEqual( 123, campus.TeamGroupId );
-                Assert.AreEqual( 123, campus.TeamGroup.Id );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreEqual( 123, campus.TeamGroupId );
+            Assert.AreEqual( 123, campus.TeamGroup.Id );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithMissingPersonAliasTarget_SetsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, 456.AsIdKey(), parameterExpression: "parameterExpression" );
 
-                helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, 456.AsIdKey(), parameterExpression: "parameterExpression" );
-
-                Assert.IsTrue( helper.HasErrors );
-            }
+            Assert.IsTrue( helper.HasErrors );
         }
 
         [TestMethod]
         public void UpdateNavigationProperty_WithValidPersonAliasTarget_SetsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var personAlias = new PersonAlias
             {
-                var rockContext = rockContextMock.Object;
+                Id = 123,
+                AliasPersonId = 456,
+            };
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-                var personAlias = new PersonAlias
-                {
-                    Id = 123,
-                    AliasPersonId = 456,
-                };
+            rockContext.Set<PersonAlias>().Add( personAlias );
+            rockContext.Set<Person>().Add( new Person
+            {
+                Id = 456,
+                Aliases = new List<PersonAlias> { personAlias },
+                PrimaryAliasId = personAlias.Id,
+            } );
 
-                rockContext.Set<PersonAlias>().Add( personAlias );
-                rockContext.Set<Person>().Add( new Person
-                {
-                    Id = 456,
-                    Aliases = new List<PersonAlias> { personAlias },
-                    PrimaryAliasId = personAlias.Id,
-                } );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, 456.AsIdKey(), parameterExpression: "parameterExpression" );
 
-                helper.UpdateNavigationProperty( campus, c => c.LeaderPersonAlias, 456.AsIdKey(), parameterExpression: "parameterExpression" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreEqual( personAlias.Id, campus.LeaderPersonAliasId );
-                Assert.AreEqual( personAlias.Id, campus.LeaderPersonAlias.Id );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreEqual( personAlias.Id, campus.LeaderPersonAliasId );
+            Assert.AreEqual( personAlias.Id, campus.LeaderPersonAlias.Id );
         }
 
         #endregion
@@ -2928,339 +2700,279 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void UpdateDefinedValueProperty_WithNullParameterExpression_ThrowsArgumentNullException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
+                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, ( SetOrClear<string> ) null, parameterExpression: null );
+            } );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, ( SetOrClear<string> ) null, parameterExpression: null );
-                } );
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, ( string ) null, parameterExpression: null );
-                } );
-            }
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+            {
+                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, ( string ) null, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithNullSetOrClearParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.CampusTypeValue = new DefinedValue { Id = 2 };
+            campus.CampusTypeValueId = 2;
 
-                campus.CampusTypeValue = new DefinedValue { Id = 2 };
-                campus.CampusTypeValueId = 2;
+            helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, ( SetOrClear<string> ) null, parameterExpression: "parameterExpression" );
 
-                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, ( SetOrClear<string> ) null, parameterExpression: "parameterExpression" );
-
-                Assert.AreEqual( 2, campus.CampusTypeValueId );
-                Assert.AreEqual( 2, campus.CampusTypeValue.Id );
-            }
+            Assert.AreEqual( 2, campus.CampusTypeValueId );
+            Assert.AreEqual( 2, campus.CampusTypeValue.Id );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithNullStringParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.CampusTypeValue = new DefinedValue { Id = 2 };
+            campus.CampusTypeValueId = 2;
 
-                campus.CampusTypeValue = new DefinedValue { Id = 2 };
-                campus.CampusTypeValueId = 2;
+            helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, ( string ) null, parameterExpression: "parameterExpression" );
 
-                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, ( string ) null, parameterExpression: "parameterExpression" );
-
-                Assert.AreEqual( 2, campus.CampusTypeValueId );
-                Assert.AreEqual( 2, campus.CampusTypeValue.Id );
-            }
+            Assert.AreEqual( 2, campus.CampusTypeValueId );
+            Assert.AreEqual( 2, campus.CampusTypeValue.Id );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithEmptyStringParameter_DoesNotChangeValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            campus.CampusTypeValue = new DefinedValue { Id = 2 };
+            campus.CampusTypeValueId = 2;
 
-                campus.CampusTypeValue = new DefinedValue { Id = 2 };
-                campus.CampusTypeValueId = 2;
+            helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, string.Empty, parameterExpression: "parameterExpression" );
 
-                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, string.Empty, parameterExpression: "parameterExpression" );
-
-                Assert.AreEqual( 2, campus.CampusTypeValueId );
-                Assert.AreEqual( 2, campus.CampusTypeValue.Id );
-            }
+            Assert.AreEqual( 2, campus.CampusTypeValueId );
+            Assert.AreEqual( 2, campus.CampusTypeValue.Id );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithMissingForeignKeyParameter_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { Value = "123" };
+
+            var exception = Assert.Throws<Exception>( () =>
             {
-                var rockContext = rockContextMock.Object;
+                helper.UpdateDefinedValueProperty( errorClass, e => e.MissingDefinedValueForeignKey, value, parameterExpression: "parameterExpression" );
+            } );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { Value = "123" };
-
-                var exception = Assert.Throws<Exception>( () =>
-                {
-                    helper.UpdateDefinedValueProperty( errorClass, e => e.MissingDefinedValueForeignKey, value, parameterExpression: "parameterExpression" );
-                } );
-
-                Assert.Contains( "MissingDefinedValueForeignKey is not valid.", exception.Message );
-            }
+            Assert.Contains( "MissingDefinedValueForeignKey is not valid.", exception.Message );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithInvalidForeignKeyParameter_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { Value = "123" };
+
+            var exception = Assert.Throws<Exception>( () =>
             {
-                var rockContext = rockContextMock.Object;
+                helper.UpdateDefinedValueProperty( errorClass, e => e.InvalidDefinedValueForeignKey, value, parameterExpression: "parameterExpression" );
+            } );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { Value = "123" };
-
-                var exception = Assert.Throws<Exception>( () =>
-                {
-                    helper.UpdateDefinedValueProperty( errorClass, e => e.InvalidDefinedValueForeignKey, value, parameterExpression: "parameterExpression" );
-                } );
-
-                Assert.Contains( "InvalidDefinedValueForeignKeyId is not valid.", exception.Message );
-            }
+            Assert.Contains( "InvalidDefinedValueForeignKeyId is not valid.", exception.Message );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithRequiredForeignKeyParameterAndClearValue_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { ClearValue = true };
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { ClearValue = true };
+            helper.UpdateDefinedValueProperty( errorClass, e => e.RequiredDefinedValueForeignKey, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateDefinedValueProperty( errorClass, e => e.RequiredDefinedValueForeignKey, value, parameterExpression: "parameterExpression" );
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithOptionalForeignKeyAndClearValue_ClearsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var value = new SetOrClear<string> { ClearValue = true };
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var value = new SetOrClear<string> { ClearValue = true };
+            campus.CampusTypeValue = new DefinedValue { Id = 2 };
+            campus.CampusTypeValueId = 2;
 
-                campus.CampusTypeValue = new DefinedValue { Id = 2 };
-                campus.CampusTypeValueId = 2;
+            helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, value, parameterExpression: "parameterExpression" );
 
-                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, value, parameterExpression: "parameterExpression" );
-
-                Assert.IsNull( campus.CampusTypeValueId );
-                Assert.IsNull( campus.CampusTypeValue );
-            }
+            Assert.IsNull( campus.CampusTypeValueId );
+            Assert.IsNull( campus.CampusTypeValue );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithMissingTarget_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, 123.AsIdKey(), parameterExpression: "parameterExpression" );
 
-                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, 123.AsIdKey(), parameterExpression: "parameterExpression" );
-
-                Assert.IsTrue( helper.HasErrors );
-            }
+            Assert.IsTrue( helper.HasErrors );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithValidTarget_SetsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            rockContext.Set<DefinedType>().Add( new DefinedType
             {
-                var rockContext = rockContextMock.Object;
+                Id = 456,
+                Guid = SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid(),
+            } );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            rockContext.Set<DefinedValue>().Add( new DefinedValue
+            {
+                Id = 123,
+                DefinedTypeId = 456,
+            } );
 
-                rockContext.Set<DefinedType>().Add( new DefinedType
-                {
-                    Id = 456,
-                    Guid = SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid(),
-                } );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                rockContext.Set<DefinedValue>().Add( new DefinedValue
-                {
-                    Id = 123,
-                    DefinedTypeId = 456,
-                } );
+            helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, 123.AsIdKey(), parameterExpression: "parameterExpression" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-
-                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, 123.AsIdKey(), parameterExpression: "parameterExpression" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreEqual( 123, campus.CampusTypeValueId );
-                Assert.AreEqual( 123, campus.CampusTypeValue.Id );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreEqual( 123, campus.CampusTypeValueId );
+            Assert.AreEqual( 123, campus.CampusTypeValue.Id );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithValidTargetAndNoConstraintAttribute_SetsValue()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var errorClass = new HelperErrorClass();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            rockContext.Set<DefinedValue>().Add( new DefinedValue
             {
-                var rockContext = rockContextMock.Object;
+                Id = 123,
+                DefinedTypeId = 456,
+            } );
 
-                var errorClass = new HelperErrorClass();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                rockContext.Set<DefinedValue>().Add( new DefinedValue
-                {
-                    Id = 123,
-                    DefinedTypeId = 456,
-                } );
+            helper.UpdateDefinedValueProperty( errorClass, e => e.RequiredDefinedValueForeignKey, 123.AsIdKey(), parameterExpression: "parameterExpression" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-
-                helper.UpdateDefinedValueProperty( errorClass, e => e.RequiredDefinedValueForeignKey, 123.AsIdKey(), parameterExpression: "parameterExpression" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreEqual( 123, errorClass.RequiredDefinedValueForeignKeyId );
-                Assert.AreEqual( 123, errorClass.RequiredDefinedValueForeignKey.Id );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreEqual( 123, errorClass.RequiredDefinedValueForeignKeyId );
+            Assert.AreEqual( 123, errorClass.RequiredDefinedValueForeignKey.Id );
         }
 
         [TestMethod]
         public void UpdateDefinedValueProperty_WithMismatchedDefinedValue_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var campus = new Campus();
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            rockContext.Set<DefinedType>().Add( new DefinedType
             {
-                var rockContext = rockContextMock.Object;
+                Id = 456,
+                Guid = SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid(),
+            } );
 
-                var campus = new Campus();
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            rockContext.Set<DefinedValue>().Add( new DefinedValue
+            {
+                Id = 123,
+                DefinedTypeId = 321,
+            } );
 
-                rockContext.Set<DefinedType>().Add( new DefinedType
-                {
-                    Id = 456,
-                    Guid = SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid(),
-                } );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
 
-                rockContext.Set<DefinedValue>().Add( new DefinedValue
-                {
-                    Id = 123,
-                    DefinedTypeId = 321,
-                } );
+            helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, 123.AsIdKey(), parameterExpression: "parameterExpression" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
+            Assert.IsTrue( helper.HasErrors );
 
-                helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, 123.AsIdKey(), parameterExpression: "parameterExpression" );
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var result = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
-            }
+            Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
         }
 
         #endregion
@@ -3270,205 +2982,165 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void WhereOptionalIdKey_WithIntPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereOptionalIdKey( query, c => c.Id, string.Empty, parameterExpression: null );
-                } );
-            }
+                helper.WhereOptionalIdKey( query, c => c.Id, string.Empty, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereOptionalIdKey_WithIntPropertyAndEmptyParameter_ReturnsSameQueryable()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
+            var result = helper.WhereOptionalIdKey( query, c => c.Id, string.Empty, parameterExpression: "parameter" );
 
-                var result = helper.WhereOptionalIdKey( query, c => c.Id, string.Empty, parameterExpression: "parameter" );
-
-                Assert.AreSame( query, result );
-            }
+            Assert.AreSame( query, result );
         }
 
         [TestMethod]
         public void WhereOptionalIdKey_WithIntPropertyAndNonIdKeyParameter_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Id = 1 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereOptionalIdKey( query, c => c.Id, "bad", parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Id = 1 },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereOptionalIdKey( query, c => c.Id, "bad", parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereOptionalIdKey_WithIntPropertyAndIdKeyParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Id = 1 },
+                new Campus { Id = 2 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereOptionalIdKey( query, c => c.Id, 1.AsIdKey(), parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Id = 1 },
-                    new Campus { Id = 2 },
-                }.AsQueryable();
-
-                var result = helper.WhereOptionalIdKey( query, c => c.Id, 1.AsIdKey(), parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         [TestMethod]
         public void WhereOptionalIdKey_WithNullableIntPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereOptionalIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: null );
-                } );
-            }
+                helper.WhereOptionalIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereOptionalIdKey_WithNullableIntPropertyAndEmptyParameter_ReturnsSameQueryable()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
+            var result = helper.WhereOptionalIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: "parameter" );
 
-                var result = helper.WhereOptionalIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: "parameter" );
-
-                Assert.AreSame( query, result );
-            }
+            Assert.AreSame( query, result );
         }
 
         [TestMethod]
         public void WhereOptionalIdKey_WithNullableIntPropertyAndNonIdKeyParameter_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { TeamGroupId = 1 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereOptionalIdKey( query, c => c.TeamGroupId, "bad", parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { TeamGroupId = 1 },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereOptionalIdKey( query, c => c.TeamGroupId, "bad", parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereOptionalIdKey_WithNullableIntPropertyAndIdKeyParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { TeamGroupId = 1 },
+                new Campus { TeamGroupId = 2 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereOptionalIdKey( query, c => c.TeamGroupId, 1.AsIdKey(), parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { TeamGroupId = 1 },
-                    new Campus { TeamGroupId = 2 },
-                }.AsQueryable();
-
-                var result = helper.WhereOptionalIdKey( query, c => c.TeamGroupId, 1.AsIdKey(), parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         #endregion
@@ -3478,221 +3150,181 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void WhereRequiredIdKey_WithIntPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereRequiredIdKey( query, c => c.Id, string.Empty, parameterExpression: null );
-                } );
-            }
+                helper.WhereRequiredIdKey( query, c => c.Id, string.Empty, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereRequiredIdKey_WithIntPropertyAndEmptyParameter_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Id = 1 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredIdKey( query, c => c.Id, string.Empty, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Id = 1 },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereRequiredIdKey( query, c => c.Id, string.Empty, parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereRequiredIdKey_WithIntPropertyAndNonIdKeyParameter_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Id = 1 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredIdKey( query, c => c.Id, "bad", parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Id = 1 },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereRequiredIdKey( query, c => c.Id, "bad", parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereRequiredIdKey_WithIntPropertyAndIdKeyParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Id = 1 },
+                new Campus { Id = 2 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredIdKey( query, c => c.Id, 1.AsIdKey(), parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Id = 1 },
-                    new Campus { Id = 2 },
-                }.AsQueryable();
-
-                var result = helper.WhereRequiredIdKey( query, c => c.Id, 1.AsIdKey(), parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         [TestMethod]
         public void WhereRequiredIdKey_WithNullableIntPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereRequiredIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: null );
-                } );
-            }
+                helper.WhereRequiredIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereRequiredIdKey_WithNullableIntPropertyAndEmptyParameter_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { TeamGroupId = 1 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { TeamGroupId = 1 },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereRequiredIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereRequiredIdKey_WithNullableIntPropertyAndNonIdKeyParameter_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { TeamGroupId = 1 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredIdKey( query, c => c.TeamGroupId, "bad", parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { TeamGroupId = 1 },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereRequiredIdKey( query, c => c.TeamGroupId, "bad", parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereRequiredIdKey_WithNullableIntPropertyAndIdKeyParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { TeamGroupId = 1 },
+                new Campus { TeamGroupId = 2 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredIdKey( query, c => c.TeamGroupId, 1.AsIdKey(), parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { TeamGroupId = 1 },
-                    new Campus { TeamGroupId = 2 },
-                }.AsQueryable();
-
-                var result = helper.WhereRequiredIdKey( query, c => c.TeamGroupId, 1.AsIdKey(), parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         #endregion
@@ -3702,217 +3334,172 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void WhereOptionalProperty_WithIntPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereOptionalProperty( query, c => c.Id, ( int? ) 0, parameterExpression: null );
-                } );
-            }
+                helper.WhereOptionalProperty( query, c => c.Id, ( int? ) 0, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereOptionalProperty_WithIntPropertyAndNullParameter_ReturnsSameQueryable()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
+            var result = helper.WhereOptionalProperty( query, c => c.Id, ( int? ) null, parameterExpression: "parameter" );
 
-                var result = helper.WhereOptionalProperty( query, c => c.Id, ( int? ) null, parameterExpression: "parameter" );
-
-                Assert.AreSame( query, result );
-            }
+            Assert.AreSame( query, result );
         }
 
         [TestMethod]
         public void WhereOptionalProperty_WithIntPropertyAndValueParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Id = 1 },
+                new Campus { Id = 2 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereOptionalProperty( query, c => c.Id, ( int? ) 1, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Id = 1 },
-                    new Campus { Id = 2 },
-                }.AsQueryable();
-
-                var result = helper.WhereOptionalProperty( query, c => c.Id, ( int? ) 1, parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         [TestMethod]
         public void WhereOptionalProperty_WithNullableIntPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereOptionalProperty( query, c => c.TeamGroupId, ( int? ) 0, parameterExpression: null );
-                } );
-            }
+                helper.WhereOptionalProperty( query, c => c.TeamGroupId, ( int? ) 0, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereOptionalProperty_WithNullableIntPropertyAndNullParameter_ReturnsSameQueryable()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
+            var result = helper.WhereOptionalProperty( query, c => c.TeamGroupId, ( int? ) null, parameterExpression: "parameter" );
 
-                var result = helper.WhereOptionalProperty( query, c => c.TeamGroupId, ( int? ) null, parameterExpression: "parameter" );
-
-                Assert.AreSame( query, result );
-            }
+            Assert.AreSame( query, result );
         }
 
         [TestMethod]
         public void WhereOptionalProperty_WithNullableIntPropertyAndValueParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { TeamGroupId = 1 },
+                new Campus { TeamGroupId = 2 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereOptionalProperty( query, c => c.TeamGroupId, ( int? ) 1, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { TeamGroupId = 1 },
-                    new Campus { TeamGroupId = 2 },
-                }.AsQueryable();
-
-                var result = helper.WhereOptionalProperty( query, c => c.TeamGroupId, ( int? ) 1, parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         [TestMethod]
         public void WhereOptionalProperty_WithStringPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereOptionalProperty( query, c => c.Name, null, parameterExpression: null );
-                } );
-            }
+                helper.WhereOptionalProperty( query, c => c.Name, null, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereOptionalProperty_WithStringPropertyAndNullParameter_ReturnsSameQueryable()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
+            var result = helper.WhereOptionalProperty( query, c => c.Name, null, parameterExpression: "parameter" );
 
-                var result = helper.WhereOptionalProperty( query, c => c.Name, null, parameterExpression: "parameter" );
-
-                Assert.AreSame( query, result );
-            }
+            Assert.AreSame( query, result );
         }
 
         [TestMethod]
         public void WhereOptionalProperty_WithStringPropertyAndValueParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Name = "One" },
+                new Campus { Name = "Two" },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereOptionalProperty( query, c => c.Name, "One", parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Name = "One" },
-                    new Campus { Name = "Two" },
-                }.AsQueryable();
-
-                var result = helper.WhereOptionalProperty( query, c => c.Name, "One", parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         #endregion
@@ -3922,241 +3509,196 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void WhereRequiredProperty_WithIntPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereRequiredProperty( query, c => c.Id, ( int? ) 0, parameterExpression: null );
-                } );
-            }
+                helper.WhereRequiredProperty( query, c => c.Id, ( int? ) 0, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereRequiredProperty_WithIntPropertyAndNullParameter_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Id = 1 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredProperty( query, c => c.Id, ( int? ) null, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Id = 1 },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereRequiredProperty( query, c => c.Id, ( int? ) null, parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereRequiredProperty_WithIntPropertyAndValueParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Id = 1 },
+                new Campus { Id = 2 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredProperty( query, c => c.Id, ( int? ) 1, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Id = 1 },
-                    new Campus { Id = 2 },
-                }.AsQueryable();
-
-                var result = helper.WhereRequiredProperty( query, c => c.Id, ( int? ) 1, parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         [TestMethod]
         public void WhereRequiredProperty_WithNullableIntPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereRequiredProperty( query, c => c.TeamGroupId, ( int? ) 0, parameterExpression: null );
-                } );
-            }
+                helper.WhereRequiredProperty( query, c => c.TeamGroupId, ( int? ) 0, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereRequiredProperty_WithNullableIntPropertyAndNullParameter_ReturnsSameQueryable()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { TeamGroupId = 1 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredProperty( query, c => c.TeamGroupId, ( int? ) null, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { TeamGroupId = 1 },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereRequiredProperty( query, c => c.TeamGroupId, ( int? ) null, parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereRequiredProperty_WithNullableIntPropertyAndValueParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { TeamGroupId = 1 },
+                new Campus { TeamGroupId = 2 },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredProperty( query, c => c.TeamGroupId, ( int? ) 1, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { TeamGroupId = 1 },
-                    new Campus { TeamGroupId = 2 },
-                }.AsQueryable();
-
-                var result = helper.WhereRequiredProperty( query, c => c.TeamGroupId, ( int? ) 1, parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         [TestMethod]
         public void WhereRequiredProperty_WithStringPropertyAndNullParameterExpression_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>().AsQueryable();
+
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>().AsQueryable();
-
-                Assert.ThrowsExactly<ArgumentNullException>( () =>
-                {
-                    helper.WhereRequiredProperty( query, c => c.Name, null, parameterExpression: null );
-                } );
-            }
+                helper.WhereRequiredProperty( query, c => c.Name, null, parameterExpression: null );
+            } );
         }
 
         [TestMethod]
         public void WhereRequiredProperty_WithStringPropertyAndNullParameter_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Name = "One" },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredProperty( query, c => c.Name, null, parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Name = "One" },
-                }.AsQueryable();
+            Assert.IsTrue( helper.HasErrors );
 
-                var result = helper.WhereRequiredProperty( query, c => c.Name, null, parameterExpression: "parameter" );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                Assert.IsTrue( helper.HasErrors );
-
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
-                Assert.IsEmpty( result );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+            Assert.IsEmpty( result );
         }
 
         [TestMethod]
         public void WhereRequiredProperty_WithStringPropertyAndValueParameter_UpdatesQuery()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+            var query = new List<Campus>()
             {
-                var rockContext = rockContextMock.Object;
+                new Campus { Name = "One" },
+                new Campus { Name = "Two" },
+            }.AsQueryable();
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var result = helper.WhereRequiredProperty( query, c => c.Name, "One", parameterExpression: "parameter" );
 
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-                var query = new List<Campus>()
-                {
-                    new Campus { Name = "One" },
-                    new Campus { Name = "Two" },
-                }.AsQueryable();
-
-                var result = helper.WhereRequiredProperty( query, c => c.Name, "One", parameterExpression: "parameter" );
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.HasCount( 1, result );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.HasCount( 1, result );
         }
 
         #endregion
@@ -4166,93 +3708,79 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void SaveChanges_WithReadOnlyContext_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+
+            Assert.ThrowsExactly<InvalidOperationException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-
-                Assert.ThrowsExactly<InvalidOperationException>( () =>
-                {
-                    helper.SaveChanges();
-                } );
-            }
+                helper.SaveChanges();
+            } );
         }
 
         [TestMethod]
         public void SaveChanges_WithSaveException_ReportsError()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var rockContextMock = Mock.Get( rockContext );
 
             rockContextMock.Setup( m => m.SaveChanges() ).Throws( new Exception( "Test Exception" ) );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
+            helper.SaveChanges();
 
-                helper.SaveChanges();
+            Assert.IsTrue( helper.HasErrors );
 
-                Assert.IsTrue( helper.HasErrors );
+            var errorResult = ( AgentToolResult ) helper.ErrorResult;
 
-                var errorResult = ( AgentToolResult ) helper.ErrorResult;
-
-                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "error occurred" ) ) );
-            }
+            Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "error occurred" ) ) );
         }
 
         [TestMethod]
         public void SaveChanges_WithUpdatedAttributes_SavesAttributeValues()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
             {
-                var rockContext = rockContextMock.Object;
+                Id = 1,
+                EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
+                Key = "TestAttribute",
+            } );
 
-                rockContext.Set<Rock.Model.Attribute>().Add( new Rock.Model.Attribute
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var campus = new Campus();
+            rockContext.Set<Campus>().Add( campus );
+            campus.LoadAttributes( rockContext );
+
+            var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
+            var attributeValues = new List<AttributeValueResult>
+            {
+                new AttributeValueResult
                 {
-                    Id = 1,
-                    EntityTypeId = EntityTypeCache.Get<Campus>( true, rockContext ).Id,
                     Key = "TestAttribute",
-                } );
+                    Value = "SomeValue",
+                },
+            };
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
+            helper.SaveChanges();
 
-                var campus = new Campus();
-                rockContext.Set<Campus>().Add( campus );
-                campus.LoadAttributes( rockContext );
-
-                var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
-                var attributeValues = new List<AttributeValueResult>
-                {
-                    new AttributeValueResult
-                    {
-                        Key = "TestAttribute",
-                        Value = "SomeValue",
-                    },
-                };
-
-                helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
-                helper.SaveChanges();
-
-                Assert.IsFalse( helper.HasErrors );
-                Assert.AreNotEqual( 0, campus.Id );
-                Assert.IsNotEmpty( rockContext.Set<AttributeValue>().Where( av => av.Value == "SomeValue" ) );
-            }
+            Assert.IsFalse( helper.HasErrors );
+            Assert.AreNotEqual( 0, campus.Id );
+            Assert.IsNotEmpty( rockContext.Set<AttributeValue>().Where( av => av.Value == "SomeValue" ) );
         }
 
         #endregion
@@ -4262,70 +3790,57 @@ namespace Rock.Tests.AI.Agent
         [TestMethod]
         public void SaveChangesIfNoErrors_WithReadOnlyContext_ThrowsException()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
+
+            var helper = new AgentToolHelper( agentRequestContext, logger );
+
+            Assert.ThrowsExactly<InvalidOperationException>( () =>
             {
-                var rockContext = rockContextMock.Object;
-
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
-
-                var helper = new AgentToolHelper( agentRequestContext, logger );
-
-                Assert.ThrowsExactly<InvalidOperationException>( () =>
-                {
-                    helper.SaveChangesIfNoErrors();
-                } );
-            }
+                helper.SaveChangesIfNoErrors();
+            } );
         }
 
         [TestMethod]
         public void SaveChangesIfNoErrors_WithHelperErrors_DoesNotCallSaveChanges()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var rockContextMock = Mock.Get( rockContext );
 
             rockContextMock.Setup( m => m.SaveChanges() ).Returns( 0 );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
+            helper.AddError( "Test error" );
+            helper.SaveChangesIfNoErrors();
 
-                helper.AddError( "Test error" );
-                helper.SaveChangesIfNoErrors();
-
-                rockContextMock.Verify( m => m.SaveChanges(), Times.Never );
-            }
+            rockContextMock.Verify( m => m.SaveChanges(), Times.Never );
         }
 
         [TestMethod]
         public void SaveChangesIfNoErrors_WithNoErrors_CallsSaveChanges()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
+            var rockContextMock = Mock.Get( rockContext );
 
             rockContextMock.Setup( m => m.SaveChanges() ).Returns( 0 );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var rockContext = rockContextMock.Object;
+            var logger = new Mock<ILogger>().Object;
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
-                var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = CreateAgentRequestContext( rockContext );
+            var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
 
-                var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
+            helper.SaveChangesIfNoErrors();
 
-                helper.SaveChangesIfNoErrors();
-
-                rockContextMock.Verify( m => m.SaveChanges(), Times.Once );
-            }
+            rockContextMock.Verify( m => m.SaveChanges(), Times.Once );
         }
 
         #endregion

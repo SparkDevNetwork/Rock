@@ -26,6 +26,7 @@
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
     import { CommunicationSaturationReportChartDataBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationSaturationReport/communicationSaturationReportChartDataBag";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     const props = defineProps({
         data: {
@@ -73,7 +74,7 @@
         labels: otherBuckets.value?.map(item => item.bucket) ?? [],
         datasets: [{
             data: otherBuckets.value?.map(item => item.numberOfRecipients) ?? [],
-            backgroundColor: "#007aff",
+            backgroundColor: getCssVariableValue("--color-categorical-1", "#007aff"),
             borderWidth: 0
         }]
     }));
@@ -103,7 +104,7 @@
                         weight: "bold",
                         size: 14
                     },
-                    color: "#3D444D"
+                    color: getCssVariableValue("--color-interface-strong", "#3D444D")
                 }
             },
             x: {
@@ -115,7 +116,7 @@
                         weight: "bold",
                         size: 14
                     },
-                    color: "#3D444D"
+                    color: getCssVariableValue("--color-interface-strong", "#3D444D")
                 }
             }
         }

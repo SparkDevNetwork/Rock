@@ -4,6 +4,7 @@
     "rootDir": "../",
     "outDir": "./",
     "noEmit": false,
+    "isolatedModules": true,
     "module": "CommonJS",
     "baseUrl": "..",
     "paths": {

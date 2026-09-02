@@ -64,6 +64,12 @@ namespace Rock.AI.Agent.Classes.Entity
         #region Common Properties
 
         /// <summary>
+        /// Gets or sets the unique identifier of the person's primary alias. This
+        /// is the value to use when a person alias is required.
+        /// </summary>
+        public Guid? PrimaryAliasGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the person's first/given name.
         /// </summary>
         public string FirstName { get; set; }

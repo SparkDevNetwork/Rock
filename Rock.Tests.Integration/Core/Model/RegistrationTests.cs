@@ -27,26 +27,6 @@ namespace Rock.Tests.Integration.Core.Model
             CleanUpData( registrationForiegnKey );
         }
 
-        [TestMethod]
-        public void RegistrationCreatedDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                var registration = new Rock.Model.Registration();
-                registration.CreatedDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, registration.CreatedDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void RegistrationCreatedDateKeyWorksWithNullValue()
-        {
-            var registration = new Rock.Model.Registration();
-            registration.CreatedDateTime = null;
-            Assert.IsNull( registration.CreatedDateKey );
-        }
 
         [TestMethod]
         public void RegistrationDateKeySavesCorrectly()

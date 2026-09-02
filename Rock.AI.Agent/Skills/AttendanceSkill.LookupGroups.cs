@@ -71,6 +71,7 @@ internal sealed partial class AttendanceSkill
                     .Select( g => new KeyNameResult
                     {
                         Id = g.Id,
+                        Guid = g.Guid,
                         Name = g.Name,
                     } );
             } )

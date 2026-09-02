@@ -79,10 +79,12 @@ internal sealed partial class LearningManagementSkill
             .Select( lpc => new LearningProgramCompletionResult
             {
                 Id = lpc.Id,
+                Guid = lpc.Guid,
                 Person = PersonResult.NameOnly( lpc.PersonAlias ),
                 LearningProgram = new LearningProgramResult
                 {
                     Id = lpc.LearningProgram.Id,
+                    Guid = lpc.LearningProgram.Guid,
                     Name = lpc.LearningProgram.Name,
                 },
                 StartDate = lpc.StartDate,

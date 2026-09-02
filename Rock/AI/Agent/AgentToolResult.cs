@@ -35,7 +35,9 @@ namespace Rock.AI.Agent
     /// - Exactly one of <see cref="Content"/> or <see cref="Results"/> will be set when using the factory methods.
     /// - <see cref="HistoryContent"/> is not serialized and is only used for chat history plumbing.
     /// - Properties are marked <see langword="internal"/> but included in JSON via <see cref="JsonIncludeAttribute"/> to minimize public surface area.
-    /// - This class should not be made public, instead make the IAgentToolResult public.
+    /// - The public surface is intentionally limited to the factory and builder-style methods;
+    ///   the serialized properties stay <see langword="internal"/> unless they need direct
+    ///   access for testing or other purposes.
     /// </remarks>
     public sealed class AgentToolResult
     {

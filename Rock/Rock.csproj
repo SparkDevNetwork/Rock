@@ -21,6 +21,7 @@
     <PackageReference Include="CacheManager.SystemRuntimeCaching" Version="1.2.0" />
     <PackageReference Include="CommonMark.NET" Version="0.15.1" />
     <PackageReference Include="CS-Script" Version="3.13.2" />
+    <PackageReference Include="DistributedLock.SqlServer" Version="1.0.7" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
     <PackageReference Include="dotless" Version="1.5.2" />
     <PackageReference Include="EF6.TagWith" Version="1.2.1" />
@@ -47,6 +48,7 @@
     <PackageReference Include="Microsoft.Azure.SignalR.AspNet" Version="1.4.3" />
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.2.3" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
@@ -183,6 +185,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <!--
+      Crawler pattern list consumed by Rock.Net.CrawlerUserAgents. Vendored from
+      https://github.com/monperrus/crawler-user-agents (MIT) and refreshed as a
+      step in the release packaging process.
+    -->
+    <EmbeddedResource Include="Net\crawler-user-agents.json" />
   </ItemGroup>
 
   <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />

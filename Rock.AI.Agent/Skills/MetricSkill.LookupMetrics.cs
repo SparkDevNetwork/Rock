@@ -55,6 +55,7 @@ internal partial class MetricSkill
             .Select( m => new MetricResult
             {
                 Id = m.Id,
+                Guid = m.Guid,
                 Title = m.Title,
                 Description = m.Description,
                 ChampionPerson = PersonResult.NameOnly( m.MetricChampionPersonAlias ),

@@ -40,11 +40,7 @@ internal sealed partial class AttendanceSkill
             .Where( gt => gt.GroupTypePurposeValueId == checkInConfigurationPurposeId );
 
         var checkInConfigurationResults = checkInConfigurations
-            .Select( c => new KeyNameResult
-            {
-                Id = c.Id,
-                Name = c.Name,
-            } )
+            .Select( c => KeyNameResult.FromCache( c ) )
             .ToList();
 
         return Success( checkInConfigurationResults )

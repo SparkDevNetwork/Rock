@@ -66,6 +66,7 @@ internal sealed partial class NoteSkill
                 var noteTypeResult = new NoteTypeResult
                 {
                     Id = noteType.Id,
+                    Guid = noteType.Guid,
                     Name = noteType.Name,
                 };
 
@@ -75,11 +76,7 @@ internal sealed partial class NoteSkill
 
                     if ( entityType != null )
                     {
-                        noteTypeResult.EntityType = new KeyNameResult
-                        {
-                            Id = entityType.Id,
-                            Name = entityType.FriendlyName,
-                        };
+                        noteTypeResult.EntityType = KeyNameResult.FromCache( entityType );
                     }
                 }
 

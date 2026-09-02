@@ -19,54 +19,56 @@
             <div class="menu-fill"></div>
         </div>
 
-        <div v-if="!isComponentMenuSelected" class="control-list">
-            <ControlButton icon="ti ti-user"
-                           title="Attendee Info"
-                           :type="LabelFieldType.Text"
-                           :subtype="TextFieldSubType.AttendeeInfo" />
+        <div v-if="!isComponentMenuSelected" class="control-container">
+            <div class="control-list">
+                <ControlButton icon="ti ti-user"
+                               title="Attendee Info"
+                               :type="LabelFieldType.Text"
+                               :subtype="TextFieldSubType.AttendeeInfo" />
 
-            <ControlButton icon="ti ti-calendar-check"
-                           title="Check-in Info"
-                           :type="LabelFieldType.Text"
-                           :subtype="TextFieldSubType.CheckInInfo" />
+                <ControlButton icon="ti ti-calendar-check"
+                               title="Check-in Info"
+                               :type="LabelFieldType.Text"
+                               :subtype="TextFieldSubType.CheckInInfo" />
 
-            <ControlButton icon="ti ti-medal"
-                           title="Achievement Info"
-                           :type="LabelFieldType.Text"
-                           :subtype="TextFieldSubType.AchievementInfo" />
+                <ControlButton icon="ti ti-medal"
+                               title="Achievement Info"
+                               :type="LabelFieldType.Text"
+                               :subtype="TextFieldSubType.AchievementInfo" />
 
-            <ControlButton icon="ti ti-typography"
-                           title="Text"
-                           :type="LabelFieldType.Text"
-                           :subtype="TextFieldSubType.Custom" />
+                <ControlButton icon="ti ti-typography"
+                               title="Text"
+                               :type="LabelFieldType.Text"
+                               :subtype="TextFieldSubType.Custom" />
 
-            <ControlButton icon="ti ti-equal"
-                           title="Line"
-                           :type="LabelFieldType.Line" />
+                <ControlButton icon="ti ti-equal"
+                               title="Line"
+                               :type="LabelFieldType.Line" />
 
-            <ControlButton icon="ti ti-square"
-                           title="Rectangle"
-                           :type="LabelFieldType.Rectangle" />
+                <ControlButton icon="ti ti-square"
+                               title="Rectangle"
+                               :type="LabelFieldType.Rectangle" />
 
-            <ControlButton icon="ti ti-circle"
-                           title="Ellipse"
-                           :type="LabelFieldType.Ellipse" />
+                <ControlButton icon="ti ti-circle"
+                               title="Ellipse"
+                               :type="LabelFieldType.Ellipse" />
 
-            <ControlButton icon="ti ti-icons"
-                           title="Icon"
-                           :type="LabelFieldType.Icon" />
+                <ControlButton icon="ti ti-icons"
+                               title="Icon"
+                               :type="LabelFieldType.Icon" />
 
-            <ControlButton icon="ti ti-photo"
-                           title="Image"
-                           :type="LabelFieldType.Image" />
+                <ControlButton icon="ti ti-photo"
+                               title="Image"
+                               :type="LabelFieldType.Image" />
 
-            <ControlButton icon="ti ti-id-badge"
-                           title="Attendee Photo"
-                           :type="LabelFieldType.AttendeePhoto" />
+                <ControlButton icon="ti ti-id-badge"
+                               title="Attendee Photo"
+                               :type="LabelFieldType.AttendeePhoto" />
 
-            <ControlButton icon="ti ti-qrcode"
-                           title="Barcode"
-                           :type="LabelFieldType.Barcode" />
+                <ControlButton icon="ti ti-qrcode"
+                               title="Barcode"
+                               :type="LabelFieldType.Barcode" />
+            </div>
         </div>
 
         <div v-else class="field-settings" style="overflow-y: auto;">
@@ -165,12 +167,17 @@
     border-top-width: 0;
 }
 
-.control-list {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 20px;
-    gap: 10px;
+.control-container {
+    height: 100%;
     overflow-y: auto;
+}
+
+.control-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 100px);
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
 }
 
 .field-settings :deep(.panel) {

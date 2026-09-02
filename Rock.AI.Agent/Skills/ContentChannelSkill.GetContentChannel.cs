@@ -42,6 +42,7 @@ internal partial class ContentChannelSkill
         return Success( new ContentChannelResult
         {
             Id = contentChannel.Id,
+            Guid = contentChannel.Guid,
             Name = contentChannel.Name,
             ContentChannelType = new ContentChannelTypeResult
             {

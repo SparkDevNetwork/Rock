@@ -684,11 +684,16 @@ namespace Rock.Blocks.Engagement
                 ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line
             };
 
-            // Add data series for success
+            // Add data series for success. This is a single-series chart, so it uses the default chart
+            // color rather than a categorical one. BorderColor must be a real color (not a CSS custom
+            // property name): ChartJsTimeSeriesDataFactory parses it server-side via RockColor to
+            // auto-derive the translucent area fill beneath the line, and RockColor has no concept of
+            // CSS variables. #615FFF is --color-metric-primary's current resolved value; it will go
+            // stale if that token's color changes.
             factory.Datasets.Add( new ChartJsTimeSeriesDataset
             {
                 Name = "Successful",
-                BorderColor = ChartJsConstants.Colors.Green,
+                BorderColor = "#615FFF",
                 DataPoints = dataPoints
             } );
 

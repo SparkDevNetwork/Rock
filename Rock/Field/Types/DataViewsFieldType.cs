@@ -198,6 +198,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the DataView table, separated by commas. Not their ids or idKeys.",
+                Instructions = "To find the correct values, read the data views and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

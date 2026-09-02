@@ -140,7 +140,7 @@
             const seriesName = dp.seriesName!;
             let seriesDataSet = seriesDataSets.get(seriesName);
 
-            const color = getCssVariableValue(dp.color!, "#8B8BA7");
+            const color = getCssVariableValue(dp.color!, getCssVariableValue("--color-interface-medium", "#8B8BA7"));
 
             if (!seriesDataSet) {
                 seriesDataSet = {

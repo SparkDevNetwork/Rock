@@ -47,7 +47,8 @@
 
                 <div class="col-md-6">
                     <DropDownList v-model="role"
-                                  label="Role"
+                                  label="Model"
+                                  help="The language model to use when this agent handles requests."
                                   :items="roleItems"
                                   :showBlankItem="false"
                                   rules="required" />
@@ -146,7 +147,7 @@
     const instructions = propertyRef(props.modelValue.bag?.instructions ?? "", "Instructions");
     const autoSummarizeThreshold = ref(props.modelValue.bag?.autoSummarizeThreshold ?? null);
     const avatarBinaryFile = ref(props.modelValue.bag?.avatarBinaryFile ?? null);
-    const role = ref((props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
+    const role = ref((props.modelValue.bag?.role ?? ModelServiceRole.Medium).toString());
     const currentPersonTemplate = ref(props.modelValue.bag?.currentPersonTemplate ?? "");
     const slug = ref(props.modelValue.bag?.slug ?? "");
     const isExcludingSystemSkills = ref(props.modelValue.bag?.isExcludingSystemSkills ?? false);
@@ -200,7 +201,7 @@
         updateRefValue(instructions, props.modelValue.bag?.instructions ?? "");
         updateRefValue(autoSummarizeThreshold, props.modelValue.bag?.autoSummarizeThreshold ?? null);
         updateRefValue(avatarBinaryFile, props.modelValue.bag?.avatarBinaryFile ?? null);
-        updateRefValue(role, (props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
+        updateRefValue(role, (props.modelValue.bag?.role ?? ModelServiceRole.Medium).toString());
         updateRefValue(currentPersonTemplate, props.modelValue.bag?.currentPersonTemplate ?? "");
         updateRefValue(slug, props.modelValue.bag?.slug ?? "");
         updateRefValue(isExcludingSystemSkills, props.modelValue.bag?.isExcludingSystemSkills ?? false);

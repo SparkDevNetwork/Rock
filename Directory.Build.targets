@@ -25,7 +25,22 @@
     </FindUnderPath>
 
     <ItemGroup>
+      <!--
+      Every item added to _FilesToCopyToRockWeb must be an absolute path. The
+      task determines where a file lands by stripping the absolute Source path
+      off of it, so a relative path would be copied to the wrong location.
+      FindUnderPath already returns absolute paths, but a glob does not, so
+      those have to be run through %(FullPath) before being added.
+      -->
       <_FilesToCopyToRockWeb Include="%(_SourceFilesToCopyToRockWeb.Identity)" Condition="!@(_SourceFilesToCopyToRockWeb->EndsWith('.dll.config'))" />
+
+      <!--
+      Microsoft.Data.SqlClient.SNI native binaries are copied by the package's
+      own targets, but those copies do not always flow into @(FileWrites).
+      Include them explicitly from OutDir so they are mirrored into RockWeb\Bin.
+      -->
+      <_SniNativeFilesToCopyToRockWeb Include="$(OutDir)**\Microsoft.Data.SqlClient.SNI.*.dll" />
+      <_FilesToCopyToRockWeb Include="@(_SniNativeFilesToCopyToRockWeb->'%(FullPath)')" />
     </ItemGroup>
 
     <CopyToRockWeb

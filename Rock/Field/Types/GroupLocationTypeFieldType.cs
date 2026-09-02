@@ -214,6 +214,24 @@ namespace Rock.Field.Types
         }
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Stores a DefinedValue guid rather than a row from any GroupLocationType table, which the name does not suggest.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the DefinedValue table holding a group location type, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = "To find the correct value, look up the values of the Group Location Type defined type and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

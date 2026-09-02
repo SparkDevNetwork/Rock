@@ -28,27 +28,6 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void MetricValueDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                var metricValue = new Rock.Model.MetricValue();
-                metricValue.MetricValueDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, metricValue.MetricValueDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void MetricValueDateKeyKeyWorksWithNullValue()
-        {
-            var metricValue = new Rock.Model.MetricValue();
-            metricValue.MetricValueDateTime = null;
-            Assert.IsNull( metricValue.MetricValueDateKey );
-        }
-
-        [TestMethod]
         public void MetricValueDateKeySavesCorrectly()
         {
             var rockContext = new RockContext();

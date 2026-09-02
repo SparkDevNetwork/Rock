@@ -153,6 +153,65 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Silent unless the configuration makes the value something other than
+        /// ordinary text. This backs a very large share of the attributes in a Rock
+        /// database, so a hint saying "text" would be noise on thousands of them and
+        /// would train a reader to skim past hints that do carry something.
+        /// </para>
+        /// <para>
+        /// What the configuration can add is worth saying: whether the stored text is
+        /// treated as Lava or HTML when it is used, and whether it is masked. Those
+        /// change what a value means rather than merely how it looks.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var isPassword = privateConfigurationValues.GetValueOrDefault( IS_PASSWORD_KEY, string.Empty ).AsBoolean();
+            var allowsHtml = privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
+            var allowsLava = privateConfigurationValues.GetValueOrDefault( ALLOW_LAVA, string.Empty ).AsBoolean();
+            var maximumCharacters = privateConfigurationValues.GetValueOrNull( MAX_CHARACTERS ).AsIntegerOrNull();
+
+            if ( !isPassword && !allowsHtml && !allowsLava && !maximumCharacters.HasValue )
+            {
+                return null;
+            }
+
+            var notes = new List<string>();
+
+            if ( allowsLava )
+            {
+                notes.Add( "Lava in this value is resolved when the value is used, so it is stored as written rather than as its result" );
+            }
+
+            if ( allowsHtml )
+            {
+                notes.Add( "HTML is kept rather than stripped" );
+            }
+
+            if ( isPassword )
+            {
+                notes.Add( "the value is masked when displayed, though it is stored as plain text and is not encrypted" );
+            }
+
+            if ( maximumCharacters.HasValue )
+            {
+                notes.Add( $"it is limited to {maximumCharacters.Value} characters" );
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = $"Text, stored exactly as supplied. On this field {notes.JoinStrings( ", " )}."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

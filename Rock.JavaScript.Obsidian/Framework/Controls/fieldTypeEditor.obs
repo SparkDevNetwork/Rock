@@ -278,6 +278,21 @@
      * configuration properties be updated from the server.
      */
     function onUpdateConfiguration(): void {
+        /*
+            8/21/2026 - NA
+
+            Propagate the current configuration up to the parent BEFORE firing the
+            normalization POST. Without this, the edited configuration only reaches
+            the parent when the POST's `.then(result` runs, so on slow networks a Save
+            that fires between the field's blur and the server response commits the
+            pre-edit values. The server re-parses customValues on save, so the POST
+            only refreshes UI-only state (e.g. the parsed Default Value options);
+            that refresh will still emit again when the response returns.
+
+            Reason: Prevents a save-timing race that could commit stale, pre-edit values.
+            See https://github.com/SparkDevNetwork/Rock/issues/6971
+        */
+        updateModelValue();
         updateFieldConfiguration(defaultValue.value ?? "");
     }
 

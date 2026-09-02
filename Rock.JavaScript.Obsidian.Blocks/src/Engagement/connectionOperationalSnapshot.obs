@@ -23,19 +23,19 @@
 
                             <div class="row row-grouped gutter-0" :class="breakpointHelper?.breakpoint">
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Active" :value="currentMetricsKpis.active.value" />
+                                    <KpiTile isBorderless label="Active" :value="currentMetricsKpis.active.value" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
+                                    <KpiTile isBorderless label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
+                                    <KpiTile isBorderless label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
+                                    <KpiTile isBorderless label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
                                 </div>
                             </div>
 
@@ -181,8 +181,8 @@
                                 width="180px">
                             <template #format="{ row }">
                                 <div class="performance-column-data">
-                                    <div v-ellipsis-tooltip><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
-                                    <div v-ellipsis-tooltip><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
+                                    <div v-tooltip.overflow="`Completed: ${(row as ConnectorBag).completedRequestCount}`"><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
+                                    <div v-tooltip.overflow="`Avg Time: ${(row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 })}d`"><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
                                 </div>
                             </template>
                         </Column>
@@ -346,14 +346,21 @@
     font-size: var(--font-size-small);
     color: var(--color-interface-strong);
 }
+
+/* Each stat clips to a single line; the overflow tooltip reveals the full text. */
+.performance-column-data > div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 </style>
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import BreakpointObserver from "./ConnectionOperationalSnapshot/breakpointObserver.partial.obs";
     import ChartPanel from "./ConnectionOperationalSnapshot/chartPanel.partial.obs";
-    import { ellipsisTooltip as vEllipsisTooltip } from "./ConnectionOperationalSnapshot/ellipsisTooltipDirective.partial";
-    import KpiTile from "./ConnectionOperationalSnapshot/kpiTile.partial.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
     import { BreakpointHelper } from "./ConnectionOperationalSnapshot/types.partial";
     import BarChart from "@Obsidian/Controls/barChart.obs";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
@@ -382,6 +389,7 @@
     import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Enumerable } from "@Obsidian/Utility/linq";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ConnectorBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/connectorBag";
     import { MetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/metricsBag";
@@ -493,11 +501,11 @@
             },
             dueSoon: {
                 value: state?.totalDueSoon ?? 0,
-                color: "var(--color-warning-strong)"
+                color: "var(--color-caution-primary)"
             },
             overdue: {
                 value: state?.totalOverdue ?? 0,
-                color: "var(--color-danger-strong)"
+                color: "var(--color-negative-primary)"
             }
         };
     });
@@ -547,9 +555,9 @@
         const state = requestState.value;
 
         return [
-            { label: "On Track", data: [state?.totalOnTrack ?? 0], color: "var(--color-success-strong)" },
-            { label: "Due Soon", data: [state?.totalDueSoon ?? 0], color: "#F59E0B" },
-            { label: "Overdue", data: [state?.totalOverdue ?? 0], color: "#EF4444" },
+            { label: "On Track", data: [state?.totalOnTrack ?? 0], color: "var(--color-positive-primary)" },
+            { label: "Due Soon", data: [state?.totalDueSoon ?? 0], color: "var(--color-caution-primary)" },
+            { label: "Overdue", data: [state?.totalOverdue ?? 0], color: "var(--color-negative-primary)" },
         ];
     });
 
@@ -573,7 +581,7 @@
                         .withIndex()
                         .select<number | null>(([_, i]) => i === index ? f.count : null)
                         .toArray(),
-                    color: getTimelineColor(index)
+                    color: getCssVariableValue("--color-metric-primary")
                 };
             })
             .toArray();
@@ -603,11 +611,6 @@
     // #endregion Computed Values
 
     // #region Functions
-
-    function getTimelineColor(index: number): string {
-        const colors = ["#2C5282", "#3182CE", "#90CDF4"];
-        return colors[index % colors.length];
-    }
 
     function wrapByWords(text: string, lineSize: number): string | string[] {
         if (text.length <= lineSize) {

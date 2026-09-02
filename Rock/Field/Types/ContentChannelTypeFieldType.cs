@@ -164,6 +164,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the ContentChannelType table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is the type a channel is built from, not a channel and not an item.",
+                Instructions = "To find the correct value, read the content channel types and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

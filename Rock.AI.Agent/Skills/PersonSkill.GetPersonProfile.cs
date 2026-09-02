@@ -80,7 +80,7 @@ internal sealed partial class PersonSkill
                 .Where( m => m.PersonId != person.Id )
                 .Select( m => new GroupMemberResult
                 {
-                    Role = new KeyNameResult { Id = m.GroupRoleId, Name = m.GroupRole.Name },
+                    Role = new KeyNameResult { Id = m.GroupRoleId, Guid = m.GroupRole.Guid, Name = m.GroupRole.Name },
                     Person = new PersonResult { Id = person.Id, FirstName = m.Person.FirstName, LastName = m.Person.LastName, NickName = m.Person.NickName, Suffix = m.Person.SuffixValue != null ? m.Person.SuffixValue.Value : null }
                 } )
                 .ToList();
@@ -122,7 +122,7 @@ internal sealed partial class PersonSkill
                 IsApproved = pr.IsApproved,
                 IsUrgent = pr.IsUrgent,
                 IsPublic = pr.IsPublic,
-                Category = new KeyNameResult { Id = pr.Category.Id, Name = pr.Category.Name },
+                Category = new KeyNameResult { Id = pr.Category.Id, Guid = pr.Category.Guid, Name = pr.Category.Name },
                 PrayerCount = pr.PrayerCount,
                 EnteredDateTime = pr.EnteredDateTime
             } )

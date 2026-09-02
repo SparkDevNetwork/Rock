@@ -25,13 +25,6 @@ namespace Rock.CheckIn.v2
     /// </summary>
     internal class AttendanceSessionRequest : AttendanceSessionRequestBag
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether this session is for an
-        /// administrative override.
-        /// </summary>
-        /// <value><c>true</c> if this session is for an override; otherwise, <c>false</c>.</value>
-        public bool IsOverride { get; set; }
-
         #region Constructors
 
         /// <summary>

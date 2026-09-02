@@ -23,6 +23,7 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
+using Rock.Utility;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -40,7 +41,16 @@ internal sealed partial class GroupSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;
-        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
+        var groupTypeIds = GetAvailableGroupTypes().Select( gt => gt.Id ).ToList();
+        var groupTypeId = IdHasher.Instance.GetId( groupTypeIdKey );
+
+        if ( groupTypeId.HasValue && !groupTypeIds.Contains( groupTypeId.Value ) )
+        {
+            if ( !CanGroupTypeBeConfiguredForRequest( groupTypeId.Value, helper ) )
+            {
+                helper.AddError( "The specified group is not of a supported group type." );
+            }
+        }
 
         var query = new GroupService( AgentRequestContext.RockContext )
             .Queryable()
@@ -71,6 +81,7 @@ internal sealed partial class GroupSkill
             .Select( g => new GroupResult
             {
                 Id = g.Id,
+                Guid = g.Guid,
                 Name = g.Name,
                 AttributeValues = g.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
             } )
@@ -79,6 +90,7 @@ internal sealed partial class GroupSkill
         var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cr => new KeyNameResult
         {
             Id = cr.Id,
+            Guid = cr.Guid,
             Name = cr.ToString()
         } ) );
 

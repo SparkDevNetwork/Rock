@@ -74,10 +74,11 @@ internal sealed partial class ConnectionSkill : AgentSkillComponent
         var result = new ConnectionRequestResult
         {
             Id = connectionRequest.Id,
+            Guid = connectionRequest.Guid,
             Requester = PersonResult.Basic( connectionRequest.PersonAlias ),
             Comments = connectionRequest.Comments,
             ConnectionState = connectionRequest.ConnectionState,
-            ConnectionStatus = new KeyNameResult { Id = connectionRequest.ConnectionStatus.Id, Name = connectionRequest.ConnectionStatus.Name },
+            ConnectionStatus = new KeyNameResult { Id = connectionRequest.ConnectionStatus.Id, Guid = connectionRequest.ConnectionStatus.Guid, Name = connectionRequest.ConnectionStatus.Name },
             ConnectionOpportunity = new ConnectionOpportunityResult
             {
                 Id = connectionRequest.ConnectionOpportunity.Id,
@@ -99,7 +100,7 @@ internal sealed partial class ConnectionSkill : AgentSkillComponent
                 .Select( a => new ConnectionRequestActivityResult
                 {
                     Id = a.Id,
-                    ActivityType = new KeyNameResult { Id = a.ConnectionActivityType.Id, Name = a.ConnectionActivityType.Name },
+                    ActivityType = new KeyNameResult { Id = a.ConnectionActivityType.Id, Guid = a.ConnectionActivityType.Guid, Name = a.ConnectionActivityType.Name },
                     Connector = PersonResult.Basic( a.ConnectorPersonAlias ),
                     CreatedDateTime = a.CreatedDateTime,
                     Note = a.Note,

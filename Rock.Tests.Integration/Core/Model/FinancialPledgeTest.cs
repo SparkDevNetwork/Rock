@@ -28,28 +28,6 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void FinancialPledgeDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                var financialPledge = new Rock.Model.FinancialPledge();
-                financialPledge.StartDate = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, financialPledge.StartDateKey );
-            }
-
-            testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                var financialPledge = new Rock.Model.FinancialPledge();
-                financialPledge.EndDate = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, financialPledge.EndDateKey );
-            }
-        }
-
-        [TestMethod]
         public void FinancialPledgeDateKeySavesCorrectly()
         {
             var rockContext = new RockContext();

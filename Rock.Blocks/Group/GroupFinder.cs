@@ -73,27 +73,6 @@ namespace Rock.Blocks.Group
         Description = "When enabled, the Campus filter is not shown in the filter bar.",
         DefaultBooleanValue = false )]
 
-    [BooleanField( "Hide Where Filters",
-        Key = AttributeKey.HideWhereFilters,
-        Order = 20,
-        Category = AttributeCategory.CustomSetting,
-        Description = "When enabled, the Where (location) filter is not shown in the filter bar.",
-        DefaultBooleanValue = false )]
-
-    [BooleanField( "Hide When Filters",
-        Key = AttributeKey.HideWhenFilters,
-        Order = 30,
-        Category = AttributeCategory.CustomSetting,
-        Description = "When enabled, the When (schedule) filter is not shown in the filter bar.",
-        DefaultBooleanValue = false )]
-
-    [BooleanField( "Hide What Filters",
-        Key = AttributeKey.HideWhatFilters,
-        Order = 40,
-        Category = AttributeCategory.CustomSetting,
-        Description = "When enabled, the What (attributes) filter is not shown in the filter bar.",
-        DefaultBooleanValue = false )]
-
     [DefinedValueField( "Campus Types",
         Key = AttributeKey.CampusTypes,
         Order = 50,
@@ -101,7 +80,8 @@ namespace Rock.Blocks.Group
         Description = "The campus types offered by the campus filter.",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
         AllowMultiple = true,
-        IsRequired = false )]
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL )]
 
     [DefinedValueField( "Campus Statuses",
         Key = AttributeKey.CampusStatuses,
@@ -110,14 +90,17 @@ namespace Rock.Blocks.Group
         Description = "The campus statuses offered by the campus filter.",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
         AllowMultiple = true,
-        IsRequired = false )]
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN )]
 
-    [BooleanField( "Enable Proximity Features",
-        Key = AttributeKey.EnableProximityFeatures,
+    [CustomDropdownListField( "Distance Calculation",
+        Key = AttributeKey.DistanceCalculation,
         Order = 70,
         Category = AttributeCategory.CustomSetting,
-        Description = "Renders an address input and a Use Current Location action. Requires Google APIs to be configured.",
-        DefaultBooleanValue = false )]
+        Description = "How far each group is from the visitor, how the visitor shares where they are, and how the distance is measured. Each mode adds to the one before it: My Current Location shares the visitor's location through the browser and measures a direct line, Address or Zip Code adds an address box (which requires geocoding), and Driving Distance adds drive time and driving miles (which calls a routing provider). None offers no location search.",
+        ListSource = "None^None,StraightLineCurrentLocation^Straight-Line Distance (My Current Location),StraightLineAddress^Straight-Line Distance (Address or Zip Code),Driving^Driving Distance",
+        IsRequired = true,
+        DefaultValue = "StraightLineCurrentLocation" )]
 
     [CustomCheckboxListField( "Supported Meeting Styles",
         Key = AttributeKey.SupportedMeetingStyles,
@@ -125,14 +108,15 @@ namespace Rock.Blocks.Group
         Category = AttributeCategory.CustomSetting,
         Description = "The meeting styles offered by the Where filter. When none are selected the Meeting Style filter is hidden.",
         ListSource = "InPerson^In-Person,Online^Online,Hybrid^Hybrid",
-        IsRequired = false )]
+        IsRequired = false,
+        DefaultValue = "InPerson" )]
 
     [BooleanField( "Display Day of Week Filter",
         Key = AttributeKey.DisplayDayOfWeekFilter,
         Order = 90,
         Category = AttributeCategory.CustomSetting,
         Description = "When enabled, a Day of Week filter is shown in the When section.",
-        DefaultBooleanValue = false )]
+        DefaultBooleanValue = true )]
 
     [BooleanField( "Display Time of Day Filter",
         Key = AttributeKey.DisplayTimeOfDayFilter,
@@ -146,7 +130,7 @@ namespace Rock.Blocks.Group
         Order = 110,
         Category = AttributeCategory.CustomSetting,
         Description = "Renders a text field that filters groups by name as the visitor types.",
-        DefaultBooleanValue = false )]
+        DefaultBooleanValue = true )]
 
     [AttributeField( "Display Attribute Filters",
         Key = AttributeKey.DisplayAttributeFilters,
@@ -201,14 +185,14 @@ namespace Rock.Blocks.Group
         Order = 175,
         Category = AttributeCategory.CustomSetting,
         Description = "The color of the group markers on the map. This one color drives every state via opacity: a solid 2px border with a light fill when hovered or selected, and a lighter border and fill otherwise.",
-        DefaultValue = "#D70015" )]
+        DefaultValue = "#2B7FFF" )]
 
     [ColorField( "Current Location Marker Color",
         Key = AttributeKey.CurrentLocationMarkerColor,
         Order = 176,
         Category = AttributeCategory.CustomSetting,
         Description = "The color of the \"you are here\" proximity marker (the visitor's current location or entered address) on the map.",
-        DefaultValue = "#EE7725" )]
+        DefaultValue = "#EF4444" )]
 
     [DefinedValueField( "Map Style",
         Key = AttributeKey.MapStyle,
@@ -268,10 +252,7 @@ namespace Rock.Blocks.Group
 
             // New to this block.
             public const string HideCampusFilters = "HideCampusFilters";
-            public const string HideWhereFilters = "HideWhereFilters";
-            public const string HideWhenFilters = "HideWhenFilters";
-            public const string HideWhatFilters = "HideWhatFilters";
-            public const string EnableProximityFeatures = "EnableProximityFeatures";
+            public const string DistanceCalculation = "DistanceCalculation";
             public const string SupportedMeetingStyles = "SupportedMeetingStyles";
             public const string DisplayDayOfWeekFilter = "DisplayDayOfWeekFilter";
             public const string DisplayTimeOfDayFilter = "DisplayTimeOfDayFilter";
@@ -299,7 +280,7 @@ namespace Rock.Blocks.Group
             /// The default group card template. Reproduces the block's built-in card content and
             /// documents the available merge fields in a leading comment block.
             /// </summary>
-            public const string GroupCardTemplate = @"{% comment %}
+            public const string GroupCardTemplate = @"/-
     Available merge fields for the group card:
       Group                - the full group entity (Group.Name, Group.Description, Group.Schedule, Group.GroupType, Group.Attributes, ...)
       GroupTypeName        - group type name, shown as the badge
@@ -315,68 +296,68 @@ namespace Rock.Blocks.Group
       DriveTime            - calculated driving time as a friendly label (""1 hr 20 min""), or empty when the group cannot be routed
       Attributes           - the ""show on card"" attributes, each with Label, Value, and IconCssClass
       RegisterUrl          - the register page URL for this group, or empty when no register page is set
-{% endcomment %}
-<div class=""group-finder-card-content"">
-    {%- if ShowImage -%}
-    {%- if ImageUrl and ImageUrl != '' -%}
-    <div class=""group-finder-card-media"">
-        <img class=""group-finder-card-image"" src=""{{ ImageUrl }}"" alt=""{{ Group.Name | Escape }}"" />
-        {%- if GroupTypeName and GroupTypeName != '' -%}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{%- endif -%}
+-/
+<div class=""groupfinder-card-content"">
+    {% if ShowImage %}
+    {% if ImageUrl and ImageUrl != '' %}
+    <div class=""groupfinder-card-media"">
+        <img class=""groupfinder-card-image"" src=""{{ ImageUrl }}"" alt=""{{ Group.Name | Escape }}"" />
+        {% if GroupTypeName and GroupTypeName != '' %}<span class=""groupfinder-card-badge"">{{ GroupTypeName | Escape }}</span>{% endif %}
     </div>
-    {%- else -%}
-    <div class=""group-finder-card-media is-fallback"" style=""--group-finder-fallback-color: {{ GroupTypeColor | Default:'#4fd1c5' }}"">
-        {%- if GroupTypeName and GroupTypeName != '' -%}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{%- endif -%}
+    {% else %}
+    <div class=""groupfinder-card-media is-fallback"" style=""--groupfinder-fallback-color: {{ GroupTypeColor | Default:'#4fd1c5' }}"">
+        {% if GroupTypeName and GroupTypeName != '' %}<span class=""groupfinder-card-badge"">{{ GroupTypeName | Escape }}</span>{% endif %}
     </div>
-    {%- endif -%}
-    {%- endif -%}
+    {% endif %}
+    {% endif %}
 
-    <div class=""group-finder-card-body"">
-        {%- if DrivingDistance or StraightLineDistance or AverageAge -%}
-        <div class=""group-finder-card-meta"">
-            {%- if DriveTime and DriveTime != '' -%}
-            <span class=""group-finder-card-distance""><strong>Drive Time:</strong> {{ DriveTime }}{% if DrivingDistance %} ({{ DrivingDistance | Format:'0.0' }} mi){% endif %}</span>
-            {%- elsif StraightLineDistance -%}
-            <span class=""group-finder-card-distance""><strong>Distance:</strong> ~{{ StraightLineDistance | Format:'0.0' }} mile{% if StraightLineDistance != 1 %}s{% endif %}</span>
-            {%- endif -%}
-            {%- if AverageAge -%}
-            <span class=""group-finder-card-average-age""><strong>Avg Age:</strong> {{ AverageAge }} yrs</span>
-            {%- endif -%}
+    <div class=""groupfinder-card-body"">
+        {% if DrivingDistance or StraightLineDistance or AverageAge %}
+        <div class=""groupfinder-card-meta"">
+            {% if DriveTime and DriveTime != '' %}
+            <span class=""groupfinder-card-distance""><strong>Drive Time:</strong> {{ DriveTime }}{% if DrivingDistance %} ({{ DrivingDistance | Format:'0.0' }} mi){% endif %}</span>
+            {% elsif StraightLineDistance %}
+            <span class=""groupfinder-card-distance""><strong>Distance:</strong> ~{{ StraightLineDistance | Format:'0.0' }} mile{% if StraightLineDistance != 1 %}s{% endif %}</span>
+            {% endif %}
+            {% if AverageAge %}
+            <span class=""groupfinder-card-average-age""><strong>Avg Age:</strong> {{ AverageAge }} yrs</span>
+            {% endif %}
         </div>
-        <hr class=""group-finder-card-divider"" />
-        {%- endif -%}
+        <hr class=""groupfinder-card-divider"" />
+        {% endif %}
 
-        <h3 class=""group-finder-card-title"">{{ Group.Name | Escape }}</h3>
+        <h3 class=""groupfinder-card-title"">{{ Group.Name | Escape }}</h3>
 
-        {%- if ScheduleText and ScheduleText != '' -%}
-        <div class=""group-finder-card-schedule"">{{ ScheduleText | Escape }}</div>
-        {%- endif -%}
+        {% if ScheduleText and ScheduleText != '' %}
+        <div class=""groupfinder-card-schedule"">{{ ScheduleText | Escape }}</div>
+        {% endif %}
 
-        {%- if Group.Description and Group.Description != '' -%}
-        <p class=""group-finder-card-description"">{{ Group.Description | Escape }}</p>
-        {%- endif -%}
+        {% if Group.Description and Group.Description != '' %}
+        <p class=""groupfinder-card-description"">{{ Group.Description | Escape }}</p>
+        {% endif %}
 
-        {%- assign attributeCount = Attributes | Size -%}
-        {%- assign hasCampus = false -%}
-        {%- if CampusName and CampusName != '' -%}{%- assign hasCampus = true -%}{%- endif -%}
-        {%- if hasCampus or attributeCount > 0 -%}
-        <ul class=""group-finder-card-attributes"">
-            {%- if CampusName and CampusName != '' -%}
-            <li class=""group-finder-card-attribute""><i class=""ti ti-map-pin""></i><span>{{ CampusName | Escape }}</span></li>
-            {%- endif -%}
-            {%- for attribute in Attributes -%}
-            <li class=""group-finder-card-attribute"">
-                {%- if attribute.IconCssClass and attribute.IconCssClass != '' -%}<i class=""{{ attribute.IconCssClass }}""></i>{%- endif -%}
+        {% assign attributeCount = Attributes | Size %}
+        {% assign hasCampus = false %}
+        {% if CampusName and CampusName != '' %}{% assign hasCampus = true %}{% endif %}
+        {% if hasCampus or attributeCount > 0 %}
+        <ul class=""groupfinder-card-attribute-list"">
+            {% if CampusName and CampusName != '' %}
+            <li class=""groupfinder-card-attribute""><i class=""ti ti-map-pin""></i><span>{{ CampusName | Escape }}</span></li>
+            {% endif %}
+            {% for attribute in Attributes %}
+            <li class=""groupfinder-card-attribute"">
+                {% if attribute.IconCssClass and attribute.IconCssClass != '' %}<i class=""{{ attribute.IconCssClass }}""></i>{% endif %}
                 <span>{{ attribute.Value | Escape }}</span>
             </li>
-            {%- endfor -%}
+            {% endfor %}
         </ul>
-        {%- endif -%}
+        {% endif %}
 
-        {%- if RegisterUrl and RegisterUrl != '' -%}
-        <div class=""group-finder-card-footer"">
-            <a class=""group-finder-card-action btn btn-primary"" href=""{{ RegisterUrl }}"">Register</a>
+        {% if RegisterUrl and RegisterUrl != '' %}
+        <div class=""groupfinder-card-footer"">
+            <a class=""groupfinder-card-action btn btn-primary"" href=""{{ RegisterUrl }}"">Register</a>
         </div>
-        {%- endif -%}
+        {% endif %}
     </div>
 </div>";
         }
@@ -414,6 +395,16 @@ namespace Rock.Blocks.Group
         /// </summary>
         private const double DefaultSearchRadiusMiles = 5;
 
+        /// <summary>
+        /// The value stored for Supported Meeting Styles when an administrator has cleared every style.
+        /// </summary>
+        /// <remarks>
+        /// Rock restores an attribute's DefaultValue whenever its stored value is blank, so a truly empty
+        /// save would resurrect the default styles. This sentinel is a non-blank value outside the meeting
+        /// style set, so the cleared state persists; the read path strips it back to an empty selection.
+        /// </remarks>
+        private const string MeetingStylesClearedSentinel = "0";
+
         #endregion
 
         #region Methods
@@ -421,14 +412,15 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var meetingStyles = GetAttributeValue( AttributeKey.SupportedMeetingStyles ).SplitDelimitedValues();
+            var meetingStyles = GetSupportedMeetingStyles();
             var featuredAttributeFilters = GetFeaturedAttributeFilters();
             var modalAttributeFilters = GetModalAttributeFilters( featuredAttributeFilters.Select( f => f.AttributeKey ).ToList() );
 
-            // With proximity enabled, the client defaults the Where filter to the visitor's location:
-            // their device location if allowed, otherwise this server-side best guess (their profile
-            // address, then IP geolocation). Only computed when proximity is on to avoid the lookup.
-            var proximityEnabled = GetAttributeValue( AttributeKey.EnableProximityFeatures ).AsBoolean();
+            // With a distance calculation chosen, the client defaults the Where filter to the visitor's
+            // location: their device location if allowed, otherwise this server-side best guess (their
+            // profile address, then IP geolocation). Only computed when it is needed to avoid the lookup.
+            var distanceCalculation = GetDistanceCalculation();
+            var proximityEnabled = distanceCalculation != DistanceCalculationMode.None;
             (double? Latitude, double? Longitude) visitorLocation = ( null, null );
             if ( proximityEnabled )
             {
@@ -445,23 +437,26 @@ namespace Rock.Blocks.Group
             var isGeocodingAvailable = globalAttributes.GetValue( "GoogleApiKeyServer" ).IsNotNullOrWhiteSpace();
             var isMapConfigured = GetAttributeValue( AttributeKey.ShowMap ).AsBoolean();
 
+            // The address box belongs to Straight-Line (Address or Zip Code) and up; current location alone
+            // needs no geocoding. The settings panel already probed geocoding before this mode could be
+            // saved, so the block trusts the mode here and lets a typed address degrade gracefully if the
+            // key has since gone missing.
+            var isLocationSearchEnabled = distanceCalculation >= DistanceCalculationMode.StraightLineAddress;
+
             // With no group types selected the finder has nothing to search, so the block shows only the
             // configuration message and hides the rest (IsUnconfigured drives that on the client).
             var isGroupTypeMissing = GetAttributeValue( AttributeKey.GroupTypes ).IsNullOrWhiteSpace();
 
-            // Each Where/When/What segment is hidden when it has no filter to show, on top of its explicit
-            // Hide setting, so an empty segment never renders. Contents: Where = Meeting Style and/or the
-            // proximity location search; When = Day of Week and/or Time of Day; What = Live Search and/or
-            // Featured Attributes.
+            // Each Where/When/What segment carries no setting of its own: it renders when at least one of
+            // its filters is configured and disappears when none are. Contents: Where = Meeting Style
+            // and/or the proximity location search; When = Day of Week and/or Time of Day; What = Live
+            // Search and/or Featured Attributes.
             var isMeetingStyleShown = meetingStyles.Any();
             var isDayOfWeekShown = GetAttributeValue( AttributeKey.DisplayDayOfWeekFilter ).AsBoolean();
             var isTimeOfDayShown = GetAttributeValue( AttributeKey.DisplayTimeOfDayFilter ).AsBoolean();
             var isLiveSearchEnabled = GetAttributeValue( AttributeKey.EnableLiveSearch ).AsBoolean();
             var hasFeaturedAttributes = featuredAttributeFilters.Any();
 
-            var isWhereFilterHidden = GetAttributeValue( AttributeKey.HideWhereFilters ).AsBoolean();
-            var isWhenFilterHidden = GetAttributeValue( AttributeKey.HideWhenFilters ).AsBoolean();
-            var isWhatFilterHidden = GetAttributeValue( AttributeKey.HideWhatFilters ).AsBoolean();
             var hasWhereFilters = isMeetingStyleShown || proximityEnabled;
             var hasWhenFilters = isDayOfWeekShown || isTimeOfDayShown;
             var hasWhatFilters = isLiveSearchEnabled || hasFeaturedAttributes;
@@ -470,27 +465,13 @@ namespace Rock.Blocks.Group
             var filterCampuses = GetFilterCampuses();
             var hasCampuses = filterCampuses.Any();
 
-            // A segment the admin left visible but gave no filters silently disappears; collect those so the
-            // configuration warning can nudge the admin (the segment is still hidden for visitors).
-            var emptyEnabledSegments = new List<string>();
-            if ( !isWhereFilterHidden && !hasWhereFilters )
-            {
-                emptyEnabledSegments.Add( "Where" );
-            }
-            if ( !isWhenFilterHidden && !hasWhenFilters )
-            {
-                emptyEnabledSegments.Add( "When" );
-            }
-            if ( !isWhatFilterHidden && !hasWhatFilters )
-            {
-                emptyEnabledSegments.Add( "What" );
-            }
-
-            // The Campus segment has no sub-filters to toggle; it is empty when no active campuses match the
-            // configured Campus Types/Statuses. Like the other segments it hides for visitors and warns the admin.
+            // The Campus segment is the exception among the segments: hiding it is a deliberate choice (the
+            // Hide Campus Filter setting), so an empty-but-not-hidden Campus filter is a misconfiguration worth
+            // flagging. The Where/When/What segments hide by simply having no filters configured, which is an
+            // intentional way to remove a segment and needs no warning.
             var isCampusFilterEmpty = !isCampusFilterHidden && !hasCampuses;
 
-            var configurationWarning = GetConfigurationWarning( isGroupTypeMissing, isMapConfigured && !isMapAvailable, proximityEnabled && !isGeocodingAvailable, isCampusFilterEmpty, emptyEnabledSegments );
+            var configurationWarning = GetConfigurationWarning( isGroupTypeMissing, isMapConfigured && !isMapAvailable, isLocationSearchEnabled && !isGeocodingAvailable, isCampusFilterEmpty );
 
             return new GroupFinderInitializationBox
             {
@@ -502,15 +483,15 @@ namespace Rock.Blocks.Group
                 VisitorLatitude = visitorLocation.Latitude,
                 VisitorLongitude = visitorLocation.Longitude,
                 IsProximityEnabled = proximityEnabled,
-                IsLocationSearchAvailable = isGeocodingAvailable,
+                IsLocationSearchAvailable = isLocationSearchEnabled,
                 ConfigurationWarning = configurationWarning.Message,
                 ConfigurationWarningItems = configurationWarning.Items,
                 IsUnconfigured = isGroupTypeMissing,
                 PageSize = ResultsPageSize,
                 IsCampusFilterShown = !isCampusFilterHidden && hasCampuses,
-                IsWhereFilterShown = !isWhereFilterHidden && hasWhereFilters,
-                IsWhenFilterShown = !isWhenFilterHidden && hasWhenFilters,
-                IsWhatFilterShown = !isWhatFilterHidden && hasWhatFilters,
+                IsWhereFilterShown = hasWhereFilters,
+                IsWhenFilterShown = hasWhenFilters,
+                IsWhatFilterShown = hasWhatFilters,
                 IsMeetingStyleFilterShown = isMeetingStyleShown,
                 IsDayOfWeekFilterShown = isDayOfWeekShown,
                 IsTimeOfDayFilterShown = isTimeOfDayShown,
@@ -528,6 +509,20 @@ namespace Rock.Blocks.Group
                 // the returned markers.
                 Results = null
             };
+        }
+
+        /// <summary>
+        /// Gets the configured distance calculation.
+        /// </summary>
+        /// <remarks>
+        /// An unset or unrecognized value reads as <see cref="DistanceCalculationMode.StraightLineCurrentLocation"/>,
+        /// the setting's default, since that mode needs nothing configured to work.
+        /// </remarks>
+        /// <returns>The configured mode.</returns>
+        private DistanceCalculationMode GetDistanceCalculation()
+        {
+            return GetAttributeValue( AttributeKey.DistanceCalculation )
+                .ConvertToEnumOrNull<DistanceCalculationMode>() ?? DistanceCalculationMode.StraightLineCurrentLocation;
         }
 
         /// <summary>
@@ -549,15 +544,31 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Builds the message shown above the block: an everyone-visible message when no group types are selected (specific for an administrator, general otherwise), an administrator-only lead plus a bulleted list of issues when a Google key is missing or a visible filter segment has no filters, or nulls when nothing needs saying.
+        /// Gets the configured Supported Meeting Styles, with the "cleared" sentinel removed.
+        /// </summary>
+        /// <remarks>
+        /// A blank value would be restored to the attribute's default by Rock, so an administrator who clears
+        /// every style is saved <see cref="MeetingStylesClearedSentinel"/> instead. This strips that sentinel
+        /// so callers see the real selection, which is empty when the Meeting Style filter has been cleared.
+        /// </remarks>
+        /// <returns>The selected meeting style values, empty when the filter has been cleared.</returns>
+        private List<string> GetSupportedMeetingStyles()
+        {
+            return GetAttributeValue( AttributeKey.SupportedMeetingStyles )
+                .SplitDelimitedValues()
+                .Where( v => v != MeetingStylesClearedSentinel )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Builds the message shown above the block: an everyone-visible message when no group types are selected (specific for an administrator, general otherwise), an administrator-only lead plus a bulleted list of issues when a Google key is missing or the Campus filter is empty, or nulls when nothing needs saying.
         /// </summary>
         /// <param name="isGroupTypeMissing">Whether no group types are selected, leaving the finder with nothing to search.</param>
         /// <param name="isMapKeyMissing">Whether the map is enabled but the client Google Maps key is absent.</param>
         /// <param name="isGeocodingKeyMissing">Whether proximity is enabled but the server Google geocoding key is absent.</param>
         /// <param name="isCampusFilterEmpty">Whether the Campus segment is visible but no campuses are available to show.</param>
-        /// <param name="emptyEnabledSegments">The names of filter segments left visible but given no filters, so each silently fails to render.</param>
         /// <returns>The lead message (or <c>null</c> when nothing needs saying) and the bulleted issue list (<c>null</c> unless the not-fully-configured lead is returned).</returns>
-        private (string Message, List<string> Items) GetConfigurationWarning( bool isGroupTypeMissing, bool isMapKeyMissing, bool isGeocodingKeyMissing, bool isCampusFilterEmpty, IReadOnlyList<string> emptyEnabledSegments )
+        private (string Message, List<string> Items) GetConfigurationWarning( bool isGroupTypeMissing, bool isMapKeyMissing, bool isGeocodingKeyMissing, bool isCampusFilterEmpty )
         {
             var isAdministrator = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
@@ -571,9 +582,9 @@ namespace Rock.Blocks.Group
                 return ( message, null );
             }
 
-            // The remaining problems are graceful degradations (a hidden map, address search off, or a visible
-            // filter segment left with no filters) that only an administrator can fix, so a visitor just gets
-            // the degraded experience with no message.
+            // The remaining problems are graceful degradations (a hidden map, address search off, or an empty
+            // Campus filter) that only an administrator can fix, so a visitor just gets the degraded experience
+            // with no message.
             if ( !isAdministrator )
             {
                 return ( null, null );
@@ -591,10 +602,6 @@ namespace Rock.Blocks.Group
             if ( isCampusFilterEmpty )
             {
                 issues.Add( "The Campus filter is enabled but there are no campuses to show. Add an active campus (or adjust the Campus Types and Statuses in the block settings), or hide the Campus filter." );
-            }
-            foreach ( var segment in emptyEnabledSegments )
-            {
-                issues.Add( $"The {segment} filter is enabled but has no filters to show. Turn on one of its filters, or hide the {segment} filter in the block settings." );
             }
 
             if ( issues.Count == 0 )
@@ -824,7 +831,7 @@ namespace Rock.Blocks.Group
             // The proximity origin (and the boundary it implies) is resolved in GetGroupResults, which
             // needs the geocoded viewport as well as the point; only the raw origin string is carried
             // here for the engine.
-            if ( GetAttributeValue( AttributeKey.EnableProximityFeatures ).AsBoolean() && query.Origin.IsNotNullOrWhiteSpace() )
+            if ( GetDistanceCalculation() != DistanceCalculationMode.None && query.Origin.IsNotNullOrWhiteSpace() )
             {
                 options.Origin = query.Origin;
             }
@@ -1470,13 +1477,10 @@ namespace Rock.Blocks.Group
 
                 // Filters.
                 IsCampusFilterHidden = GetAttributeValue( AttributeKey.HideCampusFilters ).AsBoolean(),
-                IsWhereFilterHidden = GetAttributeValue( AttributeKey.HideWhereFilters ).AsBoolean(),
-                IsWhenFilterHidden = GetAttributeValue( AttributeKey.HideWhenFilters ).AsBoolean(),
-                IsWhatFilterHidden = GetAttributeValue( AttributeKey.HideWhatFilters ).AsBoolean(),
                 CampusTypes = GetAttributeValue( AttributeKey.CampusTypes ).DefinedValueGuidsToListItemBagList(),
                 CampusStatuses = GetAttributeValue( AttributeKey.CampusStatuses ).DefinedValueGuidsToListItemBagList(),
-                IsProximityEnabled = GetAttributeValue( AttributeKey.EnableProximityFeatures ).AsBoolean(),
-                SupportedMeetingStyles = GetAttributeValue( AttributeKey.SupportedMeetingStyles ).SplitDelimitedValues().ToList(),
+                DistanceCalculation = GetAttributeValue( AttributeKey.DistanceCalculation ),
+                SupportedMeetingStyles = GetSupportedMeetingStyles(),
                 IsDayOfWeekFilterShown = GetAttributeValue( AttributeKey.DisplayDayOfWeekFilter ).AsBoolean(),
                 IsTimeOfDayFilterShown = GetAttributeValue( AttributeKey.DisplayTimeOfDayFilter ).AsBoolean(),
                 IsLiveSearchEnabled = GetAttributeValue( AttributeKey.EnableLiveSearch ).AsBoolean(),
@@ -1553,26 +1557,23 @@ namespace Rock.Blocks.Group
                 box.IfValidProperty( nameof( box.Settings.IsCampusFilterHidden ),
                     () => block.SetAttributeValue( AttributeKey.HideCampusFilters, box.Settings.IsCampusFilterHidden.ToString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.IsWhereFilterHidden ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhereFilters, box.Settings.IsWhereFilterHidden.ToString() ) );
-
-                box.IfValidProperty( nameof( box.Settings.IsWhenFilterHidden ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhenFilters, box.Settings.IsWhenFilterHidden.ToString() ) );
-
-                box.IfValidProperty( nameof( box.Settings.IsWhatFilterHidden ),
-                    () => block.SetAttributeValue( AttributeKey.HideWhatFilters, box.Settings.IsWhatFilterHidden.ToString() ) );
-
                 box.IfValidProperty( nameof( box.Settings.CampusTypes ),
                     () => block.SetAttributeValue( AttributeKey.CampusTypes, box.Settings.CampusTypes.ToCommaDelimitedValuesString() ) );
 
                 box.IfValidProperty( nameof( box.Settings.CampusStatuses ),
                     () => block.SetAttributeValue( AttributeKey.CampusStatuses, box.Settings.CampusStatuses.ToCommaDelimitedValuesString() ) );
 
-                box.IfValidProperty( nameof( box.Settings.IsProximityEnabled ),
-                    () => block.SetAttributeValue( AttributeKey.EnableProximityFeatures, box.Settings.IsProximityEnabled.ToString() ) );
+                box.IfValidProperty( nameof( box.Settings.DistanceCalculation ),
+                    () => block.SetAttributeValue( AttributeKey.DistanceCalculation, box.Settings.DistanceCalculation ) );
 
-                box.IfValidProperty( nameof( box.Settings.SupportedMeetingStyles ),
-                    () => block.SetAttributeValue( AttributeKey.SupportedMeetingStyles, ( box.Settings.SupportedMeetingStyles ?? new List<string>() ).AsDelimited( "," ) ) );
+                box.IfValidProperty( nameof( box.Settings.SupportedMeetingStyles ), () =>
+                {
+                    // Persist a sentinel for "none selected" so the cleared state survives; a blank value would
+                    // be restored to the attribute's default on the next load. See GetSupportedMeetingStyles.
+                    var selectedStyles = box.Settings.SupportedMeetingStyles ?? new List<string>();
+                    var storedValue = selectedStyles.Any() ? selectedStyles.AsDelimited( "," ) : MeetingStylesClearedSentinel;
+                    block.SetAttributeValue( AttributeKey.SupportedMeetingStyles, storedValue );
+                } );
 
                 box.IfValidProperty( nameof( box.Settings.IsDayOfWeekFilterShown ),
                     () => block.SetAttributeValue( AttributeKey.DisplayDayOfWeekFilter, box.Settings.IsDayOfWeekFilterShown.ToString() ) );
@@ -1641,12 +1642,78 @@ namespace Rock.Blocks.Group
                 }
             }
 
+            // The higher distance-calculation modes depend on Google services that a key can be present for
+            // yet not licensed to use, which only a live call reveals. The panel probes them each time it
+            // opens so an administrator sees a mode disabled the moment its service stops answering.
+            var distanceServices = ProbeDistanceServices();
+
             return new GroupFinderCustomSettingsOptionsBag
             {
                 AvailableFeaturedAttributes = featured,
                 AvailableDisplayAttributes = display,
-                AvailableCardAttributes = card
+                AvailableCardAttributes = card,
+                IsAddressSearchAvailable = distanceServices.IsGeocodingAvailable,
+                IsDrivingDistanceAvailable = distanceServices.IsGeocodingAvailable && distanceServices.IsRoutingAvailable
             };
+        }
+
+        /*
+            Probe endpoints. Geocoding a stable place name and routing between two fixed points exercises each
+            service without depending on any organization data. The points are a short, always-routable hop so
+            a working Routes response carries a positive distance.
+        */
+        private const string DistanceProbeAddress = "Washington, DC";
+        private static readonly GeographyPoint DistanceProbeOrigin = new GeographyPoint( 38.8977, -77.0365 );
+        private static readonly GeographyPoint DistanceProbeDestination = new GeographyPoint( 38.8899, -77.0091 );
+
+        /// <summary>
+        /// Probes the Google geographic services the higher distance-calculation modes depend on with a live call to each.
+        /// </summary>
+        /// <remarks>
+        /// A live probe is the only reliable signal, because a key can be present yet not licensed for a given
+        /// API, which surfaces only when a real request is made. The two probes run together; each failure (a
+        /// missing key throws, a misconfigured key or quota returns nothing) reads as that service unavailable.
+        /// </remarks>
+        /// <returns>Whether geocoding (which Address mode needs) and routing (which Driving mode needs) each answered.</returns>
+        private (bool IsGeocodingAvailable, bool IsRoutingAvailable) ProbeDistanceServices()
+        {
+            var geocodeProbe = Task.Run( async () =>
+            {
+                try
+                {
+                    var result = await GeographyHelpers.GeocodeDetailed( DistanceProbeAddress );
+                    return result?.Location != null;
+                }
+                catch
+                {
+                    // A missing key throws from the provider constructor; treat it as unavailable.
+                    return false;
+                }
+            } );
+
+            var routeProbe = Task.Run( async () =>
+            {
+                try
+                {
+                    var matrix = await GeographyHelpers.GetDrivingMatrixAsync(
+                        DistanceProbeOrigin,
+                        new List<GeographyPoint> { DistanceProbeDestination },
+                        TravelMode.Drive,
+                        RouteMatrixDetail.DistanceOnly );
+
+                    return matrix != null && matrix.Any( r => r != null && r.DistanceInMeters > 0 );
+                }
+                catch
+                {
+                    // A missing key throws from the provider constructor, and a key without Routes access
+                    // throws on the non-OK response; both mean the routing service is unavailable.
+                    return false;
+                }
+            } );
+
+            Task.WaitAll( geocodeProbe, routeProbe );
+
+            return ( geocodeProbe.Result, routeProbe.Result );
         }
 
         /// <summary>
@@ -1734,10 +1801,10 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetAddressSuggestions( string text )
         {
-            // Gate behind proximity features and a minimum length so a public page cannot drive the paid
-            // Places Autocomplete API with empty or one-character queries. The page rate limit and a Google
+            // Gate behind a distance calculation that offers the address box, and a minimum length, so a
+            // public page cannot drive the paid Places Autocomplete API with empty or one-character queries. The page rate limit and a Google
             // daily quota cap are the outer guards against abuse (see the spec's cost/abuse note).
-            if ( !GetAttributeValue( AttributeKey.EnableProximityFeatures ).AsBoolean()
+            if ( GetDistanceCalculation() == DistanceCalculationMode.None
                 || text.IsNullOrWhiteSpace()
                 || text.Trim().Length < 3 )
             {
@@ -1768,7 +1835,8 @@ namespace Rock.Blocks.Group
 
             var helper = new GroupFinderHelper( RockContext );
             var options = BuildOptions( query, groupTypeIds );
-            var proximityEnabled = GetAttributeValue( AttributeKey.EnableProximityFeatures ).AsBoolean();
+            var distanceCalculation = GetDistanceCalculation();
+            var proximityEnabled = distanceCalculation != DistanceCalculationMode.None;
 
             /*
                 Two independent locations drive the search:
@@ -1783,11 +1851,11 @@ namespace Rock.Blocks.Group
                 by current location.
             */
 
-            // Resolve the search area (which groups). An explicit map box wins; otherwise a typed origin
-            // geocodes to its viewport and a coordinate origin gets a default-radius box; the initial
-            // browse has none.
-            var hasClientBounds = proximityEnabled
-                && query.MapBoundsNorth.HasValue && query.MapBoundsSouth.HasValue
+            // Resolve the search area (which groups). An explicit map box wins and applies regardless of the
+            // distance mode, since "Search this area" filters by the map viewport and never needs the
+            // visitor's location; a typed origin or current location (both proximity features) geocodes to its
+            // own area; the initial browse has none.
+            var hasClientBounds = query.MapBoundsNorth.HasValue && query.MapBoundsSouth.HasValue
                 && query.MapBoundsEast.HasValue && query.MapBoundsWest.HasValue;
             GeographyBounds searchBounds = null;
 
@@ -2048,65 +2116,74 @@ namespace Rock.Blocks.Group
                     straightLineByGroup[pair.Key] = HaversineMiles( proximityPoint, pair.Value );
                 }
 
-                // The client's cached distances/times count only when they were computed for this same origin.
-                var knownDistances = query.KnownDistancesOriginKey == originKey
-                    ? ( query.KnownDistances ?? new Dictionary<string, GroupFinderDistanceBag>() )
-                    : new Dictionary<string, GroupFinderDistanceBag>();
-
-                var idsToLookUp = new List<int>();
-                foreach ( var groupId in resultGroupIds )
+                /*
+                    Drive time and driving miles are the Driving Distance mode's addition, and the only part
+                    of the distance work that leaves the database, so nothing here runs in Straight-Line
+                    Distance mode. The straight-line numbers above already stand on their own, and the card
+                    template falls back to them whenever a drive time is absent.
+                */
+                if ( distanceCalculation == DistanceCalculationMode.Driving )
                 {
-                    if ( !fuzzedByGroup.ContainsKey( groupId ) )
-                    {
-                        continue;
-                    }
+                    // The client's cached distances/times count only when they were computed for this same origin.
+                    var knownDistances = query.KnownDistancesOriginKey == originKey
+                        ? ( query.KnownDistances ?? new Dictionary<string, GroupFinderDistanceBag>() )
+                        : new Dictionary<string, GroupFinderDistanceBag>();
 
-                    var groupGuid = guidByGroupId.TryGetValue( groupId, out var guid ) ? guid.ToString() : null;
-                    var locationKey = GetDistanceLocationKey( fuzzedByGroup[groupId] );
-
-                    // Reuse a cached distance only when it was computed for this same group location. A
-                    // group that moved since (its fuzzed point shifts with its real location) misses the
-                    // cache and is re-routed, so the card's distance and drive time track the new location.
-                    if ( groupGuid != null
-                        && knownDistances.TryGetValue( groupGuid, out var cached )
-                        && cached != null
-                        && cached.LocationKey == locationKey )
+                    var idsToLookUp = new List<int>();
+                    foreach ( var groupId in resultGroupIds )
                     {
-                        drivingByGroup[groupId] = ( cached.Miles, cached.Minutes );
-                    }
-                    else
-                    {
-                        idsToLookUp.Add( groupId );
-                    }
-                }
-
-                if ( idsToLookUp.Any() )
-                {
-                    foreach ( var lookedUp in GetDriveMatrixByGroup( proximityPoint, idsToLookUp, fuzzedByGroup ) )
-                    {
-                        drivingByGroup[lookedUp.Key] = lookedUp.Value;
-
-                        if ( guidByGroupId.TryGetValue( lookedUp.Key, out var guid ) )
+                        if ( !fuzzedByGroup.ContainsKey( groupId ) )
                         {
-                            newDistances[guid.ToString()] = new GroupFinderDistanceBag
-                            {
-                                Miles = lookedUp.Value.Miles,
-                                Minutes = lookedUp.Value.Minutes,
-                                LocationKey = GetDistanceLocationKey( fuzzedByGroup[lookedUp.Key] )
-                            };
+                            continue;
+                        }
+
+                        var groupGuid = guidByGroupId.TryGetValue( groupId, out var guid ) ? guid.ToString() : null;
+                        var locationKey = GetDistanceLocationKey( fuzzedByGroup[groupId] );
+
+                        // Reuse a cached distance only when it was computed for this same group location. A
+                        // group that moved since (its fuzzed point shifts with its real location) misses the
+                        // cache and is re-routed, so the card's distance and drive time track the new location.
+                        if ( groupGuid != null
+                            && knownDistances.TryGetValue( groupGuid, out var cached )
+                            && cached != null
+                            && cached.LocationKey == locationKey )
+                        {
+                            drivingByGroup[groupId] = ( cached.Miles, cached.Minutes );
+                        }
+                        else
+                        {
+                            idsToLookUp.Add( groupId );
                         }
                     }
-                }
 
-                // Order by drive time where it is known (timed groups first, nearest by minutes), then the
-                // rest by straight-line distance, then name.
-                resultGroupIds = resultGroupIds
-                    .OrderBy( id => drivingByGroup.ContainsKey( id ) ? 0 : 1 )
-                    .ThenBy( id => drivingByGroup.TryGetValue( id, out var d )
-                        ? d.Minutes
-                        : ( straightLineByGroup.TryGetValue( id, out var straight ) ? straight : double.MaxValue ) )
-                    .ThenBy( id => nameByGroup.TryGetValue( id, out var name ) ? name : string.Empty )
-                    .ToList();
+                    if ( idsToLookUp.Any() )
+                    {
+                        foreach ( var lookedUp in GetDriveMatrixByGroup( proximityPoint, idsToLookUp, fuzzedByGroup ) )
+                        {
+                            drivingByGroup[lookedUp.Key] = lookedUp.Value;
+
+                            if ( guidByGroupId.TryGetValue( lookedUp.Key, out var guid ) )
+                            {
+                                newDistances[guid.ToString()] = new GroupFinderDistanceBag
+                                {
+                                    Miles = lookedUp.Value.Miles,
+                                    Minutes = lookedUp.Value.Minutes,
+                                    LocationKey = GetDistanceLocationKey( fuzzedByGroup[lookedUp.Key] )
+                                };
+                            }
+                        }
+                    }
+
+                    // Order by drive time where it is known (timed groups first, nearest by minutes), then the
+                    // rest by straight-line distance, then name.
+                    resultGroupIds = resultGroupIds
+                        .OrderBy( id => drivingByGroup.ContainsKey( id ) ? 0 : 1 )
+                        .ThenBy( id => drivingByGroup.TryGetValue( id, out var d )
+                            ? d.Minutes
+                            : ( straightLineByGroup.TryGetValue( id, out var straight ) ? straight : double.MaxValue ) )
+                        .ThenBy( id => nameByGroup.TryGetValue( id, out var name ) ? name : string.Empty )
+                        .ToList();
+                }
             }
             else if ( !hasProximity )
             {

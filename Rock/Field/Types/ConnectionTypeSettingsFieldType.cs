@@ -208,6 +208,21 @@ namespace Rock.Field.Types
 
         #endregion Edit Control
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Up to four guids separated by pipes, in the order connection type, connection opportunity, connection status, connection source, as in a1|b2|c3|d4. Any part may be left empty to leave that selection unset, and trailing parts may be omitted entirely, so a value with only the first two pipes sets just the type and opportunity.",
+                Instructions = "Each guid identifies a row in its own table: ConnectionType, ConnectionOpportunity, ConnectionStatus, and DefinedValue for the source. The opportunity, status and source all belong to the connection type named in the first part, so they are only meaningful alongside it."
+            };
+        }
+
+        #endregion
+
         #region Parse Helpers
 
         /// <summary>

@@ -365,7 +365,8 @@ export class CheckInSession {
                 searchTerm: this.searchTerm,
                 familyId: this.currentFamilyId
             },
-            requests: attendanceRequests
+            requests: attendanceRequests,
+            overridePinCode: this.overridePinCode,
         };
 
         const response = await this.http.post<SaveAttendanceResponseBag>(this.getApiUrl("/api/v2/checkin/SaveAttendance"), undefined, request);

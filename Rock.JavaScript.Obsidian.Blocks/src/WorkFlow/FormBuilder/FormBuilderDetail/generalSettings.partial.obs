@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="card mb-3 formbuilder-settings-top-card">
-        <div class="card-body">
+    <ContentSection light>
+        <div>
             <div class="row">
                 <div class="col-md-6">
                     <TextBox v-model="name"
@@ -30,7 +30,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </ContentSection>
 
     <ContentSection title="General Settings" icon="ti ti-settings" disableCollapse>
         <template #description>
