@@ -127,6 +127,54 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the checkin area filter for callers that cannot pass a
+        /// <see cref="RockBlock" /> (e.g., Obsidian blocks). Applies the same
+        /// precedence as the <see cref="GetCheckinAreaFilter(RockBlock)" />
+        /// overload: 'Area' page parameter → cookie → block 'Check-in Area' attribute.
+        /// </summary>
+        /// <param name="areaPageParameterGuid">The value of the 'Area' page parameter, if any.</param>
+        /// <param name="showAllAreas">The value of the block's 'Show All Areas' setting.</param>
+        /// <param name="blockAttributeCheckinAreaGuid">The Guid stored in the block's 'Check-in Area' setting, if any.</param>
+        /// <returns>The resolved <see cref="GroupTypeCache" /> for the area filter, or <c>null</c>.</returns>
+        public static GroupTypeCache GetCheckinAreaFilter( Guid? areaPageParameterGuid, bool showAllAreas, Guid? blockAttributeCheckinAreaGuid )
+        {
+            if ( areaPageParameterGuid.HasValue )
+            {
+                var area = GroupTypeCache.Get( areaPageParameterGuid.Value );
+                if ( area != null )
+                {
+                    return area;
+                }
+            }
+
+            if ( showAllAreas )
+            {
+                return null;
+            }
+
+            var cookieAreaGuid = GetCheckinManagerConfigurationFromCookie().CheckinAreaGuid;
+            if ( cookieAreaGuid.HasValue )
+            {
+                var area = GroupTypeCache.Get( cookieAreaGuid.Value );
+                if ( area != null )
+                {
+                    return area;
+                }
+            }
+
+            if ( blockAttributeCheckinAreaGuid.HasValue )
+            {
+                var area = GroupTypeCache.Get( blockAttributeCheckinAreaGuid.Value );
+                if ( area != null )
+                {
+                    return area;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Sets the selected location.
         /// Note this will redirect to the current page to include a LocationId query parameter if a LocationId parameter in the URL is missing or doesn't match.
         /// </summary>

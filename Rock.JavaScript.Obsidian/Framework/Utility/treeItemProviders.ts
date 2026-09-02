@@ -1090,6 +1090,13 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
     public includeCategoryGuids: Guid[] | null = null;
 
     /**
+     * When true, restrict the results to schedules eligible for check-in
+     * (schedules whose CheckInStartOffsetMinutes is set). Leaf items outside
+     * that set are pruned from the tree server-side.
+     */
+    public includeCheckInSchedulesOnly: boolean = false;
+
+    /**
      * Gets the child items from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -1103,6 +1110,7 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
             includeInactiveItems: this.includeInactive,
             includePublicItemsOnly: this.includePublicOnly,
             includeCategoryGuids: this.includeCategoryGuids,
+            includeCheckInSchedulesOnly: this.includeCheckInSchedulesOnly,
             securityGrantToken: this.securityGrantToken,
             expandToValues
         };

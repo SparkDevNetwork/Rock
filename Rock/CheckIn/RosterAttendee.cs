@@ -437,7 +437,7 @@ namespace Rock.CheckIn
                     mobileIcon = "<i class='ti ti-check'></i>";
                     break;
                 case RosterAttendeeStatus.CheckedOut:
-                    statusClass = "danger";
+                    statusClass = "checked-out";
                     mobileIcon = "<i class='ti ti-minus'></i>";
                     break;
             }

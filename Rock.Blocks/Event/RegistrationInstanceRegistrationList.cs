@@ -433,8 +433,8 @@ namespace Rock.Blocks.Event
 
         /// <summary>
         /// Gets the display name of the person who registered. Prefers the
-        /// linked Person's reversed full name and falls back to the LastName /
-        /// FirstName values stored directly on the registration.
+        /// linked Person's full name (First Last) and falls back to the
+        /// FirstName / LastName values stored directly on the registration.
         /// </summary>
         /// <param name="registration">The registration.</param>
         /// <returns>The display name for the "Registered By" column.</returns>
@@ -444,10 +444,10 @@ namespace Rock.Blocks.Event
 
             if ( person != null )
             {
-                return person.FullNameReversed;
+                return person.FullName;
             }
 
-            return $"{registration.LastName}, {registration.FirstName}";
+            return $"{registration.FirstName} {registration.LastName}";
         }
 
         /// <summary>

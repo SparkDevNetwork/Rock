@@ -21,14 +21,14 @@
 
         <SelectColumn />
 
-        <TextColumn name="registrantName"
-                    title="Registrant"
-                    field="registrantName"
-                    :filter="textValueFilter"
-                    :filterValue="getRegistrantNameFilterValue"
-                    :quickFilterValue="getRegistrantNameFilterValue"
-                    :excludeFromExport="true"
-                    width="200px" />
+        <PersonColumn name="person"
+                      title="Registrant"
+                      field="person"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      :quickFilterValue="getRegistrantNameFilterValue"
+                      :excludeFromExport="true"
+                      width="200px" />
 
         <Column v-if="config.options?.isSignedDocumentColumnVisible"
                 name="signedDocument"
@@ -276,6 +276,14 @@
                         field="createdDateTime"
                         :hideOnScreen="true" />
 
+        <ButtonColumn v-if="config.navigationUrls?.[NavigationUrlKey.PersonProfilePage]"
+                      name="profile"
+                      iconClass="ti ti-user"
+                      tooltip="View Profile"
+                      :excludeFromExport="true"
+                      visiblePriority="md"
+                      @click="onPersonClick" />
+
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
@@ -298,10 +306,11 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, Column, TextColumn, DateColumn, DateTimeColumn, DeleteColumn, SelectColumn, textValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, ButtonColumn, Column, PersonColumn, TextColumn, DateColumn, DateTimeColumn, DeleteColumn, SelectColumn, textValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { RegistrationInstanceRegistrantListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceRegistrantList/registrationInstanceRegistrantListOptionsBag";
     import { RegistrantPlacementBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceRegistrantList/registrantPlacementBag";
     import { RegistrantPlacementConfigBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceRegistrantList/registrantPlacementConfigBag";
@@ -418,6 +427,17 @@
         const legalFirstName = (row.legalFirstName as string | null) ?? "";
 
         return legalFirstName ? `${name} ${legalFirstName}` : name;
+    }
+
+    /**
+     * Gets the displayed name of the Registrant column, used as the value for
+     * the pick-existing column filter. The person cell holds a bag, so a
+     * scalar "First Last" name is returned.
+     */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag | null;
+
+        return person ? `${person.nickName} ${person.lastName}` : "";
     }
 
     /**
@@ -657,6 +677,24 @@
         }
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete registrant.");
+        }
+    }
+
+    /**
+     * Called when a row's view-profile button has been clicked. Navigates to
+     * the person profile page for the row's person.
+     */
+    function onPersonClick(key: string): void {
+        const profileUrl = config.navigationUrls?.[NavigationUrlKey.PersonProfilePage];
+
+        if (!profileUrl) {
+            return;
+        }
+
+        const personIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.["personIdKey"] as string;
+
+        if (personIdKey) {
+            window.location.href = profileUrl.replace("((Key))", personIdKey);
         }
     }
 

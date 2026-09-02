@@ -5,3 +5,4 @@
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.Lava.Tests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]

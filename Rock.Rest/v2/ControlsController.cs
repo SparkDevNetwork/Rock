@@ -11078,8 +11078,96 @@ namespace Rock.Rest.v2
 
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
 
+                // When the caller wants only check-in-eligible schedules,
+                // prune leaf items that don't have a CheckInStartOffsetMinutes
+                // value AND category folders that contain no eligible
+                // descendants anywhere below them. Both sets are computed
+                // from cache — no Schedule table scan required — so this is
+                // a memory-only pass no matter how big Schedule gets.
+                //
+                // The category set is built bottom-up: for every eligible
+                // schedule, walk its CategoryId chain up to the root through
+                // CategoryCache and mark each ancestor's Guid as eligible.
+                // The chain short-circuits when we hit a category we've
+                // already visited (because if it's in the set, everything
+                // above it is too).
+                if ( options.IncludeCheckInSchedulesOnly )
+                {
+                    var eligibleSchedules = NamedScheduleCache.All()
+                        .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                        .ToList();
+
+                    var eligibleLeafGuids = new HashSet<Guid>( eligibleSchedules.Select( s => s.Guid ) );
+
+                    var eligibleCategoryGuids = new HashSet<Guid>();
+                    foreach ( var schedule in eligibleSchedules )
+                    {
+                        var categoryId = schedule.CategoryId;
+                        while ( categoryId.HasValue )
+                        {
+                            var category = CategoryCache.Get( categoryId.Value );
+                            if ( category == null || !eligibleCategoryGuids.Add( category.Guid ) )
+                            {
+                                break;
+                            }
+                            categoryId = category.ParentCategoryId;
+                        }
+                    }
+
+                    items = FilterTreeItems( items, eligibleLeafGuids, eligibleCategoryGuids );
+                }
+
                 return Ok( items );
             }
+        }
+
+        /// <summary>
+        /// Walks the tree-item results, dropping leaf items whose Guid is not
+        /// in <paramref name="allowedLeafGuids"/> and folder items whose Guid
+        /// is not in <paramref name="allowedFolderGuids"/>. Categories that
+        /// have no eligible descendants therefore vanish from the tree
+        /// entirely rather than showing an expander that resolves to
+        /// nothing.
+        /// </summary>
+        /// <param name="items">The tree items returned from the category tree fetch.</param>
+        /// <param name="allowedLeafGuids">The set of leaf-item Guids to keep.</param>
+        /// <param name="allowedFolderGuids">The set of folder-item Guids to keep.</param>
+        /// <returns>The filtered tree.</returns>
+        private static List<TreeItemBag> FilterTreeItems( List<TreeItemBag> items, HashSet<Guid> allowedLeafGuids, HashSet<Guid> allowedFolderGuids )
+        {
+            if ( items == null )
+            {
+                return items;
+            }
+
+            var kept = new List<TreeItemBag>( items.Count );
+
+            foreach ( var item in items )
+            {
+                if ( !Guid.TryParse( item.Value, out var itemGuid ) )
+                {
+                    continue;
+                }
+
+                if ( item.IsFolder )
+                {
+                    if ( !allowedFolderGuids.Contains( itemGuid ) )
+                    {
+                        continue;
+                    }
+
+                    item.Children = FilterTreeItems( item.Children, allowedLeafGuids, allowedFolderGuids );
+                    kept.Add( item );
+                    continue;
+                }
+
+                if ( allowedLeafGuids.Contains( itemGuid ) )
+                {
+                    kept.Add( item );
+                }
+            }
+
+            return kept;
         }
 
         #endregion

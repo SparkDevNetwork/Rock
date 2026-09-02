@@ -193,6 +193,30 @@ Use entity-level security whenever access depends on the specific record. Use bl
 
 **Reference:** `Rock.Blocks/AI/AIAgentList.cs`, `Rock.Blocks/AI/AIAgentDetail.cs`
 
+### `IsUserAuthorized` (WebForms) → what actually maps to what (STOP AND ASK)
+
+When converting a WebForms block, `RockBlock.IsUserAuthorized(action)` and `entity.IsAuthorized(action, person)` **look similar and check different things**. Do NOT silently pick one during conversion — ask the developer if the intent isn't blindingly obvious from context.
+
+- **`this.IsUserAuthorized(action)` on a `RockBlock` (WebForms)** is a **CMS / block-instance** check. Internally it calls `BlockCache.IsAuthorized(action, CurrentPerson)` (see `Rock/Web/UI/RockBlock.cs:669-672`). It answers: "does the CMS authorization for this block instance permit the current user to perform this action?" The action is often `Authorization.VIEW`/`EDIT`/`ADMINISTRATE` or a custom `[SecurityAction("Foo", ...)]` name declared on the block class.
+
+    The full round-trip for a custom action: `[SecurityAction(name, description)]` on the block class registers a security verb for that block type → Rock's Block Security dialog surfaces it as a first-class tab (alongside View / Edit / Administrate) so an admin can assign per-role/user Allow/Deny → the runtime `BlockCache.IsAuthorized(name, person)` check evaluates the current user against exactly those rules (inheriting from parent scope when nothing is set at the block level). Skipping the `BlockCache` call in the conversion means the admin's whole reason for configuring the dialog is silently ignored.
+- **`entity.IsAuthorized(action, person)` on any `Rock.Data.Model<T>`** is an **entity-level** check. Answers: "does that specific record's own authorization config permit this?"
+
+The **Obsidian equivalents**:
+- CMS / block-instance → `BlockCache.IsAuthorized( action, RequestContext.CurrentPerson )`.
+- Entity-level → unchanged: `entity.IsAuthorized( action, RequestContext.CurrentPerson )`.
+
+There is **no `this.IsAuthorized(string)` on `RockBlockType`.** If you catch yourself writing it, you either (a) got a compile error and haven't noticed, or (b) accidentally resolved to `Model<T>.IsAuthorized` on a sibling type. Fix it.
+
+**Rule for the conversion:** if the WebForms code called `IsUserAuthorized(...)`, the Obsidian equivalent is `BlockCache.IsAuthorized( same-action, RequestContext.CurrentPerson )`. If the WebForms code called `someEntity.IsAuthorized(...)`, keep it as `someEntity.IsAuthorized(...)`. If a `<Rock:...>` server control (e.g. `BadgeListControl`, `AttributeValuesContainer`) was doing an entity-level check *internally* on the items it rendered, and the Obsidian conversion projects those items into bags on the server, **preserve the entity-level check explicitly** in the projection loop — otherwise a subtle authorization regression ships.
+
+**When the intent is ambiguous — stop and ask the developer.** Categories of "ambiguous":
+- The WebForms method returns a mixture of actions (e.g. `IsUserAuthorized(SomeCustomAction)` where "SomeCustomAction" isn't a standard EDIT/VIEW/ADMIN).
+- The WebForms wraps the check in a helper method whose name doesn't disclose whether it's block-level or entity-level.
+- The action name looks like it *could* refer to a feature toggle at either level (e.g. `ReprintLabels` — the check is on the block, not on any individual attendance).
+
+Do not guess. A wrong pick either silently over-authorizes (security hole) or silently under-authorizes (feature broken). Ask.
+
 ---
 
 ## Navigation — `((Key))` Placeholder

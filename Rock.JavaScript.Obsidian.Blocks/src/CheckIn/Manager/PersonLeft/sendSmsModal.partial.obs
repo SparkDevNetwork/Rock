@@ -1,0 +1,242 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="New Text Message"
+           saveText="Send"
+           :isSaveButtonDisabled="isSending"
+           @save="onSend"
+           @closeModal="onCloseModal">
+        <NotificationBox v-if="errorMessage"
+                         alertType="danger"
+                         :dismissible="true"
+                         @dismiss="onErrorDismissed">{{ errorMessage }}</NotificationBox>
+
+        <RockLiteral label="Recipient">{{ recipientName }}</RockLiteral>
+
+        <div class="row d-flex flex-wrap">
+            <div class="col">
+                <TextBox v-model="message"
+                         textMode="multiline"
+                         :rows="5"
+                         placeholder="Your SMS message here..."
+                         label="Message" />
+            </div>
+            <div class="col flex-grow-0">
+                <ImageUploader v-model="attachment"
+                               :binaryFileTypeGuid="BinaryFiletype.CommunicationAttachment"
+                               help="Optional image to include in the message."
+                               label="Image" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="row">
+                <div class="col-xs-6">
+                    <label class="control-label">Snippets</label>
+                </div>
+                <div class="col-xs-6">
+                    <!--
+                        Plain btn-group markup matching the WebForms Rock:Toggle
+                        output. The framework Toggle control wraps itself in a
+                        RockFormField (label + control-wrapper) which forces
+                        block-level width and pushes the buttons past the
+                        col-xs-6 slot.
+                    -->
+                    <div class="toggle-container pull-right">
+                        <div class="btn-group btn-toggle">
+                            <a href="#"
+                               class="btn btn-default btn-xs"
+                               :class="{ 'btn-primary active': !usePersonal }"
+                               @click.prevent="usePersonal = false">Shared</a>
+                            <a href="#"
+                               class="btn btn-default btn-xs"
+                               :class="{ 'btn-primary active': usePersonal }"
+                               @click.prevent="usePersonal = true">Personal</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="snippets.length > 0" class="row form-row">
+                <div v-for="snippet in snippets"
+                     :key="snippet.idKey ?? snippet.name ?? ''"
+                     class="col-xs-6 col-sm-4 mt-spacing-xs">
+                    <button type="button"
+                            class="btn btn-default btn-block text-truncate"
+                            :disabled="isLoadingSnippetContent"
+                            @click="onSnippetClick(snippet)">{{ snippet.name }}</button>
+                </div>
+            </div>
+
+            <div v-else>
+                There are no {{ usePersonal ? "personal" : "shared" }} SMS snippets available.
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonLeftSendSmsResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonLeft/personLeftSendSmsResponseBag";
+    import { PersonLeftSnippetBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonLeft/personLeftSnippetBag";
+    import { PersonLeftSnippetContentBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonLeft/personLeftSnippetContentBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        recipientName: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "sent", response: PersonLeftSendSmsResponseBag): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const message = ref<string>("");
+    const attachment = ref<ListItemBag | null | undefined>();
+    const errorMessage = ref<string>("");
+    const usePersonal = ref(false);
+    const snippets = ref<PersonLeftSnippetBag[]>([]);
+    const isSending = ref(false);
+    const isLoadingSnippetContent = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the Send button click by calling the SendSms block action and
+     * emitting a "sent" event on success so the parent can show its queued
+     * banner and close the modal.
+     */
+    async function onSend(): Promise<void> {
+        errorMessage.value = "";
+        isSending.value = true;
+
+        try {
+            const result = await invokeBlockAction<PersonLeftSendSmsResponseBag>("SendSms", {
+                bag: {
+                    message: message.value,
+                    attachmentGuid: attachment.value?.value ?? null
+                }
+            });
+
+            if (result.isSuccess && result.data) {
+                emit("sent", result.data);
+                resetForm();
+                return;
+            }
+
+            errorMessage.value = result.errorMessage ?? "Error sending message. Please try again or contact an administrator if the error continues.";
+        }
+        finally {
+            isSending.value = false;
+        }
+    }
+
+    /**
+     * Handles the modal being closed, either by the X button or by clicking
+     * outside. Resets the form so the next open starts clean.
+     */
+    function onCloseModal(): void {
+        resetForm();
+    }
+
+    /**
+     * Dismisses the inline error banner.
+     */
+    function onErrorDismissed(): void {
+        errorMessage.value = "";
+    }
+
+    /**
+     * Resolves the selected snippet's Lava content on the server and pastes
+     * it into the message text box.
+     */
+    async function onSnippetClick(snippet: PersonLeftSnippetBag): Promise<void> {
+        if (!snippet.idKey) {
+            return;
+        }
+
+        errorMessage.value = "";
+        isLoadingSnippetContent.value = true;
+
+        try {
+            const result = await invokeBlockAction<PersonLeftSnippetContentBag>("GetSnippetContent", {
+                bag: {
+                    snippetIdKey: snippet.idKey
+                }
+            });
+
+            if (result.isSuccess && result.data) {
+                message.value = result.data.content ?? "";
+                return;
+            }
+
+            errorMessage.value = result.errorMessage ?? "The snippet could not be loaded.";
+        }
+        finally {
+            isLoadingSnippetContent.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Loads the snippet list for the current personal/shared mode.
+     */
+    async function loadSnippets(): Promise<void> {
+        const result = await invokeBlockAction<PersonLeftSnippetBag[]>("GetSnippets", {
+            bag: {
+                usePersonal: usePersonal.value
+            }
+        });
+
+        snippets.value = result.isSuccess && result.data ? result.data : [];
+    }
+
+    /**
+     * Clears the modal state.
+     */
+    function resetForm(): void {
+        message.value = "";
+        attachment.value = null;
+        errorMessage.value = "";
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Reload snippets whenever the personal/shared toggle changes, or when
+    // the modal opens (so the list is current every time).
+    watch([isVisible, usePersonal], async ([open]) => {
+        if (open) {
+            await loadSnippets();
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>
