@@ -70,12 +70,18 @@
                          textMode="multiline" />
             </div>
         </div>
+
+        <AttributeValuesContainer v-model="resultAttributeValues"
+                                  :attributes="resultAttributes"
+                                  isEditMode
+                                  :numberOfColumns="2" />
     </Modal>
 </template>
 
 <script setup lang="ts">
     import { ref, PropType, watch, computed } from "vue";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -88,6 +94,7 @@
     import { BenevolenceRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestBag";
     import { BenevolenceResultBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceResultBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -114,6 +121,7 @@
 
     const isResultModalOpen = ref(false);
     const isSaving = ref(false);
+    const isLoadingResult = ref(false);
 
     const addResultError = ref("");
     const deleteResultError = ref("");
@@ -122,6 +130,8 @@
     const resultTypeListBags = ref<ListItemBag[]>(props.options.resultTypeValues ?? []);
     const resultAmount = ref("");
     const resultDetails = ref("");
+    const resultAttributes = ref<Record<string, PublicAttributeBag>>({});
+    const resultAttributeValues = ref<Record<string, string>>({});
 
     const requestResults = propertyRef<BenevolenceResultBag[]>([...props.modelValue.results ?? []], "requestResults");
 
@@ -158,6 +168,8 @@
         resultAmount.value = "";
         resultDetails.value = "";
         resultType.value = "";
+        resultAttributes.value = {};
+        resultAttributeValues.value = {};
         isSaving.value = false;
     }
 
@@ -189,7 +201,29 @@
     /**
      * Handler for Add Result button click event.
      */
-    function onAddResult(): void {
+    async function onAddResult(): Promise<void> {
+        if (isLoadingResult.value) {
+            return;
+        }
+
+        isLoadingResult.value = true;
+        addResultError.value = "";
+
+        // The result's attributes and their default values are only known to the server.
+        const result = await invokeBlockAction<BenevolenceResultBag>(
+            "GetNewBenevolenceRequestResult",
+            { benevolenceRequestIdKey: props.modelValue.idKey }
+        );
+
+        isLoadingResult.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            addResultError.value = result.errorMessage ?? "An unknown error occurred while trying to add a new result.";
+            return;
+        }
+
+        resultAttributes.value = result.data.attributes ?? {};
+        resultAttributeValues.value = result.data.attributeValues ?? {};
         isResultModalOpen.value = true;
     }
 
@@ -210,13 +244,11 @@
 
         isSaving.value = true;
 
-        const newIdKey = crypto.randomUUID();
-
         const newBag: BenevolenceResultBag = {
-            idKey: newIdKey,
             resultTypeValueId: parseInt(resultType.value),
             amount: parseFloat(resultAmount.value),
             resultSummary: resultDetails.value,
+            attributeValues: resultAttributeValues.value
         };
 
         const result = await invokeBlockAction<BenevolenceResultBag>(
@@ -226,8 +258,7 @@
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                newBag.idKey = result.data.idKey;
-                requestResults.value.push(newBag);
+                requestResults.value.push(result.data);
             }
         }
         else {
