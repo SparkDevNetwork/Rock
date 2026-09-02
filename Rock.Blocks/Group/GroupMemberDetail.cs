@@ -2154,10 +2154,14 @@ namespace Rock.Blocks.Group
                 destGroupMember.CalculateRequirements( RockContext, true );
             } );
 
-            return ActionOk( this.GetCurrentPageUrl( new Dictionary<string, string>
-            {
-                [PageParameterKey.GroupMemberId] = destGroupMember.Id.ToString()
-            } ) );
+            // Only the new member's id rides along; a stale GroupId or returnUrl from the
+            // old record would redirect later navigation (WebForms parity).
+            return ActionOk( this.GetCurrentPageUrl(
+                new Dictionary<string, string>
+                {
+                    [PageParameterKey.GroupMemberId] = destGroupMember.Id.ToString()
+                },
+                skipExistingParameters: true ) );
         }
 
         /// <summary>
