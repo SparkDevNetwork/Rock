@@ -188,6 +188,16 @@ namespace Rock.Blocks.Group
 
         private const string NoLocationPreference = "No Location Preference";
 
+        /// <summary>
+        /// The constant value used for naming new fundraising transfer batches.
+        /// </summary>
+        private const string FundraisingBatchName = "Fundraising Transaction Transfer";
+
+        /// <summary>
+        /// The constant Note field of batches used for fundraising transfer transactions.
+        /// </summary>
+        private const string FundraisingBatchNote = "Fundraising Transfer";
+
         #endregion Fields
 
         #region Properties
@@ -2015,15 +2025,336 @@ namespace Rock.Blocks.Group
 
         /// <summary>
         /// Moves the group member to another group, optionally moving notes
-        /// and fundraising transactions.
+        /// and fundraising transactions. The source member is deleted, or
+        /// archived when group history prevents deletion.
         /// </summary>
         /// <param name="bag">The move request.</param>
-        /// <returns>The new member's IdKey.</returns>
+        /// <returns>The URL that reloads this page on the new member.</returns>
         [BlockAction]
         public BlockActionResult MoveGroupMember( MoveGroupMemberRequestBag bag )
         {
-            // TODO: Implement per conversion plan §8, including the fundraising transfer machinery.
-            return ActionBadRequest( "Not implemented." );
+            if ( bag == null )
+            {
+                return ActionBadRequest( "Invalid request." );
+            }
+
+            var groupMemberService = new GroupMemberService( RockContext );
+            var groupMember = groupMemberService.Get( bag.GroupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( groupMember == null )
+            {
+                return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( !IsAuthorizedToEdit( groupMember.Group ) )
+            {
+                return ActionBadRequest( "Not authorized to move this group member." );
+            }
+
+            var destGroup = new GroupService( RockContext ).Get( bag.DestinationGroupIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( destGroup == null )
+            {
+                return ActionBadRequest( "Please select a Destination Group." );
+            }
+
+            // The role must belong to the destination group's type; the client dropdown is not trusted.
+            var destRole = GroupTypeCache.Get( destGroup.GroupTypeId ).Roles
+                .FirstOrDefault( r => r.Id == bag.DestinationGroupRoleId );
+
+            if ( destRole == null )
+            {
+                return ActionBadRequest( "Please select a Group Role." );
+            }
+
+            var destGroupId = destGroup.Id;
+            var isAlreadyMember = groupMemberService.Queryable().Any( a =>
+                a.GroupId == destGroupId
+                && a.PersonId == groupMember.PersonId
+                && a.GroupRoleId == destRole.Id );
+
+            if ( isAlreadyMember )
+            {
+                return ActionBadRequest( $"{groupMember.Person.FullName} is already in {destGroup.Name}." );
+            }
+
+            if ( bag.IsMoveFundraisingTransactionsChecked && !CanMoveFundraisingTransactions( destGroup ) )
+            {
+                return ActionBadRequest( "The destination group is not properly configured to accept the fundraising transactions." );
+            }
+
+            var isArchive = !groupMemberService.CanDelete( groupMember, out _ );
+
+            groupMember.LoadAttributes();
+
+            var destGroupMember = new GroupMember
+            {
+                GroupId = destGroupId,
+                Group = destGroup,
+                GroupRoleId = destRole.Id,
+                PersonId = groupMember.PersonId
+            };
+            destGroupMember.LoadAttributes();
+
+            // Only attribute values with a matching key and field type carry over.
+            foreach ( var attribute in groupMember.Attributes )
+            {
+                if ( destGroupMember.Attributes.Any( a => a.Key == attribute.Key && a.Value.FieldTypeId == attribute.Value.FieldTypeId ) )
+                {
+                    destGroupMember.SetAttributeValue( attribute.Key, groupMember.GetAttributeValue( attribute.Key ) );
+                }
+            }
+
+            // Un-link any registrant records that point to this group member.
+            foreach ( var registrant in new RegistrationRegistrantService( RockContext ).Queryable()
+                .Where( r => r.GroupMemberId == groupMember.Id ) )
+            {
+                registrant.GroupMemberId = null;
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                groupMemberService.Add( destGroupMember );
+                RockContext.SaveChanges();
+                destGroupMember.SaveAttributeValues( RockContext );
+
+                // Move any Note records that were associated with the old member to the new record.
+                if ( bag.IsMoveNotesChecked )
+                {
+                    destGroupMember.Note = groupMember.Note;
+                    var groupMemberEntityTypeId = EntityTypeCache.GetId<GroupMember>().Value;
+                    var groupMemberNotes = new NoteService( RockContext )
+                        .Queryable()
+                        .Where( a => a.NoteType.EntityTypeId == groupMemberEntityTypeId && a.EntityId == groupMember.Id );
+
+                    foreach ( var note in groupMemberNotes )
+                    {
+                        note.EntityId = destGroupMember.Id;
+                    }
+
+                    RockContext.SaveChanges();
+                }
+
+                if ( bag.IsMoveFundraisingTransactionsChecked )
+                {
+                    MoveFundraisingTransactions( groupMember, destGroupMember );
+                }
+
+                if ( isArchive )
+                {
+                    groupMemberService.Archive( groupMember, RequestContext.CurrentPerson?.PrimaryAliasId, true );
+                }
+                else
+                {
+                    groupMemberService.Delete( groupMember );
+                }
+
+                RockContext.SaveChanges();
+
+                destGroupMember.CalculateRequirements( RockContext, true );
+            } );
+
+            return ActionOk( this.GetCurrentPageUrl( new Dictionary<string, string>
+            {
+                [PageParameterKey.GroupMemberId] = destGroupMember.Id.ToString()
+            } ) );
+        }
+
+        /// <summary>
+        /// Locates or creates an open Fundraising Transfer batch.
+        /// </summary>
+        /// <returns>An open <see cref="FinancialBatch"/> for fundraising transfer transactions.</returns>
+        private FinancialBatch GetFundraisingTransferBatch()
+        {
+            var batchService = new FinancialBatchService( RockContext );
+            var availableBatch = batchService.Queryable()
+                .Where( b => b.Status == BatchStatus.Open )
+                .Where( b => b.Note.ToLower() == FundraisingBatchNote.ToLower() )
+                .FirstOrDefault();
+
+            // If an open batch already exists, use that.
+            if ( availableBatch != null )
+            {
+                return availableBatch;
+            }
+
+            var newBatch = new FinancialBatch
+            {
+                Name = FundraisingBatchName,
+                Note = FundraisingBatchNote,
+                Status = BatchStatus.Open,
+                ControlAmount = 0,
+                BatchStartDateTime = RockDateTime.Now
+            };
+
+            batchService.Add( newBatch );
+            RockContext.SaveChanges();
+
+            return newBatch;
+        }
+
+        /// <summary>
+        /// Validates that fundraising transactions can be moved to the
+        /// destination group, which must have a valid FinancialAccount
+        /// attribute value.
+        /// </summary>
+        /// <param name="destinationGroup">The destination group.</param>
+        /// <returns><c>true</c> when the transactions can be moved.</returns>
+        private bool CanMoveFundraisingTransactions( Model.Group destinationGroup )
+        {
+            destinationGroup.LoadAttributes( RockContext );
+            var accountGuid = destinationGroup.GetAttributeValue( "FinancialAccount" ).AsGuidOrNull();
+
+            if ( accountGuid == null )
+            {
+                return false;
+            }
+
+            return new FinancialAccountService( RockContext ).Get( accountGuid.Value ) != null;
+        }
+
+        /// <summary>
+        /// Moves fundraising transactions from the old member to the new one.
+        /// Must run inside the same transaction as the member move. Ported
+        /// verbatim from the WebForms block: matching accounts just re-point
+        /// the detail row; open batches re-point account and member; closed
+        /// batches get a reversal and a replacement transaction in the
+        /// Fundraising Transfer batch.
+        /// </summary>
+        /// <param name="oldGroupMember">The original group member.</param>
+        /// <param name="newGroupMember">The new group member.</param>
+        private void MoveFundraisingTransactions( GroupMember oldGroupMember, GroupMember newGroupMember )
+        {
+            var groupMemberTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER ).Id;
+            var oldGroup = oldGroupMember.Group;
+            var newGroup = newGroupMember.Group;
+
+            newGroup.LoadAttributes( RockContext );
+            var newAccountGuid = newGroup.GetAttributeValue( "FinancialAccount" ).AsGuid();
+            var newFinancialAccount = new FinancialAccountService( RockContext ).Get( newAccountGuid );
+
+            var transactionService = new FinancialTransactionService( RockContext );
+            var oldTransactions = transactionService.Queryable()
+                .Where( t => t.TransactionDetails
+                    .Where( d => d.EntityId == oldGroupMember.Id )
+                    .Where( d => d.EntityTypeId == groupMemberTypeId )
+                    .Any() )
+                .ToList();
+
+            foreach ( var oldTransaction in oldTransactions )
+            {
+                var transactionObjectMoved = false;
+                FinancialTransaction creditTransaction = null;
+                FinancialTransaction newTransaction = null;
+                var financialTransactionDetailService = new FinancialTransactionDetailService( RockContext );
+
+                foreach ( var oldTransDetail in oldTransaction.TransactionDetails )
+                {
+                    if ( oldTransDetail.AccountId == newFinancialAccount.Id )
+                    {
+                        // Accounts are the same, so there is no need to adjust batches. Just change the EntityId and move on.
+                        oldTransDetail.EntityId = newGroupMember.Id;
+                        RockContext.SaveChanges();
+                        continue;
+                    }
+
+                    if ( oldTransaction.Batch.Status == BatchStatus.Open )
+                    {
+                        // Batch is open, so we can just change the account on the TransactionDetail (and the EntityId) and move on.
+                        oldTransDetail.AccountId = newFinancialAccount.Id;
+                        oldTransDetail.EntityId = newGroupMember.Id;
+                        RockContext.SaveChanges();
+                        continue;
+                    }
+
+                    // Batch is not open, so we need to make new transactions.
+                    if ( !transactionObjectMoved )
+                    {
+                        var transferBatch = GetFundraisingTransferBatch();
+
+                        // Create a new credit transaction to cancel out the original transaction.
+                        creditTransaction = new FinancialTransaction();
+                        creditTransaction.CopyPropertiesFrom( oldTransaction );
+                        creditTransaction.Id = 0;
+                        creditTransaction.Guid = Guid.NewGuid();
+                        creditTransaction.BatchId = transferBatch.Id;
+                        creditTransaction.Summary = string.Format(
+                            "Reversal created for transaction {0} to move Fundraising Donations from group {1} to {2}.{3}{4}",
+                            oldTransaction.Id,
+                            oldGroup.Id,
+                            newGroup.Id,
+                            Environment.NewLine,
+                            creditTransaction.Summary );
+
+                        creditTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                        creditTransaction.FinancialPaymentDetail.CopyPropertiesFrom( oldTransaction.FinancialPaymentDetail );
+                        creditTransaction.FinancialPaymentDetail.Id = 0;
+                        creditTransaction.FinancialPaymentDetail.Guid = Guid.NewGuid();
+                        transactionService.Add( creditTransaction );
+
+                        // Create a new transaction to replace the original transaction.
+                        newTransaction = new FinancialTransaction();
+                        newTransaction.CopyPropertiesFrom( oldTransaction );
+                        newTransaction.Id = 0;
+                        newTransaction.Guid = Guid.NewGuid();
+                        newTransaction.BatchId = transferBatch.Id;
+                        newTransaction.Summary = string.Format(
+                            "New transaction to replace {0} (moved Fundraising Donations from group {1} to {2}).{3}{4}",
+                            oldTransaction.Id,
+                            oldGroup.Id,
+                            newGroup.Id,
+                            Environment.NewLine,
+                            newTransaction.Summary );
+
+                        newTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                        newTransaction.FinancialPaymentDetail.CopyPropertiesFrom( oldTransaction.FinancialPaymentDetail );
+                        newTransaction.FinancialPaymentDetail.Id = 0;
+                        newTransaction.FinancialPaymentDetail.Guid = Guid.NewGuid();
+                        transactionService.Add( newTransaction );
+
+                        RockContext.SaveChanges();
+
+                        // Only do this once per transaction; additional detail rows reuse the same transactions.
+                        transactionObjectMoved = true;
+                    }
+
+                    if ( creditTransaction == null || newTransaction == null )
+                    {
+                        // Should not occur; guards against the block above failing silently.
+                        throw new Exception( "New distribution transactions were not created." );
+                    }
+
+                    // Make the new transaction details.
+                    var creditTransDetail = new FinancialTransactionDetail();
+                    creditTransDetail.CopyPropertiesFrom( oldTransDetail );
+                    creditTransDetail.Id = 0;
+                    creditTransDetail.Guid = Guid.NewGuid();
+                    creditTransDetail.Amount = oldTransDetail.Amount * -1;
+                    creditTransDetail.TransactionId = creditTransaction.Id;
+                    creditTransDetail.Summary = string.Format(
+                        "Credit for FinancialTransactionDetail {0}.{1}{2}",
+                        oldTransDetail.Id,
+                        Environment.NewLine,
+                        creditTransDetail.Summary );
+                    financialTransactionDetailService.Add( creditTransDetail );
+
+                    var newTransDetail = new FinancialTransactionDetail();
+                    newTransDetail.CopyPropertiesFrom( oldTransDetail );
+                    newTransDetail.Id = 0;
+                    newTransDetail.Guid = Guid.NewGuid();
+                    newTransDetail.AccountId = newFinancialAccount.Id;
+                    newTransDetail.EntityId = newGroupMember.Id;
+                    newTransDetail.TransactionId = newTransaction.Id;
+                    newTransDetail.Summary = string.Format(
+                        "Replacement for FinancialTransactionDetail {0}.{1}{2}",
+                        oldTransDetail.Id,
+                        Environment.NewLine,
+                        newTransDetail.Summary );
+                    financialTransactionDetailService.Add( newTransDetail );
+
+                    RockContext.SaveChanges();
+                }
+            }
         }
 
         /// <summary>
@@ -2036,8 +2367,98 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetMoveGroupMemberOptions( string groupMemberIdKey, string destinationGroupIdKey )
         {
-            // TODO: Implement per conversion plan §8.
-            return ActionBadRequest( "Not implemented." );
+            var entity = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( !IsAuthorizedToEdit( entity.Group ) )
+            {
+                return ActionBadRequest( "Not authorized to move this group member." );
+            }
+
+            var options = new MoveGroupMemberOptionsBag
+            {
+                CurrentGroupName = entity.Group.Name,
+                IsFundraisingOptionShown = IsFundraisingGroupType( entity.Group.GroupTypeId ),
+                RoleItems = new List<ListItemBag>(),
+                Warnings = new List<string>()
+            };
+
+            // No destination selected yet; the modal only needs the open-time state.
+            if ( destinationGroupIdKey.IsNullOrWhiteSpace() )
+            {
+                return ActionOk( options );
+            }
+
+            var destinationGroup = new GroupService( RockContext ).Get( destinationGroupIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( destinationGroup == null )
+            {
+                return ActionOk( options );
+            }
+
+            if ( destinationGroup.Id == entity.GroupId )
+            {
+                options.Warnings.Add( "The destination group is the same as the current group." );
+                return ActionOk( options );
+            }
+
+            var destinationGroupType = GroupTypeCache.Get( destinationGroup.GroupTypeId );
+
+            options.RoleItems = destinationGroupType.Roles
+                .OrderBy( r => r.Order )
+                .Select( r => new ListItemBag
+                {
+                    Text = r.Name,
+                    Value = r.Id.ToString()
+                } )
+                .ToList();
+            options.DefaultRoleId = destinationGroupType.DefaultGroupRoleId;
+
+            // Attributes that have no matching key and field type in the destination are lost on move.
+            var destinationMember = new GroupMember { Group = destinationGroup, GroupId = destinationGroup.Id };
+            destinationMember.LoadAttributes( RockContext );
+            entity.LoadAttributes( RockContext );
+
+            var hasLostAttributes = entity.Attributes
+                .Any( a => !destinationMember.Attributes.Any( d => d.Key == a.Key && d.Value.FieldTypeId == a.Value.FieldTypeId ) );
+
+            if ( hasLostAttributes )
+            {
+                options.Warnings.Add( "The destination group has different member attributes than the source group, so some data may be lost." );
+            }
+
+            var personId = entity.PersonId;
+            var destinationGroupId = destinationGroup.Id;
+            var isAlreadyMember = new GroupMemberService( RockContext )
+                .Queryable()
+                .Any( m => m.GroupId == destinationGroupId && m.PersonId == personId );
+
+            if ( isAlreadyMember )
+            {
+                options.Warnings.Add( $"{entity.Person.FullName} is already a member of {destinationGroup.Name}." );
+            }
+
+            return ActionOk( options );
+        }
+
+        /// <summary>
+        /// Gets whether the group type is, or directly inherits from, the
+        /// fundraising opportunity group type, which is what offers the
+        /// fundraising transaction transfer option on a move.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier to check.</param>
+        /// <returns><c>true</c> when the group type is fundraising.</returns>
+        private bool IsFundraisingGroupType( int groupTypeId )
+        {
+            var fundraisingGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+            var groupType = GroupTypeCache.Get( groupTypeId );
+
+            return groupType != null
+                && ( groupType.Id == fundraisingGroupTypeId || groupType.InheritedGroupTypeId == fundraisingGroupTypeId );
         }
 
         /// <summary>

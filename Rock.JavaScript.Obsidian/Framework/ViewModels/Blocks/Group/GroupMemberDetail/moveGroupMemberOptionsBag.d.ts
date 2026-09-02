@@ -28,23 +28,33 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * Group Member Detail block's move modal.
  */
 export type MoveGroupMemberOptionsBag = {
+    /**
+     * Gets or sets the member's current group name, shown as static
+     * text at the top of the modal.
+     */
+    currentGroupName?: string | null;
+
     /** Gets or sets the destination group's default role identifier. */
     defaultRoleId?: number | null;
 
     /**
      * Gets or sets a value indicating whether the Move Fundraising
-     * Transactions checkbox is shown. True only for fundraising group
-     * types with transactions to move.
+     * Transactions checkbox is shown. True only when the member's
+     * current group type is (or inherits from) the fundraising
+     * opportunity group type.
      */
     isFundraisingOptionShown: boolean;
 
-    /** Gets or sets the roles available in the destination group. */
+    /**
+     * Gets or sets the roles available in the destination group. Empty
+     * until a valid destination group is selected.
+     */
     roleItems?: ListItemBag[] | null;
 
     /**
-     * Gets or sets the warning message shown below the fields
-     * (attribute loss, same group, or already a member). Null when
-     * there is nothing to warn about.
+     * Gets or sets the warning messages shown below the fields
+     * (attribute loss, same group, already a member). Empty when there
+     * is nothing to warn about.
      */
-    warningMessage?: string | null;
+    warnings?: string[] | null;
 };

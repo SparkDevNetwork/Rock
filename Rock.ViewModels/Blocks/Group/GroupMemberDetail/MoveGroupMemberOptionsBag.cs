@@ -28,7 +28,14 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
     public class MoveGroupMemberOptionsBag
     {
         /// <summary>
-        /// Gets or sets the roles available in the destination group.
+        /// Gets or sets the member's current group name, shown as static
+        /// text at the top of the modal.
+        /// </summary>
+        public string CurrentGroupName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the roles available in the destination group. Empty
+        /// until a valid destination group is selected.
         /// </summary>
         public List<ListItemBag> RoleItems { get; set; }
 
@@ -38,16 +45,17 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public int? DefaultRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the warning message shown below the fields
-        /// (attribute loss, same group, or already a member). Null when
-        /// there is nothing to warn about.
+        /// Gets or sets the warning messages shown below the fields
+        /// (attribute loss, same group, already a member). Empty when there
+        /// is nothing to warn about.
         /// </summary>
-        public string WarningMessage { get; set; }
+        public List<string> Warnings { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the Move Fundraising
-        /// Transactions checkbox is shown. True only for fundraising group
-        /// types with transactions to move.
+        /// Transactions checkbox is shown. True only when the member's
+        /// current group type is (or inherits from) the fundraising
+        /// opportunity group type.
         /// </summary>
         public bool IsFundraisingOptionShown { get; set; }
     }

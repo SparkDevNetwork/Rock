@@ -1,21 +1,67 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Modal v-model="isShown" title="Move Group Member" saveText="Move">
-        <!-- TODO: Current Group static text, Destination Group picker (required), destination Role
-             dropdown from GetMoveGroupMemberOptions, Move Notes checkbox, Move Fundraising
-             Transactions checkbox (fundraising group types only), and warning alerts per conversion
-             plan §9.8. -->
+    <Modal v-model="isShown"
+           title="Move Group Member"
+           saveText="Move"
+           :isSaveButtonDisabled="isMoveBlocked"
+           @save="onMove">
+        <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
+        <StaticFormControl label="Current Group" :modelValue="options?.currentGroupName ?? ''" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <GroupPicker v-model="destinationGroup"
+                             label="Destination Group"
+                             rules="required" />
+
+                <DropDownList v-if="(options?.roleItems ?? []).length > 0"
+                              v-model="destinationRoleId"
+                              label="Role"
+                              :items="options?.roleItems ?? []"
+                              rules="required" />
+            </div>
+        </div>
+
+        <InlineCheckBox v-model="isMoveNotesChecked"
+                        label="Move Notes"
+                        help="Moves this member's existing notes to the new group." />
+
+        <InlineCheckBox v-if="options?.isFundraisingOptionShown"
+                        v-model="isMoveFundraisingTransactionsChecked"
+                        label="Move Fundraising Financial Transactions"
+                        help="Whether this member's fundraising transactions move to the new group. Transactions are re-linked directly, or recreated in a new batch to shift the amount when the new group uses different accounts and the original batch is already closed." />
+
+        <NotificationBox v-for="warning in options?.warnings ?? []" :key="warning" alertType="warning">
+            {{ warning }}
+        </NotificationBox>
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MoveGroupMemberOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/moveGroupMemberOptionsBag";
 
     const props = defineProps({
         modelValue: {
             type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The saved member's IdKey. */
+        groupMemberIdKey: {
+            type: String as PropType<string>,
             required: true
         }
     });
@@ -24,9 +70,128 @@
         (e: "update:modelValue", value: boolean): void;
     }>();
 
+    const invokeBlockAction = useInvokeBlockAction();
+
     // #region Values
 
     const isShown = useVModelPassthrough(props, "modelValue", emit);
 
+    const options = ref<MoveGroupMemberOptionsBag | null>(null);
+
+    const destinationGroup = ref<ListItemBag | undefined>(undefined);
+    const destinationRoleId = ref("");
+    const isMoveNotesChecked = ref(false);
+    const isMoveFundraisingTransactionsChecked = ref(false);
+
+    const errorMessage = ref("");
+    const isMoving = ref(false);
+
     // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * True while a move is running, or when the selected destination is not
+     * movable (same group, or unresolvable), which the server signals by
+     * returning no roles.
+     */
+    const isMoveBlocked = computed((): boolean => {
+        return isMoving.value
+            || (!!destinationGroup.value && (options.value?.roleItems ?? []).length === 0);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the modal state for the current destination selection. With no
+     * destination this still returns the current group name and the
+     * fundraising option visibility.
+     */
+    async function loadOptions(): Promise<MoveGroupMemberOptionsBag | null> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<MoveGroupMemberOptionsBag>("GetMoveGroupMemberOptions", {
+            groupMemberIdKey: props.groupMemberIdKey,
+            destinationGroupIdKey: destinationGroup.value?.value ?? ""
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to load the move options.";
+            return null;
+        }
+
+        options.value = result.data;
+        destinationRoleId.value = result.data.defaultRoleId?.toString() ?? "";
+
+        return result.data;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Moves the member and reloads the page on the new record.
+     */
+    async function onMove(): Promise<void> {
+        errorMessage.value = "";
+        isMoving.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("MoveGroupMember", {
+                bag: {
+                    groupMemberIdKey: props.groupMemberIdKey,
+                    destinationGroupIdKey: destinationGroup.value?.value ?? "",
+                    destinationGroupRoleId: toNumberOrNull(destinationRoleId.value),
+                    isMoveNotesChecked: isMoveNotesChecked.value,
+                    isMoveFundraisingTransactionsChecked: isMoveFundraisingTransactionsChecked.value
+                }
+            });
+
+            if (!result.isSuccess || !result.data) {
+                errorMessage.value = result.errorMessage ?? "Unable to move the group member.";
+                return;
+            }
+
+            window.location.href = makeUrlRedirectSafe(result.data);
+        }
+        finally {
+            isMoving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isShown, async () => {
+        if (!isShown.value) {
+            return;
+        }
+
+        // Fresh state per open, matching the WebForms dialog reset.
+        destinationGroup.value = undefined;
+        destinationRoleId.value = "";
+        isMoveNotesChecked.value = false;
+        isMoveFundraisingTransactionsChecked.value = false;
+        options.value = null;
+
+        const loadedOptions = await loadOptions();
+
+        // WebForms defaulted the fundraising checkbox on whenever it was offered.
+        isMoveFundraisingTransactionsChecked.value = loadedOptions?.isFundraisingOptionShown === true;
+    });
+
+    // The role list and warnings are specific to the destination selection.
+    watch(() => destinationGroup.value?.value, async () => {
+        if (!isShown.value) {
+            return;
+        }
+
+        await loadOptions();
+    });
+
+    // #endregion Watchers
 </script>

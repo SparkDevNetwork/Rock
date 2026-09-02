@@ -336,7 +336,8 @@
                           :message="restorePromptMessage"
                           @restore="onRestoreArchivedMember"
                           @decline="onDeclineRestore" />
-    <MoveGroupMemberModal v-model="isMoveModalShown" />
+    <MoveGroupMemberModal v-model="isMoveModalShown"
+                          :groupMemberIdKey="groupMemberIdKey" />
     <QuickCommunicationModal v-model="isCommunicationModalShown"
                              :groupMemberIdKey="groupMemberIdKey"
                              @sent="onCommunicationSent" />
