@@ -27,41 +27,53 @@
                     <i class="ti ti-alert-circle"></i> No Email Address Available
                 </span>
             </div>
+            <div v-else class="text-sm text-interface-medium">
+                <template v-if="options.recipientSmsNumber">
+                    <i class="ti ti-phone"></i> {{ options.recipientSmsNumber }}
+                </template>
+                <span v-else class="text-warning">
+                    <i class="ti ti-alert-circle"></i> No SMS-Enabled Phone Number Available
+                </span>
+            </div>
         </div>
 
-        <template v-if="!isSmsTab">
-            <NotificationBox v-if="options?.emailWarningTitle" alertType="warning">
-                <strong>{{ options.emailWarningTitle }}</strong>
-                <div>{{ options.emailWarningMessage }}</div>
-            </NotificationBox>
+        <NotificationBox v-if="activeWarningTitle" alertType="warning">
+            <strong>{{ activeWarningTitle }}</strong>
+            <div>{{ activeWarningMessage }}</div>
+        </NotificationBox>
 
-            <template v-else-if="options">
-                <div class="row">
-                    <div class="col-md-6">
+        <template v-else-if="options">
+            <div class="row">
+                <div class="col-md-6">
+                    <template v-if="!isSmsTab">
                         <EmailBox v-if="options.isFromEditable"
                                   v-model="fromEmail"
                                   label="From"
                                   rules="required" />
                         <StaticFormControl v-else label="From" :modelValue="options.fromDisplayText ?? ''" />
-                    </div>
+                    </template>
+                    <template v-else>
+                        <StaticFormControl v-if="options.smsFromNumberText" label="From" :modelValue="options.smsFromNumberText" />
+                        <DropDownList v-else
+                                      v-model="fromSystemPhoneNumberId"
+                                      label="From"
+                                      :items="options.smsFromNumberItems ?? []"
+                                      rules="required" />
+                    </template>
                 </div>
+            </div>
 
-                <TextBox v-model="subject"
-                         label="Subject"
-                         rules="required"
-                         autocomplete="off" />
+            <TextBox v-if="!isSmsTab"
+                     v-model="subject"
+                     label="Subject"
+                     rules="required"
+                     autocomplete="off" />
 
-                <TextBox v-model="message"
-                         label="Message"
-                         textMode="multiline"
-                         :rows="4"
-                         rules="required" />
-            </template>
-        </template>
-
-        <template v-else>
-            <!-- TODO: SMS from number (static or dropdown), message, and per-case warning alerts
-                 from GetCommunicationOptions per conversion plan §9.9. -->
+            <TextBox v-model="message"
+                     label="Message"
+                     textMode="multiline"
+                     :rows="4"
+                     rules="required" />
         </template>
     </Modal>
 </template>
@@ -73,10 +85,12 @@
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { CommunicationOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/communicationOptionsBag";
 
     const props = defineProps({
@@ -110,6 +124,7 @@
     const fromEmail = ref("");
     const subject = ref("");
     const message = ref("");
+    const fromSystemPhoneNumberId = ref("");
 
     const errorMessage = ref("");
     const isSending = ref(false);
@@ -128,13 +143,18 @@
         return selectedTab.value === "sms";
     });
 
+    /** The active tab's blocking warning heading, or empty when sending is possible. */
+    const activeWarningTitle = computed((): string => {
+        return (isSmsTab.value ? options.value?.smsWarningTitle : options.value?.emailWarningTitle) ?? "";
+    });
+
+    const activeWarningMessage = computed((): string => {
+        return (isSmsTab.value ? options.value?.smsWarningMessage : options.value?.emailWarningMessage) ?? "";
+    });
+
     /** True when the active tab's warning state blocks sending entirely. */
     const isSendBlocked = computed((): boolean => {
-        if (isSending.value || !options.value) {
-            return true;
-        }
-
-        return !isSmsTab.value && !!options.value.emailWarningTitle;
+        return isSending.value || !options.value || !!activeWarningTitle.value;
     });
 
     // #endregion Computed Values
@@ -156,7 +176,8 @@
                     isSms: isSmsTab.value,
                     fromEmail: fromEmail.value,
                     subject: subject.value,
-                    message: message.value
+                    message: message.value,
+                    fromSystemPhoneNumberId: toNumberOrNull(fromSystemPhoneNumberId.value)
                 }
             });
 
@@ -187,6 +208,7 @@
         selectedTab.value = "email";
         subject.value = "";
         message.value = "";
+        fromSystemPhoneNumberId.value = "";
         options.value = null;
 
         const result = await invokeBlockAction<CommunicationOptionsBag>("GetCommunicationOptions", {

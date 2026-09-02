@@ -51,6 +51,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         /// </summary>
         public string RecipientEmail { get; set; }
 
+        /// <summary>
+        /// Gets or sets the recipient's formatted SMS-enabled phone number
+        /// for the displaycard, or null when the person has none.
+        /// </summary>
+        public string RecipientSmsNumber { get; set; }
+
         #endregion Recipient
 
         #region Email
@@ -109,6 +115,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         /// authorized system phone numbers exist.
         /// </summary>
         public List<ListItemBag> SmsFromNumberItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the heading of the warning shown on the SMS tab
+        /// ("System Cannot Send SMS Messages", or "Cannot Send SMS Messages
+        /// to {Name}"). Null when SMS can be sent.
+        /// </summary>
+        public string SmsWarningTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the warning shown on the SMS tab (no system number,

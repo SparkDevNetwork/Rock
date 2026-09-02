@@ -2078,8 +2078,7 @@ namespace Rock.Blocks.Group
             };
 
             SetEmailOptions( options, entity, canMemberReceiveEmail );
-
-            // TODO: SMS from-number state per conversion plan §8 (single static number, dropdown, or warnings).
+            SetSmsOptions( options, entity );
 
             return ActionOk( options );
         }
@@ -2125,6 +2124,93 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Sets the SMS tab state on the communication options: the from
+        /// number (static for one, a dropdown for several), and the warning
+        /// cases that block sending entirely.
+        /// </summary>
+        /// <param name="options">The options bag to populate.</param>
+        /// <param name="entity">The group member being communicated with.</param>
+        private void SetSmsOptions( CommunicationOptionsBag options, GroupMember entity )
+        {
+            if ( !options.IsSmsTabShown )
+            {
+                return;
+            }
+
+            var memberSmsNumber = GetMemberSmsNumber( entity );
+            options.RecipientSmsNumber = memberSmsNumber?.NumberFormatted;
+
+            var smsNumbers = GetAuthorizedSmsNumbers();
+
+            if ( !smsNumbers.Any() )
+            {
+                options.SmsWarningTitle = "System Cannot Send SMS Messages";
+                options.SmsWarningMessage = "To send an SMS you must first configure a system phone number with SMS enabled.";
+                return;
+            }
+
+            if ( memberSmsNumber == null )
+            {
+                options.SmsWarningTitle = $"Cannot Send SMS Messages to {entity.Person.FullName}";
+                options.SmsWarningMessage = "No SMS-enabled phone number is available for this person.";
+                return;
+            }
+
+            if ( smsNumbers.Count == 1 )
+            {
+                options.SmsFromNumberText = $"{smsNumbers[0].Name} ({smsNumbers[0].Number})";
+            }
+            else
+            {
+                options.SmsFromNumberItems = smsNumbers
+                    .Select( spn => new ListItemBag
+                    {
+                        Text = spn.Name,
+                        Value = spn.Id.ToString()
+                    } )
+                    .ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets the member's first valid SMS-enabled phone number, used both
+        /// for the displaycard and as the send-time recipient number.
+        /// </summary>
+        /// <param name="entity">The group member being communicated with.</param>
+        /// <returns>The phone number, or null when none exists.</returns>
+        private PhoneNumber GetMemberSmsNumber( GroupMember entity )
+        {
+            return entity.Person.PhoneNumbers.FirstOrDefault( p => p.IsMessagingEnabled && p.IsValid );
+        }
+
+        /// <summary>
+        /// Gets the SMS-enabled system phone numbers the current person may
+        /// send from, filtered by the Allowed SMS Numbers block setting when
+        /// any are selected.
+        /// </summary>
+        /// <returns>The authorized system phone numbers, in display order.</returns>
+        private List<SystemPhoneNumberCache> GetAuthorizedSmsNumbers()
+        {
+            var smsNumbers = SystemPhoneNumberCache.All( false )
+                .Where( spn =>
+                    spn.IsSmsEnabled
+                    && spn.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .OrderBy( spn => spn.Order )
+                .ThenBy( spn => spn.Name )
+                .ThenBy( spn => spn.Id )
+                .ToList();
+
+            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+
+            if ( selectedNumberGuids.Any() )
+            {
+                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
+            }
+
+            return smsNumbers;
+        }
+
+        /// <summary>
         /// Sends a quick email or SMS communication to the group member.
         /// </summary>
         /// <param name="bag">The communication request.</param>
@@ -2154,13 +2240,65 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "Not authorized to communicate with this group member." );
             }
 
-            if ( !bag.IsSms )
+            return bag.IsSms
+                ? SendSmsCommunication( entity, bag )
+                : SendEmailCommunication( entity, bag );
+        }
+
+        /// <summary>
+        /// Validates and sends the quick SMS communication. The recipient's
+        /// number and the authorized from numbers are re-resolved server-side
+        /// rather than trusted from the client.
+        /// </summary>
+        /// <param name="entity">The group member to message.</param>
+        /// <param name="bag">The communication request.</param>
+        /// <returns>A success or validation error result.</returns>
+        private BlockActionResult SendSmsCommunication( GroupMember entity, SendCommunicationRequestBag bag )
+        {
+            var validationErrors = new List<string>();
+            var memberSmsNumber = GetMemberSmsNumber( entity );
+
+            if ( memberSmsNumber == null )
             {
-                return SendEmailCommunication( entity, bag );
+                validationErrors.Add( $"No SMS-enabled phone number is available for {entity.Person.FullName}." );
             }
 
-            // TODO: SMS send per conversion plan §8.
-            return ActionBadRequest( "Not implemented." );
+            // One authorized number sends without a selection; more than one requires the client's choice.
+            var smsNumbers = GetAuthorizedSmsNumbers();
+            var fromNumber = smsNumbers.Count == 1
+                ? smsNumbers[0]
+                : smsNumbers.FirstOrDefault( spn => spn.Id == bag.FromSystemPhoneNumberId );
+
+            if ( fromNumber == null )
+            {
+                validationErrors.Add( "A from phone number is required." );
+            }
+
+            if ( bag.Message.IsNullOrWhiteSpace() )
+            {
+                validationErrors.Add( "Message is required." );
+            }
+
+            if ( validationErrors.Any() )
+            {
+                return ActionBadRequest( validationErrors.AsDelimited( "<br>" ) );
+            }
+
+            var smsMessage = new RockSMSMessage
+            {
+                FromSystemPhoneNumber = fromNumber,
+                Message = bag.Message,
+                CreateCommunicationRecord = false,
+                CommunicationName = "Group Member Quick Communication"
+            };
+            smsMessage.AddRecipient( new RockSMSMessageRecipient( entity.Person, memberSmsNumber.ToSmsNumber(), new Dictionary<string, object>() ) );
+
+            if ( !smsMessage.Send( out var sendErrors ) )
+            {
+                return ActionBadRequest( sendErrors.Any() ? sendErrors.AsDelimited( "<br>" ) : "Unable to send the SMS message." );
+            }
+
+            return ActionOk();
         }
 
         /// <summary>

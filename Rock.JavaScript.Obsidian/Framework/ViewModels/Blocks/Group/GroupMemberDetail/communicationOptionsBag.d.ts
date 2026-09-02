@@ -80,6 +80,12 @@ export type CommunicationOptionsBag = {
     recipientPhotoUrl?: string | null;
 
     /**
+     * Gets or sets the recipient's formatted SMS-enabled phone number
+     * for the displaycard, or null when the person has none.
+     */
+    recipientSmsNumber?: string | null;
+
+    /**
      * Gets or sets the recipient's group role name for the
      * displaycard.
      */
@@ -103,4 +109,11 @@ export type CommunicationOptionsBag = {
      * sent.
      */
     smsWarningMessage?: string | null;
+
+    /**
+     * Gets or sets the heading of the warning shown on the SMS tab
+     * ("System Cannot Send SMS Messages", or "Cannot Send SMS Messages
+     * to {Name}"). Null when SMS can be sent.
+     */
+    smsWarningTitle?: string | null;
 };
