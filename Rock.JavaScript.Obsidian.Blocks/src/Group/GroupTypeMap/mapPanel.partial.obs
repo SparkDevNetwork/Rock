@@ -8,6 +8,70 @@
     height: 100%;
     border-radius: var(--border-radius-base);
 }
+
+/* The custom popup DOM is created imperatively and appended inside the map container, so it does
+   not carry Vue's scoped data attribute; :deep() targets it. These are our own class names (not
+   Google's internal gm-* classes), so they are stable. The popup replaces google.maps.InfoWindow,
+   whose white chrome cannot be dark-themed, and is styled entirely from Rock theme variables. */
+:deep(.gtm-popup-container) {
+    position: absolute;
+    width: 1px;
+    height: 0;
+    cursor: auto;
+}
+
+:deep(.gtm-popup-bubble-anchor) {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    width: 100%;
+}
+
+:deep(.gtm-popup-bubble-anchor)::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, 0);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 12px solid var(--color-interface-softest);
+}
+
+:deep(.gtm-popup-bubble) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -100%);
+    /* Size to the content (so the info window's side-by-side columns stay side by side) up to a
+       cap, rather than shrink-wrapping narrow and forcing the columns to stack. */
+    width: max-content;
+    min-width: 300px;
+    max-width: 560px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 12px 14px;
+    border-radius: 6px;
+    background-color: var(--color-interface-softest);
+    color: var(--color-interface-strong);
+    border: 1px solid var(--color-interface-soft);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+:deep(.gtm-popup-close) {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-interface-medium);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
 </style>
 
 <script setup lang="ts">
@@ -51,6 +115,19 @@
 
     /** A point marker: legacy Marker (no mapId) or AdvancedMarker wrapper (mapId set). */
     type MapMarker = google.maps.Marker | AdvancedMarkerWrapper;
+
+    /**
+     * Our custom info-window overlay: a themed HTML card we fully own, so it renders correctly in
+     * both light and dark mode. Google's built-in InfoWindow chrome is always white and cannot be
+     * dark-themed, so we replace it with an OverlayView we style entirely from Rock theme variables.
+     */
+    type PopupOverlay = google.maps.OverlayView & {
+        setContent(content: string): void;
+        setPosition(position: google.maps.LatLng): void;
+        requestPanIntoView(): void;
+    };
+
+    type PopupOverlayConstructor = new (position: google.maps.LatLng, content: string, onClose: () => void) => PopupOverlay;
 
     /** Options for {@link ViewportThresholdClusterAlgorithm}: the viewport algorithm options plus the bypass threshold. */
     type ViewportThresholdOptions = SuperClusterViewportOptions & {
@@ -107,8 +184,11 @@
 
     let map: google.maps.Map | null = null;
 
-    // A single shared info window, reused for every marker click.
-    let infoWindow: google.maps.InfoWindow | null = null;
+    // A single reused custom popup overlay (our themed replacement for google.maps.InfoWindow). Its
+    // class extends google.maps.OverlayView, which only exists once the maps library has loaded, so
+    // the class is defined lazily by ensurePopupClass() and the constructor is held here.
+    let popupOverlayCtor: PopupOverlayConstructor | null = null;
+    let popup: PopupOverlay | null = null;
 
     // The marker whose info window is currently open, so clicking that same marker again toggles
     // the window closed. Cleared when the window is closed (by toggle or its own close button).
@@ -153,6 +233,11 @@
     // more than this many groups, the map clusters; at or below it, every marker is drawn directly.
     const clusteringMarkerThreshold = 1000;
 
+    // Vertical pixels the popup is lifted so its tail meets the top of the map pin instead of
+    // sitting on the pin's location point. The AdvancedMarker pin (mapId path) is a little taller
+    // than the legacy teardrop, so this is resolved from the active marker type on mount.
+    let markerPixelOffset = 34;
+
     // #endregion Values
 
     // #region Computed Values
@@ -164,6 +249,27 @@
     // #endregion Computed Values
 
     // #region Functions
+
+    /**
+     * Maps Rock's current theme to a Google Maps color scheme. Rock sets a "theme" attribute on
+     * the document element ("dark", "light", or "system"/unset); the map's built-in UI - including
+     * the info window chrome - then follows that scheme. Google only honors this on a vector
+     * (mapId) map, so on a legacy styled map it is a no-op. It is also an initialization-time
+     * option, so a later theme toggle is not reflected until the map is re-created.
+     */
+    function resolveColorScheme(): google.maps.ColorScheme {
+        const theme = document.documentElement.getAttribute("theme");
+
+        if (theme === "dark") {
+            return google.maps.ColorScheme.DARK;
+        }
+
+        if (theme === "light") {
+            return google.maps.ColorScheme.LIGHT;
+        }
+
+        return google.maps.ColorScheme.FOLLOW_SYSTEM;
+    }
 
     /**
      * Initializes the Google Map from the resolved Map Style. When the style carries a mapId the
@@ -181,19 +287,168 @@
             mapTypeId: "roadmap",
             center: new google.maps.LatLng(centerLatitude, centerLongitude),
             zoom: defaultZoom,
+            colorScheme: resolveColorScheme(),
             ...(isMapIdEmpty ? { styles } : { mapId: mapId as string })
         };
 
         map = new google.maps.Map(mapContainer.value, mapOptions);
 
         bounds = new google.maps.LatLngBounds();
-        infoWindow = new google.maps.InfoWindow();
+    }
 
-        // When the window is closed via its own close (✕) button, forget the open marker so
-        // clicking that same marker reopens it rather than being toggled closed again.
-        google.maps.event.addListener(infoWindow, "closeclick", () => {
-            openMarker = null;
-        });
+    /**
+     * Defines the custom popup overlay class once the maps library (and therefore
+     * google.maps.OverlayView) is available. The class is a themed replacement for the built-in
+     * InfoWindow: it draws an HTML card we fully control at a LatLng, so it styles correctly in
+     * both light and dark mode. Based on Google's documented custom-popup (OverlayView) pattern.
+     */
+    function ensurePopupClass(): void {
+        if (popupOverlayCtor) {
+            return;
+        }
+
+        class Popup extends google.maps.OverlayView {
+            private popupPosition: google.maps.LatLng;
+            private shouldPanIntoView = false;
+            private readonly containerDiv: HTMLDivElement;
+            private readonly bubbleDiv: HTMLDivElement;
+            private readonly contentDiv: HTMLDivElement;
+
+            public constructor(position: google.maps.LatLng, content: string, onClose: () => void) {
+                super();
+                this.popupPosition = position;
+
+                this.contentDiv = document.createElement("div");
+                this.contentDiv.innerHTML = content;
+
+                const closeButton = document.createElement("button");
+                closeButton.type = "button";
+                closeButton.className = "gtm-popup-close";
+                closeButton.setAttribute("aria-label", "Close");
+                closeButton.innerHTML = "&times;";
+                closeButton.addEventListener("click", clickEvent => {
+                    clickEvent.stopPropagation();
+                    onClose();
+                });
+
+                this.bubbleDiv = document.createElement("div");
+                this.bubbleDiv.className = "gtm-popup-bubble";
+                this.bubbleDiv.appendChild(closeButton);
+                this.bubbleDiv.appendChild(this.contentDiv);
+
+                const anchor = document.createElement("div");
+                anchor.className = "gtm-popup-bubble-anchor";
+                anchor.appendChild(this.bubbleDiv);
+
+                this.containerDiv = document.createElement("div");
+                this.containerDiv.className = "gtm-popup-container";
+                this.containerDiv.appendChild(anchor);
+
+                // Let the popup receive clicks/scroll/drag without the map panning underneath it.
+                google.maps.OverlayView.preventMapHitsAndGesturesFrom(this.containerDiv);
+            }
+
+            public setContent(content: string): void {
+                this.contentDiv.innerHTML = content;
+            }
+
+            public setPosition(position: google.maps.LatLng): void {
+                this.popupPosition = position;
+                this.draw();
+            }
+
+            /**
+             * Requests that the map pan once, on the next draw, so a popup opened near an edge is
+             * brought fully into view (mirrors the built-in info window's auto-pan).
+             */
+            public requestPanIntoView(): void {
+                this.shouldPanIntoView = true;
+            }
+
+            public override onAdd(): void {
+                this.getPanes()?.floatPane.appendChild(this.containerDiv);
+            }
+
+            public override onRemove(): void {
+                if (this.containerDiv.parentElement) {
+                    this.containerDiv.parentElement.removeChild(this.containerDiv);
+                }
+            }
+
+            public override draw(): void {
+                const divPosition = this.getProjection()?.fromLatLngToDivPixel(this.popupPosition);
+                if (!divPosition) {
+                    return;
+                }
+
+                // Hide the popup when it is far outside the viewport so extreme pixel offsets do
+                // not push it to an unreasonable position.
+                const isVisible = Math.abs(divPosition.x) < 4000 && Math.abs(divPosition.y) < 4000;
+                this.containerDiv.style.display = isVisible ? "block" : "none";
+
+                if (!isVisible) {
+                    return;
+                }
+
+                this.containerDiv.style.left = `${divPosition.x}px`;
+
+                // Lift the popup above the map pin (its tail meets the top of the pin) rather than
+                // anchoring on the pin's location point, matching the built-in info window.
+                this.containerDiv.style.top = `${divPosition.y - markerPixelOffset}px`;
+
+                // Pan once, on the first draw after opening, so an edge-anchored popup is revealed.
+                if (this.shouldPanIntoView) {
+                    this.shouldPanIntoView = false;
+                    this.panIntoView();
+                }
+            }
+
+            /**
+             * Pans the map just enough to bring the popup fully inside the map viewport (with a
+             * small margin), based on the bubble's rendered position.
+             */
+            private panIntoView(): void {
+                const overlayMap = this.getMap() as google.maps.Map | null | undefined;
+                if (!overlayMap) {
+                    return;
+                }
+
+                const bubbleRect = this.bubbleDiv.getBoundingClientRect();
+                const mapRect = overlayMap.getDiv().getBoundingClientRect();
+                const margin = 16;
+
+                let panX = 0;
+                let panY = 0;
+
+                if (bubbleRect.left < mapRect.left + margin) {
+                    panX = bubbleRect.left - (mapRect.left + margin);
+                }
+                else if (bubbleRect.right > mapRect.right - margin) {
+                    panX = bubbleRect.right - (mapRect.right - margin);
+                }
+
+                if (bubbleRect.top < mapRect.top + margin) {
+                    panY = bubbleRect.top - (mapRect.top + margin);
+                }
+                else if (bubbleRect.bottom > mapRect.bottom - margin) {
+                    panY = bubbleRect.bottom - (mapRect.bottom - margin);
+                }
+
+                if (panX !== 0 || panY !== 0) {
+                    overlayMap.panBy(panX, panY);
+                }
+            }
+        }
+
+        popupOverlayCtor = Popup;
+    }
+
+    /**
+     * Hides the popup and clears the tracked open marker.
+     */
+    function closePopup(): void {
+        popup?.setMap(null);
+        openMarker = null;
     }
 
     /**
@@ -367,41 +622,45 @@
     }
 
     /**
-     * Opens the info window over a point marker on click. The legacy Marker anchors the window
-     * directly; the AdvancedMarker anchors via its wrapped element. Skipped entirely when the
-     * Show Map Info Window setting is off.
+     * Opens the custom popup over a point marker on click. Skipped entirely when the Show Map Info
+     * Window setting is off. Clicking the marker whose popup is already open toggles it closed.
      */
     function wireMarkerInfoWindow(marker: MapMarker, group: GroupTypeMapGroupBag): void {
         if (!props.options.isInfoWindowShown) {
             return;
         }
 
-        const isLegacyMarker = isNullOrWhiteSpace(mapId);
-        const clickTarget = isLegacyMarker
+        const clickTarget = isNullOrWhiteSpace(mapId)
             ? (marker as google.maps.Marker)
             : (marker as AdvancedMarkerWrapper).marker_element;
 
         google.maps.event.addListener(clickTarget, "click", async () => {
-            // Toggle: clicking the marker whose window is already open closes it.
-            if (openMarker === marker && infoWindow) {
-                infoWindow.close();
-                openMarker = null;
+            // Toggle: clicking the marker whose popup is already open closes it.
+            if (openMarker === marker) {
+                closePopup();
                 return;
             }
 
             const content = await fetchInfoWindow(group);
-
-            if (content === null || !infoWindow) {
+            if (content === null) {
                 return;
             }
 
-            infoWindow.setContent(content);
+            const position = marker.getPosition();
+            if (!position || !popupOverlayCtor) {
+                return;
+            }
 
-            if (isLegacyMarker) {
-                infoWindow.open(map, marker as google.maps.Marker);
+            if (!popup) {
+                popup = new popupOverlayCtor(position, content, closePopup);
+                popup.requestPanIntoView();
+                popup.setMap(map);
             }
             else {
-                infoWindow.open({ anchor: (marker as AdvancedMarkerWrapper).marker_element, map });
+                popup.setContent(content);
+                popup.requestPanIntoView();
+                popup.setPosition(position);
+                popup.setMap(map);
             }
 
             openMarker = marker;
@@ -472,16 +731,15 @@
                 marker.setMap(null);
             }
 
-            if (infoWindow) {
-                infoWindow.close();
-                google.maps.event.clearInstanceListeners(infoWindow);
+            if (popup) {
+                popup.setMap(null);
             }
 
             google.maps.event.clearInstanceListeners(map);
         }
 
         markerClusterer = null;
-        infoWindow = null;
+        popup = null;
         map = null;
         bounds = null;
         markers = [];
@@ -499,6 +757,10 @@
         mapId = (settings as GeoPickerGoogleMapSettingsBag).googleMapId ?? "";
         centerLatitude = settings.centerLatitude ?? 33.590795;
         centerLongitude = settings.centerLongitude ?? -112.126459;
+
+        // The mapId (vector) path uses a taller AdvancedMarker pin than the legacy teardrop, so the
+        // popup needs to sit a bit higher to clear it.
+        markerPixelOffset = isNullOrWhiteSpace(mapId) ? 34 : 44;
 
         try {
             styles = JSON.parse(settings.mapStyle ?? "");
@@ -522,6 +784,10 @@
                 await google.maps.importLibrary("marker");
             }
         }
+
+        // OverlayView is part of the maps library, which is now loaded, so the popup class can be
+        // defined before any marker click needs it.
+        ensurePopupClass();
 
         renderMap();
         placeMarkers();
