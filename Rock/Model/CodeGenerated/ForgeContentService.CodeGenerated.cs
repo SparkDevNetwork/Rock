@@ -56,6 +56,24 @@ namespace Rock.Model
         }
     }
 
+    [HasQueryableAttributes( typeof( ForgeContent.ForgeContentQueryableAttributeValue ), nameof( ForgeContentAttributeValues ) )]
+    public partial class ForgeContent
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<ForgeContentQueryableAttributeValue> ForgeContentAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class ForgeContentQueryableAttributeValue : QueryableAttributeValue
+        {
+        }
+    }
+
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
@@ -116,6 +134,8 @@ namespace Rock.Model
             target.CompiledContent = source.CompiledContent;
             target.CompiledDateTime = source.CompiledDateTime;
             target.CompiledVueVersion = source.CompiledVueVersion;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Source = source.Source;
             target.CreatedDateTime = source.CreatedDateTime;

@@ -29,10 +29,10 @@ export const DistanceCalculationMode = {
     /** The direct line from the person's current location to the group, measured over stored coordinates. The person shares their location through the browser, so no geocoding is needed. */
     StraightLineCurrentLocation: 1,
 
-    /** Adds an address or ZIP entry to StraightLineCurrentLocation, still measured as a direct line. Resolving the entry to coordinates requires geocoding. */
+    /** Adds an address or ZIP entry to Rock.Model.DistanceCalculationMode.StraightLineCurrentLocation, still measured as a direct line. Resolving the entry to coordinates requires geocoding. */
     StraightLineAddress: 2,
 
-    /** Adds the distance and time to drive from the person to the group, from a routing provider, to everything StraightLineAddress offers. */
+    /** Adds the distance and time to drive from the person to the group, from a routing provider, to everything Rock.Model.DistanceCalculationMode.StraightLineAddress offers. */
     Driving: 3
 } as const;
 

@@ -21,17 +21,20 @@
 // </copyright>
 //
 
-/** Represents the scored result for a single Conflict Profile mode or theme. */
-export type ConflictProfileScoreBag = {
-    /** Gets or sets the CSS custom property (e.g. "--color-metric-primary") used for this item in the results chart. */
-    chartColor?: string | null;
+using Rock.Model;
+using Rock.SystemGuid;
 
-    /** Gets or sets the descriptive copy explaining what the mode or theme means. */
-    description?: string | null;
-
-    /** Gets or sets the name of the mode or theme (e.g. "Winning"). */
-    name?: string | null;
-
-    /** Gets or sets the score for the mode or theme. */
-    percentage: number;
-};
+namespace Rock.Rest.Controllers
+{
+    /// <summary>
+    /// FlexibleDocumentModels REST API
+    /// </summary>
+    [RestControllerGuid( "83672ED4-4E68-4D20-9529-7D171147F4B0" )]
+    public partial class FlexibleDocumentModelsController : Rock.Rest.ApiController<Rock.Model.FlexibleDocumentModel>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FlexibleDocumentModelsController"/> class.
+        /// </summary>
+        public FlexibleDocumentModelsController() : base( new Rock.Model.FlexibleDocumentModelService( new Rock.Data.RockContext() ) ) { } 
+    }
+}

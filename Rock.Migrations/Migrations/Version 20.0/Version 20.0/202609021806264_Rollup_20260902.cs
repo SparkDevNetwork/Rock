@@ -80,6 +80,8 @@ namespace Rock.Migrations
 
             // NA: Add 2025 Apple Device Models and normalize existing PersonalDevice models
             NA_AddAppleDeviceModelsAndNormalizePersonalDeviceModels_Up();
+
+            CleanupMigrationHistory();
         }
 
         /// <summary>
@@ -324,5 +326,17 @@ END
         }
 
         #endregion
+
+        /// <summary>
+        /// Cleanups the migration history records except the last one.
+        /// </summary>
+        private void CleanupMigrationHistory()
+        {
+            Sql( @"
+UPDATE [dbo].[__MigrationHistory]
+SET [Model] = 0x
+WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
+        }
+
     }
 }
