@@ -42,6 +42,13 @@ export type CommunicationOptionsBag = {
     emailWarningMessage?: string | null;
 
     /**
+     * Gets or sets the heading of the warning shown on the email tab
+     * ("Cannot Send Emails", or "Cannot Send Emails to {Name}"). Null
+     * when email can be sent.
+     */
+    emailWarningTitle?: string | null;
+
+    /**
      * Gets or sets the static from display text ("{Name} ({email})")
      * shown when the from address is not editable.
      */
@@ -59,6 +66,12 @@ export type CommunicationOptionsBag = {
      * on the member.
      */
     isSmsTabShown: boolean;
+
+    /**
+     * Gets or sets the recipient's email address for the displaycard,
+     * or null when the person has no usable email address.
+     */
+    recipientEmail?: string | null;
 
     /** Gets or sets the recipient's full name for the displaycard. */
     recipientName?: string | null;

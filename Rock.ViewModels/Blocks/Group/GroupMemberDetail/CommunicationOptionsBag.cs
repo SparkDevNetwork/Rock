@@ -45,6 +45,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         /// </summary>
         public string RecipientPhotoUrl { get; set; }
 
+        /// <summary>
+        /// Gets or sets the recipient's email address for the displaycard,
+        /// or null when the person has no usable email address.
+        /// </summary>
+        public string RecipientEmail { get; set; }
+
         #endregion Recipient
 
         #region Email
@@ -66,6 +72,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         /// shown when the from address is not editable.
         /// </summary>
         public string FromDisplayText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the heading of the warning shown on the email tab
+        /// ("Cannot Send Emails", or "Cannot Send Emails to {Name}"). Null
+        /// when email can be sent.
+        /// </summary>
+        public string EmailWarningTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the warning shown on the email tab (no sender

@@ -1,31 +1,206 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Modal v-model="isShown" title="Send Group Member Communication" saveText="Send">
-        <!-- TODO: Email|SMS tabs, recipient displaycard, From behavior wired to AllowSelectingFrom,
-             Subject + Message with required validation, SMS from number (static or dropdown), and
-             per-case warning alerts from GetCommunicationOptions per conversion plan §9.9. -->
+    <Modal v-model="isShown"
+           title="Send Group Member Communication"
+           saveText="Send"
+           :isSaveButtonDisabled="isSendBlocked"
+           @save="onSend">
+        <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
+        <div class="mb-4">
+            <ButtonGroup v-if="options?.isSmsTabShown"
+                         v-model="selectedTab"
+                         :items="tabItems" />
+        </div>
+
+        <div v-if="options" class="d-flex align-items-center gap-3 p-3 mb-3 rounded border border-interface-soft bg-interface-softer">
+            <PersonAvatar :photoUrl="options.recipientPhotoUrl ?? ''" />
+            <div class="flex-fill">
+                <div class="text-semibold">{{ options.recipientName }}</div>
+                <div class="text-sm text-interface-medium">{{ options.recipientRoleName }}</div>
+            </div>
+            <div v-if="!isSmsTab" class="text-sm text-interface-medium">
+                <template v-if="options.recipientEmail">
+                    <i class="ti ti-mail"></i> {{ options.recipientEmail }}
+                </template>
+                <span v-else class="text-warning">
+                    <i class="ti ti-alert-circle"></i> No Email Address Available
+                </span>
+            </div>
+        </div>
+
+        <template v-if="!isSmsTab">
+            <NotificationBox v-if="options?.emailWarningTitle" alertType="warning">
+                <strong>{{ options.emailWarningTitle }}</strong>
+                <div>{{ options.emailWarningMessage }}</div>
+            </NotificationBox>
+
+            <template v-else-if="options">
+                <div class="row">
+                    <div class="col-md-6">
+                        <EmailBox v-if="options.isFromEditable"
+                                  v-model="fromEmail"
+                                  label="From"
+                                  rules="required" />
+                        <StaticFormControl v-else label="From" :modelValue="options.fromDisplayText ?? ''" />
+                    </div>
+                </div>
+
+                <TextBox v-model="subject"
+                         label="Subject"
+                         rules="required"
+                         autocomplete="off" />
+
+                <TextBox v-model="message"
+                         label="Message"
+                         textMode="multiline"
+                         :rows="4"
+                         rules="required" />
+            </template>
+        </template>
+
+        <template v-else>
+            <!-- TODO: SMS from number (static or dropdown), message, and per-case warning alerts
+                 from GetCommunicationOptions per conversion plan §9.9. -->
+        </template>
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { CommunicationOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/communicationOptionsBag";
 
     const props = defineProps({
         modelValue: {
             type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The saved member's IdKey. */
+        groupMemberIdKey: {
+            type: String as PropType<string>,
             required: true
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;
+        (e: "sent", isSms: boolean): void;
     }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
     const isShown = useVModelPassthrough(props, "modelValue", emit);
 
+    const options = ref<CommunicationOptionsBag | null>(null);
+
+    const selectedTab = ref("email");
+
+    const fromEmail = ref("");
+    const subject = ref("");
+    const message = ref("");
+
+    const errorMessage = ref("");
+    const isSending = ref(false);
+
+    // Typed by inference to match ButtonGroup's non-nullable item shape.
+    const tabItems = [
+        { text: "Email", value: "email" },
+        { text: "SMS", value: "sms" }
+    ];
+
     // #endregion Values
+
+    // #region Computed Values
+
+    const isSmsTab = computed((): boolean => {
+        return selectedTab.value === "sms";
+    });
+
+    /** True when the active tab's warning state blocks sending entirely. */
+    const isSendBlocked = computed((): boolean => {
+        if (isSending.value || !options.value) {
+            return true;
+        }
+
+        return !isSmsTab.value && !!options.value.emailWarningTitle;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Sends the communication and reports success back to the block, which
+     * shows the panel-level success alert.
+     */
+    async function onSend(): Promise<void> {
+        errorMessage.value = "";
+        isSending.value = true;
+
+        try {
+            const result = await invokeBlockAction("SendCommunication", {
+                bag: {
+                    groupMemberIdKey: props.groupMemberIdKey,
+                    isSms: isSmsTab.value,
+                    fromEmail: fromEmail.value,
+                    subject: subject.value,
+                    message: message.value
+                }
+            });
+
+            if (!result.isSuccess) {
+                errorMessage.value = result.errorMessage ?? "Unable to send the communication.";
+                return;
+            }
+
+            emit("sent", isSmsTab.value);
+            isShown.value = false;
+        }
+        finally {
+            isSending.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isShown, async () => {
+        if (!isShown.value) {
+            return;
+        }
+
+        // Fresh state per open; the previous message never lingers.
+        errorMessage.value = "";
+        selectedTab.value = "email";
+        subject.value = "";
+        message.value = "";
+        options.value = null;
+
+        const result = await invokeBlockAction<CommunicationOptionsBag>("GetCommunicationOptions", {
+            groupMemberIdKey: props.groupMemberIdKey
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to load the communication options.";
+            return;
+        }
+
+        options.value = result.data;
+        fromEmail.value = result.data.defaultFromEmail ?? "";
+    });
+
+    // #endregion Watchers
 </script>

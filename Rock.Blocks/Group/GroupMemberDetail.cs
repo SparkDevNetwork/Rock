@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Model;
@@ -2047,8 +2048,80 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetCommunicationOptions( string groupMemberIdKey )
         {
-            // TODO: Implement per conversion plan §8, including the four email and four SMS state cases.
-            return ActionBadRequest( "Not implemented." );
+            if ( !GetAttributeValue( AttributeKey.EnableCommunications ).AsBoolean( true ) )
+            {
+                return ActionBadRequest( "Communications are not enabled." );
+            }
+
+            var entity = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( !IsAuthorizedToEdit( entity.Group ) )
+            {
+                return ActionBadRequest( "Not authorized to communicate with this group member." );
+            }
+
+            var groupType = GroupTypeCache.Get( entity.Group.GroupTypeId );
+            var canMemberReceiveEmail = entity.Person.IsEmailActive && entity.Person.CanReceiveEmail();
+
+            var options = new CommunicationOptionsBag
+            {
+                RecipientName = entity.Person.FullName,
+                RecipientRoleName = groupType.Roles.FirstOrDefault( r => r.Id == entity.GroupRoleId )?.Name,
+                RecipientPhotoUrl = Person.GetPersonPhotoUrl( entity.Person ),
+                RecipientEmail = canMemberReceiveEmail ? entity.Person.Email : null,
+                IsSmsTabShown = GetAttributeValue( AttributeKey.EnableSMS ).AsBoolean( true )
+            };
+
+            SetEmailOptions( options, entity, canMemberReceiveEmail );
+
+            // TODO: SMS from-number state per conversion plan §8 (single static number, dropdown, or warnings).
+
+            return ActionOk( options );
+        }
+
+        /// <summary>
+        /// Sets the email tab state on the communication options: the From
+        /// behavior per the Allow Selecting From setting, and the warning
+        /// cases that block sending entirely.
+        /// </summary>
+        /// <param name="options">The options bag to populate.</param>
+        /// <param name="entity">The group member being communicated with.</param>
+        /// <param name="canMemberReceiveEmail">Whether the member has a usable email address.</param>
+        private void SetEmailOptions( CommunicationOptionsBag options, GroupMember entity, bool canMemberReceiveEmail )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+            var senderEmail = currentPerson?.Email;
+
+            options.IsFromEditable = GetAttributeValue( AttributeKey.AllowSelectingFrom ).AsBoolean( true );
+            options.DefaultFromEmail = senderEmail;
+
+            if ( !canMemberReceiveEmail )
+            {
+                options.EmailWarningTitle = $"Cannot Send Emails to {entity.Person.FullName}";
+                options.EmailWarningMessage = "No email address is available for this person.";
+                return;
+            }
+
+            if ( options.IsFromEditable )
+            {
+                return;
+            }
+
+            // A locked From means the sender's own email must exist to send anything.
+            if ( senderEmail.IsNotNullOrWhiteSpace() )
+            {
+                options.FromDisplayText = $"{currentPerson.FullName} ({senderEmail})";
+            }
+            else
+            {
+                options.EmailWarningTitle = "Cannot Send Emails";
+                options.EmailWarningMessage = "To send an email you must first configure an email address in your profile.";
+            }
         }
 
         /// <summary>
@@ -2059,8 +2132,106 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult SendCommunication( SendCommunicationRequestBag bag )
         {
-            // TODO: Implement per conversion plan §8, with server-side required-field validation.
+            if ( bag == null )
+            {
+                return ActionBadRequest( "Invalid request." );
+            }
+
+            if ( !GetAttributeValue( AttributeKey.EnableCommunications ).AsBoolean( true ) )
+            {
+                return ActionBadRequest( "Communications are not enabled." );
+            }
+
+            var entity = new GroupMemberService( RockContext ).Get( bag.GroupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( !IsAuthorizedToEdit( entity.Group ) )
+            {
+                return ActionBadRequest( "Not authorized to communicate with this group member." );
+            }
+
+            if ( !bag.IsSms )
+            {
+                return SendEmailCommunication( entity, bag );
+            }
+
+            // TODO: SMS send per conversion plan §8.
             return ActionBadRequest( "Not implemented." );
+        }
+
+        /// <summary>
+        /// Validates and sends the quick email communication. The From
+        /// address is only honored from the client when the Allow Selecting
+        /// From setting is enabled; otherwise the logged-in person's email is
+        /// used regardless of what was sent. The WebForms block let a blank
+        /// From or Subject "send" successfully, which the redesign fixes with
+        /// these server-side checks.
+        /// </summary>
+        /// <param name="entity">The group member to email.</param>
+        /// <param name="bag">The communication request.</param>
+        /// <returns>A success or validation error result.</returns>
+        private BlockActionResult SendEmailCommunication( GroupMember entity, SendCommunicationRequestBag bag )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+            var fromEmail = GetAttributeValue( AttributeKey.AllowSelectingFrom ).AsBoolean( true )
+                ? bag.FromEmail
+                : currentPerson?.Email;
+
+            var validationErrors = new List<string>();
+
+            if ( fromEmail.IsNullOrWhiteSpace() )
+            {
+                validationErrors.Add( "From is required." );
+            }
+
+            if ( bag.Subject.IsNullOrWhiteSpace() )
+            {
+                validationErrors.Add( "Subject is required." );
+            }
+
+            if ( bag.Message.IsNullOrWhiteSpace() )
+            {
+                validationErrors.Add( "Message is required." );
+            }
+
+            if ( !entity.Person.IsEmailActive || !entity.Person.CanReceiveEmail() )
+            {
+                validationErrors.Add( $"No email address is available for {entity.Person.FullName}." );
+            }
+
+            if ( validationErrors.Any() )
+            {
+                return ActionBadRequest( validationErrors.AsDelimited( "<br>" ) );
+            }
+
+            var message = bag.Message;
+
+            if ( GetAttributeValue( AttributeKey.AppendHeaderFooter ).AsBoolean( true ) )
+            {
+                var globalAttributes = GlobalAttributesCache.Get();
+                message = $"{globalAttributes.GetValue( "EmailHeader" )} {message} {globalAttributes.GetValue( "EmailFooter" )}";
+            }
+
+            var emailMessage = new RockEmailMessage
+            {
+                FromEmail = fromEmail,
+                FromName = currentPerson?.FullName ?? fromEmail,
+                Subject = bag.Subject,
+                Message = message,
+                CreateCommunicationRecord = false
+            };
+            emailMessage.AddRecipient( new RockEmailMessageRecipient( entity.Person, new Dictionary<string, object>() ) );
+
+            if ( !emailMessage.Send( out var sendErrors ) )
+            {
+                return ActionBadRequest( sendErrors.Any() ? sendErrors.AsDelimited( "<br>" ) : "Unable to send the email." );
+            }
+
+            return ActionOk();
         }
 
         /// <summary>

@@ -58,7 +58,7 @@ export type GroupMemberRequirementAlertBag = {
 
     /**
      * Gets or sets a value indicating whether this is a manual check
-     * type requirement, which renders the mark-as-met checkbox link.
+     * type requirement, which renders the mark-as-met checkbox.
      */
     isManualRequirement: boolean;
 

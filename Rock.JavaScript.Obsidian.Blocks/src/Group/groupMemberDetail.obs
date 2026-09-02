@@ -35,6 +35,10 @@
             </NotificationBox>
             <NotificationBox v-if="options.editModeMessage" alertType="info" v-html="options.editModeMessage" />
 
+            <NotificationBox v-if="communicationSuccessMessage" alertType="success" dismissible @dismiss="communicationSuccessMessage = ''">
+                {{ communicationSuccessMessage }}
+            </NotificationBox>
+
             <NotificationBox v-if="options.signatureDocument?.isRequired" alertType="warning">
                 <div class="d-flex flex-wrap align-items-center gap-3">
                     <div class="flex-grow-1">
@@ -333,7 +337,9 @@
                           @restore="onRestoreArchivedMember"
                           @decline="onDeclineRestore" />
     <MoveGroupMemberModal v-model="isMoveModalShown" />
-    <QuickCommunicationModal v-model="isCommunicationModalShown" />
+    <QuickCommunicationModal v-model="isCommunicationModalShown"
+                             :groupMemberIdKey="groupMemberIdKey"
+                             @sent="onCommunicationSent" />
 </template>
 
 <script setup lang="ts">
@@ -466,6 +472,9 @@
     const communicationPreference = ref(config.entity?.communicationPreference?.toString() ?? "");
     const isNotified = ref(config.entity?.isNotified === true);
     const scheduleReminderEmailOffsetDays = ref<number | null>(config.entity?.scheduleReminderEmailOffsetDays ?? null);
+
+    /** The panel-level green alert after a quick communication sends. */
+    const communicationSuccessMessage = ref("");
 
     // Administration section.
     const signedDocument = ref<ListItemBag | undefined>(config.entity?.signedDocument ?? undefined);
@@ -639,7 +648,17 @@
      * Opens the quick communication modal from the panel header.
      */
     function onShowCommunicationModal(): void {
+        communicationSuccessMessage.value = "";
         isCommunicationModalShown.value = true;
+    }
+
+    /**
+     * Shows the panel-level success alert after the modal sends.
+     */
+    function onCommunicationSent(isSms: boolean): void {
+        communicationSuccessMessage.value = isSms
+            ? "SMS communication was successfully sent."
+            : "Email communication was successfully sent.";
     }
 
     /**
