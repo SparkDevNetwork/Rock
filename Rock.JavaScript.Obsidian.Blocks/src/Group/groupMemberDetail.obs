@@ -10,7 +10,21 @@
             <template #headerActions>
                 <HighlightLabel v-if="options.hasArchivedRecord" labelType="danger">Archived</HighlightLabel>
                 <HighlightLabel v-if="options.addedDateText" labelType="default">{{ options.addedDateText }}</HighlightLabel>
-                <!-- TODO: Communicate and Move header buttons, ellipsis menu with Audit Details modal. -->
+                <button v-if="options.isCommunicationButtonShown"
+                        type="button"
+                        class="btn btn-panel-action"
+                        title="Quick Communication"
+                        @click="onShowCommunicationModal">
+                    <i class="ti ti-message-circle"></i>
+                </button>
+                <button v-if="options.isMoveButtonShown"
+                        type="button"
+                        class="btn btn-panel-action"
+                        title="Move to another group"
+                        @click="onShowMoveModal">
+                    <i class="ti ti-external-link"></i>
+                </button>
+                <!-- TODO: Ellipsis menu with Audit Details modal. -->
             </template>
 
             <NotificationBox v-if="formErrors.length" ref="formErrorNotificationBox" alertType="validation">
@@ -619,6 +633,20 @@
      */
     function onToggleOverrideRequirement(requirementAlert: GroupMemberRequirementAlertBag, isChecked: boolean): void {
         toggleRequirementGuid(checkedOverrideRequirementGuids.value, requirementAlert.groupRequirementGuid, isChecked);
+    }
+
+    /**
+     * Opens the quick communication modal from the panel header.
+     */
+    function onShowCommunicationModal(): void {
+        isCommunicationModalShown.value = true;
+    }
+
+    /**
+     * Opens the Move Group Member modal from the panel header.
+     */
+    function onShowMoveModal(): void {
+        isMoveModalShown.value = true;
     }
 
     /**
