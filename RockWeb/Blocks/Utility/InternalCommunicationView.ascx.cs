@@ -268,8 +268,8 @@ namespace RockWeb.Blocks.Utility
                 }
 
                 var contentChannelItems = contentChannelItemsQry.OrderByDescending( i => i.StartDateTime )
-                    .Take( 2 )
                     .Skip( _currentPage )
+                    .Take( 2 )
                     .ToList();
 
                 if ( contentChannelItems == null || contentChannelItems.Count == 0 )
