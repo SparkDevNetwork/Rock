@@ -5,7 +5,8 @@
     <RockForm v-else v-model:submit="submitForm" @submit="onSave">
         <Panel type="block"
                :title="panelTitle"
-               :titleIconCssClass="options.groupIconCssClass || 'ti ti-user'">
+               :titleIconCssClass="options.groupIconCssClass || 'ti ti-user'"
+               :headerSecondaryActions="headerSecondaryActions">
 
             <template #headerActions>
                 <HighlightLabel v-if="options.hasArchivedRecord" labelType="danger">Archived</HighlightLabel>
@@ -24,7 +25,6 @@
                         @click="onShowMoveModal">
                     <i class="ti ti-external-link"></i>
                 </button>
-                <!-- TODO: Ellipsis menu with Audit Details modal. -->
             </template>
 
             <NotificationBox v-if="formErrors.length" ref="formErrorNotificationBox" alertType="validation">
@@ -327,6 +327,10 @@
         </Panel>
     </RockForm>
 
+    <Modal v-model="isAuditModalShown" title="Audit Details">
+        <AuditDetail :entityTypeGuid="EntityType.GroupMember" :entityKey="groupMemberIdKey" />
+    </Modal>
+
     <AssignmentPreferenceModal v-model="isAssignmentModalShown"
                                :groupMemberIdKey="groupMemberIdKey"
                                :assignment="editingAssignment"
@@ -346,6 +350,8 @@
 <script setup lang="ts">
     import { computed, nextTick, ref, watch } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -391,6 +397,8 @@
     import { SignatureDocumentStatusBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/signatureDocumentStatusBag";
     import { GroupScheduleAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupScheduleAssignmentBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     // #region Types
 
@@ -416,6 +424,7 @@
 
     const options = ref(config.options ?? ({} as GroupMemberDetailOptionsBag));
 
+    const isAuditModalShown = ref(false);
     const isAssignmentModalShown = ref(false);
     const isRestoreModalShown = ref(false);
     const isMoveModalShown = ref(false);
@@ -492,9 +501,26 @@
 
     // #region Computed Values
 
+    /** The person's name once the member exists, or the add-mode title built from the group type's terms. */
     const panelTitle = computed((): string => {
-        // TODO: Person full name, or "Add {GroupTerm} {GroupMemberTerm}" in add mode.
-        return person.value?.text ?? "Group Member Detail";
+        return isExistingMember.value
+            ? personName.value
+            : `Add ${options.value.groupTerm || "Group"} ${options.value.groupMemberTerm || "Member"}`;
+    });
+
+    /** The header ellipsis menu; Audit Details only applies once the record exists. */
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        if (!isExistingMember.value) {
+            return [];
+        }
+
+        return [{
+            type: "default",
+            title: "Audit Details",
+            handler: () => {
+                isAuditModalShown.value = true;
+            }
+        }];
     });
 
     /** True once the member record exists; the person can no longer change. */
