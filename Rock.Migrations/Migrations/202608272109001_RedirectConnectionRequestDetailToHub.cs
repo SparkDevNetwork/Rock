@@ -22,6 +22,30 @@ namespace Rock.Migrations
     /// </summary>
     public partial class RedirectConnectionRequestDetailToHub : Rock.Migrations.RockMigration
     {
+        private static class BlockTypeGuid
+        {
+            public const string MyConnectionOpportunities = "3F69E04F-F966-4CAE-B89D-F97DFEF6407A";
+            public const string MyConnectionOpportunitiesLava = "1B8E50A0-7AC4-475F-857C-50D0809A3F04";
+            public const string ConnectionRequests = "39C53B93-C75A-45DE-B9E7-DFA4EE6B7027";
+            public const string ConnectionCelebrationsReport = "8D3E5A9C-7B2F-4E1D-A6C0-3F9B8D2E5A7C";
+        }
+
+        private static class BlockGuid
+        {
+            public const string ConnectionRequests = "0A0C5C73-7BEF-447C-A5E8-3128F20832BA";
+            public const string MyConnectionOpportunities = "80710A2C-9B90-40AE-B887-B885AAA43538";
+            public const string MyConnectionOpportunitiesLava = "35B7FF3C-969E-44BE-BACA-EDB490450DFF";
+            public const string ConnectionCelebrationsReport = "32AD2827-E829-4650-95C3-1085B7AFF54B";
+        }
+
+        private static class AttributeGuid
+        {
+            public const string ConnectionRequests_ConnectionRequestDetail = "16016681-4FF6-4D51-B6FB-798C15A378F4";
+            public const string MyConnectionOpportunities_DetailPage = "E2A64E17-7310-4ED4-85F4-65D0ED97A513";
+            public const string MyConnectionOpportunitiesLava_DetailPage = "848484B1-0666-4B2A-B63B-22CFBD00540E";
+            public const string ConnectionCelebrationsReport_ConnectionRequestDetailPage = "E609A568-9F7F-464E-9DCF-6C280165CF4C";
+        }
+
         /// <summary>
         /// The Connections Hub's "people/connections/hub" system route.
         /// </summary>
@@ -32,7 +56,15 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            MoveDetailPageAttributeValues( Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, Rock.SystemGuid.Page.CONNECTIONS_HUB, ConnectionsHubPageRouteGuid );
+            // Update attributes and values for all block instances matching the targeted block types.
+            UpdateDetailPageBlockSettings( Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, Rock.SystemGuid.Page.CONNECTIONS_HUB, ConnectionsHubPageRouteGuid );
+
+            // Seed attribute values for known block instances that were missing altogether.
+            var hubPageAndRouteValue = $"{Rock.SystemGuid.Page.CONNECTIONS_HUB},{ConnectionsHubPageRouteGuid}";
+            RockMigrationHelper.AddBlockAttributeValue( true, BlockGuid.ConnectionRequests, AttributeGuid.ConnectionRequests_ConnectionRequestDetail, hubPageAndRouteValue );
+            RockMigrationHelper.AddBlockAttributeValue( true, BlockGuid.MyConnectionOpportunities, AttributeGuid.MyConnectionOpportunities_DetailPage, hubPageAndRouteValue );
+            RockMigrationHelper.AddBlockAttributeValue( true, BlockGuid.MyConnectionOpportunitiesLava, AttributeGuid.MyConnectionOpportunitiesLava_DetailPage, hubPageAndRouteValue );
+            RockMigrationHelper.AddBlockAttributeValue( true, BlockGuid.ConnectionCelebrationsReport, AttributeGuid.ConnectionCelebrationsReport_ConnectionRequestDetailPage, hubPageAndRouteValue );
         }
 
         /// <summary>
@@ -41,18 +73,16 @@ namespace Rock.Migrations
         public override void Down()
         {
             // The Connection Request Detail page has no route, so the value moves back to a bare page reference.
-            MoveDetailPageAttributeValues( Rock.SystemGuid.Page.CONNECTIONS_HUB, Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, null );
+            UpdateDetailPageBlockSettings( Rock.SystemGuid.Page.CONNECTIONS_HUB, Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, null );
         }
 
         /// <summary>
-        /// Repoints the detail page settings on My Connection Opportunities, My Connection
-        /// Opportunities Lava, Person Profile Connection Requests, and Celebrations Report from one
-        /// page to another.
+        /// Repoints the detail page block settings on connections-related block types from one page to another.
         /// </summary>
         /// <param name="fromPageGuid">The page the setting must currently hold to be changed.</param>
         /// <param name="toPageGuid">The page to point the setting at.</param>
         /// <param name="toPageRouteGuid">The route to pair with the page in configured values, or <c>null</c> when the page has no route.</param>
-        private void MoveDetailPageAttributeValues( string fromPageGuid, string toPageGuid, string toPageRouteGuid )
+        private void UpdateDetailPageBlockSettings( string fromPageGuid, string toPageGuid, string toPageRouteGuid )
         {
             // A page reference is stored as "Page.Guid" or "Page.Guid,PageRoute.Guid". Only the
             // configured value takes the route; [DefaultValue] is rewritten from the block's code
@@ -90,8 +120,8 @@ WHERE EXISTS (
         WHERE a.[EntityTypeQualifierColumn] = 'BlockTypeId'
             AND a.[EntityTypeQualifierValue] = CAST(bt.[Id] AS NVARCHAR(20))
             AND (
-                (bt.[Guid] = '1B8E50A0-7AC4-475F-857C-50D0809A3F04' AND a.[Key] = 'DetailPage')                         -- My Connection Opportunities Lava
-                OR (bt.[Guid] = '8D3E5A9C-7B2F-4E1D-A6C0-3F9B8D2E5A7C' AND a.[Key] = 'ConnectionRequestDetailPage')     -- Connection Celebrations Report
+                (bt.[Guid] = '{BlockTypeGuid.MyConnectionOpportunitiesLava}' AND a.[Key] = 'DetailPage')
+                OR (bt.[Guid] = '{BlockTypeGuid.ConnectionCelebrationsReport}' AND a.[Key] = 'ConnectionRequestDetailPage')
             )
     )
     AND (a.[DefaultValue] = @FromPageGuid OR a.[DefaultValue] LIKE @FromPageGuid + ',%');
@@ -113,10 +143,10 @@ WHERE EXISTS (
             AND a.[EntityTypeQualifierValue] = CAST(bt.[Id] AS NVARCHAR(20))
         WHERE a.[Id] = av.[AttributeId]
             AND (
-                (bt.[Guid] = '3F69E04F-F966-4CAE-B89D-F97DFEF6407A' AND a.[Key] = 'DetailPage')                         -- My Connection Opportunities
-                OR (bt.[Guid] = '1B8E50A0-7AC4-475F-857C-50D0809A3F04' AND a.[Key] = 'DetailPage')                      -- My Connection Opportunities Lava
-                OR (bt.[Guid] = '39C53B93-C75A-45DE-B9E7-DFA4EE6B7027' AND a.[Key] = 'ConnectionRequestDetail')         -- Connection Requests
-                OR (bt.[Guid] = '8D3E5A9C-7B2F-4E1D-A6C0-3F9B8D2E5A7C' AND a.[Key] = 'ConnectionRequestDetailPage')     -- Connection Celebrations Report
+                (bt.[Guid] = '{BlockTypeGuid.MyConnectionOpportunities}' AND a.[Key] = 'DetailPage')
+                OR (bt.[Guid] = '{BlockTypeGuid.MyConnectionOpportunitiesLava}' AND a.[Key] = 'DetailPage')
+                OR (bt.[Guid] = '{BlockTypeGuid.ConnectionRequests}' AND a.[Key] = 'ConnectionRequestDetail')
+                OR (bt.[Guid] = '{BlockTypeGuid.ConnectionCelebrationsReport}' AND a.[Key] = 'ConnectionRequestDetailPage')
             )
     )
     AND (av.[Value] = @FromPageGuid OR av.[Value] LIKE @FromPageGuid + ',%');" );
