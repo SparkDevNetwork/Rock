@@ -51,7 +51,4 @@ export type SignatureDocumentStatusBag = {
      * warning alert.
      */
     message?: string | null;
-
-    /** Gets or sets the label for the signed document uploader. */
-    uploaderLabel?: string | null;
 };

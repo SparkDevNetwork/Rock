@@ -48,10 +48,5 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         /// document uploader.
         /// </summary>
         public Guid? BinaryFileTypeGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the label for the signed document uploader.
-        /// </summary>
-        public string UploaderLabel { get; set; }
     }
 }

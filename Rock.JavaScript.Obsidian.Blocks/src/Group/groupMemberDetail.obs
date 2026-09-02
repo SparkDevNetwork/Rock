@@ -5,7 +5,7 @@
     <RockForm v-else v-model:submit="submitForm" @submit="onSave">
         <Panel type="block"
                :title="panelTitle"
-               :titleIconCssClass="panelIconCssClass">
+               :titleIconCssClass="options.groupIconCssClass || 'ti ti-user'">
 
             <template #headerActions>
                 <HighlightLabel v-if="options.hasArchivedRecord" labelType="danger">Archived</HighlightLabel>
@@ -21,7 +21,7 @@
             </NotificationBox>
             <NotificationBox v-if="options.editModeMessage" alertType="info" v-html="options.editModeMessage" />
 
-            <NotificationBox v-if="isSignatureDocumentWarningShown" alertType="warning">
+            <NotificationBox v-if="options.signatureDocument?.isRequired" alertType="warning">
                 <div class="d-flex flex-wrap align-items-center gap-3">
                     <div class="flex-grow-1">
                         <strong>Signed Document Required</strong>
@@ -70,7 +70,7 @@
                             <div class="col-md-3">
                                 <DropDownList v-model="roleId"
                                               label="Role"
-                                              :help="roleHelpText"
+                                              :help="options.roleLockedMessage || 'The role this person holds within the group.'"
                                               :items="options.roleItems ?? []"
                                               :showBlankItem="false"
                                               rules="required"
@@ -78,7 +78,7 @@
                             </div>
                         </div>
 
-                        <template v-if="areRequirementsShown">
+                        <template v-if="options.hasGroupRequirements && !options.areRequirementsHidden">
                             <div class="mb-3">
                                 <RockButton :btnSize="BtnSize.Small" :disabled="isRefreshingRequirements" @click="onRefreshRequirements">
                                     <i class="ti ti-refresh" :class="{ 'ti-spin': isRefreshingRequirements }"></i> Refresh Requirements
@@ -217,7 +217,7 @@
                                 <DatePicker v-model="scheduleStartDate"
                                             label="Schedule Start Date"
                                             help="The date this member's schedule template takes effect."
-                                            :rules="scheduleStartDateRules"
+                                            :rules="scheduleTemplateId ? 'required' : ''"
                                             :disabled="isFormDisabled" />
                             </div>
                         </div>
@@ -258,7 +258,7 @@
                                         :disabled="isFormDisabled" />
 
                         <div v-if="options.isSchedulingEnabled" class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <NumberBox v-model="scheduleReminderEmailOffsetDays"
                                            label="Email Reminder Lead Time"
                                            help="Days before a scheduled occurrence to send this member's reminder. Leave blank to use the group's default."
@@ -272,10 +272,32 @@
                     </ContentStack>
                 </ContentSection>
 
-                <ContentSection title="Administration" icon="ti ti-settings" isCollapsed>
-                    <!-- TODO: Required Signed Documents stack (Signed Document uploader; the unsigned-document
-                         warning alert renders above the sections instead) and Chat Settings stack (Chat Muted,
-                         Chat Banned) per conversion plan §9.6. -->
+                <ContentSection v-if="!!options.signatureDocument || options.areChatPreferencesShown" title="Administration" icon="ti ti-file-settings" isCollapsed>
+                    <ContentStack v-if="options.signatureDocument"
+                                  title="Required Signed Documents"
+                                  description="Store basic information required for this group member.">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <FileUploader v-model="signedDocument"
+                                              label="Signed Document"
+                                              :binaryFileTypeGuid="options.signatureDocument.binaryFileTypeGuid ?? ''"
+                                              :disabled="isFormDisabled" />
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack v-if="options.areChatPreferencesShown"
+                                  title="Chat Settings"
+                                  description="Control this member's chat access.">
+                        <InlineCheckBox v-model="isChatMuted"
+                                        label="Chat Muted"
+                                        help="Whether chat notifications are muted for this person in this group."
+                                        :disabled="isFormDisabled" />
+                        <InlineCheckBox v-model="isChatBanned"
+                                        label="Chat Banned"
+                                        help="Whether this person is banned from the group's chat channel."
+                                        :disabled="isFormDisabled" />
+                    </ContentStack>
                 </ContentSection>
             </ContentSectionContainer>
 
@@ -321,6 +343,7 @@
     import Grid, { TextColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import AssignmentPreferenceModal from "./GroupMemberDetail/assignmentPreferenceModal.partial.obs";
     import RestoreArchivedModal from "./GroupMemberDetail/restoreArchivedModal.partial.obs";
@@ -430,6 +453,11 @@
     const isNotified = ref(config.entity?.isNotified === true);
     const scheduleReminderEmailOffsetDays = ref<number | null>(config.entity?.scheduleReminderEmailOffsetDays ?? null);
 
+    // Administration section.
+    const signedDocument = ref<ListItemBag | undefined>(config.entity?.signedDocument ?? undefined);
+    const isChatMuted = ref(config.entity?.isChatMuted === true);
+    const isChatBanned = ref(config.entity?.isChatBanned === true);
+
     // Requirement resolution checkboxes, held client-side and written with the member on save.
     // A resolution already stored in the database presents as met with no checkbox, so these
     // only ever hold unsaved toggles.
@@ -445,10 +473,6 @@
         return person.value?.text ?? "Group Member Detail";
     });
 
-    const panelIconCssClass = computed((): string => {
-        return options.value.groupIconCssClass || "ti ti-user";
-    });
-
     /** True once the member record exists; the person can no longer change. */
     const isExistingMember = computed((): boolean => {
         return !!groupMemberIdKey.value;
@@ -458,17 +482,8 @@
         return person.value?.text ?? "";
     });
 
-    /** The sync tooltip when Group Sync affects the role list, otherwise the standard helper text. */
-    const roleHelpText = computed((): string => {
-        return options.value.roleLockedMessage || "The role this person holds within the group.";
-    });
-
     const linkedRegistrations = computed((): ListItemBag[] => {
         return options.value.linkedRegistrations ?? [];
-    });
-
-    const areRequirementsShown = computed((): boolean => {
-        return options.value.hasGroupRequirements === true && options.value.areRequirementsHidden !== true;
     });
 
     const requirementAlerts = computed((): GroupMemberRequirementAlertBag[] => {
@@ -478,11 +493,6 @@
     /** True when the form inputs are disabled, from read-only rights or a person data load in flight. */
     const isFormDisabled = computed((): boolean => {
         return !isEditable.value || isPersonDataLoading.value;
-    });
-
-    /** True when the group requires a signature document that has not been signed yet. */
-    const isSignatureDocumentWarningShown = computed((): boolean => {
-        return options.value.signatureDocument?.isRequired === true;
     });
 
     const hasEditableAttributes = computed((): boolean => {
@@ -500,11 +510,6 @@
     /** The assignment sets are only populated in sign-up mode, which also gates that stack to the mode. */
     const hasViewableAssignmentAttributes = computed((): boolean => {
         return Object.keys(options.value.viewableAssignmentAttributes ?? {}).length > 0;
-    });
-
-    /** Schedule Start Date is only required once a template is chosen (WebForms parity). */
-    const scheduleStartDateRules = computed((): string => {
-        return scheduleTemplateId.value ? "required" : "";
     });
 
     /** The assignment rows sorted like the WebForms grid: schedule order, then next start. */
@@ -815,6 +820,9 @@
             setPropertiesBoxValue(box, "communicationPreference", (toNumberOrNull(communicationPreference.value) ?? 0) as CommunicationType);
             setPropertiesBoxValue(box, "isNotified", isNotified.value);
             setPropertiesBoxValue(box, "scheduleReminderEmailOffsetDays", scheduleReminderEmailOffsetDays.value);
+            setPropertiesBoxValue(box, "signedDocument", signedDocument.value ?? null);
+            setPropertiesBoxValue(box, "isChatMuted", isChatMuted.value);
+            setPropertiesBoxValue(box, "isChatBanned", isChatBanned.value);
             setPropertiesBoxValue(box, "manuallyMetRequirementGuids", checkedManualRequirementGuids.value);
             setPropertiesBoxValue(box, "overriddenRequirementGuids", checkedOverrideRequirementGuids.value);
 
@@ -997,6 +1005,9 @@
         communicationPreference.value = box.entity?.communicationPreference?.toString() ?? "";
         isNotified.value = box.entity?.isNotified === true;
         scheduleReminderEmailOffsetDays.value = box.entity?.scheduleReminderEmailOffsetDays ?? null;
+        signedDocument.value = box.entity?.signedDocument ?? undefined;
+        isChatMuted.value = box.entity?.isChatMuted === true;
+        isChatBanned.value = box.entity?.isChatBanned === true;
 
         // Watchers flush on the next tick, so the guard has to outlive this call to suppress them.
         nextTick(() => {

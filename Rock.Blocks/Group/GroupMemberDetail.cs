@@ -934,7 +934,6 @@ namespace Rock.Blocks.Group
 
             var statusBag = new SignatureDocumentStatusBag
             {
-                UploaderLabel = template.Name,
                 BinaryFileTypeGuid = template.BinaryFileType?.Guid
             };
 
@@ -1441,6 +1440,86 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Creates or updates the manually uploaded signed document for the
+        /// group's required signature document template, mirroring the
+        /// WebForms save: the latest signed document is updated when one
+        /// exists, otherwise an uploaded file creates a new Signed document.
+        /// A replaced binary file is marked temporary so cleanup removes it;
+        /// the kept file has the flag cleared.
+        /// </summary>
+        private void SaveSignedDocument( GroupMember entity, ListItemBag signedDocumentValue )
+        {
+            var template = entity.Group.RequiredSignatureDocumentTemplate;
+
+            if ( template == null )
+            {
+                return;
+            }
+
+            var binaryFileService = new BinaryFileService( RockContext );
+            var binaryFileId = signedDocumentValue.GetEntityId<BinaryFile>( RockContext );
+
+            // The same latest-signed-document query that fed the uploader picks the document to update.
+            var personId = entity.PersonId;
+            var document = new SignatureDocumentService( RockContext )
+                .Queryable()
+                .Where( d =>
+                    d.SignatureDocumentTemplateId == template.Id &&
+                    d.AppliesToPersonAlias != null &&
+                    d.AppliesToPersonAlias.PersonId == personId &&
+                    d.LastStatusDate.HasValue &&
+                    d.Status == SignatureDocumentStatus.Signed &&
+                    d.BinaryFile != null )
+                .OrderByDescending( d => d.LastStatusDate )
+                .FirstOrDefault();
+
+            if ( document == null && binaryFileId.HasValue )
+            {
+                document = new SignatureDocument
+                {
+                    SignatureDocumentTemplateId = template.Id,
+                    AppliesToPersonAliasId = entity.Person?.PrimaryAliasId,
+                    AssignedToPersonAliasId = entity.Person?.PrimaryAliasId,
+                    Name = $"{entity.Group.Name.RemoveSpecialCharacters()}_{entity.Person?.FullName.RemoveSpecialCharacters()}",
+                    Status = SignatureDocumentStatus.Signed,
+                    LastStatusDate = RockDateTime.Now
+                };
+
+                new SignatureDocumentService( RockContext ).Add( document );
+            }
+
+            if ( document == null )
+            {
+                return;
+            }
+
+            var origBinaryFileId = document.BinaryFileId;
+            document.BinaryFileId = binaryFileId;
+
+            // A replaced binary file is marked temporary so the cleanup job removes it.
+            if ( origBinaryFileId.HasValue && origBinaryFileId.Value != document.BinaryFileId )
+            {
+                var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
+
+                if ( oldBinaryFile != null && !oldBinaryFile.IsTemporary )
+                {
+                    oldBinaryFile.IsTemporary = true;
+                }
+            }
+
+            // The uploaded file starts temporary; keeping it means clearing that flag.
+            if ( document.BinaryFileId.HasValue )
+            {
+                var binaryFile = binaryFileService.Get( document.BinaryFileId.Value );
+
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Syncs the member's GroupMemberAssignment records with the
         /// client-edited assignment preference rows, mirroring the WebForms
         /// grid save. Rows the client grid never showed (orphaned location or
@@ -1659,6 +1738,19 @@ namespace Rock.Blocks.Group
                 }
             } );
 
+            // Chat preferences only apply when the section was shown: chat enabled globally and for the group (WebForms parity).
+            if ( ChatHelper.IsChatEnabled && entity.Group.GetIsChatEnabled() )
+            {
+                box.IfValidProperty( nameof( box.Bag.IsChatMuted ), () =>
+                    entity.IsChatMuted = box.Bag.IsChatMuted );
+
+                box.IfValidProperty( nameof( box.Bag.IsChatBanned ), () =>
+                    entity.IsChatBanned = box.Bag.IsChatBanned );
+            }
+
+            box.IfValidProperty( nameof( box.Bag.SignedDocument ), () =>
+                SaveSignedDocument( entity, box.Bag.SignedDocument ) );
+
             // Scheduling only applies when the section was shown: scheduling enabled and not sign-up mode (WebForms parity).
             var groupType = GroupTypeCache.Get( entity.Group.GroupTypeId );
 
@@ -1677,8 +1769,6 @@ namespace Rock.Blocks.Group
                     SyncScheduleAssignments( entity, box.Bag.ScheduleAssignments ) );
             }
 
-            // TODO: Apply the remaining bag properties (chat flags, signed document) as their
-            // sections are built.
             return true;
         }
 
