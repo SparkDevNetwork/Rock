@@ -762,6 +762,10 @@ namespace Rock.Blocks.Finance
                     })
                     .ToList();
 
+                // Load in one pass so each result bag doesn't trigger its own attribute query.
+                var results = entity.BenevolenceResults.ToList();
+                results.LoadAttributes( RockContext );
+
                 return new BenevolenceRequestBag
                 {
                     IdKey = entity.IdKey,
@@ -774,14 +778,8 @@ namespace Rock.Blocks.Finance
                     ResultSummary = entity.ResultSummary,
                     ProvidedNextSteps = entity.ProvidedNextSteps,
                     Campus = campus,
-                    Results = entity.BenevolenceResults
-                        .Select( result => new BenevolenceResultBag
-                        {
-                            IdKey = result.IdKey,
-                            ResultTypeValueId = result.ResultTypeValueId,
-                            Amount = result.Amount,
-                            ResultSummary = result.ResultSummary,
-                        } )
+                    Results = results
+                        .Select( result => GetBenevolenceResultBag( result ) )
                         .ToList(),
                     RequestDocuments = entity.Documents
                         .OrderBy( document => document.Order )
@@ -799,6 +797,39 @@ namespace Rock.Blocks.Finance
             }
 
             return new BenevolenceRequestBag();
+        }
+
+        /// <summary>
+        /// Gets the bag that represents a single benevolence result, including the attributes and values the current
+        /// person is allowed to edit.
+        /// </summary>
+        /// <param name="result">The <see cref="BenevolenceResult"/> to be represented as a bag.</param>
+        /// <returns>A <see cref="BenevolenceResultBag"/> that represents the result, or <c>null</c> if <paramref name="result"/>
+        /// is <c>null</c>.</returns>
+        private BenevolenceResultBag GetBenevolenceResultBag( BenevolenceResult result )
+        {
+            if ( result == null )
+            {
+                return null;
+            }
+
+            var bag = new BenevolenceResultBag
+            {
+                IdKey = result.IdKey,
+                ResultTypeValueId = result.ResultTypeValueId,
+                Amount = result.Amount,
+                ResultSummary = result.ResultSummary
+            };
+
+            if ( result.Attributes == null )
+            {
+                result.LoadAttributes( RockContext );
+            }
+
+            // Results are only ever surfaced through the add/edit modal, so the editable set is what the client needs.
+            bag.LoadAttributesAndValuesForPublicEdit( result, RequestContext.CurrentPerson, enforceSecurity: true );
+
+            return bag;
         }
 
         /// <inheritdoc/>
@@ -1715,17 +1746,43 @@ namespace Rock.Blocks.Finance
             };
 
             resultService.Add( newResult );
-            RockContext.SaveChanges();
 
-            var newResultBag = new BenevolenceResultBag
+            RockContext.WrapTransaction( () =>
             {
-                IdKey = newResult.IdKey,
-                ResultTypeValueId = newResult.ResultTypeValueId,
-                Amount = newResult.Amount,
-                ResultSummary = newResult.ResultSummary,
-            };
+                RockContext.SaveChanges();
 
-            return ActionOk( newResultBag );
+                newResult.LoadAttributes( RockContext );
+                newResult.SetPublicAttributeValues( benevolenceResultBag.AttributeValues ?? new Dictionary<string, string>(), RequestContext.CurrentPerson, enforceSecurity: true );
+                newResult.SaveAttributeValues( RockContext );
+            } );
+
+            return ActionOk( GetBenevolenceResultBag( newResult ) );
+        }
+
+        /// <summary>
+        /// Gets an empty benevolence result, populated with the attributes and default values to show when adding a
+        /// new result to a benevolence request.
+        /// </summary>
+        /// <param name="benevolenceRequestIdKey">The key representing the benevolence request the new result would belong to. Must be a valid, non-null
+        /// key.</param>
+        /// <returns>A <see cref="BlockActionResult"/> containing a <see cref="BenevolenceResultBag"/> whose properties are unset
+        /// and whose attributes have been loaded, or an error if the user is not authorized to edit the request.</returns>
+        [BlockAction]
+        public BlockActionResult GetNewBenevolenceRequestResult( string benevolenceRequestIdKey )
+        {
+            // Is the user authorized to edit this benevolence request?
+            if ( !TryGetEntityForEditAction( benevolenceRequestIdKey, out _, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            var newResult = new BenevolenceResult();
+            newResult.LoadAttributes( RockContext );
+
+            var bag = new BenevolenceResultBag();
+            bag.LoadAttributesAndValuesForPublicEdit( newResult, RequestContext.CurrentPerson, enforceSecurity: true );
+
+            return ActionOk( bag );
         }
 
         /// <summary>
