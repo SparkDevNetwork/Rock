@@ -22,6 +22,7 @@
 //
 
 import { GroupMemberRequirementAlertBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberRequirementAlertBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
  * The recalculated group requirement state returned to the client when
@@ -51,4 +52,12 @@ export type RefreshRequirementsResponseBag = {
 
     /** Gets or sets the refreshed inline requirement alerts. */
     requirementAlerts?: GroupMemberRequirementAlertBag[] | null;
+
+    /**
+     * Gets or sets the selected person's latest signed document file for
+     * the group's required signature document template. A signed
+     * document belongs to the person and template rather than the
+     * membership, so it refreshes with the person selection.
+     */
+    signedDocument?: ListItemBag | null;
 };

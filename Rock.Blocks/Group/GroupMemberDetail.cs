@@ -1249,15 +1249,16 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Gets the most recently signed document's binary file for the
         /// group's required signature document template, for the manual
-        /// signed document uploader.
+        /// signed document uploader. The document belongs to the person and
+        /// template, so a new member whose person is already covered sees it.
         /// </summary>
-        /// <param name="entity">The group member being viewed or edited.</param>
+        /// <param name="entity">The group member being viewed or edited, with the selected person applied.</param>
         /// <returns>The binary file reference, or null.</returns>
         private ListItemBag GetLatestSignedDocumentFile( GroupMember entity )
         {
             var templateId = entity.Group.RequiredSignatureDocumentTemplateId;
 
-            if ( !templateId.HasValue || entity.Id == 0 )
+            if ( !templateId.HasValue || entity.PersonId == 0 )
             {
                 return null;
             }
@@ -1469,6 +1470,12 @@ namespace Rock.Blocks.Group
 
             var binaryFileService = new BinaryFileService( RockContext );
             var binaryFileId = signedDocumentValue.GetEntityId<BinaryFile>( RockContext );
+
+            // Adding a member without a file must not touch the person's existing document.
+            if ( entity.Id == 0 && !binaryFileId.HasValue )
+            {
+                return;
+            }
 
             // The same latest-signed-document query that fed the uploader picks the document to update.
             var personId = entity.PersonId;
@@ -2896,12 +2903,18 @@ namespace Rock.Blocks.Group
                 alerts = GetRequirementAlerts( entity, selectedRoleId, out calculationErrors );
             }
 
+            // The uploader only renders for editors, so view-only callers never receive the file reference.
+            var signedDocument = IsAuthorizedToEdit( entity.Group )
+                ? GetLatestSignedDocumentFile( entity )
+                : null;
+
             return ActionOk( new RefreshRequirementsResponseBag
             {
                 RequirementAlerts = alerts,
                 CalculationErrors = calculationErrors,
                 IsRequirementInteractionDisabled = entity.Id == 0,
-                HasArchivedRecord = HasArchivedRecord( entity )
+                HasArchivedRecord = HasArchivedRecord( entity ),
+                SignedDocument = signedDocument
             } );
         }
 

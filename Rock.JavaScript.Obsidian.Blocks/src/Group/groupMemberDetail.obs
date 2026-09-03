@@ -92,7 +92,7 @@
                                               :items="options.roleItems ?? []"
                                               :showBlankItem="false"
                                               rules="required"
-                                              :disabled="isFormDisabled || options.isRoleLockedBySync" />
+                                              :disabled="isFormDisabled || isRefreshingRequirements || options.isRoleLockedBySync" />
                             </div>
                         </div>
 
@@ -999,14 +999,16 @@
      * requirements on every person change, role change, and Refresh
      * Requirements click; the archived check rides along because it keys off
      * the same person and role pairing.
+     *
+     * @returns The refreshed state, or null when nothing could be calculated.
      */
-    async function refreshRequirements(): Promise<boolean> {
+    async function refreshRequirements(): Promise<RefreshRequirementsResponseBag | null> {
         // Without a person and role there is nothing to calculate against, so anything
         // left over describes the previous selection and has to go.
         if (!person.value?.value || !roleId.value) {
             clearRequirementState();
 
-            return false;
+            return null;
         }
 
         isRefreshingRequirements.value = true;
@@ -1020,12 +1022,12 @@
 
             if (!result.isSuccess || !result.data) {
                 setFormError(result.errorMessage ?? "Unable to refresh the group requirements.");
-                return false;
+                return null;
             }
 
             applyRequirementState(result.data);
 
-            return true;
+            return result.data;
         }
         finally {
             isRefreshingRequirements.value = false;
@@ -1117,7 +1119,9 @@
                 return;
             }
 
-            await refreshRequirements();
+            // The signed document belongs to the person, so the uploader follows the selection.
+            const state = await refreshRequirements();
+            signedDocument.value = state?.signedDocument ?? undefined;
         }
         finally {
             isPersonDataLoading.value = false;
@@ -1131,7 +1135,12 @@
 
         isRefreshSuccessShown.value = false;
 
-        await refreshRequirements();
+        const state = await refreshRequirements();
+
+        // A person picked before any role skipped the prefill, so fill the still-empty uploader now.
+        if (!isExistingMember.value && !signedDocument.value) {
+            signedDocument.value = state?.signedDocument ?? undefined;
+        }
     });
 
     // #endregion Watchers

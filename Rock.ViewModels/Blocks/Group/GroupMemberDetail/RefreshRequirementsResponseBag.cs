@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
 {
     /// <summary>
@@ -50,5 +52,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         /// recalculate requirements also change this.
         /// </summary>
         public bool HasArchivedRecord { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected person's latest signed document file for
+        /// the group's required signature document template. A signed
+        /// document belongs to the person and template rather than the
+        /// membership, so it refreshes with the person selection.
+        /// </summary>
+        public ListItemBag SignedDocument { get; set; }
     }
 }
