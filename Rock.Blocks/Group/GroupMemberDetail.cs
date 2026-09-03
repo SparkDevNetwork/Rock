@@ -1890,6 +1890,27 @@ namespace Rock.Blocks.Group
                 return actionError;
             }
 
+            if ( IsSignUpMode && entity.Id == 0 )
+            {
+                var signUpPerson = GetPersonFromAliasGuid( box.Bag?.Person?.Value?.AsGuidOrNull() );
+
+                if ( signUpPerson != null )
+                {
+                    var existingMember = new GroupMemberService( RockContext )
+                        .Queryable()
+                        .Include( m => m.Person )
+                        .Include( m => m.Group )
+                        .FirstOrDefault( m => m.GroupId == entity.GroupId && m.PersonId == signUpPerson.Id );
+
+                    if ( existingMember != null )
+                    {
+                        // Discard the blank insert that TryGetEntityForEditAction added and edit the existing member.
+                        new GroupMemberService( RockContext ).Delete( entity );
+                        entity = existingMember;
+                    }
+                }
+            }
+
             // The archived-member check only applies when the person or role is changing.
             var previousPersonId = entity.PersonId;
             var previousRoleId = entity.GroupRoleId;
