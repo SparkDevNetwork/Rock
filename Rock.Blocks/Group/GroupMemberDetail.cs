@@ -699,11 +699,15 @@ namespace Rock.Blocks.Group
             var resolvedRequirementGuids = new HashSet<Guid>( authorizedResolutions.ManualGuids );
             resolvedRequirementGuids.UnionWith( authorizedResolutions.OverrideGuids );
 
+            // A manual requirement is only enforceable when its checkbox was sent to the client, otherwise WebForms behavior applies.
+            var areRequirementsHidden = GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBoolean();
+
             var unmetRequirementNames = entity.Group
                 .PersonMeetsGroupRequirements( RockContext, entity.PersonId, entity.GroupRoleId )
                 .Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
                     && s.GroupRequirement.MustMeetRequirementToAddMember
-                    && !resolvedRequirementGuids.Contains( s.GroupRequirement.Guid ) )
+                    && !resolvedRequirementGuids.Contains( s.GroupRequirement.Guid )
+                    && IsMustMeetRequirementEnforceable( s.GroupRequirement.GroupRequirementType, areRequirementsHidden ) )
                 .Select( s => s.GroupRequirement.GroupRequirementType.Name )
                 .ToList();
 
@@ -714,6 +718,27 @@ namespace Rock.Blocks.Group
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether an unmet must-meet requirement may block the save. Non-manual types
+        /// always block, as they did in WebForms. A manual type can only be satisfied through the
+        /// client-side checkbox, so it blocks only when that checkbox could have rendered: the
+        /// requirements are not hidden and the current person can view the requirement type.
+        /// Otherwise the manual type is skipped, matching the WebForms check that never enforced it.
+        /// </summary>
+        /// <param name="requirementType">The requirement type being evaluated.</param>
+        /// <param name="areRequirementsHidden">Whether the block hides the requirements section.</param>
+        /// <returns><c>true</c> if the unmet requirement should block the save.</returns>
+        private bool IsMustMeetRequirementEnforceable( GroupRequirementType requirementType, bool areRequirementsHidden )
+        {
+            if ( requirementType.RequirementCheckType != RequirementCheckType.Manual )
+            {
+                return true;
+            }
+
+            return !areRequirementsHidden
+                && requirementType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
         }
 
         /// <summary>
