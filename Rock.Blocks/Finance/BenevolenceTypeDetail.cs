@@ -479,6 +479,9 @@ namespace Rock.Blocks.Finance
                 entity.SaveAttributeValues( RockContext );
             } );
 
+            // Clear cached triggers since they may have changed.
+            BenevolenceWorkflowService.RemoveCachedTriggers();
+
             return ActionOk( this.GetParentPageUrl() );
         }
 
