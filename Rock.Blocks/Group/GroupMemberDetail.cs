@@ -133,18 +133,11 @@ namespace Rock.Blocks.Group
         Order = 11,
         Key = AttributeKey.ScheduleListFormat )]
 
-    [BooleanField(
-        "Include Group Name in Breadcrumb",
-        Description = "Whether the group's name is included in the breadcrumb trail ahead of the member's name.",
-        DefaultBooleanValue = true,
-        Order = 12,
-        Key = AttributeKey.IncludeGroupNameInBreadcrumb )]
-
     #endregion Block Attributes
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "443841E5-6D0E-4CF4-83D0-CE8083FF10EA" )]
-    [Rock.SystemGuid.BlockTypeGuid( "BB6FB9A3-4177-4702-BC8B-1B254137732F" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_DETAIL )]
     public class GroupMemberDetail : RockEntityDetailBlockType<GroupMember, GroupMemberBag>, IBreadCrumbBlock
     {
         #region Keys
@@ -179,7 +172,6 @@ namespace Rock.Blocks.Group
             public const string AllowSelectingFrom = "AllowSelectingFrom";
             public const string AllowedSMSNumbers = "AllowedSMSNumbers";
             public const string ScheduleListFormat = "ScheduleListFormat";
-            public const string IncludeGroupNameInBreadcrumb = "IncludeGroupNameInBreadcrumb";
         }
 
         #endregion Keys
@@ -1865,7 +1857,7 @@ namespace Rock.Blocks.Group
             var info = new GroupMemberService( RockContext ).GetSelect( key, gm => new
             {
                 gm.Id,
-                GroupName = gm.Group.Name,
+                gm.GroupId,
                 PersonName = gm.Person.NickName + " " + gm.Person.LastName
             } );
 
@@ -1874,31 +1866,20 @@ namespace Rock.Blocks.Group
                 return new BreadCrumbResult { BreadCrumbs = new List<IBreadCrumb>() };
             }
 
-            var breadCrumbs = new List<IBreadCrumb>();
-
-            // Sign-up mode is computed from the page reference since breadcrumbs
-            // can be built outside a normal block request.
-            var locationId = pageReference.GetPageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
-            var scheduleKey = pageReference.GetPageParameter( PageParameterKey.ScheduleId );
-            var scheduleId = scheduleKey.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( scheduleKey );
-            var isSignUpMode = locationId.ToIntSafe() > 0 && scheduleId.ToIntSafe() > 0;
-
-            // The group name crumb replaces the WebForms session-history hack (Locked Decision #2).
-            if ( !isSignUpMode && GetAttributeValue( AttributeKey.IncludeGroupNameInBreadcrumb ).AsBoolean( true ) )
-            {
-                breadCrumbs.Add( new BreadCrumbLink( info.GroupName ) );
-            }
-
             var pageParameters = new Dictionary<string, string>
             {
                 [PageParameterKey.GroupMemberId] = Rock.Utility.IdHasher.Instance.GetHash( info.Id )
             };
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
-            breadCrumbs.Add( new BreadCrumbLink( info.PersonName, breadCrumbPageRef ) );
+            var breadCrumb = new BreadCrumbLink( info.PersonName, breadCrumbPageRef );
 
             return new BreadCrumbResult
             {
-                BreadCrumbs = breadCrumbs
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb },
+                AdditionalParameters = new Dictionary<string, string>
+                {
+                    [PageParameterKey.GroupId] = Rock.Utility.IdHasher.Instance.GetHash( info.GroupId )
+                }
             };
         }
 
