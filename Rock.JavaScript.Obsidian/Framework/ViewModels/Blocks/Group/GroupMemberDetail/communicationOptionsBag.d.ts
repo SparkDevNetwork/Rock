@@ -80,16 +80,16 @@ export type CommunicationOptionsBag = {
     recipientPhotoUrl?: string | null;
 
     /**
-     * Gets or sets the recipient's formatted SMS-enabled phone number
-     * for the displaycard, or null when the person has none.
-     */
-    recipientSmsNumber?: string | null;
-
-    /**
      * Gets or sets the recipient's group role name for the
      * displaycard.
      */
     recipientRoleName?: string | null;
+
+    /**
+     * Gets or sets the recipient's formatted SMS-enabled phone number
+     * for the displaycard, or null when the person has none.
+     */
+    recipientSmsNumber?: string | null;
 
     /**
      * Gets or sets the from number options shown when multiple
