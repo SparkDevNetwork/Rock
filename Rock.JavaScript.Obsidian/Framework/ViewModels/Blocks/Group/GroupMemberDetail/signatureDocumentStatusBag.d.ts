@@ -51,4 +51,10 @@ export type SignatureDocumentStatusBag = {
      * warning alert.
      */
     message?: string | null;
+
+    /**
+     * Gets or sets the signature document template name, shown as the
+     * signed document uploader label.
+     */
+    templateName?: string | null;
 };

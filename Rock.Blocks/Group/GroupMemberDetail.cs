@@ -966,6 +966,7 @@ namespace Rock.Blocks.Group
 
             var statusBag = new SignatureDocumentStatusBag
             {
+                TemplateName = template.Name,
                 BinaryFileTypeGuid = template.BinaryFileType?.Guid
             };
 

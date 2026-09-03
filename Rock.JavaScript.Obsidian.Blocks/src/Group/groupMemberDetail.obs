@@ -101,9 +101,11 @@
                                 <RockButton :btnSize="BtnSize.Small" :disabled="isRefreshingRequirements" @click="onRefreshRequirements">
                                     <i class="ti ti-refresh" :class="{ 'ti-spin': isRefreshingRequirements }"></i> Refresh Requirements
                                 </RockButton>
-                                <span v-if="isRefreshSuccessShown" class="text-success ml-2">
-                                    <i class="ti ti-circle-check"></i> Successfully Refreshed
-                                </span>
+                                <Transition name="fade">
+                                    <span v-if="isRefreshSuccessShown" class="text-success ml-2">
+                                        <i class="ti ti-circle-check"></i> Successfully Refreshed
+                                    </span>
+                                </Transition>
                             </div>
 
                             <NotificationBox v-if="options.requirementCalculationErrors"
@@ -159,7 +161,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <RadioButtonList v-model="memberStatus"
-                                                 label="Member Status"
+                                                 :label="`${options.groupMemberTerm || 'Member'} Status`"
                                                  help="Whether this member is pending, active, or inactive in the group."
                                                  :items="options.statusItems ?? []"
                                                  :disabled="isFormDisabled" />
@@ -299,7 +301,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <FileUploader v-model="signedDocument"
-                                              label="Signed Document"
+                                              :label="options.signatureDocument.templateName ?? 'Signed Document'"
                                               :binaryFileTypeGuid="options.signatureDocument.binaryFileTypeGuid ?? ''"
                                               :disabled="isFormDisabled" />
                             </div>
@@ -348,6 +350,18 @@
                              :groupMemberIdKey="groupMemberIdKey"
                              @sent="onCommunicationSent" />
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, nextTick, ref, watch } from "vue";
@@ -439,6 +453,9 @@
 
     const isRefreshSuccessShown = ref(false);
     const isRefreshingRequirements = ref(false);
+
+    /** Hides the "Successfully Refreshed" message a few seconds after it appears. */
+    let refreshSuccessTimer: ReturnType<typeof setTimeout> | undefined;
 
     const isSendingSignatureRequest = ref(false);
 
@@ -657,8 +674,15 @@
     async function onRefreshRequirements(): Promise<void> {
         isRefreshSuccessShown.value = false;
 
+        if (refreshSuccessTimer) {
+            clearTimeout(refreshSuccessTimer);
+        }
+
         if (await refreshRequirements()) {
             isRefreshSuccessShown.value = true;
+            refreshSuccessTimer = setTimeout(() => {
+                isRefreshSuccessShown.value = false;
+            }, 3000);
         }
     }
 

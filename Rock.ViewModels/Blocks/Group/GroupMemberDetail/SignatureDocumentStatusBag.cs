@@ -32,6 +32,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public bool IsRequired { get; set; }
 
         /// <summary>
+        /// Gets or sets the signature document template name, shown as the
+        /// signed document uploader label.
+        /// </summary>
+        public string TemplateName { get; set; }
+
+        /// <summary>
         /// Gets or sets the unsigned-document status message shown in the
         /// warning alert.
         /// </summary>
