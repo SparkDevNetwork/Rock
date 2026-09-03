@@ -402,12 +402,25 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( privateConfigurationValues.GetValueOrDefault( ENABLE_ASSET_MANAGER, "" ).AsBoolean() )
-            {
-                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
-                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
-                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
-            }
+            /*
+                9/3/26 - NA
+
+                The Image Browser and File Browser toolbar buttons are always present in the
+                Obsidian HTML editor (they browse the local content root) and their tree/file
+                REST endpoints require this AssetAndFileManager grant. The "Enable Asset Manager"
+                setting only controls whether the separate Asset Storage Provider button appears
+                (handled client-side), so the grant must be added unconditionally. Previously it
+                was gated on ENABLE_ASSET_MANAGER, which left the always-visible browsers
+                unauthorized (empty, unusable popup) whenever that setting was off.
+
+                This also matches the legacy WebForms HtmlEditor control, where the Image and
+                File browsers were always available regardless of the asset manager setting.
+
+                Reason: Local Image/File browsers must work regardless of Enable Asset Manager (#7020).
+            */
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
         }
     }
 }
