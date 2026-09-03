@@ -9,6 +9,7 @@
             <GroupPicker v-model="selectedGroups"
                          label="Groups"
                          :multiple="true"
+                         :showSelectAll="true"
                          :includedGroupTypeGuids="checkinAreaGroupTypeGuids" />
 
             <small v-if="isAlwaysShowChildGroups">Child Groups Included</small>
