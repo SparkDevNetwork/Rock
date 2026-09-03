@@ -500,7 +500,7 @@ namespace Rock.Blocks.Finance
 
             if ( entity == null )
             {
-                error = ActionBadRequest( $"{BenevolenceRequest.FriendlyTypeName} not found." );
+                error = ActionBadRequest( $"The {BenevolenceRequest.FriendlyTypeName} was not found." );
                 return false;
             }
 
@@ -757,9 +757,9 @@ namespace Rock.Blocks.Finance
                         {
                             { "WorkflowTypeId", w.WorkflowTypeId.ToString() },
                             { "BenevolenceRequestId", entity.IdKey }
-                        }),
+                        } ),
                         iconCssClass = w.WorkflowType.IconCssClass,
-                    })
+                    } )
                     .ToList();
 
                 // Load in one pass so each result bag doesn't trigger its own attribute query.
@@ -1699,20 +1699,19 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Adds a new benevolence request result to the system.
+        /// Saves a benevolence result to the specified benevolence request.
         /// </summary>
-        /// <param name="benevolenceRequestIdKey">The key representing the benevolence request to which the result will be added. Must be a valid, non-null
-        /// key.</param>
-        /// <param name="benevolenceResultBag">The data bag containing the details of the benevolence result to be added. Cannot be null and must have a
+        /// <param name="benevolenceRequestIdKey">The key representing the benevolence request that owns the result. Must be a valid, non-null key.</param>
+        /// <param name="benevolenceResultBag">The data bag containing the details of the benevolence result to be saved. Cannot be null and must have a
         /// valid <see cref="BenevolenceResultBag.ResultTypeValueId"/>.</param>
-        /// <returns>A <see cref="BlockActionResult"/> indicating the success or failure of the operation. Returns an error if
-        /// the user is not authorized, if the <paramref name="benevolenceResultBag"/> is invalid, or if the <paramref
-        /// name="benevolenceRequestIdKey"/> is invalid.</returns>
+        /// <returns>A <see cref="BlockActionResult"/> containing the saved <see cref="BenevolenceResultBag"/>. Returns an error if
+        /// the user is not authorized, if the <paramref name="benevolenceResultBag"/> is invalid, or if the result being
+        /// updated does not belong to the request.</returns>
         [BlockAction]
-        public BlockActionResult AddBenevolenceRequestResult( string benevolenceRequestIdKey, BenevolenceResultBag benevolenceResultBag )
+        public BlockActionResult SaveBenevolenceRequestResult( string benevolenceRequestIdKey, BenevolenceResultBag benevolenceResultBag )
         {
             // Is the user authorized to edit this benevolence request?
-            if ( !TryGetEntityForEditAction( benevolenceRequestIdKey, out var entity, out var actionError ) )
+            if ( !TryGetEntityForEditAction( benevolenceRequestIdKey, out _, out var actionError ) )
             {
                 return actionError;
             }
@@ -1736,27 +1735,51 @@ namespace Rock.Blocks.Finance
             }
 
             var resultService = new BenevolenceResultService( RockContext );
+            BenevolenceResult result;
 
-            var newResult = new BenevolenceResult
+            if ( benevolenceResultBag.IdKey.IsNullOrWhiteSpace() )
             {
-                BenevolenceRequestId = benevolenceRequestId.Value,
-                ResultTypeValueId = benevolenceResultBag.ResultTypeValueId,
-                Amount = benevolenceResultBag.Amount,
-                ResultSummary = benevolenceResultBag.ResultSummary ?? string.Empty
-            };
+                result = new BenevolenceResult
+                {
+                    BenevolenceRequestId = benevolenceRequestId.Value
+                };
 
-            resultService.Add( newResult );
+                resultService.Add( result );
+            }
+            else
+            {
+                var notFoundMessage = $"The {BenevolenceResult.FriendlyTypeName} was not found.";
+
+                var benevolenceResultId = Rock.Utility.IdHasher.Instance.GetId( benevolenceResultBag.IdKey );
+                if ( !benevolenceResultId.HasValue || benevolenceResultId == 0 )
+                {
+                    return ActionBadRequest( notFoundMessage );
+                }
+
+                result = resultService.Queryable()
+                    .Where( r => r.BenevolenceRequestId == benevolenceRequestId )
+                    .FirstOrDefault( r => r.Id == benevolenceResultId );
+
+                if ( result == null )
+                {
+                    return ActionNotFound( notFoundMessage );
+                }
+            }
+
+            result.ResultTypeValueId = benevolenceResultBag.ResultTypeValueId;
+            result.Amount = benevolenceResultBag.Amount;
+            result.ResultSummary = benevolenceResultBag.ResultSummary ?? string.Empty;
 
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
 
-                newResult.LoadAttributes( RockContext );
-                newResult.SetPublicAttributeValues( benevolenceResultBag.AttributeValues ?? new Dictionary<string, string>(), RequestContext.CurrentPerson, enforceSecurity: true );
-                newResult.SaveAttributeValues( RockContext );
+                result.LoadAttributes( RockContext );
+                result.SetPublicAttributeValues( benevolenceResultBag.AttributeValues ?? new Dictionary<string, string>(), RequestContext.CurrentPerson, enforceSecurity: true );
+                result.SaveAttributeValues( RockContext );
             } );
 
-            return ActionOk( GetBenevolenceResultBag( newResult ) );
+            return ActionOk( GetBenevolenceResultBag( result ) );
         }
 
         /// <summary>
@@ -1823,7 +1846,7 @@ namespace Rock.Blocks.Finance
 
             if ( result == null )
             {
-                return ActionNotFound( $"BenevolenceResult with IdKey {benevolenceResultIdKey} not found for request {benevolenceRequestIdKey}." );
+                return ActionNotFound( $"The {BenevolenceResult.FriendlyTypeName} was not found." );
             }
 
             resultService.Delete( result );

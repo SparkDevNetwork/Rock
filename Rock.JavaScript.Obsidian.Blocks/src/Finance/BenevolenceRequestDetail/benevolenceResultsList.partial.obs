@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="addResultError || deleteResultError" alertType="danger">
-        <strong><i class="ti ti-exclamation-circle"></i> Result {{ addResultError ? 'Addition' : 'Deletion' }} Error </strong>
-        <span>{{ addResultError ? addResultError : deleteResultError }}</span>
+    <NotificationBox v-if="saveResultError || deleteResultError" alertType="danger">
+        <strong><i class="ti ti-exclamation-circle"></i> Result {{ saveResultError ? 'Save' : 'Deletion' }} Error </strong>
+        <span>{{ saveResultError ? saveResultError : deleteResultError }}</span>
     </NotificationBox>
     <div>
         <Grid
@@ -32,6 +32,8 @@
                         field="resultSummary"
                         visiblePriority="xs"
                         width="60%" />
+
+            <EditColumn @click="onEditResult" />
 
             <DeleteColumn @click="onResultDelete" />
         </Grid>
@@ -86,7 +88,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import Grid, { TextColumn, CurrencyColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, CurrencyColumn, DeleteColumn, EditColumn } from "@Obsidian/Controls/grid";
     import { BenevolenceRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestDetailOptionsBag";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -123,7 +125,7 @@
     const isSaving = ref(false);
     const isLoadingResult = ref(false);
 
-    const addResultError = ref("");
+    const saveResultError = ref("");
     const deleteResultError = ref("");
 
     const resultType = ref("");
@@ -132,6 +134,9 @@
     const resultDetails = ref("");
     const resultAttributes = ref<Record<string, PublicAttributeBag>>({});
     const resultAttributeValues = ref<Record<string, string>>({});
+
+    /** The key of the result being edited, or an empty string when adding a new result. */
+    const editingResultIdKey = ref("");
 
     const requestResults = propertyRef<BenevolenceResultBag[]>([...props.modelValue.results ?? []], "requestResults");
 
@@ -170,6 +175,7 @@
         resultType.value = "";
         resultAttributes.value = {};
         resultAttributeValues.value = {};
+        editingResultIdKey.value = "";
         isSaving.value = false;
     }
 
@@ -207,7 +213,7 @@
         }
 
         isLoadingResult.value = true;
-        addResultError.value = "";
+        saveResultError.value = "";
 
         // The result's attributes and their default values are only known to the server.
         const result = await invokeBlockAction<BenevolenceResultBag>(
@@ -218,12 +224,32 @@
         isLoadingResult.value = false;
 
         if (!result.isSuccess || !result.data) {
-            addResultError.value = result.errorMessage ?? "An unknown error occurred while trying to add a new result.";
+            saveResultError.value = result.errorMessage ?? "An unknown error occurred while trying to add a new result.";
             return;
         }
 
         resultAttributes.value = result.data.attributes ?? {};
         resultAttributeValues.value = result.data.attributeValues ?? {};
+        isResultModalOpen.value = true;
+    }
+
+    /**
+     * Handler for the grid's edit button click event.
+     * @param key The unique identifier of the result to edit.
+     */
+    function onEditResult(key: string): void {
+        const result = requestResults.value.find(result => result.idKey === key);
+
+        if (!result) {
+            return;
+        }
+
+        editingResultIdKey.value = key;
+        resultType.value = result.resultTypeValueId.toString();
+        resultAmount.value = result.amount?.toString() ?? "";
+        resultDetails.value = result.resultSummary ?? "";
+        resultAttributes.value = result.attributes ?? {};
+        resultAttributeValues.value = { ...result.attributeValues ?? {} };
         isResultModalOpen.value = true;
     }
 
@@ -235,7 +261,7 @@
     }
 
     /**
-     * Handler for Add Result Modal save event.
+     * Handler for the Result Modal save event.
      */
     async function onSaveResult(): Promise<void> {
         if (isSaving.value) {
@@ -244,7 +270,10 @@
 
         isSaving.value = true;
 
-        const newBag: BenevolenceResultBag = {
+        const isEditing = !!editingResultIdKey.value;
+
+        const resultBag: BenevolenceResultBag = {
+            idKey: editingResultIdKey.value,
             resultTypeValueId: parseInt(resultType.value),
             amount: parseFloat(resultAmount.value),
             resultSummary: resultDetails.value,
@@ -252,17 +281,22 @@
         };
 
         const result = await invokeBlockAction<BenevolenceResultBag>(
-            "AddBenevolenceRequestResult",
-            { benevolenceRequestIdKey: props.modelValue.idKey, benevolenceResultBag: newBag }
+            "SaveBenevolenceRequestResult",
+            { benevolenceRequestIdKey: props.modelValue.idKey, benevolenceResultBag: resultBag }
         );
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                requestResults.value.push(result.data);
+                if (isEditing) {
+                    requestResults.value = requestResults.value.map(existing => existing.idKey === editingResultIdKey.value ? result.data as BenevolenceResultBag : existing);
+                }
+                else {
+                    requestResults.value.push(result.data);
+                }
             }
         }
         else {
-            addResultError.value = result.errorMessage ?? "Unknown error while trying to save benevolence request.";
+            saveResultError.value = result.errorMessage ?? "Unknown error while trying to save benevolence request.";
         }
 
         closeAndClearResult();
