@@ -9,7 +9,7 @@
                :headerSecondaryActions="headerSecondaryActions">
 
             <template #headerActions>
-                <HighlightLabel v-if="options.hasArchivedRecord" labelType="danger">Archived</HighlightLabel>
+                <HighlightLabel v-if="options.isArchived" labelType="danger">Archived</HighlightLabel>
                 <HighlightLabel v-if="options.addedDateText" labelType="default">{{ options.addedDateText }}</HighlightLabel>
                 <button v-if="options.isCommunicationButtonShown"
                         type="button"
@@ -107,9 +107,11 @@
                             </div>
 
                             <NotificationBox v-if="options.requirementCalculationErrors"
-                                             alertType="danger"
-                                             :details="options.requirementCalculationErrors">
+                                             alertType="danger">
                                 An error occurred in one or more of the requirement calculations.
+                                <template #details>
+                                    <span style="white-space: pre-line;">{{ options.requirementCalculationErrors }}</span>
+                                </template>
                             </NotificationBox>
 
                             <div v-if="requirementAlerts.length" class="row d-flex flex-wrap">
@@ -962,26 +964,24 @@
     }
 
     /**
-     * Applies a recalculated requirement and archived state to the options.
+     * Applies a recalculated requirement state to the options.
      * Fresh alerts supersede any unsaved checkbox toggles, so those reset.
      */
     function applyRequirementState(state: RefreshRequirementsResponseBag): void {
         options.value.requirementAlerts = state.requirementAlerts ?? [];
         options.value.requirementCalculationErrors = state.calculationErrors;
         options.value.isRequirementInteractionDisabled = state.isRequirementInteractionDisabled;
-        options.value.hasArchivedRecord = state.hasArchivedRecord;
         clearRequirementResolutions();
     }
 
     /**
-     * Clears the requirement and archived state, so nothing calculated for a
-     * previous person or role is left on screen.
+     * Clears the requirement state, so nothing calculated for a previous
+     * person or role is left on screen.
      */
     function clearRequirementState(): void {
         options.value.requirementAlerts = [];
         options.value.requirementCalculationErrors = null;
         options.value.isRequirementInteractionDisabled = true;
-        options.value.hasArchivedRecord = false;
         clearRequirementResolutions();
     }
 

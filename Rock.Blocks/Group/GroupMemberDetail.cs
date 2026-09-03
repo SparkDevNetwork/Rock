@@ -396,7 +396,7 @@ namespace Rock.Blocks.Group
                 GroupMemberTerm = groupType.GroupMemberTerm,
                 GroupIconCssClass = groupType.IconCssClass.IsNotNullOrWhiteSpace() ? groupType.IconCssClass : "ti ti-user",
                 AddedDateText = entity.DateTimeAdded.HasValue ? $"Added: {entity.DateTimeAdded.Value.ToShortDateString()}" : string.Empty,
-                HasArchivedRecord = HasArchivedRecord( entity ),
+                IsArchived = entity.IsArchived,
                 IsSaveThenAddShown = isNewMember && !isReadOnly,
                 IsMoveButtonShown = !isNewMember && !isReadOnly && GetAttributeValue( AttributeKey.ShowMoveToOtherGroup ).AsBoolean( true ),
                 IsCommunicationButtonShown = !isNewMember && GetAttributeValue( AttributeKey.EnableCommunications ).AsBoolean( true ),
@@ -1429,51 +1429,6 @@ namespace Rock.Blocks.Group
                 PersonId = person.Id,
                 Person = person
             };
-        }
-
-        /// <summary>
-        /// Determines whether saving would raise the archived-member restore
-        /// prompt, which is what the Archived header label indicates. Mirrors
-        /// the conditions in <see cref="Save"/> so the label never promises a
-        /// prompt that will not appear.
-        /// </summary>
-        /// <param name="entity">The group member being viewed or edited, with any pending person or role change already applied.</param>
-        /// <returns><c>true</c> if the restore prompt would be raised.</returns>
-        private bool HasArchivedRecord( GroupMember entity )
-        {
-            if ( entity.Group == null || entity.PersonId == 0 || entity.GroupRoleId == 0 )
-            {
-                return false;
-            }
-
-            var groupService = new GroupService( RockContext );
-
-            // Checked first because it is the most selective, short-circuiting the rest.
-            if ( !groupService.ExistsAsArchived( entity.Group, entity.PersonId, entity.GroupRoleId, out _ ) )
-            {
-                return false;
-            }
-
-            // An active duplicate takes precedence; the save reports that instead of prompting.
-            if ( !GroupService.AllowsDuplicateMembers()
-                && groupService.ExistsAsMember( entity.Group, entity.PersonId, entity.GroupRoleId, out _ ) )
-            {
-                return false;
-            }
-
-            if ( entity.Id == 0 )
-            {
-                return true;
-            }
-
-            var savedMember = new GroupMemberService( RockContext ).AsNoFilter()
-                .Where( m => m.Id == entity.Id )
-                .Select( m => new { m.PersonId, m.GroupRoleId } )
-                .FirstOrDefault();
-
-            return savedMember == null
-                || savedMember.PersonId != entity.PersonId
-                || savedMember.GroupRoleId != entity.GroupRoleId;
         }
 
         /// <summary>
@@ -2938,7 +2893,6 @@ namespace Rock.Blocks.Group
                 RequirementAlerts = alerts,
                 CalculationErrors = calculationErrors,
                 IsRequirementInteractionDisabled = entity.Id == 0,
-                HasArchivedRecord = HasArchivedRecord( entity ),
                 SignedDocument = signedDocument
             } );
         }

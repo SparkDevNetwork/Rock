@@ -113,13 +113,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public string AddedDateText { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether saving would raise the
-        /// archived-member restore prompt: an archived record exists for the
-        /// selected person and role, no active record does, and the person or
-        /// role is new or changed. Drives the red Archived header label, and
-        /// is recalculated whenever the person or the role changes.
+        /// Gets or sets a value indicating whether the group member being
+        /// viewed is itself archived. Drives the red Archived header label.
         /// </summary>
-        public bool HasArchivedRecord { get; set; }
+        public bool IsArchived { get; set; }
 
         /// <summary>
         /// Gets or sets the message explaining why the form is read-only.

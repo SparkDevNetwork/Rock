@@ -46,14 +46,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public bool IsRequirementInteractionDisabled { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether saving would raise the
-        /// archived-member restore prompt, which drives the Archived header
-        /// label. Rides along because the same person and role changes that
-        /// recalculate requirements also change this.
-        /// </summary>
-        public bool HasArchivedRecord { get; set; }
-
-        /// <summary>
         /// Gets or sets the selected person's latest signed document file for
         /// the group's required signature document template. A signed
         /// document belongs to the person and template rather than the
