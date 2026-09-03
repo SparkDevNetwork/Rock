@@ -1,6 +1,6 @@
 ---
 title: Kiosk Configuration
-last_updated: 2026-06-03
+last_updated: 2026-09-03
 related_specs:
   - specs/completed/check-in/260506-check-in-areas-and-groups-obsidian-conversion.md
 related_files:
@@ -54,6 +54,8 @@ A kiosk references one CheckinType (the policy) and has its own runtime state (w
 **Default Record Source applies to in-flow Person creation.** Configurable default per CheckinType. Tags new Persons created during check-in with the appropriate Record Source DefinedValue.
 
 **Printer configuration is per-`KioskDevice`.** The printer routing (which printer for which label type) lives on the device row. Multiple kiosks can target the same printer; the cloud-print path serializes to prevent interleaving.
+
+**Some next-gen kiosk behaviors are per-Device attributes.** Settings like adding/editing families and `Skip Screen Behavior` are entity attributes on the kiosk Device (qualified to the Check-in Kiosk device type), read via `DeviceCache.GetAttributeValue` and carried to the client on the kiosk bag. `Skip Screen Behavior` controls when the area "skip" screen is shown; see [docs/check-in/skip-screen-behavior.md](skip-screen-behavior.md).
 
 **`KioskDevice.Location` defines the kiosk's physical location.** Used for proximity-based features and reporting on kiosk usage.
 
@@ -162,6 +164,7 @@ Rejected. Schedule selection varies per service; configuration must be data-driv
 - [docs/check-in/check-in-overview.md](check-in-overview.md)
 - [docs/check-in/v2-vs-legacy.md](v2-vs-legacy.md)
 - [docs/check-in/opportunity-filters.md](opportunity-filters.md)
+- [docs/check-in/skip-screen-behavior.md](skip-screen-behavior.md)
 - [docs/check-in/label-designer-and-printing.md](label-designer-and-printing.md)
 
 ## Recent Impactful Changes

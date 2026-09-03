@@ -46,5 +46,12 @@ namespace Rock.SystemKey
         /// regardless of the Allow Editing Families setting.
         /// </summary>
         public const string DEVICE_KIOSK_ALLOW_ADDING_INDIVIDUALS_TO_EXISTING_FAMILIES = "core_device_KioskAllowAddingIndividualsToExistingFamilies";
+
+        /// <summary>
+        /// Determines when the check-in "skip" screen is shown on the kiosk when
+        /// there is no valid opportunity for an attendee. Maps to the
+        /// <see cref="Rock.Enums.CheckIn.SkipScreenBehavior"/> enum.
+        /// </summary>
+        public const string DEVICE_KIOSK_SKIP_SCREEN_BEHAVIOR = "core_device_KioskSkipScreenBehavior";
     }
 }
