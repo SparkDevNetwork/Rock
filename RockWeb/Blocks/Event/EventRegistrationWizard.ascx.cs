@@ -384,6 +384,8 @@ namespace RockWeb.Blocks.Event
             {
                 pnlCosts.Visible = true;
                 pnlDefaultPayment.Visible = true;
+                apAccount.Visible = true;
+                apAccount.Required = true;
                 return;
             }
 
@@ -394,6 +396,12 @@ namespace RockWeb.Blocks.Event
                 SaveSelectedTemplate( registrationTemplate );
                 pnlCosts.Visible = registrationTemplate.SetCostOnInstance ?? false;
                 pnlDefaultPayment.Visible = registrationTemplate.SetCostOnInstance ?? false;
+
+                // Only show/require the Account when the template has a Financial Gateway,
+                // since without a gateway no payment can be collected.
+                var templateHasFinancialGateway = registrationTemplate.FinancialGatewayId.HasValue;
+                apAccount.Visible = templateHasFinancialGateway;
+                apAccount.Required = templateHasFinancialGateway;
                 if ( !registrationTemplate.GroupTypeId.HasValue )
                 {
                     tbGroupName.Text = string.Empty;
