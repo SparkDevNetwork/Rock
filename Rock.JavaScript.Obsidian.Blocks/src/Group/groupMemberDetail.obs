@@ -322,7 +322,7 @@
             </ContentSectionContainer>
 
             <template #footerActions>
-                <RockButton :btnType="BtnType.Primary" :disabled="isSaving || isPersonDataLoading" @click="onStartSubmitForm">Save</RockButton>
+                <RockButton v-if="isEditable" :btnType="BtnType.Primary" :disabled="isSaving || isPersonDataLoading" @click="onStartSubmitForm">Save</RockButton>
                 <RockButton v-if="options.isSaveThenAddShown" :btnType="BtnType.Link" :disabled="isSaving || isPersonDataLoading" @click="onSaveThenAdd">Save Then Add</RockButton>
                 <RockButton :btnType="BtnType.Link" @click="onCancel">Cancel</RockButton>
             </template>

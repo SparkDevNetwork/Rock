@@ -762,6 +762,9 @@ namespace Rock.Blocks.Group
                 return ( manualGuids, overrideGuids );
             }
 
+            // The leader status is constant across the loop, so query it at most once.
+            var isCurrentPersonLeader = IsCurrentPersonLeaderOfGroup( entity.GroupId );
+
             foreach ( var groupRequirement in entity.Group.GetGroupRequirements( RockContext ) )
             {
                 if ( requestedManualGuids.Contains( groupRequirement.Guid )
@@ -771,7 +774,7 @@ namespace Rock.Blocks.Group
                 }
 
                 if ( requestedOverrideGuids.Contains( groupRequirement.Guid )
-                    && ( ( groupRequirement.AllowLeadersToOverride && IsCurrentPersonLeaderOfGroup( entity.GroupId ) )
+                    && ( ( groupRequirement.AllowLeadersToOverride && isCurrentPersonLeader.Value )
                         || groupRequirement.GroupRequirementType.IsAuthorized( Authorization.OVERRIDE, RequestContext.CurrentPerson ) ) )
                 {
                     overrideGuids.Add( groupRequirement.Guid );
@@ -1927,7 +1930,7 @@ namespace Rock.Blocks.Group
                 {
                     IsRestorePromptShown = true,
                     // The message renders as HTML on the client, so the data-driven parts are encoded.
-                    RestorePromptMessage = $"{entity.Person.FullName.EncodeHtml()} has an archived record as a {role.Name.EncodeHtml()} in this group.",
+                    RestorePromptMessage = $"{entity.Person.FullName} has an archived record as a {role.Name} in this group.",
                     ArchivedGroupMemberIdKey = archivedGroupMember.IdKey
                 } );
             }
