@@ -767,7 +767,7 @@ namespace Rock.Blocks.Group
                 }
 
                 if ( requestedOverrideGuids.Contains( groupRequirement.Guid )
-                    && ( ( groupRequirement.AllowLeadersToOverride && isCurrentPersonLeader.Value )
+                    && ( ( groupRequirement.AllowLeadersToOverride && isCurrentPersonLeader )
                         || groupRequirement.GroupRequirementType.IsAuthorized( Authorization.OVERRIDE, RequestContext.CurrentPerson ) ) )
                 {
                     overrideGuids.Add( groupRequirement.Guid );
@@ -1397,14 +1397,24 @@ namespace Rock.Blocks.Group
         {
             if ( groupMemberIdKey.IsNotNullOrWhiteSpace() )
             {
-                var existing = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+                var groupMemberService = new GroupMemberService( RockContext );
+                var existingId = groupMemberService.Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds )?.Id;
 
-                if ( existing != null )
+                if ( existingId.HasValue )
                 {
-                    // Match the in-memory role to the selection so the statuses reflect the pending change.
-                    existing.GroupRoleId = selectedRoleId;
+                    var existing = groupMemberService.Queryable()
+                        .AsNoTracking()
+                        .Include( m => m.Group )
+                        .Include( m => m.Person )
+                        .FirstOrDefault( m => m.Id == existingId.Value );
 
-                    return existing;
+                    if ( existing != null )
+                    {
+                        // Match the in-memory role to the selection so the statuses reflect the pending change.
+                        existing.GroupRoleId = selectedRoleId;
+
+                        return existing;
+                    }
                 }
             }
 

@@ -568,7 +568,10 @@
     const assignmentGridData = computed((): GridDataBag => ({
         rows: [...scheduleAssignments.value]
             .sort((a, b) => (a.scheduleOrder - b.scheduleOrder)
-                || (a.scheduleNextStartDateTime ?? "").localeCompare(b.scheduleNextStartDateTime ?? ""))
+                || (a.scheduleNextStartDateTime ?? "").localeCompare(b.scheduleNextStartDateTime ?? "")
+                || (a.formattedScheduleName ?? "").localeCompare(b.formattedScheduleName ?? "")
+                || (a.scheduleId - b.scheduleId)
+                || (a.locationName ?? "").localeCompare(b.locationName ?? ""))
             .map(a => ({
                 guid: a.guid,
                 schedule: a.formattedScheduleName,
