@@ -453,8 +453,10 @@ namespace Rock.Lava
                 var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
                 // Get all GroupMember records tied to this Person and the Family GroupType. Note that a given Person can belong to multiple families.
+                // Include deceased members so that a deceased person's family address still resolves; the query below targets this person's own
+                // family membership, which is filtered out by the default (IsDeceased == false) query when the person is deceased.
                 var groupMemberQuery = new GroupMemberService( LavaHelper.GetRockContextFromLavaContext( context ) )
-                    .Queryable( "GroupLocations.Location" )
+                    .Queryable( "GroupLocations.Location", true )
                     .AsNoTracking()
                     .Where( m => m.PersonId == person.Id &&
                                  m.Group.GroupTypeId == familyGroupTypeId );
