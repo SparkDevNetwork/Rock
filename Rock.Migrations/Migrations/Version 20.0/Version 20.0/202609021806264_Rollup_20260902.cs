@@ -290,9 +290,22 @@ BEGIN
     WHERE [CommunicationPageId] = @LegacyPageId;
 END
 " );
+            /*
+                9/3/2026 - NA
 
+                Commenting out the legacy page delete for now. RockMigrationHelper.DeletePage
+                only removes PageView rows and the Page itself; Block/PageRoute/PageContext
+                cascade automatically, but the Page.ParentPageId self-reference
+                (FK_dbo.Page_dbo.Page_ParentPageId) does NOT cascade. This page still has at
+                least one child page (routes, TBD, etc), so the delete throws a FK conflict 
+                and terminates the migration. Any Site.*PageId pointers to it would block it 
+                as well. Leaving the page in place until we can analyze and safely remove any
+                related items.
+
+                Reason: DeletePage does not handle child pages, etc.
+            */
             // Delete the legacy page. Its blocks cascade; PageView rows are removed by the helper.
-            RockMigrationHelper.DeletePage( LegacyNewCommunicationPageGuid );
+            //RockMigrationHelper.DeletePage( LegacyNewCommunicationPageGuid );
         }
 
         #region NA: Add 2025 Apple Device Models and normalize existing PersonalDevice models
