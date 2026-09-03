@@ -33,6 +33,9 @@
                         visiblePriority="xs"
                         width="60%" />
 
+            <AttributeColumns :attributes="options.resultAttributeFields ?? []"
+                              visiblePriority="md" />
+
             <EditColumn @click="onEditResult" />
 
             <DeleteColumn @click="onResultDelete" />
@@ -88,7 +91,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import Grid, { TextColumn, CurrencyColumn, DeleteColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, CurrencyColumn, DeleteColumn, EditColumn } from "@Obsidian/Controls/grid";
     import { BenevolenceRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestDetailOptionsBag";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -149,6 +152,7 @@
     /** Keep gridData in sync with requestResults */
     const gridData = computed((): GridDataBag => {
         const results: (Record<string, unknown> & { isSystem: boolean })[] = (requestResults.value ?? []).map(result => ({
+            ...result.attributeDisplayValues,
             idKey: result.idKey,
             resultTypeValueId: props.options.resultTypeValues?.find(type => type.value === result.resultTypeValueId.toString())?.text,
             amount: (result.amount !== null && result.amount !== undefined && !isNaN(result.amount)) ? result.amount : "",

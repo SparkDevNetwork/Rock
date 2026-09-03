@@ -31,6 +31,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -133,6 +134,8 @@ namespace Rock.Blocks.Finance
         Guid _cellPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
         Guid _workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
 
+        private List<AttributeCache> _resultGridAttributes;
+
         #endregion Fields
 
         #region Properties
@@ -145,6 +148,28 @@ namespace Rock.Blocks.Finance
         private BenevolenceTypeService BenevolenceTypeService => new BenevolenceTypeService( RockContext );
         private BinaryFileService BinaryFileService => new BinaryFileService( RockContext );
         private BenevolenceRequestDocumentService BenevolenceRequestDocumentService => new BenevolenceRequestDocumentService( RockContext );
+
+        /// <summary>
+        /// Gets the Benevolence Result attributes marked "Show in Grid" that the current individual is allowed to
+        /// view, in the order they should appear as columns on the results grid.
+        /// </summary>
+        private List<AttributeCache> ResultGridAttributes
+        {
+            get
+            {
+                if ( _resultGridAttributes == null )
+                {
+                    var entityTypeId = EntityTypeCache.Get<BenevolenceResult>( false )?.Id;
+
+                    _resultGridAttributes = AttributeCache
+                        .GetOrderedGridAttributes( entityTypeId, string.Empty, string.Empty )
+                        .Where( attribute => attribute.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                        .ToList();
+                }
+
+                return _resultGridAttributes;
+            }
+        }
 
         #endregion Properties
 
@@ -353,6 +378,8 @@ namespace Rock.Blocks.Finance
                 : new List<ListItemBag>();
 
             options.BenevolenceDocumentBinaryFileTypeGuid = SystemGuid.BinaryFiletype.BENEVOLENCE_REQUEST_DOCUMENTS.AsGuid();
+
+            options.ResultAttributeFields = GetResultAttributeFields();
 
             return options;
         }
@@ -829,7 +856,62 @@ namespace Rock.Blocks.Finance
             // Results are only ever surfaced through the add/edit modal, so the editable set is what the client needs.
             bag.LoadAttributesAndValuesForPublicEdit( result, RequestContext.CurrentPerson, enforceSecurity: true );
 
+            bag.AttributeDisplayValues = GetResultAttributeDisplayValues( result );
+
             return bag;
+        }
+
+        /// <summary>
+        /// Builds the attribute column definitions for the results grid, using the <c>attr_{key}</c> naming
+        /// convention expected by the grid attribute column renderer.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeFieldDefinitionBag"/> items, one per grid attribute.</returns>
+        private List<AttributeFieldDefinitionBag> GetResultAttributeFields()
+        {
+            var textFieldTypeGuid = SystemGuid.FieldType.TEXT.AsGuid();
+
+            return ResultGridAttributes
+                .Select( attribute => new AttributeFieldDefinitionBag
+                {
+                    Name = $"attr_{attribute.Key}",
+                    Title = attribute.Name,
+                    FieldTypeGuid = attribute.FieldType?.Guid ?? textFieldTypeGuid
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Builds the condensed display values for a single result's grid attributes, keyed by <c>attr_{key}</c>.
+        /// </summary>
+        /// <param name="result">The result whose attributes have already been loaded.</param>
+        /// <returns>A dictionary whose values each carry an <c>Html</c> and a <c>Text</c> representation.</returns>
+        private Dictionary<string, object> GetResultAttributeDisplayValues( BenevolenceResult result )
+        {
+            var booleanFieldTypeGuid = SystemGuid.FieldType.BOOLEAN.AsGuid();
+            var displayValues = new Dictionary<string, object>();
+
+            foreach ( var attribute in ResultGridAttributes )
+            {
+                var field = attribute.FieldType?.Field;
+                var rawValue = result.GetAttributeValue( attribute.Key );
+
+                var htmlValue = field?.GetCondensedHtmlValue( rawValue, attribute.ConfigurationValues ) ?? string.Empty;
+
+                if ( attribute.FieldType?.Guid == booleanFieldTypeGuid )
+                {
+                    htmlValue = htmlValue == "Y"
+                        ? "<i class=\"ti ti-check\"></i>"
+                        : string.Empty;
+                }
+
+                displayValues[$"attr_{attribute.Key}"] = new
+                {
+                    Html = htmlValue,
+                    Text = field?.GetCondensedTextValue( rawValue, attribute.ConfigurationValues ) ?? string.Empty
+                };
+            }
+
+            return displayValues;
         }
 
         /// <inheritdoc/>
