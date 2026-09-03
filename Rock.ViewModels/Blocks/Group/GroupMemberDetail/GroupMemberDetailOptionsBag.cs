@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
@@ -201,22 +200,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public bool AreRequirementsHidden { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether each requirement type's
-        /// summary text is hidden.
-        /// </summary>
-        public bool IsRequirementSummaryHidden { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether requirement interaction
         /// (override, mark as met) is disabled.
         /// </summary>
         public bool IsRequirementInteractionDisabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Workflow Entry linked page attribute value used
-        /// to launch requirement workflows.
-        /// </summary>
-        public string WorkflowEntryPageValue { get; set; }
 
         /// <summary>
         /// Gets or sets the requirement calculation error details, one
@@ -224,30 +211,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         /// succeeded.
         /// </summary>
         public string RequirementCalculationErrors { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group's unique identifier, used by requirement
-        /// REST endpoints.
-        /// </summary>
-        public Guid? GroupGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group role's unique identifier, used by
-        /// requirement REST endpoints.
-        /// </summary>
-        public Guid? GroupRoleGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group member's unique identifier, used by
-        /// requirement REST endpoints. Null while adding.
-        /// </summary>
-        public Guid? GroupMemberGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person's unique identifier, used by requirement
-        /// REST endpoints.
-        /// </summary>
-        public Guid? PersonGuid { get; set; }
 
         #endregion Requirements
 

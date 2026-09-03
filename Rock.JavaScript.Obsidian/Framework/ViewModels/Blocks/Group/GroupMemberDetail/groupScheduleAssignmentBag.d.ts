@@ -56,9 +56,6 @@ export type GroupScheduleAssignmentBag = {
     /** Gets or sets the schedule identifier. */
     scheduleId: number;
 
-    /** Gets or sets the schedule's name. */
-    scheduleName?: string | null;
-
     /**
      * Gets or sets the schedule's next start date and time, used as
      * the secondary client-side sort.

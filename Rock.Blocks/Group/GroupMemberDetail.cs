@@ -439,8 +439,6 @@ namespace Rock.Blocks.Group
             var group = entity.Group;
 
             options.AreRequirementsHidden = GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBoolean();
-            options.IsRequirementSummaryHidden = GetAttributeValue( AttributeKey.IsSummaryHidden ).AsBoolean();
-            options.WorkflowEntryPageValue = GetAttributeValue( AttributeKey.WorkflowEntryPage );
             options.HasGroupRequirements = group.GetGroupRequirements( RockContext ).Any();
             options.RequirementAlerts = new List<GroupMemberRequirementAlertBag>();
 
@@ -448,11 +446,6 @@ namespace Rock.Blocks.Group
             {
                 return;
             }
-
-            options.GroupGuid = group.Guid;
-            options.GroupRoleGuid = groupType.Roles.FirstOrDefault( r => r.Id == entity.GroupRoleId )?.Guid;
-            options.GroupMemberGuid = entity.Id != 0 ? entity.Guid : ( Guid? ) null;
-            options.PersonGuid = entity.Person?.Guid;
 
             // Workflow links write immediately, so they are only offered on a saved member; a pending role change does not disable them (WebForms parity).
             options.IsRequirementInteractionDisabled = entity.Id == 0;
@@ -1359,7 +1352,6 @@ namespace Rock.Blocks.Group
                     Guid = a.Guid,
                     ScheduleId = a.ScheduleId.Value,
                     LocationId = a.LocationId,
-                    ScheduleName = a.Schedule.Name,
                     FormattedScheduleName = GetFormattedScheduleForListing( a.Schedule.Name, a.Schedule.StartTimeOfDay ),
                     LocationName = a.LocationId.HasValue ? a.Location.ToString( true ) : NoLocationPreference,
                     ScheduleOrder = a.Schedule.Order,
@@ -2496,11 +2488,6 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
             }
 
-            if ( !IsAuthorizedToEdit( entity.Group ) )
-            {
-                return ActionBadRequest( "Not authorized to communicate with this group member." );
-            }
-
             var groupType = GroupTypeCache.Get( entity.Group.GroupTypeId );
             var canMemberReceiveEmail = entity.Person.IsEmailActive && entity.Person.CanReceiveEmail();
 
@@ -2669,11 +2656,6 @@ namespace Rock.Blocks.Group
             if ( entity == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
-            }
-
-            if ( !IsAuthorizedToEdit( entity.Group ) )
-            {
-                return ActionBadRequest( "Not authorized to communicate with this group member." );
             }
 
             return bag.IsSms
@@ -3102,7 +3084,6 @@ namespace Rock.Blocks.Group
                     .Select( s => new GroupScheduleAssignmentBag
                     {
                         ScheduleId = s.Id,
-                        ScheduleName = s.Name,
                         FormattedScheduleName = GetFormattedScheduleForListing( s.Name, s.StartTimeOfDay ),
                         ScheduleOrder = s.Order,
                         ScheduleNextStartDateTime = s.GetNextStartDateTime( occurrenceDate )?.ToRockDateTimeOffset()

@@ -41,10 +41,4 @@ export type SaveGroupMemberResponseBag = {
 
     /** Gets or sets the restore prompt message text. */
     restorePromptMessage?: string | null;
-
-    /**
-     * Gets or sets the validation error message, including the unmet
-     * requirement summary. Null when the save succeeded.
-     */
-    validationError?: string | null;
 };

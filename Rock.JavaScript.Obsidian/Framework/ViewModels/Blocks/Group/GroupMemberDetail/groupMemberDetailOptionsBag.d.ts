@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { GroupMemberRequirementAlertBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberRequirementAlertBag";
 import { SignatureDocumentStatusBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/signatureDocumentStatusBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -57,44 +56,26 @@ export type GroupMemberDetailOptionsBag = {
     /** Gets or sets the message explaining why the form is read-only. */
     editModeMessage?: string | null;
 
-    /**
-     * Gets or sets the group's unique identifier, used by requirement
-     * REST endpoints.
-     */
-    groupGuid?: Guid | null;
-
     /** Gets or sets the icon CSS class from the group's group type. */
     groupIconCssClass?: string | null;
-
-    /**
-     * Gets or sets the group member's unique identifier, used by
-     * requirement REST endpoints. Null while adding.
-     */
-    groupMemberGuid?: Guid | null;
 
     /** Gets or sets the group type's term for a member (e.g. "Member"). */
     groupMemberTerm?: string | null;
 
-    /**
-     * Gets or sets the group role's unique identifier, used by
-     * requirement REST endpoints.
-     */
-    groupRoleGuid?: Guid | null;
-
     /** Gets or sets the group type's term for the group (e.g. "Group"). */
     groupTerm?: string | null;
-
-    /**
-     * Gets or sets a value indicating whether the group member being
-     * viewed is itself archived. Drives the red Archived header label.
-     */
-    isArchived: boolean;
 
     /**
      * Gets or sets a value indicating whether the group has any
      * requirements configured.
      */
     hasGroupRequirements: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the group member being
+     * viewed is itself archived. Drives the red Archived header label.
+     */
+    isArchived: boolean;
 
     /**
      * Gets or sets a value indicating whether the Communicate header
@@ -119,12 +100,6 @@ export type GroupMemberDetailOptionsBag = {
      * (override, mark as met) is disabled.
      */
     isRequirementInteractionDisabled: boolean;
-
-    /**
-     * Gets or sets a value indicating whether each requirement type's
-     * summary text is hidden.
-     */
-    isRequirementSummaryHidden: boolean;
 
     /**
      * Gets or sets a value indicating whether the role selection is
@@ -156,12 +131,6 @@ export type GroupMemberDetailOptionsBag = {
      * the registration name, value is the registration page URL.
      */
     linkedRegistrations?: ListItemBag[] | null;
-
-    /**
-     * Gets or sets the person's unique identifier, used by requirement
-     * REST endpoints.
-     */
-    personGuid?: Guid | null;
 
     /**
      * Gets or sets the member's person IdKey, used by the avatar's
@@ -235,10 +204,4 @@ export type GroupMemberDetailOptionsBag = {
 
     /** Gets or sets the formatted values for the viewable attributes. */
     viewableAttributeValues?: Record<string, string> | null;
-
-    /**
-     * Gets or sets the Workflow Entry linked page attribute value used
-     * to launch requirement workflows.
-     */
-    workflowEntryPageValue?: string | null;
 };

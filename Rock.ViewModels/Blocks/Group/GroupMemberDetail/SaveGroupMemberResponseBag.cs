@@ -28,12 +28,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public string NavigationUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the validation error message, including the unmet
-        /// requirement summary. Null when the save succeeded.
-        /// </summary>
-        public string ValidationError { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether an archived record was
         /// found for the same person and role, so the restore prompt should
         /// be shown instead of saving.

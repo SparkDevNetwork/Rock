@@ -44,11 +44,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule's name.
-        /// </summary>
-        public string ScheduleName { get; set; }
-
-        /// <summary>
         /// Gets or sets the schedule display text formatted per the
         /// Schedule List Format block setting.
         /// </summary>
