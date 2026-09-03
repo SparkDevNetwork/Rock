@@ -144,11 +144,11 @@
                                                                 :modelValue="isOverrideChecked(requirementAlert)"
                                                                 @update:modelValue="onToggleOverrideRequirement(requirementAlert, $event)" />
                                                 <template v-if="areWorkflowLinksShown(requirementAlert)">
-                                                    <a v-if="requirementAlert.doesNotMeetWorkflowLinkText" href="#" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, false)">
-                                                        <i class="ti ti-player-play"></i> {{ requirementAlert.doesNotMeetWorkflowLinkText }}
+                                                    <a v-if="requirementAlert.doesNotMeetWorkflowLinkText" href="#" :class="{ disabled: isLaunchingWorkflow(requirementAlert, false) }" :aria-disabled="isLaunchingWorkflow(requirementAlert, false)" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, false)">
+                                                        <i class="ti" :class="isLaunchingWorkflow(requirementAlert, false) ? 'ti-refresh ti-spin' : 'ti-player-play'"></i> {{ requirementAlert.doesNotMeetWorkflowLinkText }}
                                                     </a>
-                                                    <a v-if="requirementAlert.warningWorkflowLinkText" href="#" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, true)">
-                                                        <i class="ti ti-player-play"></i> {{ requirementAlert.warningWorkflowLinkText }}
+                                                    <a v-if="requirementAlert.warningWorkflowLinkText" href="#" :class="{ disabled: isLaunchingWorkflow(requirementAlert, true) }" :aria-disabled="isLaunchingWorkflow(requirementAlert, true)" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, true)">
+                                                        <i class="ti" :class="isLaunchingWorkflow(requirementAlert, true) ? 'ti-refresh ti-spin' : 'ti-player-play'"></i> {{ requirementAlert.warningWorkflowLinkText }}
                                                     </a>
                                                 </template>
                                             </div>
@@ -361,6 +361,12 @@
 .fade-leave-to {
     opacity: 0;
 }
+
+a.disabled {
+    pointer-events: none;
+    opacity: 0.65;
+    cursor: default;
+}
 </style>
 
 <script setup lang="ts">
@@ -397,7 +403,7 @@
     import { GroupMemberStatus } from "@Obsidian/Enums/Group/groupMemberStatus";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
-    import { useConfigurationValues, useInvokeBlockAction, setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { alert as showAlert } from "@Obsidian/Utility/dialogs";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
@@ -426,6 +432,7 @@
 
     const config = useConfigurationValues<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
 
     // #region Values
 
@@ -453,6 +460,9 @@
 
     const isRefreshSuccessShown = ref(false);
     const isRefreshingRequirements = ref(false);
+
+    /** The key of the requirement workflow link currently launching, so that link stays disabled until the action returns. */
+    const launchingWorkflowKey = ref<string | null>(null);
 
     /** Hides the "Successfully Refreshed" message a few seconds after it appears. */
     let refreshSuccessTimer: ReturnType<typeof setTimeout> | undefined;
@@ -791,25 +801,36 @@
      * navigates to one already started.
      */
     async function onLaunchRequirementWorkflow(requirementAlert: GroupMemberRequirementAlertBag, isWarningWorkflow: boolean): Promise<void> {
-        formErrors.value = [];
-
-        const result = await invokeBlockAction<LaunchRequirementWorkflowResponseBag>("LaunchRequirementWorkflow", {
-            groupMemberIdKey: groupMemberIdKey.value,
-            groupRequirementGuid: requirementAlert.groupRequirementGuid,
-            isWarningWorkflow
-        });
-
-        if (!result.isSuccess || !result.data) {
-            setFormError(result.errorMessage ?? "Unable to start the workflow.");
+        // Ignore repeat clicks while a launch is already in flight.
+        if (launchingWorkflowKey.value !== null) {
             return;
         }
 
-        if (result.data.message) {
-            await showAlert(result.data.message);
-        }
+        formErrors.value = [];
+        launchingWorkflowKey.value = getWorkflowLinkKey(requirementAlert, isWarningWorkflow);
 
-        if (result.data.workflowEntryUrl) {
-            window.open(makeUrlRedirectSafe(result.data.workflowEntryUrl), "_blank");
+        try {
+            const result = await invokeBlockAction<LaunchRequirementWorkflowResponseBag>("LaunchRequirementWorkflow", {
+                groupMemberIdKey: groupMemberIdKey.value,
+                groupRequirementGuid: requirementAlert.groupRequirementGuid,
+                isWarningWorkflow
+            });
+
+            if (!result.isSuccess || !result.data) {
+                setFormError(result.errorMessage ?? "Unable to start the workflow.");
+                return;
+            }
+
+            if (result.data.message) {
+                await showAlert(result.data.message);
+            }
+
+            if (result.data.workflowEntryUrl) {
+                window.open(makeUrlRedirectSafe(result.data.workflowEntryUrl), "_blank");
+            }
+        }
+        finally {
+            launchingWorkflowKey.value = null;
         }
     }
 
@@ -976,6 +997,19 @@
     function isManualCheckboxShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
         return requirementAlert.isManualRequirement
             && requirementAlert.meetsGroupRequirement !== MeetsGroupRequirement.Meets;
+    }
+
+    /**
+     * Builds a stable key for a requirement's workflow link, distinguishing
+     * the does-not-meet link from the warning link on the same requirement.
+     */
+    function getWorkflowLinkKey(requirementAlert: GroupMemberRequirementAlertBag, isWarningWorkflow: boolean): string {
+        return `${requirementAlert.groupRequirementGuid}:${isWarningWorkflow}`;
+    }
+
+    /** Gets whether the requirement's workflow link is currently launching. */
+    function isLaunchingWorkflow(requirementAlert: GroupMemberRequirementAlertBag, isWarningWorkflow: boolean): boolean {
+        return launchingWorkflowKey.value === getWorkflowLinkKey(requirementAlert, isWarningWorkflow);
     }
 
     /**
@@ -1171,4 +1205,10 @@
     });
 
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    // #endregion Lifecycle Hooks
 </script>
