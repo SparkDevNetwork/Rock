@@ -198,6 +198,16 @@ namespace Rock.Blocks.Group
         /// </summary>
         private const string FundraisingBatchNote = "Fundraising Transfer";
 
+        /// <summary>
+        /// The group requirements materialized once per request, keyed by the group they belong to.
+        /// </summary>
+        private List<GroupRequirement> _cachedGroupRequirements;
+
+        /// <summary>
+        /// The group identifier the cached requirements were loaded for.
+        /// </summary>
+        private int? _cachedGroupRequirementsGroupId;
+
         #endregion Fields
 
         #region Properties
@@ -228,6 +238,24 @@ namespace Rock.Blocks.Group
         #endregion Properties
 
         #region Methods
+
+        /// <summary>
+        /// Returns the group's requirements, querying the database once per request and reusing the
+        /// result on later calls. <see cref="Rock.Model.Group.GetGroupRequirements(RockContext)"/> returns an
+        /// IQueryable that re-queries on each enumeration, and a single Save enumerates it several times.
+        /// </summary>
+        /// <param name="group">The group whose requirements are needed.</param>
+        /// <returns>The materialized group requirements.</returns>
+        private List<GroupRequirement> GetCachedGroupRequirements( Rock.Model.Group group )
+        {
+            if ( _cachedGroupRequirements == null || _cachedGroupRequirementsGroupId != group.Id )
+            {
+                _cachedGroupRequirements = group.GetGroupRequirements( RockContext ).ToList();
+                _cachedGroupRequirementsGroupId = group.Id;
+            }
+
+            return _cachedGroupRequirements;
+        }
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
@@ -439,7 +467,7 @@ namespace Rock.Blocks.Group
             var group = entity.Group;
 
             options.AreRequirementsHidden = GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBoolean();
-            options.HasGroupRequirements = group.GetGroupRequirements( RockContext ).Any();
+            options.HasGroupRequirements = GetCachedGroupRequirements( group ).Any();
             options.RequirementAlerts = new List<GroupMemberRequirementAlertBag>();
 
             if ( !options.HasGroupRequirements )
@@ -683,7 +711,7 @@ namespace Rock.Blocks.Group
             }
 
             // Nothing to enforce when the group has no must-meet requirements, matching the entity's own guard.
-            if ( !entity.Group.GetGroupRequirements( RockContext ).Any( r => r.MustMeetRequirementToAddMember ) )
+            if ( !GetCachedGroupRequirements( entity.Group ).Any( r => r.MustMeetRequirementToAddMember ) )
             {
                 return true;
             }
@@ -706,7 +734,7 @@ namespace Rock.Blocks.Group
 
             if ( unmetRequirementNames.Any() )
             {
-                errorMessage = $"{entity.Person.FullName} must meet the following requirements before being added or made an active member in group '{entity.Group.Name}': {unmetRequirementNames.AsDelimited( ", " )}";
+                errorMessage = $"{entity.Person.FullName.EncodeHtml()} must meet the following requirements before being added or made an active member in group '{entity.Group.Name.EncodeHtml()}': {unmetRequirementNames.AsDelimited( ", " )}";
                 return false;
             }
 
@@ -758,7 +786,7 @@ namespace Rock.Blocks.Group
             // The leader status is constant across the loop, so query it at most once.
             var isCurrentPersonLeader = IsCurrentPersonLeaderOfGroup( entity.GroupId );
 
-            foreach ( var groupRequirement in entity.Group.GetGroupRequirements( RockContext ) )
+            foreach ( var groupRequirement in GetCachedGroupRequirements( entity.Group ) )
             {
                 if ( requestedManualGuids.Contains( groupRequirement.Guid )
                     && groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
@@ -799,7 +827,7 @@ namespace Rock.Blocks.Group
                 .Where( r => r.GroupMemberId == entity.Id )
                 .ToList();
 
-            foreach ( var groupRequirement in entity.Group.GetGroupRequirements( RockContext ) )
+            foreach ( var groupRequirement in GetCachedGroupRequirements( entity.Group ) )
             {
                 var isManualDesired = authorizedResolutions.ManualGuids.Contains( groupRequirement.Guid );
                 var isOverrideDesired = authorizedResolutions.OverrideGuids.Contains( groupRequirement.Guid );
@@ -2089,7 +2117,7 @@ namespace Rock.Blocks.Group
 
             if ( isAlreadyMember )
             {
-                return ActionBadRequest( $"{groupMember.Person.FullName} is already in {destGroup.Name}." );
+                return ActionBadRequest( $"{groupMember.Person.FullName.EncodeHtml()} is already in {destGroup.Name.EncodeHtml()}." );
             }
 
             if ( bag.IsMoveFundraisingTransactionsChecked && !CanMoveFundraisingTransactions( destGroup ) )
@@ -2937,7 +2965,7 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "Not authorized to view this group." );
             }
 
-            var groupRequirement = entity.Group.GetGroupRequirements( RockContext )
+            var groupRequirement = GetCachedGroupRequirements( entity.Group )
                 .FirstOrDefault( r => r.Guid == groupRequirementGuid );
 
             if ( groupRequirement == null )
