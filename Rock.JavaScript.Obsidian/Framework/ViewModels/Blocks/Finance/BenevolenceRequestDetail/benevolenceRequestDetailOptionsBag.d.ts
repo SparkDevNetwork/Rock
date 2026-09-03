@@ -23,6 +23,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { BenevolenceTypeBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceTypeBag";
+import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Benevolence Request Detail block. */
@@ -65,6 +66,12 @@ export type BenevolenceRequestDetailOptionsBag = {
 
     /** Gets or sets the Rock.Model.DefinedValue representing the Benevolence Request's status. */
     requestStatusValues?: ListItemBag[] | null;
+
+    /**
+     * Gets or sets the attribute columns to render on the results grid. These describe the Benevolence Result
+     * attributes marked "Show in Grid" that the current individual is allowed to view.
+     */
+    resultAttributeFields?: AttributeFieldDefinitionBag[] | null;
 
     /** Gets or sets the collection of result type values. */
     resultTypeValues?: ListItemBag[] | null;
