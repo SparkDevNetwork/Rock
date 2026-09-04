@@ -1153,13 +1153,14 @@ namespace Rock.Blocks.Group
         /// Gets the URL that reloads this page in add mode after a Save Then
         /// Add, carrying the same parameters the WebForms block did.
         /// </summary>
+        /// <param name="entity">The group member that was just saved.</param>
         /// <returns>The current page URL in add mode.</returns>
-        private string GetSaveThenAddUrl()
+        private string GetSaveThenAddUrl( GroupMember entity )
         {
             var queryParams = new Dictionary<string, string>
             {
                 [PageParameterKey.GroupMemberId] = "0",
-                [PageParameterKey.GroupId] = PageParameter( PageParameterKey.GroupId )
+                [PageParameterKey.GroupId] = entity.GroupId.ToString()
             };
 
             if ( CampusId.HasValue )
@@ -1973,7 +1974,7 @@ namespace Rock.Blocks.Group
 
             return ActionOk( new SaveGroupMemberResponseBag
             {
-                NavigationUrl = isSaveThenAdd ? GetSaveThenAddUrl() : GetBoxNavigationUrls( entity )[NavigationUrlKey.ParentPage]
+                NavigationUrl = isSaveThenAdd ? GetSaveThenAddUrl( entity ) : GetBoxNavigationUrls( entity )[NavigationUrlKey.ParentPage]
             } );
         }
 
@@ -2477,6 +2478,11 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
             }
 
+            if ( !IsAuthorizedToCommunicate( entity.Group ) )
+            {
+                return ActionBadRequest( "Not authorized to communicate with this group member." );
+            }
+
             var groupType = GroupTypeCache.Get( entity.Group.GroupTypeId );
             var canMemberReceiveEmail = entity.Person.IsEmailActive && entity.Person.CanReceiveEmail();
 
@@ -2623,6 +2629,19 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Determines whether the current person may send a quick
+        /// communication to a member of the group. The WebForms button was
+        /// offered to anyone who could view the member, so group VIEW is
+        /// enough, with the edit rights as the fallback.
+        /// </summary>
+        /// <param name="group">The group the member belongs to.</param>
+        /// <returns><c>true</c> if the current person may communicate with the member.</returns>
+        private bool IsAuthorizedToCommunicate( Model.Group group )
+        {
+            return group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || IsAuthorizedToEdit( group );
+        }
+
+        /// <summary>
         /// Sends a quick email or SMS communication to the group member.
         /// </summary>
         /// <param name="bag">The communication request.</param>
@@ -2645,6 +2664,11 @@ namespace Rock.Blocks.Group
             if ( entity == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( !IsAuthorizedToCommunicate( entity.Group ) )
+            {
+                return ActionBadRequest( "Not authorized to communicate with this group member." );
             }
 
             return bag.IsSms
@@ -2971,21 +2995,6 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( $"Unable to start the workflow: {workflowErrors.AsDelimited( " " )}" );
             }
 
-            var interactiveAction = workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, null, false );
-            var showHtmlGuard = 0;
-
-            while ( interactiveAction?.ActionTypeCache?.WorkflowAction is Rock.Workflow.Action.ShowHtml && showHtmlGuard++ < 10 )
-            {
-                interactiveAction.MarkComplete();
-
-                if ( !workflowService.Process( workflow, memberRequirement, out workflowErrors ) )
-                {
-                    break;
-                }
-
-                interactiveAction = workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, null, false );
-            }
-
             if ( isWarningWorkflow )
             {
                 memberRequirement.WarningWorkflowId = workflow.Id;
@@ -2999,9 +3008,8 @@ namespace Rock.Blocks.Group
 
             RockContext.SaveChanges();
 
-            var nextInteractiveAction = workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, null, false );
-
-            if ( nextInteractiveAction?.ActionTypeCache?.WorkflowAction is Rock.Workflow.Action.UserEntryForm )
+            // Same test the WebForms card used to decide whether to hand the user the entry form.
+            if ( workflow.HasActiveEntryForm( RequestContext.CurrentPerson ) )
             {
                 return ActionOk( new LaunchRequirementWorkflowResponseBag
                 {
