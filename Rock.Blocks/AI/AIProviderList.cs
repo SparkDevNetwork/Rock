@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -45,6 +46,9 @@ namespace Rock.Blocks.AI
     [LinkedPage( "Detail Page",
         Description = "The page that will show the ai provider details.",
         Key = AttributeKey.DetailPage )]
+
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
 
     [SystemGuid.EntityTypeGuid( "17ae74ad-1234-4572-b3ad-e44742ee1c7b" )]
     [SystemGuid.BlockTypeGuid( "633a75a7-7186-4cfd-ab80-6f2237f0bdd8" )]

@@ -28,6 +28,8 @@ namespace Rock.AI.Provider
     /// <summary>
     /// The container for AI components.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public class AIProviderContainer : Container<AIProviderComponent, IComponentData>
     {
         /// <summary>

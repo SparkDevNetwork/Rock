@@ -14,10 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
-using Rock.AI.Provider;
 using Rock.Enums.AI;
 using Rock.Model;
 
@@ -26,28 +24,8 @@ namespace Rock.AI.Automations
     /// <summary>
     /// POCO for storing <see cref="Category"/> <see cref="AttributeValue">AttributeValues</see> for the 'AI Automations" Attribute Category.
     /// </summary>
-    /// <remarks>
-    /// Each "AI Automations" AttributeValue for the Category will be parsed into it's respective property.
-    /// </remarks>
-    [Obsolete( "This class is deprecated and will be removed in the future." )]
-    [RockObsolete( "21.0" )]
-    public class AIAutomation
+    internal class PrayerRequestAutomationConfiguration
     {
-        /// <summary>
-        /// The <see cref="Rock.Model.AIProvider"/> to be used by the <see cref="Category"/>.
-        /// </summary>
-        public AIProvider AIProvider { get; set; }
-
-        /// <summary>
-        /// The AI provider component for interacting with an LLM.
-        /// </summary>
-        public AIProviderComponent AIProviderComponent => null;
-
-        /// <summary>
-        /// The Model to use with the AI provider for completions.
-        /// </summary>
-        public string AIModel { get; set; }
-
         /// <summary>
         /// Whether text enhancement should be performed by the AI automation.
         /// </summary>

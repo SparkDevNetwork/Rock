@@ -77,6 +77,8 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
+    [RockObsolete( "21.0" )]
+    [System.Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
     public static partial class AIProviderExtensionMethods
     {
         /// <summary>

@@ -59,6 +59,8 @@ namespace Rock.AI.OpenAI.Provider
         Key = AttributeKey.DefaultModel,
         Order = 2 )]
 
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     [Rock.SystemGuid.EntityTypeGuid( "8D3F25B1-4891-31AA-4FA6-365F5C808563" )]
     internal class OpenAIProvider : AIProviderComponent
     {

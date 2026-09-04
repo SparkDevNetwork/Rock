@@ -15,20 +15,27 @@
 // </copyright>
 //
 
-using System;
-
-namespace Rock.AI.Classes.TextCompletions
+namespace Rock.AI
 {
     /// <summary>
-    /// The class for holding the response choice from a completion.
+    /// The class for holding the response from a completion.
     /// </summary>
-    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
-    [RockObsolete( "21.0" )]
-    public class TextCompletionsResponseChoice
+    internal abstract class ChatCompletionResponse
     {
         /// <summary>
-        /// The completion response text.
+        /// Determines if the request was successful.
         /// </summary>
-        public string Text { get; set; }
+        public abstract bool IsSuccessful { get; }
+
+        /// <summary>
+        /// Error messages from the request.
+        /// </summary>
+        public abstract string ErrorMessage { get; }
+
+        /// <summary>
+        /// Gets the plain text from the response.
+        /// </summary>
+        /// <returns>A string of text. This will return an empty string if no text was available.</returns>
+        public abstract string GetText();
     }
 }

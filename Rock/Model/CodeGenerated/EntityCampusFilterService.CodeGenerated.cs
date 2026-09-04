@@ -77,6 +77,8 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
+    [RockObsolete( "17.0" )]
+    [System.Obsolete( "This model is no longer used and will be removed in the future." )]
     public static partial class EntityCampusFilterExtensionMethods
     {
         /// <summary>

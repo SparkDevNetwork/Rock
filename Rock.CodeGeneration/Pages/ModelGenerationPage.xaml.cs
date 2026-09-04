@@ -941,6 +941,9 @@ GO
                 && type != typeof( Rock.Model.Attribute )
                 && type != typeof( Rock.Model.AttributeValue );
 
+            var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
+            var rockObsolete = type.GetCustomAttribute<RockObsolete>();
+
             var properties = GetEntityProperties( type, true, true );
 
             var sb = new StringBuilder();
@@ -1027,7 +1030,20 @@ GO
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class {0}ExtensionMethods
+" );
+
+            if ( obsolete != null && obsolete.IsError == false )
+            {
+                if ( rockObsolete != null )
+                {
+                    sb.AppendLine( $"    [RockObsolete( \"{rockObsolete.Version}\" )]" );
+                }
+
+                sb.AppendLine( $"    [System.Obsolete( \"{obsolete.Message}\" )]" );
+            }
+
+
+            sb.AppendFormat( @"    public static partial class {0}ExtensionMethods
     {{
         /// <summary>
         /// Clones this {0} object to a new {0} object
@@ -1093,12 +1109,12 @@ GO
             foreach ( var property in properties )
             {
                 PropertyInfo propertyInfo = property.Value;
-                var obsolete = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
+                var obsoleteProperty = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
 
                 // wrap with a pragma to disable the obsolete warning (since we do want to copy obsolete values when cloning, unless this is obsolete.IsError )
-                if ( obsolete != null )
+                if ( obsoleteProperty != null )
                 {
-                    if ( obsolete.IsError == false )
+                    if ( obsoleteProperty.IsError == false )
                     {
                         sb.AppendLine( $"            #pragma warning disable 612, 618" );
                         sb.AppendLine( $"            target.{property.Key} = source.{property.Key};" );
@@ -1553,6 +1569,8 @@ GO
             foreach ( var modelType in modelTypes )
             {
                 var codeGenerateRestAttribute = modelType.GetCustomAttribute<CodeGenerateRestAttribute>();
+                var obsolete = modelType.GetCustomAttribute<ObsoleteAttribute>();
+                var rockObsolete = modelType.GetCustomAttribute<RockObsolete>();
 
                 if ( codeGenerateRestAttribute == null || codeGenerateRestAttribute.Endpoints == CodeGenerateRestEndpoint.None )
                 {
@@ -1563,7 +1581,7 @@ GO
                 var exists = File.Exists( filename );
                 var originalContent = exists ? File.ReadAllText( filename ) : null;
 
-                var content = generator.GenerateStandardFileContent( modelType.Name, modelType.FullName, codeGenerateRestAttribute.Endpoints, codeGenerateRestAttribute.DisableEntitySecurity );
+                var content = generator.GenerateStandardFileContent( modelType.Name, modelType.FullName, codeGenerateRestAttribute.Endpoints, codeGenerateRestAttribute.DisableEntitySecurity, obsolete?.Message, rockObsolete?.Version );
 
                 WriteFile( new FileInfo( filename ), new StringBuilder( content ) );
                 filesWritten.Add( filename );

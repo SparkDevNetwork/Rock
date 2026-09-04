@@ -15,38 +15,24 @@
 // </copyright>
 //
 
-using System;
-
 using Rock.Enums.AI;
 
-namespace Rock.AI.Classes.Moderations
+namespace Rock.AI
 {
     /// <summary>
-    /// The class for holding the response from a moderations completion.
+    /// The class for holding the response from a moderation.
     /// </summary>
-    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
-    [RockObsolete( "21.0" )]
-    public class ModerationsResponseCategories
+    internal class ModerationResponse
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModerationsResponseCategories"/> class.
+        /// Determines if the request was successful.
         /// </summary>
-        public ModerationsResponseCategories() { }
+        public bool IsSuccessful { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModerationsResponseCategories"/> class
-        /// with the flags set based on the provided <paramref name="moderationFlags"/>.
+        /// Error messages from the request.
         /// </summary>
-        /// <param name="moderationFlags"></param>
-        public ModerationsResponseCategories( ModerationFlags moderationFlags )
-        {
-            IsHate = moderationFlags == ModerationFlags.Hate;
-            IsThreat = moderationFlags == ModerationFlags.Threat;
-            IsSelfHarm = moderationFlags == ModerationFlags.SelfHarm;
-            IsSexual = moderationFlags == ModerationFlags.Sexual;
-            IsViolent = moderationFlags == ModerationFlags.Violent;
-            IsSexualMinor = moderationFlags == ModerationFlags.SexualMinor;
-        }
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// Is the text hateful.
@@ -130,46 +116,43 @@ namespace Rock.AI.Classes.Moderations
         /// </summary>
         public double ViolentScore { get; set; }
 
-        /// <summary>
-        /// Returns the moderation score.
-        /// </summary>
         public ModerationFlags ModerationFlags
         {
             get
             {
-                var categories = ModerationFlags.None;
+                var flags = ModerationFlags.None;
 
                 if ( IsHate )
                 {
-                    categories |= ModerationFlags.Hate;
+                    flags |= ModerationFlags.Hate;
                 }
 
                 if ( IsThreat )
                 {
-                    categories |= ModerationFlags.Threat;
+                    flags |= ModerationFlags.Threat;
                 }
 
                 if ( IsSelfHarm )
                 {
-                    categories |= ModerationFlags.SelfHarm;
+                    flags |= ModerationFlags.SelfHarm;
                 }
 
                 if ( IsSexual )
                 {
-                    categories |= ModerationFlags.Sexual;
-                }
-
-                if ( IsViolent )
-                {
-                    categories |= ModerationFlags.Violent;
+                    flags |= ModerationFlags.Sexual;
                 }
 
                 if ( IsSexualMinor )
                 {
-                    categories |= ModerationFlags.SexualMinor;
+                    flags |= ModerationFlags.SexualMinor;
                 }
 
-                return categories;
+                if ( IsViolent )
+                {
+                    flags |= ModerationFlags.Violent;
+                }
+
+                return flags;
             }
         }
     }

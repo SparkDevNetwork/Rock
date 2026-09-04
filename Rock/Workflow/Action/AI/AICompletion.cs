@@ -21,8 +21,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Rock.AI.Classes.ChatCompletions;
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.AI;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -47,20 +50,6 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.Prompt,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
 
-    [AIProviderField(
-        "Provider",
-        Description = "The AI Provider to use for the completion. Leave blank to use the default provider.",
-        IsRequired = false,
-        Order = 1,
-        Key = AttributeKey.Provider )]
-
-    [DecimalField(
-        "Temperature",
-        Description = "The level of randomness or creativity in the generated text. See documentation for your provider for valid values.",
-        IsRequired = false,
-        Order = 2,
-        Key = AttributeKey.Temperature )]
-
     [WorkflowAttribute(
         "Output Attribute",
         Description = "The attribute to save the prompt output to.",
@@ -80,8 +69,6 @@ namespace Rock.Workflow.Action
         private static class AttributeKey
         {
             public const string Prompt = "Prompt";
-            public const string Provider = "Provider";
-            public const string Temperature = "Temperature";
             public const string OutputAttribute = "OutputAttribute";
         }
 
@@ -97,24 +84,16 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var providerIdentifier = GetAttributeValue( action, AttributeKey.Provider, true );
-            var provider = GetProvider( providerIdentifier, rockContext );
+            var service = RockApp.Current.GetRequiredService<TextProcessingService>();
 
-            if ( provider == null )
+            if ( !service.IsAvailable )
             {
-                if ( providerIdentifier.IsNotNullOrWhiteSpace() )
-                {
-                    errorMessages.Add( $"The specified AI provider is not available. [provider=\"{providerIdentifier}\"]" );
-                }
-                else
-                {
-                    errorMessages.Add( "There is no active AI provider configured." );
-                }
+                errorMessages.Add( "AI completion services are not available." );
 
                 return false;
             }
 
-            var completionResult = ProcessChatCompletion( provider, action, errorMessages );
+            var completionResult = ProcessChatCompletion( service, action, errorMessages );
 
             SetWorkflowAttributeValue( action, AttributeKey.OutputAttribute, completionResult );
 
@@ -128,80 +107,42 @@ namespace Rock.Workflow.Action
         }
 
         /// <summary>
-        /// Gets the AI provider based on the provided identifier.
-        /// </summary>
-        /// <param name="providerComponentId">The identifier of the provider component.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The AI provider if found; otherwise, null.</returns>
-        private AIProvider GetProvider( string providerComponentId, RockContext rockContext )
-        {
-            AIProvider provider;
-
-            // Get the active AI provider
-            var providerService = new AIProviderService( rockContext );
-
-            if ( providerComponentId.IsNullOrWhiteSpace() )
-            {
-                // Use the first active provider.
-                provider = providerService.GetActiveProvider();
-            }
-            else
-            {
-                // Get the provider by Guid or ID...
-                provider = providerService.Get( providerComponentId, allowIntegerIdentifier: true );
-
-                if ( provider == null )
-                {
-                    // ...or try to match by name.
-                    provider = providerService.Queryable().FirstOrDefault( p => p.Name.Equals( providerComponentId, StringComparison.OrdinalIgnoreCase ) );
-                }
-            }
-
-            return provider;
-        }
-
-        /// <summary>
         /// Processes a chat completion request.
         /// </summary>
-        /// <param name="provider">The AI provider to use for the completion.</param>
+        /// <param name="service">The service to use for the completion.</param>
         /// <param name="action">The workflow action.</param>
         /// <param name="errorMessages">The list to store error messages.</param>
         /// <returns>The result of the chat completion request.</returns>
-        private string ProcessChatCompletion( AIProvider provider, WorkflowAction action, List<string> errorMessages )
+        private string ProcessChatCompletion( TextProcessingService service, WorkflowAction action, List<string> errorMessages )
         {
-            var chatCompletionsRequest = new ChatCompletionsRequest();
-            chatCompletionsRequest.Messages.Add( new ChatCompletionsRequestMessage() { Role = Rock.Enums.AI.ChatMessageRole.User, Content = GetAttributeValue( action, AttributeKey.Prompt, true ) } );
-
-            if ( GetAttributeValue( action, AttributeKey.Temperature ).AsInteger() != -1 )
+            var chatCompletionRequest = new ChatCompletionRequest
             {
-                chatCompletionsRequest.Temperature = GetAttributeValue( action, AttributeKey.Temperature, true ).AsDouble();
-            }
+                Message = GetAttributeValue( action, AttributeKey.Prompt, true )
+            };
 
-            var component = provider.GetAIComponent();
-            ChatCompletionsResponse chatResponse = null;
-            var output = string.Empty;
+            ChatCompletionResponse chatResponse = null;
 
             try
             {
-                chatResponse = Task.Run( () => component.GetChatCompletions( provider, chatCompletionsRequest ) ).Result;
+                chatResponse = Task.Run( () => service.GetChatCompletionAsync( chatCompletionRequest ) ).Result;
             }
             catch ( Exception ex )
             {
                 errorMessages.Add( ex.InnerException.ToString() ?? ex.ToString() );
-                return output;
+                return string.Empty;
             }
 
             if ( chatResponse.IsSuccessful )
             {
-                output = string.Join( Environment.NewLine, chatResponse.Choices.Select( c => c.Text ) );
+                return chatResponse.GetText();
             }
             else
             {
-                output = $"Error: {chatResponse.ErrorMessage}";
+                var output = $"Error: {chatResponse.ErrorMessage}";
                 errorMessages.Add( output );
-            }
 
-            return output;
+                return output;
+            }
         }
     }
 }

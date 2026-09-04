@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Newtonsoft.Json;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
@@ -25,6 +27,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
     /// <remarks>
     /// See https://platform.openai.com/docs/guides/moderation#content-classifications.
     /// </remarks>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIModerationsResponseResultsCategories
     {
         #region Properties

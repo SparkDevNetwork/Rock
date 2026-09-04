@@ -15,20 +15,16 @@
 // </copyright>
 //
 
-using System;
-
-namespace Rock.AI.Classes.TextCompletions
+namespace Rock.AI
 {
     /// <summary>
-    /// The class for holding the response choice from a completion.
+    /// The class for creating a new request for a chat completion.
     /// </summary>
-    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
-    [RockObsolete( "21.0" )]
-    public class TextCompletionsResponseChoice
+    internal class ChatCompletionRequest
     {
         /// <summary>
-        /// The completion response text.
+        /// The message to send to the service.
         /// </summary>
-        public string Text { get; set; }
+        public string Message { get; set; }
     }
 }

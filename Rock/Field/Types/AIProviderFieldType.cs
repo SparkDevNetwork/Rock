@@ -39,6 +39,8 @@ namespace Rock.Field.Types
     /// <seealso cref="Rock.Field.FieldType" />
     /// <seealso cref="Rock.Field.IEntityFieldType" />
     [FieldTypeUsage( FieldTypeUsage.System )]
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( SystemGuid.FieldType.AI_PROVIDER )]
     public class AIProviderFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
