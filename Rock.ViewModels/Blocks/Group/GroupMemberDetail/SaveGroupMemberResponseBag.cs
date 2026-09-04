@@ -1,0 +1,48 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
+{
+    /// <summary>
+    /// The response returned by the Group Member Detail block's Save action.
+    /// </summary>
+    public class SaveGroupMemberResponseBag
+    {
+        /// <summary>
+        /// Gets or sets the URL to navigate to after a successful save.
+        /// </summary>
+        public string NavigationUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether an archived record was
+        /// found for the same person and role, so the restore prompt should
+        /// be shown instead of saving.
+        /// </summary>
+        public bool IsRestorePromptShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets the restore prompt message text.
+        /// </summary>
+        public string RestorePromptMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IdKey of the archived group member available to
+        /// restore.
+        /// </summary>
+        public string ArchivedGroupMemberIdKey { get; set; }
+    }
+}
