@@ -28,7 +28,7 @@ internal sealed partial class ForgeContentBuilderSkill
 
     [Description( "Reports the Rock version this instance is running, so control and API lookups can be scoped to the release actually deployed here." )]
     [AgentToolPreamble( "Checking the Rock version." )]
-    [AgentUsage( "Call this before looking up any control, filter, or API in the Rock knowledge base, and pass the returned version to that lookup. Control APIs change between releases, so an unscoped lookup can describe props this instance does not have." )]
+    [AgentUsage( "Call this before looking up any control, filter, or API in the Rock knowledge base. The knowledge base tools scope lookups to the connected Rock version automatically, so use this result to interpret compatibility and coverage rather than trying to pass an unsupported version argument." )]
     [AgentUsage( "This is the version of the Rock instance you are connected to. It is not the newest Rock release, and it is not the version any documentation defaults to." )]
     [AgentToolGuid( "8A51C3E9-674D-4B02-93F8-2E6B9D40A715" )]
     public AgentToolResult GetRockVersion()
@@ -36,13 +36,13 @@ internal sealed partial class ForgeContentBuilderSkill
         /*
             8/27/2026 - CLAUDE
 
-            The Composition Rules pointer rides this result because this is the one
+            The Coding Guide pointer rides this result because this is the one
             tool every authoring session calls first, and tool results always land
             in the client's context. Seeded instructions do not reach third-party
             MCP clients, so a client that never saw them still gets steered to the
-            article before it authors any UI.
+            routing article before it authors any UI.
 
-            Reason: Deliver the composition-rules pointer on a channel that survives instruction drift.
+            Reason: Deliver the Coding Guide pointer on a channel that survives instruction drift.
         */
 
         // No authorization gate: the version is already visible to anonymous
@@ -53,7 +53,7 @@ internal sealed partial class ForgeContentBuilderSkill
             Version = Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
             FullVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber()
         } )
-            .WithInstructions( "Before authoring any component UI, read the Composition Rules article: call the Community Knowledge Base skill's GetArticle tool with articleKey 'coding-guide/conventions-and-guardrails/composition-rules'. It governs which control to use, in which mode, composed how. When the design matches one of the guide's recipes, also read that recipe and follow its Composition table; a recipe never overrides the rules. Verify each framework control in the guide's Controls Catalog (GetArticle with articleKey 'coding-guide/controls', then the control's own child article for its verified props); the catalog is authoritative for the controls it covers even when no source code is indexed for this Rock release, so use source-code search only for what the guide does not cover." );
+            .WithInstructions( "Before authoring component UI, call the Community Knowledge Base skill's GetKnowledgeBaseOverview tool and locate the Rock Coding Guide topic. Pass the returned topic key unchanged to GetTopic, open the root article listed by that topic, and follow the guide's own routing for the requested outcome. Retrieve only the material assigned by the selected Playbook. Never construct or guess a topic or article key." );
     }
 
     #endregion

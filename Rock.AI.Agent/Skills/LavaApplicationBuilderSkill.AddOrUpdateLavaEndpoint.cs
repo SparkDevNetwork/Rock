@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -78,7 +79,9 @@ internal sealed partial class LavaApplicationBuilderSkill
     [AgentUsage( "definition.enabledLavaCommands must include every command the template uses or the template will fail at runtime. Use 'RockEntity' to read, 'RockEntityModify' to add or update, and 'RockEntityDelete' to delete. These cover almost everything, including charts and totals. A template that starts using a new command needs that command added here too, or it will silently return nothing where the command was." )]
     [AgentUsage( "Do not request 'Sql'. It is refused unless you also pass sqlJustification, which you may only supply after telling the user why the entity commands cannot do the job and getting their explicit approval. Rewriting the template with entity commands is nearly always the correct response to that refusal." )]
     [AgentUsage( "Always pass testParameters when the template reads Body or QueryString, with realistic values, so the parameter path is proven rather than assumed. Without it the test renders with no request data and a template that reads Body.x is only exercised down its missing-parameter branch." )]
-    [AgentUsage( "Enabling RockEntityModify or RockEntityDelete turns test execution off for that endpoint, because running it would perform real writes. You get no syntax check at all, so keep write endpoints small and put any read logic in a separate RockEntity-only endpoint that can still be tested." )]
+    [AgentUsage( "testExecution.isSuccess means only that Lava rendered without an exception. It does not mean expected records were returned, that option items match a control's required shape, or that a JSON success flag is true. State the expected test outcome first, inspect testExecution.output and verificationWarnings, and correct unexpected empty collections or business failures before using the endpoint." )]
+    [AgentUsage( "Do not save a placeholder endpoint whose normal valid-input path always returns success false, not implemented, or instructions to research later. Research and implement the real boundary before saving it. If a concrete blocker remains, preserve working state and report that exact blocker." )]
+    [AgentUsage( "Enabling RockEntityModify or RockEntityDelete turns automatic test execution off because running it would perform real writes. This is an expected safety constraint, not a failed or unverifiable build and not a reason to stop. Keep write endpoints small, put read and option logic in separate RockEntity-only endpoints that can be tested, inspect the write against the retrieved contracts and domain behavior, then verify it through the safest available real workflow." )]
     [AgentToolGuid( "5F1E8C29-A47B-4D63-B905-E26A1D79F4C8" )]
     public AgentToolResult AddOrUpdateLavaEndpoint(
         [Description( "The slug of the Lava application the endpoint belongs to. Reuse one slug per dashboard so all of its endpoints group under one application." )]
@@ -191,7 +194,6 @@ internal sealed partial class LavaApplicationBuilderSkill
         var endpoint = application.LavaEndpoints.FirstOrDefault( e => e.Slug == endpointSlug && e.HttpMethod == method );
 
         var isNewEndpoint = endpoint == null;
-
         if ( isNewEndpoint )
         {
             endpoint = new LavaEndpoint
@@ -271,13 +273,19 @@ internal sealed partial class LavaApplicationBuilderSkill
 
         var url = GetEndpointUrl( application.Slug, endpoint.Slug );
 
+        var invocationExample = method == LavaEndpointHttpMethod.Get
+            ? $"`lavaApp.invoke(\"{endpoint.Slug}\", parametersOrUndefined, {{ method: \"GET\" }})`"
+            : $"`lavaApp.invoke(\"{endpoint.Slug}\", payload)`";
+
+        var testExecution = TestExecute( codeTemplate, endpoint.EnabledLavaCommands, application, method, parsedTestParameters, maxTestOutputLength );
+
         var result = Success( new LavaEndpointSaveResult
         {
             ApplicationSlug = application.Slug,
             EndpointSlug = endpoint.Slug,
             Method = method.ToString(),
             Url = url,
-            TestExecution = TestExecute( codeTemplate, endpoint.EnabledLavaCommands, application, method, parsedTestParameters, maxTestOutputLength )
+            TestExecution = testExecution
         } )
             .WithHistoryContent( new LavaEndpointReferenceResult
             {
@@ -286,7 +294,20 @@ internal sealed partial class LavaApplicationBuilderSkill
                 Method = method.ToString(),
                 Url = url
             }, "lava-endpoint" )
-            .WithInstructions( $"The '{endpoint.Slug}' endpoint was {( isNewEndpoint ? "created" : "updated" )}." );
+            .WithInstructions( $"The '{endpoint.Slug}' {method} endpoint was {( isNewEndpoint ? "created" : "updated" )}. Invoke it from useLavaApp with {invocationExample}. invoke defaults to Post, so a Get endpoint must pass the method option explicitly. Before reporting the integration as verified, compare the component's application slug, endpoint slug, method, parameters, and expected response shape with this saved endpoint." );
+
+        if ( testExecution.IsSkipped )
+        {
+            result.WithInstructions( "The endpoint was not executed. Do not describe it as tested or passing. Review the complete template and verify it through the safest available real workflow." );
+        }
+        else if ( !testExecution.IsSuccess )
+        {
+            result.WithInstructions( "The endpoint was saved, but its test render failed. Fix the reported failure and call AddOrUpdateLavaEndpoint again before connecting a dependent component or reporting completion." );
+        }
+        else
+        {
+            result.WithInstructions( "testExecution.isSuccess confirms only that Lava rendered without an exception. Inspect the full output and verificationWarnings against the expected scenario. When records are expected, require a nonempty collection and inspect at least one complete item for the exact keys and value shapes the component consumes." );
+        }
 
         /*
             8/17/2026 - CLAUDE

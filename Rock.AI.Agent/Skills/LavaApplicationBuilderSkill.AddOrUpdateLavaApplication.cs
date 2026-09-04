@@ -255,17 +255,17 @@ internal sealed partial class LavaApplicationBuilderSkill
             /*
                 8/28/2026 - CLAUDE
 
-                Same delivery pattern as the composition-rules pointer on
+                Same delivery pattern as the Coding Guide pointer on
                 GetRockVersion: creating the application is the one step every
                 data-backed build passes through before its first endpoint, and
                 tool results always land in the client's context, so the Lava
                 guidance reaches even clients that never read the seeded
                 instructions.
 
-                Reason: Mandate the endpoint-Lava article on the channel that
+                Reason: Mandate the Coding Guide routing on the channel that
                 survives instruction drift.
             */
-            result.WithInstructions( "Before writing any endpoint template for this application, read the Writing Endpoint Lava article: call the Community Knowledge Base skill's GetArticle tool with articleKey 'coding-guide/data-and-endpoints/writing-endpoint-lava'. It governs entity commands versus sql, aggregates with groupby and count, parameters under Body and QueryString, explicit limits, and the JSON output pattern; do not author a template without it in context this session. If any endpoint writes data or returns personal data, also read 'coding-guide/data-and-endpoints/security-and-permissions'." );
+            result.WithInstructions( "Before writing an endpoint template for this application, call the Community Knowledge Base skill's GetKnowledgeBaseOverview tool and locate the Rock Coding Guide topic. Pass the returned topic key unchanged to GetTopic, open the root article listed by that topic, and follow the guide's own routing for the endpoint outcome. Retrieve every Contract, Reference article, schema article, and source lookup assigned by the selected Playbook. SearchKnowledge is not authoritative evidence for exact entity property names. Never construct or guess a topic or article key." );
         }
 
         return result;

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
+
 namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 
 /// <summary>
@@ -23,9 +25,11 @@ namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 internal class TestExecutionResult
 {
     /// <summary>
-    /// Whether the template rendered without an error. This is <c>false</c>
-    /// when <see cref="IsSkipped"/> is <c>true</c>, because nothing was
-    /// rendered; it does not mean the template is broken.
+    /// Whether the template rendered without an error. This says nothing
+    /// about whether the output contains expected records, matches a client
+    /// contract, or reports a successful business operation. This is
+    /// <c>false</c> when <see cref="IsSkipped"/> is <c>true</c>, because
+    /// nothing was rendered; it does not mean the template is broken.
     /// </summary>
     public bool IsSuccess { get; set; }
 
@@ -69,4 +73,10 @@ internal class TestExecutionResult
     /// over-trust a passing render.
     /// </summary>
     public string Coverage { get; set; }
+
+    /// <summary>
+    /// Conditions in the rendered output that require interpretation before
+    /// the endpoint can be described as functionally verified.
+    /// </summary>
+    public List<string> VerificationWarnings { get; set; }
 }

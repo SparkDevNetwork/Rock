@@ -15,7 +15,10 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+
+using Newtonsoft.Json.Linq;
 
 using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Data;
@@ -659,6 +662,8 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     private static TestExecutionResult BuildRenderedTestResult( string output, string coverage, int? maxTestOutputLength )
     {
         var fullText = output.ToStringSafe();
+        var verificationWarnings = GetVerificationWarnings( fullText );
+        var renderOnlyCoverage = $"Render-only verification. This does not prove that expected records were returned, that item shapes match a component, or that a business operation succeeded. {coverage}";
 
         // Diagnostics legitimately need more than the default, so the caller
         // can raise the budget, but a whole dashboard payload still cannot
@@ -672,7 +677,8 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                 IsSuccess = true,
                 Output = fullText,
                 OutputLength = fullText.Length,
-                Coverage = coverage
+                Coverage = renderOnlyCoverage,
+                VerificationWarnings = verificationWarnings
             };
         }
 
@@ -687,8 +693,74 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             OutputLength = fullText.Length,
             IsOutputTruncated = true,
             TruncationAdvice = $"Output was truncated at {effectiveLimit} of {fullText.Length} characters. Re-run with a larger maxTestOutputLength (up to {MaxAllowedTestOutputLength}), or emit more compact output.",
-            Coverage = coverage
+            Coverage = renderOnlyCoverage,
+            VerificationWarnings = verificationWarnings
         };
+    }
+
+    /// <summary>
+    /// Identifies output states that are syntactically valid but are commonly
+    /// mistaken for functional endpoint success.
+    /// </summary>
+    /// <param name="output">The complete rendered output.</param>
+    /// <returns>Warnings the agent must reconcile with the expected scenario.</returns>
+    private static List<string> GetVerificationWarnings( string output )
+    {
+        var warnings = new List<string>();
+
+        if ( output.IsNullOrWhiteSpace() )
+        {
+            warnings.Add( "The template rendered an empty response body. This does not verify that a caller received usable data." );
+            return warnings;
+        }
+
+        JToken response;
+
+        try
+        {
+            response = JToken.Parse( output );
+        }
+        catch
+        {
+            // Endpoints can intentionally return non-JSON content, so only
+            // inspect JSON when the output actually is JSON.
+            return warnings;
+        }
+
+        if ( response is JArray rootArray && !rootArray.HasValues )
+        {
+            warnings.Add( "The JSON response is an empty collection. If the tested scenario expects configured records, investigate and retry before connecting a dependent control." );
+        }
+
+        if ( response is not JContainer container )
+        {
+            return warnings;
+        }
+
+        foreach ( var property in container.Descendants().OfType<JProperty>() )
+        {
+            if ( property.Value is JArray array && !array.HasValues )
+            {
+                warnings.Add( $"The JSON collection '{property.Path}' is empty. If the tested scenario expects configured records, this does not verify the query or item shape." );
+            }
+
+            var isBusinessSuccessProperty = property.Name.Equals( "success", StringComparison.OrdinalIgnoreCase )
+                || property.Name.Equals( "isSuccess", StringComparison.OrdinalIgnoreCase );
+
+            if ( isBusinessSuccessProperty
+                && property.Value.Type == JTokenType.Boolean
+                && !property.Value.Value<bool>() )
+            {
+                warnings.Add( $"The JSON response reports '{property.Path}' as false. Rendering succeeded, but the business operation did not." );
+            }
+
+            if ( warnings.Count >= 10 )
+            {
+                break;
+            }
+        }
+
+        return warnings.Distinct().ToList();
     }
 
     /// <summary>

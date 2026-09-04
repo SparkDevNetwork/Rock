@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Skills.ForgeContentBuilderSkill;
@@ -34,7 +36,9 @@ internal sealed partial class ForgeContentBuilderSkill
     [Description( "Compiles and saves the authored source of a Forge Content block placement. A failed compile stores nothing and returns the compiler's errors." )]
     [AgentToolPreamble( "Compiling and saving the component source." )]
     [AgentUsage( "blockId is the block placement to write; source is the authored Vue single-file-component. The server compiles the source and either stores the result or returns the compile errors for you to fix and retry. Nothing is stored when the compile fails." )]
-    [AgentUsage( "Never save a component whose data is hardcoded, mocked, or invented while presenting it as real. If the endpoints it needs could not be created, stop and report what failed instead of shipping fake numbers." )]
+    [AgentUsage( "Never save a component whose data is hardcoded, mocked, or invented while presenting it as real. If a required endpoint operation actually fails, use its error to correct and retry it and try a supported alternative. Report an incomplete result only when a concrete unresolved failure prevents a functional component." )]
+    [AgentUsage( "Before saving, retrieve the focused Reference article for every imported Rock control or Grid feature and verify its model shape, required props, events, slots, and composition rules. A successful compile does not validate control props or option shapes." )]
+    [AgentUsage( "Before saving a submitting component, trace each control's documented v-model shape through the exact payload field and endpoint input. A DropDownList emits its selected option value string, while many entity pickers emit a ListItemBag. Test endpoints with the exact payload the saved component sends, not alternate display-name parameters." )]
     [AgentToolGuid( "3E97A0C5-48D2-4F16-85B9-C1D7E63A2F40" )]
     public AgentToolResult AddOrUpdateForgeContent(
         [Description( "The id of the Forge Content block placement to write." )]
@@ -49,6 +53,10 @@ internal sealed partial class ForgeContentBuilderSkill
         if ( source.IsNullOrWhiteSpace() )
         {
             helper.AddError( "No source was provided." );
+        }
+        else if ( !TryValidateKnownControlModels( source, out var controlModelError ) )
+        {
+            helper.AddError( controlModelError );
         }
 
         var block = helper.GetRequiredEntity<Model.Block>( blockId, checkSecurity: false );
@@ -164,8 +172,68 @@ internal sealed partial class ForgeContentBuilderSkill
             BlockIdKey = block.IdKey,
             CompiledVueVersion = compileResult.VueVersion
         } )
-            .WithInstructions( "The component compiled and saved. Compiling proves syntax only; it does not prove the component works. Before telling the user it is done, verify the data contract yourself: for each endpoint this component invokes, call AddOrUpdateLavaEndpoint again with the same template plus testParameters shaped exactly like the payload the component sends, and confirm the test output is valid JSON whose property names match what the component reads (including casing). Fix mismatches now rather than letting the user discover them." )
+            .WithInstructions( "The component compiled and saved. Compiling proves syntax only; it does not prove the component works. Before telling the user it is done, verify the data contract yourself: for each endpoint this component invokes, call AddOrUpdateLavaEndpoint again with the same template plus testParameters shaped exactly like the payload the component sends. State whether the scenario should return records. When records are expected, require a nonempty collection, inspect at least one complete item, and confirm its property names, casing, identities, and value shapes match the focused control or Grid Reference and every component access. An empty collection or success false response is not a passing test for an expected-success scenario." )
+            .WithInstructions( "Load the real page and verify one functional slice before reporting completion: a known record must travel from Rock through the saved endpoint into its intended control, or an authorized primary action must complete and show its persisted result. A page load, compilation, or render-only endpoint test is not enough." )
             .WithInstructions( "Then remind the user to view the page as a normal member, not as an administrator, before trusting it: the component runs as whoever views the page." );
+    }
+
+    #endregion
+
+    #region Support Methods
+
+    /// <summary>
+    /// Rejects known control model mismatches that compile successfully but
+    /// produce empty values at runtime.
+    /// </summary>
+    /// <param name="source">The complete authored component source.</param>
+    /// <param name="errorMessage">Contains the mismatch explanation when validation fails.</param>
+    /// <returns><c>true</c> when no known mismatch is found.</returns>
+    private static bool TryValidateKnownControlModels( string source, out string errorMessage )
+    {
+        errorMessage = null;
+
+        var importMatch = Regex.Match(
+            source,
+            @"import\s+(?<alias>[A-Za-z_$][\w$]*)\s+from\s+['""]@Obsidian/Controls/dropDownList\.obs['""]\s*;?",
+            RegexOptions.IgnoreCase );
+
+        if ( !importMatch.Success )
+        {
+            return true;
+        }
+
+        var alias = importMatch.Groups["alias"].Value;
+        var tagPattern = $@"<{Regex.Escape( alias )}\b(?<attributes>[^>]*)>";
+
+        foreach ( Match tagMatch in Regex.Matches( source, tagPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline ) )
+        {
+            var attributes = tagMatch.Groups["attributes"].Value;
+            var modelMatch = Regex.Match( attributes, @"\bv-model\s*=\s*['""](?<model>[A-Za-z_$][\w$]*)['""]" );
+
+            if ( !modelMatch.Success )
+            {
+                continue;
+            }
+
+            var model = modelMatch.Groups["model"].Value;
+            var isMultiple = Regex.IsMatch( attributes, @"(?:^|\s)(?::)?multiple(?:\s|=|$)", RegexOptions.IgnoreCase );
+
+            if ( !isMultiple
+                && Regex.IsMatch( source, $@"\b(?:const|let)\s+{Regex.Escape( model )}\s*=\s*ref\s*\(\s*(?:null|\[\])\s*\)" ) )
+            {
+                errorMessage = $"DropDownList v-model '{model}' must be initialized as a string, normally ref(\"\"). Its selected model is the option value, not a ListItemBag. Open the focused DropDownList Reference and correct the model before saving.";
+                return false;
+            }
+
+            if ( !isMultiple
+                && Regex.IsMatch( source, $@"\b{Regex.Escape( model )}\.value(?:\?\.|\.)value\b" ) )
+            {
+                errorMessage = $"DropDownList v-model '{model}' is already the selected option value. Do not read '{model}.value.value'. Use '{model}.value' in script code and resolve display text from the items collection when needed.";
+                return false;
+            }
+        }
+
+        return true;
     }
 
     #endregion
