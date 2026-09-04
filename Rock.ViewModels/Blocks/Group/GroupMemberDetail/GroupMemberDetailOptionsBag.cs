@@ -172,8 +172,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public List<ListItemBag> LinkedRegistrations { get; set; }
 
         /// <summary>
-        /// Gets or sets the required signature document state, or null when
-        /// the group has no required signature document template.
+        /// Gets or sets the signed document uploader configuration, or null
+        /// when the group has no required signature document template.
         /// </summary>
         public SignatureDocumentStatusBag SignatureDocument { get; set; }
 

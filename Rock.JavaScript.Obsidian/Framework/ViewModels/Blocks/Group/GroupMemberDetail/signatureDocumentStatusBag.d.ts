@@ -24,8 +24,8 @@
 import { Guid } from "@Obsidian/Types";
 
 /**
- * The required signature document state for the Group Member Detail
- * block's Administration section.
+ * The signed document uploader configuration for the Group Member
+ * Detail block's Administration section.
  */
 export type SignatureDocumentStatusBag = {
     /**
@@ -33,24 +33,6 @@ export type SignatureDocumentStatusBag = {
      * document uploader.
      */
     binaryFileTypeGuid?: Guid | null;
-
-    /**
-     * Gets or sets the send button text ("Send Signature Request" or
-     * "Resend Signature Request"). Pending Open Decision A.
-     */
-    buttonText?: string | null;
-
-    /**
-     * Gets or sets a value indicating whether the group requires a
-     * signature document and none has been signed yet.
-     */
-    isRequired: boolean;
-
-    /**
-     * Gets or sets the unsigned-document status message shown in the
-     * warning alert.
-     */
-    message?: string | null;
 
     /**
      * Gets or sets the signature document template name, shown as the

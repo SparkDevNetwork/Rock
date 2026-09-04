@@ -20,34 +20,16 @@ using System;
 namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
 {
     /// <summary>
-    /// The required signature document state for the Group Member Detail
-    /// block's Administration section.
+    /// The signed document uploader configuration for the Group Member
+    /// Detail block's Administration section.
     /// </summary>
     public class SignatureDocumentStatusBag
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether the group requires a
-        /// signature document and none has been signed yet.
-        /// </summary>
-        public bool IsRequired { get; set; }
-
         /// <summary>
         /// Gets or sets the signature document template name, shown as the
         /// signed document uploader label.
         /// </summary>
         public string TemplateName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unsigned-document status message shown in the
-        /// warning alert.
-        /// </summary>
-        public string Message { get; set; }
-
-        /// <summary>
-        /// Gets or sets the send button text ("Send Signature Request" or
-        /// "Resend Signature Request"). Pending Open Decision A.
-        /// </summary>
-        public string ButtonText { get; set; }
 
         /// <summary>
         /// Gets or sets the binary file type guid used by the signed

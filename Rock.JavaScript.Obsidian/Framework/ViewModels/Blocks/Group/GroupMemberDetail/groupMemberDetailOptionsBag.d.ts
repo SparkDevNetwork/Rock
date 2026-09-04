@@ -176,8 +176,8 @@ export type GroupMemberDetailOptionsBag = {
     scheduleTemplateItems?: ListItemBag[] | null;
 
     /**
-     * Gets or sets the required signature document state, or null when
-     * the group has no required signature document template.
+     * Gets or sets the signed document uploader configuration, or null
+     * when the group has no required signature document template.
      */
     signatureDocument?: SignatureDocumentStatusBag | null;
 

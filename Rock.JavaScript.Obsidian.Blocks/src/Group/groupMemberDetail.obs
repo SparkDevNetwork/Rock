@@ -39,21 +39,6 @@
                 {{ communicationSuccessMessage }}
             </NotificationBox>
 
-            <NotificationBox v-if="options.signatureDocument?.isRequired" alertType="warning">
-                <div class="d-flex flex-wrap align-items-center gap-3">
-                    <div class="flex-grow-1">
-                        <strong>Signed Document Required</strong>
-                        <div v-html="options.signatureDocument?.message"></div>
-                    </div>
-                    <RockButton v-if="isEditable"
-                                :btnType="BtnType.Warning"
-                                :disabled="isSendingSignatureRequest"
-                                @click="onSendSignatureRequest">
-                        {{ options.signatureDocument?.buttonText }}
-                    </RockButton>
-                </div>
-            </NotificationBox>
-
             <ContentSectionContainer :sidebar="false">
                 <ContentSection disableCollapse
                                 light>
@@ -135,11 +120,11 @@
                                             <div>{{ getRequirementStatusText(requirementAlert) }}</div>
                                             <div v-if="requirementAlert.summary" class="mt-3">{{ requirementAlert.summary }}</div>
                                             <div v-if="isRequirementInteractionShown(requirementAlert)" class="d-flex flex-wrap gap-3 mt-auto pt-3">
-                                                <InlineCheckBox v-if="isManualCheckboxShown(requirementAlert)"
+                                                <InlineCheckBox v-if="isEditable && isManualCheckboxShown(requirementAlert)"
                                                                 :label="requirementAlert.manualCheckboxLabel ?? ''"
                                                                 :modelValue="isManualChecked(requirementAlert)"
                                                                 @update:modelValue="onToggleManualRequirement(requirementAlert, $event)" />
-                                                <InlineCheckBox v-if="requirementAlert.canOverride"
+                                                <InlineCheckBox v-if="isEditable && requirementAlert.canOverride"
                                                                 label="Mark as Met"
                                                                 :modelValue="isOverrideChecked(requirementAlert)"
                                                                 @update:modelValue="onToggleOverrideRequirement(requirementAlert, $event)" />
@@ -416,7 +401,6 @@ a.disabled {
     import { RefreshRequirementsResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/refreshRequirementsResponseBag";
     import { LaunchRequirementWorkflowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/launchRequirementWorkflowResponseBag";
     import { SaveGroupMemberResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/saveGroupMemberResponseBag";
-    import { SignatureDocumentStatusBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/signatureDocumentStatusBag";
     import { GroupScheduleAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupScheduleAssignmentBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
@@ -466,8 +450,6 @@ a.disabled {
 
     /** Hides the "Successfully Refreshed" message a few seconds after it appears. */
     let refreshSuccessTimer: ReturnType<typeof setTimeout> | undefined;
-
-    const isSendingSignatureRequest = ref(false);
 
     /** True while the data for a newly selected person is loading, locking the form until it lands. */
     const isPersonDataLoading = ref(false);
@@ -772,31 +754,6 @@ a.disabled {
     }
 
     /**
-     * Sends (or resends) the required signature document request and applies
-     * the refreshed document status to the warning alert.
-     */
-    async function onSendSignatureRequest(): Promise<void> {
-        formErrors.value = [];
-        isSendingSignatureRequest.value = true;
-
-        try {
-            const result = await invokeBlockAction<SignatureDocumentStatusBag>("SendSignatureRequest", {
-                groupMemberIdKey: groupMemberIdKey.value
-            });
-
-            if (!result.isSuccess || !result.data) {
-                setFormError(result.errorMessage ?? "Unable to send the signature request.");
-                return;
-            }
-
-            options.value.signatureDocument = result.data;
-        }
-        finally {
-            isSendingSignatureRequest.value = false;
-        }
-    }
-
-    /**
      * Launches the requirement's does-not-meet or warning workflow, or
      * navigates to one already started.
      */
@@ -978,17 +935,21 @@ a.disabled {
     }
 
     /**
-     * Gets whether the requirement alert's interaction row is shown.
-     * Checkboxes only need edit rights, since they write nothing until save.
+     * Gets whether the requirement alert's interaction row is shown. The
+     * resolution checkboxes need edit rights, since they write on save, but
+     * the workflow links launch server-side with view rights, as in WebForms.
      */
     function isRequirementInteractionShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
-        if (!isEditable.value) {
-            return false;
-        }
-
-        return isManualCheckboxShown(requirementAlert)
-            || requirementAlert.canOverride
+        return areResolutionCheckboxesShown(requirementAlert)
             || areWorkflowLinksShown(requirementAlert);
+    }
+
+    /**
+     * Gets whether either resolution checkbox is shown for the alert.
+     */
+    function areResolutionCheckboxesShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+        return isEditable.value
+            && (isManualCheckboxShown(requirementAlert) || requirementAlert.canOverride);
     }
 
     /**

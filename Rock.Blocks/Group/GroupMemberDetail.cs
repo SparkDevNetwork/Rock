@@ -969,9 +969,8 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Gets the required signature document state, or null when the
-        /// group has no required signature document template. The warning
-        /// alert state is only set when no signed document exists yet.
+        /// Gets the signed document uploader configuration, or null when the
+        /// group has no required signature document template.
         /// </summary>
         /// <param name="entity">The group member being viewed or edited.</param>
         /// <returns>A <see cref="SignatureDocumentStatusBag"/>, or null.</returns>
@@ -984,54 +983,11 @@ namespace Rock.Blocks.Group
                 return null;
             }
 
-            var statusBag = new SignatureDocumentStatusBag
+            return new SignatureDocumentStatusBag
             {
                 TemplateName = template.Name,
                 BinaryFileTypeGuid = template.BinaryFileType?.Guid
             };
-
-            // No person means nothing to warn about yet (still adding).
-            if ( entity.Person == null )
-            {
-                return statusBag;
-            }
-
-            var documents = new SignatureDocumentService( RockContext )
-                .Queryable().AsNoTracking()
-                .Where( d =>
-                    d.SignatureDocumentTemplateId == template.Id &&
-                    d.AppliesToPersonAlias.PersonId == entity.PersonId )
-                .Select( d => new
-                {
-                    d.Status,
-                    d.LastInviteDate
-                } )
-                .ToList();
-
-            if ( documents.Any( d => d.Status == SignatureDocumentStatus.Signed ) )
-            {
-                return statusBag;
-            }
-
-            statusBag.IsRequired = true;
-
-            var lastSent = documents.Any( d => d.Status == SignatureDocumentStatus.Sent )
-                ? documents.Where( d => d.Status == SignatureDocumentStatus.Sent ).Max( d => d.LastInviteDate )
-                : null;
-
-            // The message renders as HTML on the client, so the data-driven parts are encoded.
-            if ( lastSent.HasValue )
-            {
-                statusBag.ButtonText = "Resend Signature Request";
-                statusBag.Message = $"A signed {template.Name.EncodeHtml()} document has not yet been received for {entity.Person.FullName.EncodeHtml()}. The last request was sent <strong>{lastSent.Value.ToElapsedString()}</strong>.";
-            }
-            else
-            {
-                statusBag.ButtonText = "Send Signature Request";
-                statusBag.Message = $"The required {template.Name.EncodeHtml()} document has not yet been sent to {entity.Person.NickName.EncodeHtml()} for signing.";
-            }
-
-            return statusBag;
         }
 
         /// <summary>
@@ -2808,19 +2764,6 @@ namespace Rock.Blocks.Group
             }
 
             return ActionOk();
-        }
-
-        /// <summary>
-        /// Sends the required signature document request to the group
-        /// member. Pending Open Decision A in the conversion plan.
-        /// </summary>
-        /// <param name="groupMemberIdKey">The IdKey of the member to send the request to.</param>
-        /// <returns>The refreshed <see cref="SignatureDocumentStatusBag"/> on success, or an error result.</returns>
-        [BlockAction]
-        public BlockActionResult SendSignatureRequest( string groupMemberIdKey )
-        {
-            // TODO: Blocked on Open Decision A. No working send API exists for legacy providers.
-            return ActionBadRequest( "Not implemented." );
         }
 
         /// <summary>
