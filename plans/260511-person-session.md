@@ -20,26 +20,26 @@ When a phase references the spec, follow the spec exactly. When the spec is sile
 
 Apply to every phase.
 
-- **Follow the spec, not your instincts.** Every architectural decision is settled in the spec — including ones recorded in "Considered but Rejected." Do not re-litigate. If something looks wrong, stop and ask.
+- **Follow the spec, not your instincts.** Every architectural decision is settled in the spec, including ones recorded in "Considered but Rejected." Do not re-litigate. If something looks wrong, stop and ask.
 - **Follow established Rock patterns** (CLAUDE.md "Prime Directive"). When the spec is silent on a code-level detail, mirror the closest existing precedent in the codebase rather than inventing one.
 - **No public-signature breaks.** New behavior is added via new methods or new overloads. Existing public methods keep their signatures (CLAUDE.md "Critical Rules").
 - **Copyright headers on every new file** (.claude/rules/code-conventions.md).
 - **Tests live in the same phase as the code they cover.** Pick the cheapest flavor (plain unit > mocked-database > full integration) per the spec's "Test classification" subsection. Tag flavor on each test bullet when it is not obvious.
-- **"Full integration" means the database, not the HTTP pipeline.** Rock.Tests can spin up a real MSSQL via Docker for `PreSave`/`PostSave` hooks, SQL upserts, and transactional behavior. It CANNOT host the WebForms pipeline — there is no `iisexpress.exe` harness pointed at a known-state test database, and building one is out of scope. Any behavior that lives in `Global.asax.cs` (or otherwise depends on the WebForms request lifecycle running for real) is validated by (a) unit/mocked-database tests against the underlying service method in `Rock.dll` and (b) the Phase 17 manual checklist. Phases that wire a Global.asax hook are intentionally thin shims (one or two service calls plus a principal write) so this trade-off is safe — but if a phase grows nontrivial logic in the shim, surface it back to the user rather than expanding tests.
-- **`System.Web` is the enemy, with one explicit exception.** `PersonSession`, the enums, and all `PersonSessionService` methods except `UpgradeLegacyCookieForRequest` must not reference `System.Web`; HTTP / cookie work routes through `RockRequestContext`. The single accepted deviation is `UpgradeLegacyCookieForRequest` (Phase 6), which reads the `FormsIdentity` from `HttpContext.Current.User` directly because `RockRequestContext` does not expose a .NET `IIdentity` and growing that surface for short-lived bridge code is not justified. The whole body of that one method is wrapped in `#if WEBFORMS` with a `#else return null;` branch; `System.Web` types are fully qualified inline (`System.Web.HttpContext.Current`, `System.Web.Security.FormsIdentity`, etc.) — do NOT add `using System.Web;` at the file level. See Phase 6.
+- **"Full integration" means the database, not the HTTP pipeline.** Rock.Tests can spin up a real MSSQL via Docker for `PreSave`/`PostSave` hooks, SQL upserts, and transactional behavior. It CANNOT host the WebForms pipeline, there is no `iisexpress.exe` harness pointed at a known-state test database, and building one is out of scope. Any behavior that lives in `Global.asax.cs` (or otherwise depends on the WebForms request lifecycle running for real) is validated by (a) unit/mocked-database tests against the underlying service method in `Rock.dll` and (b) the Phase 17 manual checklist. Phases that wire a Global.asax hook are intentionally thin shims (one or two service calls plus a principal write) so this trade-off is safe, but if a phase grows nontrivial logic in the shim, surface it back to the user rather than expanding tests.
+- **`System.Web` is the enemy, with one explicit exception.** `PersonSession`, the enums, and all `PersonSessionService` methods except `UpgradeLegacyCookieForRequest` must not reference `System.Web`; HTTP / cookie work routes through `RockRequestContext`. The single accepted deviation is `UpgradeLegacyCookieForRequest` (Phase 6), which reads the `FormsIdentity` from `HttpContext.Current.User` directly because `RockRequestContext` does not expose a .NET `IIdentity` and growing that surface for short-lived bridge code is not justified. The whole body of that one method is wrapped in `#if WEBFORMS` with a `#else return null;` branch; `System.Web` types are fully qualified inline (`System.Web.HttpContext.Current`, `System.Web.Security.FormsIdentity`, etc.), do NOT add `using System.Web;` at the file level. See Phase 6.
 - **Per-phase scope hygiene.** Do exactly what the phase says. Resist the urge to fold in work from a later phase, even if it looks small. Each phase is sized to be reviewable and revertable on its own.
 - **Build at the end of every phase.** A phase that leaves the solution unbuildable is incomplete. Use the `build` skill.
 - **No surprise migrations.** A phase that needs an EF migration says so explicitly. Do not introduce migrations outside the phases that call for them.
 
 ---
 
-## Phase 1 — Data model foundation
+## Phase 1, Data model foundation
 
 ### Goal
 Stand up the new entity, enums, and database structures. No behavior change yet; nothing reads or writes these yet outside their own invariant tests.
 
 ### Deliverables
-- **Enums** — file path `Rock.Enums/Security/EnumName.cs`, namespace `Rock.Enums.Security`. Do NOT apply the `[EnumDomain]` attribute; that attribute is a legacy artifact from enums moved from a previous assembly and is not used on net-new enums.
+- **Enums**: file path `Rock.Enums/Security/EnumName.cs`, namespace `Rock.Enums.Security`. Do NOT apply the `[EnumDomain]` attribute; that attribute is a legacy artifact from enums moved from a previous assembly and is not used on net-new enums.
   - `AuthenticationStrength` (`NotAuthenticated`, `Authenticated`, `Elevated`, `MultiFactor`).
   - `AuthenticationRequirement` (`Elevated`, `MultiFactor`).
   - `PersonSessionCreationSource` (`Unknown`, `Component`, `Impersonation`, `UserToken`, `ApiKey`, `Legacy`).
@@ -50,7 +50,7 @@ Stand up the new entity, enums, and database structures. No behavior change yet;
   - `[RockDomain( "Security" )]` on the entity class. Subsequent files for this model (Service, Options POCOs, view models, etc.) follow the same `Security` domain convention.
 - **Configuration** (`Rock/Model/Security/PersonSession/PersonSessionConfiguration.cs`): FK definitions per the spec's cascade table; `Has(...)/WithMany(...)/HasForeignKey(...)/WillCascadeOnDelete( false )` for all FKs; `ON DELETE SET NULL` semantics for `UserLoginId`.
 - **SystemGuid** (`Rock/SystemGuid/EntityType.cs` and any related places that catalog new entity types).
-- **`InteractionSession.PersonSessionId`** column added (int FK, nullable, no cascade). Do NOT yet update the SQL upsert at `Rock/Model/Core/Interaction/InteractionService.cs:583` — that is Phase 9.
+- **`InteractionSession.PersonSessionId`** column added (int FK, nullable, no cascade). Do NOT yet update the SQL upsert at `Rock/Model/Core/Interaction/InteractionService.cs:583`; that is Phase 9.
 - **EF migration** (`Rock.Migrations/Migrations/`): one migration creates `PersonSession`, its indexes (at minimum `PersonAliasId`, `UserLoginId`, `IsActive`, `LastActivityDateTime`), and adds `InteractionSession.PersonSessionId`.
 
 ### Tests
@@ -68,7 +68,7 @@ Stand up the new entity, enums, and database structures. No behavior change yet;
 
 ---
 
-## Phase 2 — Service skeleton, strength evaluation, impersonation query helpers
+## Phase 2, Service skeleton, strength evaluation, impersonation query helpers
 
 ### Goal
 Establish `PersonSessionService` and the read-only helpers that downstream phases will lean on. No session creation, no cookie work.
@@ -77,19 +77,19 @@ Establish `PersonSessionService` and the read-only helpers that downstream phase
 - **`Rock/Model/Security/PersonSession/PersonSessionService.cs`** with:
   - `private const int ElevatedWindowMinutes = 30;`
   - `private const int MultiFactorWindowMinutes = 60;`
-  - `public static DateTime GetElevatedAuthenticationThreshold()` and `public static DateTime GetMultiFactorAuthenticationThreshold()` — both `static`. The entity's `GetAuthenticationStrength()` calls them without holding a service instance; EF callers compose `Where` clauses against them without allocating one either. Return threshold `DateTime`, not the raw int; see spec for rationale.
-  - `public PersonSession GetImpersonatorSession( PersonSession session )` — reads the restore Guid from `AdditionalSettings` and loads the impersonator's prior `PersonSession` by Guid. Stays on the service because the lookup needs a `RockContext`.
+  - `public static DateTime GetElevatedAuthenticationThreshold()` and `public static DateTime GetMultiFactorAuthenticationThreshold()`, both `static`. The entity's `GetAuthenticationStrength()` calls them without holding a service instance; EF callers compose `Where` clauses against them without allocating one either. Return threshold `DateTime`, not the raw int; see spec for rationale.
+  - `public PersonSession GetImpersonatorSession( PersonSession session )`, reads the restore Guid from `AdditionalSettings` and loads the impersonator's prior `PersonSession` by Guid. Stays on the service because the lookup needs a `RockContext`.
   - `internal ImpersonationProcessResult` POCO with `IsRedirectRequired` and `Session` properties (init-only).
 - **`PersonSession` entity methods:**
-  - `public bool IsImpersonated()` — pure check of `CreationSource` (returns true for `Impersonation` or `UserToken`). Lives on the entity rather than the service because it needs no database collaborator; the fluent `session.IsImpersonated()` shape is also what every Pattern A call site wants.
-  - `public AuthenticationStrength GetAuthenticationStrength()` — computes against the service's threshold methods. Strongest applicable wins.
-- **Additional-settings POCOs** — `internal` POCOs in namespace `Rock.Security` (file path `Rock/Security/*.cs`). Per Rock's standard `IHasAdditionalSettings` convention, the JSON key for each POCO defaults to the type's full namespace+type name; do NOT configure an explicit key. Read and written via the existing `GetAdditionalSettings<T>()` / `GetAdditionalSettingsOrNull<T>()` / `SetAdditionalSettings<T>(...)` extension methods. Callers MUST NOT touch `AdditionalSettingsJson` directly anywhere in the codebase.
-  - `PersonSessionAdminImpersonationSettings` — present on sessions with `CreationSource = Impersonation`. Properties:
-    - `Guid ImpersonatorPersonSessionGuid` — the impersonator's prior `PersonSession.Guid`, the value `EndImpersonationAndRestore` reads to revert the session.
-    - `Guid ImpersonatorInteractionSessionGuid` — the impersonator's prior `InteractionSession.Guid`, so `EndImpersonationAndRestore` can re-attach the admin's pre-impersonation activity trail. (The new `InteractionSession` created at impersonation start remains in the database as a historical row but is no longer the "current" session for the admin's browser after restore.)
+  - `public bool IsImpersonated()`, pure check of `CreationSource` (returns true for `Impersonation` or `UserToken`). Lives on the entity rather than the service because it needs no database collaborator; the fluent `session.IsImpersonated()` shape is also what every Pattern A call site wants.
+  - `public AuthenticationStrength GetAuthenticationStrength()`, computes against the service's threshold methods. Strongest applicable wins.
+- **Additional-settings POCOs**: `internal` POCOs in namespace `Rock.Security` (file path `Rock/Security/*.cs`). Per Rock's standard `IHasAdditionalSettings` convention, the JSON key for each POCO defaults to the type's full namespace+type name; do NOT configure an explicit key. Read and written via the existing `GetAdditionalSettings<T>()` / `GetAdditionalSettingsOrNull<T>()` / `SetAdditionalSettings<T>(...)` extension methods. Callers MUST NOT touch `AdditionalSettingsJson` directly anywhere in the codebase.
+  - `PersonSessionAdminImpersonationSettings`, present on sessions with `CreationSource = Impersonation`. Properties:
+    - `Guid ImpersonatorPersonSessionGuid`, the impersonator's prior `PersonSession.Guid`, the value `EndImpersonationAndRestore` reads to revert the session.
+    - `Guid ImpersonatorInteractionSessionGuid`, the impersonator's prior `InteractionSession.Guid`, so `EndImpersonationAndRestore` can re-attach the admin's pre-impersonation activity trail. (The new `InteractionSession` created at impersonation start remains in the database as a historical row but is no longer the "current" session for the admin's browser after restore.)
     - Future companion resume state (a target-URL override, a started-at timestamp, etc.) can be added as additional properties without a schema change.
-  - `PersonSessionUserTokenSettings` — present on sessions with `CreationSource = UserToken`. Properties: `Guid OriginatingPersonTokenGuid` (the source `PersonToken.Guid`, the value the per-request page-scope re-validation reads against the source `PersonToken` row). Required, not optional — `UserToken` sessions cannot function without this reference.
-  - Both POCOs end in `Settings` so the type-name-as-key shape reads naturally in the persisted JSON. Use `internal` (not just `[RockInternal]`) so the compiler prevents plugin code from depending on these shapes — these are storage shapes for core, not part of the public API.
+  - `PersonSessionUserTokenSettings`, present on sessions with `CreationSource = UserToken`. Properties: `Guid OriginatingPersonTokenGuid` (the source `PersonToken.Guid`, the value the per-request page-scope re-validation reads against the source `PersonToken` row). Required, not optional, `UserToken` sessions cannot function without this reference.
+  - Both POCOs end in `Settings` so the type-name-as-key shape reads naturally in the persisted JSON. Use `internal` (not just `[RockInternal]`) so the compiler prevents plugin code from depending on these shapes, these are storage shapes for core, not part of the public API.
 
 ### Tests
 - Plain unit: `GetAuthenticationStrength` for `IsActive = false` → `NotAuthenticated`. (The "null session → `NotAuthenticated`" case is not testable as an instance method; it lives at the caller layer via `RockRequestContext.PersonSession?.GetAuthenticationStrength() ?? NotAuthenticated` and is exercised through `MeetsRequirement` tests in Phase 7.)
@@ -108,7 +108,7 @@ Establish `PersonSessionService` and the read-only helpers that downstream phase
 
 ---
 
-## Phase 3 — Session creation methods
+## Phase 3, Session creation methods
 
 ### Goal
 Implement every code path that builds a `PersonSession` row, including the central `PopulateNewSession` helper. No cookie work; no auth pipeline integration yet.
@@ -119,16 +119,16 @@ Implement every code path that builds a `PersonSession` row, including the centr
 - **Find-or-create methods** (save when creating): `FindOrCreateApiKeySession`, `FindOrCreateLegacyUpgradeSession`. Each uses the upsert-with-unique-key pattern (mirror the precedent at `Rock/Model/Core/Interaction/InteractionService.cs:583`).
 - **`EndImpersonationAndRestore`** (`internal`): admin-impersonation only; returns the impersonator session on success; null if restore reference is dangling (and marks current inactive); throws on non-`Impersonation` `CreationSource`.
 - **`StartImpersonationSession`** must:
-  - Copy `LastStepUpAuthenticationDateTime` and `LastMultiFactorAuthenticationDateTime` from the impersonator's prior session. (Null source values stay null on the new session — no "stamp to now" fallback.)
+  - Copy `LastStepUpAuthenticationDateTime` and `LastMultiFactorAuthenticationDateTime` from the impersonator's prior session. (Null source values stay null on the new session, no "stamp to now" fallback.)
   - Stamp `PersonSessionAdminImpersonationSettings { ImpersonatorPersonSessionGuid = impersonatorSession.Guid, ImpersonatorInteractionSessionGuid = impersonatorInteractionSession.Guid }` onto the new session via `SetAdditionalSettings<T>(...)` before returning it. Both Guids are required; the caller is responsible for supplying them.
-  - Signature picks up an additional `InteractionSession` (or its Guid) parameter so the caller passes in the impersonator's prior `InteractionSession` explicitly. Do not look it up internally — the caller (Phase 13) already has the value from `RockRequestContext`.
+  - Signature picks up an additional `InteractionSession` (or its Guid) parameter so the caller passes in the impersonator's prior `InteractionSession` explicitly. Do not look it up internally, the caller (Phase 13) already has the value from `RockRequestContext`.
 - **`StartUserTokenSession`** must:
   - Leave `LastStepUpAuthenticationDateTime` and `LastMultiFactorAuthenticationDateTime` **null**. This is the explicit divergence from today's `ProcessImpersonation`; do not stamp them.
   - Stamp `PersonSessionUserTokenSettings { OriginatingPersonTokenGuid = token.Guid }` onto the new session via `SetAdditionalSettings<T>(...)` before returning it.
 - **`EndImpersonationAndRestore`** reads the impersonator's prior session and InteractionSession Guids via `session.GetAdditionalSettings<PersonSessionAdminImpersonationSettings>()` (or the equivalent existing Rock extension), looks up the `PersonSession` row, and re-attaches the prior `InteractionSession` so the admin's pre-impersonation activity trail resumes. Either Guid going dangling is treated the same way (return null, mark current inactive). It never reads `AdditionalSettingsJson` directly.
 - **`GetImpersonatorSession`** uses the same `GetAdditionalSettings<PersonSessionAdminImpersonationSettings>` pattern.
-- **InteractionDeviceType resolution.** On every `PopulateNewSession` call, resolve the request's User-Agent string (when available via `RockRequestContext` — do NOT touch `HttpContext` directly) to an `InteractionDeviceType` row using the standard find-or-create pattern that `InteractionService` already uses. Stamp `PersonSession.InteractionDeviceTypeId` from the result. Null UA leaves the FK null without error.
-- **`PostSave` event hook.** Set up the seam where downstream events (new-device email, audit logging, anomaly detection) will fire from. This phase does NOT wire any concrete subscribers — just exposes the hook so later work can plug in without changing creation methods.
+- **InteractionDeviceType resolution.** On every `PopulateNewSession` call, resolve the request's User-Agent string (when available via `RockRequestContext`, do NOT touch `HttpContext` directly) to an `InteractionDeviceType` row using the standard find-or-create pattern that `InteractionService` already uses. Stamp `PersonSession.InteractionDeviceTypeId` from the result. Null UA leaves the FK null without error.
+- **`PostSave` event hook.** Set up the seam where downstream events (new-device email, audit logging, anomaly detection) will fire from. This phase does NOT wire any concrete subscribers, just exposes the hook so later work can plug in without changing creation methods.
 
 ### Tests
 - Full integration (`PreSave`/`PostSave` hooks): the `InactiveDateTime` invariant from Phase 1 is re-verified now that callers can go through `StartComponentSession` end-to-end.
@@ -154,18 +154,18 @@ Implement every code path that builds a `PersonSession` row, including the centr
 
 ---
 
-## Phase 4 — Cookie container
+## Phase 4, Cookie container
 
 ### Goal
 Implement the encrypt-then-MAC cookie value, the internal decoder, the write seam (`SetAuthCookie`), and the read-side lifecycle seam (`ResolveSessionForRequest`) that the auth pipeline calls. The cookie can round-trip end-to-end after this phase. Phase 5 then wires it into `Global.asax.cs` as a thin shim.
 
 ### Deliverables
-- **Plaintext payload** — minified JSON `{"v":1,"sid":"<guid>","iat":"<ISO 8601>"}`. Define a payload-version constant.
+- **Plaintext payload**: minified JSON `{"v":1,"sid":"<guid>","iat":"<ISO 8601>"}`. Define a payload-version constant.
   - **Serialize with `System.Text.Json.JsonSerializer` directly against a small `internal` typed model.** Do NOT use Rock's `.ToJson()` / `.FromJsonOrNull<T>()` extension methods (those use Newtonsoft.Json, which carries assembly-version coupling, default serializer settings, and allocation overhead this payload does not need). The cookie payload is a black box owned end-to-end by `PersonSessionService`; nothing external touches it, so going direct to System.Text.Json is safe and is the intentional choice here.
-- **`PersonSessionService.GetCookieValue( PersonSession )`** — pure encoder: builds the plaintext model, serializes via `System.Text.Json`, encrypts via `Rock.Security.Encryption.EncryptString`, returns the base64 string. MUST NOT touch `HttpContext`. No reissue decisions.
-- **`PersonSessionService.SetAuthCookie( PersonSession, RockRequestContext )`** — pure write: calls `GetCookieValue`, writes the cookie through `RockRequestContext`. Browser-side `Expires` computed via the `MIN( PersonSession.ExpiresDateTime ?? MaxValue, RockDateTime.Now.Add( FormsAuthentication.Timeout ) )` formula for persistent sessions; no `Expires` for non-persistent. Does NOT decide whether to reissue — callers (typically `ResolveSessionForRequest`) make that decision.
-- **`TryDecodeCookie( string cookieValue, out CookiePayload payload, out DecodeMetadata metadata )`** (internal) — performs the base64 + `"V2"` footer check, calls `Rock.Security.Encryption.DecryptString`, deserializes JSON via `System.Text.Json.JsonSerializer.Deserialize`, returns the parsed session Guid + iat + decryption metadata (which `DataEncryptionKey` / `OldDataEncryptionKey{n}` decrypted it, payload version). Returns `false` for non-new-format cookies, tamper, or any decode failure. `CookiePayload` and `DecodeMetadata` are `internal` POCOs in `Rock.Security` so the rest of the service can pass the values around without touching `HttpContext`.
-- **`PersonSessionService.ResolveSessionForRequest( RockRequestContext context )`** — `public`, `[RockInternal( "20.0" )]`. The single read-side seam for cookie validation; the auth pipeline (Phase 5) calls this and nothing else. Steps:
+- **`PersonSessionService.GetCookieValue( PersonSession )`**: pure encoder: builds the plaintext model, serializes via `System.Text.Json`, encrypts via `Rock.Security.Encryption.EncryptString`, returns the base64 string. MUST NOT touch `HttpContext`. No reissue decisions.
+- **`PersonSessionService.SetAuthCookie( PersonSession, RockRequestContext )`**: pure write: calls `GetCookieValue`, writes the cookie through `RockRequestContext`. Browser-side `Expires` computed via the `MIN( PersonSession.ExpiresDateTime ?? MaxValue, RockDateTime.Now.Add( FormsAuthentication.Timeout ) )` formula for persistent sessions; no `Expires` for non-persistent. Does NOT decide whether to reissue, callers (typically `ResolveSessionForRequest`) make that decision.
+- **`TryDecodeCookie( string cookieValue, out CookiePayload payload, out DecodeMetadata metadata )`** (internal), performs the base64 + `"V2"` footer check, calls `Rock.Security.Encryption.DecryptString`, deserializes JSON via `System.Text.Json.JsonSerializer.Deserialize`, returns the parsed session Guid + iat + decryption metadata (which `DataEncryptionKey` / `OldDataEncryptionKey{n}` decrypted it, payload version). Returns `false` for non-new-format cookies, tamper, or any decode failure. `CookiePayload` and `DecodeMetadata` are `internal` POCOs in `Rock.Security` so the rest of the service can pass the values around without touching `HttpContext`.
+- **`PersonSessionService.ResolveSessionForRequest( RockRequestContext context )`**: `public`, `[RockInternal( "20.0" )]`. The single read-side seam for cookie validation; the auth pipeline (Phase 5) calls this and nothing else. Steps:
   1. Read the `.ROCK` cookie value from `RockRequestContext`. If absent, return null.
   2. `TryDecodeCookie`. If it returns false (non-new-format, tampered, or otherwise undecodable), return null. (Legacy-format cookies are intentionally left alone for Phase 6.)
   3. Load the `PersonSession` by `payload.Sid`. If not found, `IsActive == false`, or `ExpiresDateTime` past, expire the cookie via `RockRequestContext` and return null.
@@ -206,10 +206,12 @@ Implement the encrypt-then-MAC cookie value, the internal decoder, the write sea
 
 ---
 
-## Phase 5 — Auth pipeline integration (new format)
+## Phase 5, Auth pipeline integration (new format)
 
 ### Goal
 Authenticate requests carrying a new-format cookie. Legacy cookies still flow through `FormsAuthenticationModule` (Phase 6 upgrades them). Both formats work side by side at the end of this phase.
+
+> **Post-implementation correction (as built):** new-format cookie *resolution* was later moved out of `Application_BeginRequest` and into `Application_PostMapRequestHandler` so that natively served static files (which map to a null handler) do NOT incur a per-asset database session lookup (an authenticated browser sends the `.ROCK` cookie on every one of the 70+ static assets in a page load). `Application_BeginRequest` still runs the legacy kill-switch, thread culture, and `RockRequestContext` attach; it no longer calls `ResolveSessionForRequest`. The `Deliverables` narrative below is preserved as the original phase intent; read it together with the spec's "Auth pipeline integration during the dual-reader window" (Design), which describes the shipped `PostMapRequestHandler` design. The identity population (`Context.Items["CurrentPerson"]` / `SetCurrentIdentity`) and the locked-out / unconfirmed eviction also moved as part of the "Identity-resolution refactor" (see Phase 17).
 
 ### Deliverables
 - **`Application_BeginRequest` hook** in `RockWeb/App_Code/Global.asax.cs`. The hook is a thin shim that is **strictly additive** to the pre-Phase-5 body: keep every existing call in its existing position, then append the new resolution path at the end. Final ordering:
@@ -222,7 +224,7 @@ Authenticate requests carrying a new-format cookie. Legacy cookies still flow th
   7. **New in Phase 5:** wrap step 5 + step 6 in a defensive `try/catch` that logs and swallows so an infrastructure-level failure cannot 500 the whole pipeline. `ResolveSessionForRequest` already handles tampered / invalid cookies internally by returning null, so the catch should be reached rarely in practice.
 
   Sessions with `UserLogin == null` (future `Impersonation` and `UserToken` flows) are NOT reachable at the time Phase 5 lands and are intentionally left without a principal write by this shim; later phases define the principal shape for those cases.
-- **Retain the existing `RejectAuthenticationCookiesIssuedBefore` block at `Global.asax.cs:582-604`** in place at the top of the handler (NOT inside a null-return branch — see ordering above). The block keeps its current behavior (compare the legacy `FormsAuthenticationTicket.IssueDate` against the threshold; expire the cookie on violation). Add this comment to the block:
+- **Retain the existing `RejectAuthenticationCookiesIssuedBefore` block at `Global.asax.cs:582-604`** in place at the top of the handler (NOT inside a null-return branch, see ordering above). The block keeps its current behavior (compare the legacy `FormsAuthenticationTicket.IssueDate` against the threshold; expire the cookie on violation). Add this comment to the block:
   ```csharp
   // Legacy cookie kill-switch.
   //
@@ -241,19 +243,19 @@ Authenticate requests carrying a new-format cookie. Legacy cookies still flow th
   // the Decrypt result is dropped).
   ```
 - **All decode, validation, kill-switch, and reissue logic for new-format cookies lives in `ResolveSessionForRequest` (Phase 4).** The BeginRequest handler does NOT duplicate any of it. The setting source (`Rock/Security/SecuritySettings.cs:123`) is unchanged; both kill switches read the same value.
-- **`RockRequestContext.SetCurrentUser( UserLogin )`** — new `public` method, marked `[RockInternal( "20.0", true )]`, in the existing `Request Lifecycle` region next to `AttachToCurrentRequest` / `DetachFromCurrentRequest`. Exists because the `CurrentUser` setter is `internal` and `RockWeb`'s assembly name is generated at runtime, so `[InternalsVisibleTo( "RockWeb" )]` is not viable. In-assembly callers (`RockPage`, `ServiceScopeHandler`) keep assigning the property directly; only the BeginRequest shim needs this new entry point.
+- **`RockRequestContext.SetCurrentUser( UserLogin )`**: new `public` method, marked `[RockInternal( "20.0", true )]`, in the existing `Request Lifecycle` region next to `AttachToCurrentRequest` / `DetachFromCurrentRequest`. Exists because the `CurrentUser` setter is `internal` and `RockWeb`'s assembly name is generated at runtime, so `[InternalsVisibleTo( "RockWeb" )]` is not viable. In-assembly callers (`RockPage`, `ServiceScopeHandler`) keep assigning the property directly; only the BeginRequest shim needs this new entry point.
 
 ### Tests
-**No automated tests in this phase.** The `Application_BeginRequest` body is a thin shim (one `RockRequestContext` construction, one `ResolveSessionForRequest` call, one conditional principal write) and the WebForms request lifecycle cannot run inside the Rock.Tests harness — there is no `iisexpress.exe` test host pointed at a known-state database (see Guardrails). Coverage strategy:
+**No automated tests in this phase.** The `Application_BeginRequest` body is a thin shim (one `RockRequestContext` construction, one `ResolveSessionForRequest` call, one conditional principal write) and the WebForms request lifecycle cannot run inside the Rock.Tests harness, there is no `iisexpress.exe` test host pointed at a known-state database (see Guardrails). Coverage strategy:
 
 - **Unit-level coverage** lives in Phase 4 (`ResolveSessionForRequest` exercises decode, validate, kill-switch, reissue against a mocked database and synthetic `RockRequestContext`). Every observable behavior the BeginRequest shim depends on is covered there.
 - **Pipeline correctness** is validated by the Phase 17 manual checklist (login, kill-switch, tampered-cookie behavior, anonymous request, reissue at half-life) plus code review of the shim.
-- **If the shim grows logic** beyond construct-context / call-service / set-principal, stop and surface it — that is a signal to either move logic into the service or to invest in a real HTTP harness, and the call belongs to the user, not the implementation agent.
+- **If the shim grows logic** beyond construct-context / call-service / set-principal, stop and surface it; that is a signal to either move logic into the service or to invest in a real HTTP harness, and the call belongs to the user, not the implementation agent.
 
 ### Verification
 - `build` clean.
 - Phase 4's `ResolveSessionForRequest` unit/mocked-database tests still pass (regression check; the shim must not have inadvertently changed any observable).
-- Code review of the shim against this phase's deliverables — the body should be visibly tiny (read context, call service, set principal). If it isn't, see the test-coverage note above.
+- Code review of the shim against this phase's deliverables; the body should be visibly tiny (read context, call service, set principal). If it isn't, see the test-coverage note above.
 
 ### Spec references
 - "Design / Cookie container / Auth pipeline integration during the dual-reader window"
@@ -261,13 +263,13 @@ Authenticate requests carrying a new-format cookie. Legacy cookies still flow th
 
 ---
 
-## Phase 6 — Legacy cookie upgrade
+## Phase 6, Legacy cookie upgrade
 
 ### Goal
 Transparently upgrade legacy `FormsAuthenticationTicket` cookies to new-format `PersonSession` rows. Existing users do not get forced to re-log in.
 
 ### Deliverables
-- **`PersonSessionService.UpgradeLegacyCookieForRequest( RockRequestContext context )`** — `public`, `[RockInternal( "20.0" )]`, marked `[Obsolete]` `[RockObsolete( "20.0" )]` from day one (bridge code with a v23 target removal). Thin shim that pulls the legacy ticket off `HttpContext` and delegates to the testable helper below. Body shape:
+- **`PersonSessionService.UpgradeLegacyCookieForRequest( RockRequestContext context )`**: `public`, `[RockInternal( "20.0" )]`, marked `[Obsolete]` `[RockObsolete( "20.0" )]` from day one (bridge code with a v23 target removal). Thin shim that pulls the legacy ticket off `HttpContext` and delegates to the testable helper below. Body shape:
   ```csharp
   #if WEBFORMS
       var formsIdentity = System.Web.HttpContext.Current?.User?.Identity as System.Web.Security.FormsIdentity;
@@ -282,20 +284,20 @@ Transparently upgrade legacy `FormsAuthenticationTicket` cookies to new-format `
   ```
   Notes:
   - Wrap the entire body in `#if WEBFORMS` ... `#else return null; #endif`. .NET Core has no `FormsAuthenticationTicket` to upgrade from.
-  - **Fully qualify** every `System.Web` type inline (`System.Web.HttpContext.Current`, `System.Web.Security.FormsIdentity`). Do NOT add `using System.Web;` or `using System.Web.Security;` to the file — the System.Web exposure is intentionally contained to these two methods' bodies so the rest of the file stays clean. The Guardrails section calls this the one accepted deviation from "no System.Web in PersonSessionService."
-- **`PersonSessionService.UpgradeLegacyTicket( System.Web.Security.FormsAuthenticationTicket ticket, RockRequestContext context )`** — `internal` helper that owns the real upgrade logic. Marked `[Obsolete]` `[RockObsolete( "20.0" )]` alongside its caller. Also wrapped in `#if WEBFORMS` (because `FormsAuthenticationTicket` itself is a System.Web type and the parameter type can only exist on the WebForms build). Steps:
+  - **Fully qualify** every `System.Web` type inline (`System.Web.HttpContext.Current`, `System.Web.Security.FormsIdentity`). Do NOT add `using System.Web;` or `using System.Web.Security;` to the file, the System.Web exposure is intentionally contained to these two methods' bodies so the rest of the file stays clean. The Guardrails section calls this the one accepted deviation from "no System.Web in PersonSessionService."
+- **`PersonSessionService.UpgradeLegacyTicket( System.Web.Security.FormsAuthenticationTicket ticket, RockRequestContext context )`**: `internal` helper that owns the real upgrade logic. Marked `[Obsolete]` `[RockObsolete( "20.0" )]` alongside its caller. Also wrapped in `#if WEBFORMS` (because `FormsAuthenticationTicket` itself is a System.Web type and the parameter type can only exist on the WebForms build). Steps:
   1. Parse the ticket's `UserData` JSON. If `IsImpersonated == true`, expire the cookie via `RockRequestContext`, return null. Do NOT create a `PersonSession`. (Impersonation cookies were always short-lived; silently upgrading them would extend impersonation past its intended lifetime.)
   2. If `ticket.IsPersistent == false`, expire the cookie via `RockRequestContext`, return null. Do NOT create a `PersonSession`. (The user unchecked "remember me" at login; the legacy cookie was a transient session cookie. Every `PersonSession` created here is stamped `IsPersistent = true`, so silently upgrading a transient ticket would promote it to a long-lived session and contradict the user's original choice. The recipient re-authenticates on the new format with whatever persistence they prefer at that point.)
   3. Resolve `UserLoginId` from the ticket's `Name`. If the `UserLogin` no longer exists, expire the cookie and return null.
   4. Call `FindOrCreateLegacyUpgradeSession( userLoginId, ticket.IssueDate )`. The composite key `(UserLoginId, IssuedDateTime, CreationSource = Legacy)` guarantees repeated legacy-cookie presentations resolve to the same row.
   5. Call `SetAuthCookie( upgradedSession, context )` to emit the new-format cookie. (The legacy upgrade always emits a fresh cookie; the Phase 4 reissue trigger logic is bypassed because the source cookie is not new-format.)
   6. Return the upgraded `PersonSession`.
-- **Why the helper split?** The `FormsAuthenticationTicket` constructor is a plain type — tests can synthesize a ticket directly without booting `HttpContext`. Keeping the System.Web read inside the public shim and the real logic inside the helper means the existing Phase 6 mocked-database tests stay valid and runnable; only the trivial shim is untested (same trade-off Phase 5 made).
-- **`Application_PostAuthenticateRequest` hook** in `Global.asax.cs` — thin shim:
+- **Why the helper split?** The `FormsAuthenticationTicket` constructor is a plain type, tests can synthesize a ticket directly without booting `HttpContext`. Keeping the System.Web read inside the public shim and the real logic inside the helper means the existing Phase 6 mocked-database tests stay valid and runnable; only the trivial shim is untested (same trade-off Phase 5 made).
+- **`Application_PostAuthenticateRequest` hook** in `Global.asax.cs`, thin shim:
   1. Resolve the current `RockRequestContext`.
   2. Call `personSessionService.UpgradeLegacyCookieForRequest( rockRequestContext )`.
   3. On non-null return, replace `Context.User` with an authenticated principal backed by the upgraded session's `PersonAlias`.
-  4. On null return, do nothing — `FormsAuthenticationModule`'s `FormsIdentity` (if any) flows through unchanged, and downstream handlers see the request as forms-authenticated under the legacy ticket until the next request when the new cookie takes over. (This is the same observable behavior as today for the first post-upgrade request.)
+  4. On null return, do nothing, `FormsAuthenticationModule`'s `FormsIdentity` (if any) flows through unchanged, and downstream handlers see the request as forms-authenticated under the legacy ticket until the next request when the new cookie takes over. (This is the same observable behavior as today for the first post-upgrade request.)
 - **Any additional internal helpers introduced for the legacy decode path** (e.g. helper methods for parsing the `FormsAuthenticationTicket.UserData` JSON shape) ship `internal` and `[Obsolete]` `[RockObsolete( "20.0" )]`, also under `#if WEBFORMS`. Engineering note on each explains the bridge purpose and the v23 target removal.
 
 ### Tests
@@ -318,16 +320,16 @@ All tests target `UpgradeLegacyTicket` directly (synthesize a `FormsAuthenticati
 
 ---
 
-## Phase 7 — `RockRequestContext` integration + Login block wiring
+## Phase 7, `RockRequestContext` integration + Login block wiring
 
 ### Goal
 Make the current session available to the rest of the platform. Wire the Obsidian Login block (and therefore Auth0 / external providers) to the new creation path.
 
 ### Deliverables
-- **`RockRequestContext.PersonSession`** (nullable) — resolved once at request entry, cached for the duration of the request. Anonymous and bearer-token requests legitimately return null; consumers handle null.
-- **`HttpContext.Items` fallback** for the rare call site not running inside `RockRequestContext` — same request lifetime.
-- **`RockRequestContext.MeetsRequirement( AuthenticationRequirement )`** — `Elevated` is satisfied by `Elevated` or `MultiFactor` strength; `MultiFactor` only by `MultiFactor`.
-- **Obsidian Login block** (`Rock.Blocks/Security/Login.cs:718-734`) — replace `Authorization.SetAuthCookie` call with `StartComponentSession` + add to rock context + save + `SetAuthCookie`. The Auth0 and other `IExternalRedirectAuthentication` flows route through this block and are covered automatically (no Auth0-specific change).
+- **`RockRequestContext.PersonSession`** (nullable), resolved once at request entry, cached for the duration of the request. Anonymous and bearer-token requests legitimately return null; consumers handle null.
+- **`HttpContext.Items` fallback** for the rare call site not running inside `RockRequestContext`, same request lifetime.
+- **`RockRequestContext.MeetsRequirement( AuthenticationRequirement )`**: `Elevated` is satisfied by `Elevated` or `MultiFactor` strength; `MultiFactor` only by `MultiFactor`.
+- **Obsidian Login block** (`Rock.Blocks/Security/Login.cs:718-734`), replace `Authorization.SetAuthCookie` call with `StartComponentSession` + add to rock context + save + `SetAuthCookie`. The Auth0 and other `IExternalRedirectAuthentication` flows route through this block and are covered automatically (no Auth0-specific change).
 - **MFA recency stamping at login.** When the Login block authenticates via a component whose `AuthenticationComponent.IsConfiguredForTwoFactorAuthentication()` returns true, stamp `LastMultiFactorAuthenticationDateTime = RockDateTime.Now` on the new session. Always stamp `LastStepUpAuthenticationDateTime`.
 
 ### Tests
@@ -348,15 +350,15 @@ Make the current session available to the rest of the platform. Wire the Obsidia
 
 ---
 
-## Phase 8 — Activity tracking bus task
+## Phase 8, Activity tracking bus task
 
 ### Goal
 Replace `UpdateUserLastActivity` with `UpdatePersonSessionLastActivity`. Throttled writes; the old task is deprecated but kept for plugins during the transition.
 
 ### Deliverables
-- **New bus task `UpdatePersonSessionLastActivity`** — updates `PersonSession.LastActivityDateTime`. Throttled to once per ~5 minutes per session.
+- **New bus task `UpdatePersonSessionLastActivity`**: updates `PersonSession.LastActivityDateTime`. Throttled to once per ~5 minutes per session.
 - **Page request handler.** Wire the page-request path that today fires `UpdateUserLastActivity` to fire the new task against the current `PersonSession.Id`.
-- **`AuthenticateAttribute` (API-key path)** — fire the new task after resolving the API-key session (full API-key wiring is Phase 10; here we just wire the activity hook so the new task has a clean home).
+- **`AuthenticateAttribute` (API-key path)**: fire the new task after resolving the API-key session (full API-key wiring is Phase 10; here we just wire the activity hook so the new task has a clean home).
 - **SignalR explicitly does NOT fire the new task** (long-lived hub connections must not generate excessive activity writes).
 - **`UpdateUserLastActivity` bus task** marked `[Obsolete]` `[RockObsolete( "20.0" )]`. The `IsOnline` property on the task is deprecated alongside. Writers are NOT yet removed; Phase 15 handles that.
 
@@ -374,18 +376,18 @@ Replace `UpdateUserLastActivity` with `UpdatePersonSessionLastActivity`. Throttl
 
 ---
 
-## Phase 9 — `InteractionSession` adoption
+## Phase 9, `InteractionSession` adoption
 
 ### Goal
 Stamp / adopt `InteractionSession.PersonSessionId` correctly across login, logout, impersonation, and legacy upgrade events.
 
 ### Deliverables
-- **SQL upsert update** at `Rock/Model/Core/Interaction/InteractionService.cs:583` — extend the existing insert-only upsert to also UPDATE `PersonSessionId` on an existing row keyed by `RockSessionId`. The unique key on `RockSessionId` continues to mediate the race; the new column rides along.
+- **SQL upsert update** at `Rock/Model/Core/Interaction/InteractionService.cs:583`, extend the existing insert-only upsert to also UPDATE `PersonSessionId` on an existing row keyed by `RockSessionId`. The unique key on `RockSessionId` continues to mediate the race; the new column rides along.
 - **Stamp at creation.** When `InteractionSession` is created and a `PersonSession` already exists on the current request, insert with `PersonSessionId` populated.
 - **Adopt by update at login.** Login flow updates the existing `InteractionSession` row for the current browser session to point at the new `PersonSession`. Mid-session login should retroactively attach the pre-auth journey.
 - **Adopt by update at legacy upgrade.** Same path, triggered by `FindOrCreateLegacyUpgradeSession` (Phase 6).
 - **Restore prior on admin-impersonation end.** When `EndImpersonationAndRestore` runs (Phase 3 / Phase 13), it reads `PersonSessionAdminImpersonationSettings.ImpersonatorInteractionSessionGuid` and re-attaches that historical `InteractionSession` as the current row for the admin's browser session. The mechanism is symmetric with the existing `RockSessionId`-keyed lookup: the browser-session identifier is re-pointed at the prior row, the impersonation-period row remains in the database but is no longer "current," and subsequent `InteractionSession` writes resume against the restored row. (If `RockSessionId` is managed via a cookie or comparable identifier rather than ASP.NET Session, restoring it is the implementation seam here; the spec deliberately avoids ASP.NET Session for this state.)
-- **Reset on auth events** — refer to the spec's truth table for which event creates vs. adopts vs. reuses vs. restores `InteractionSession`.
+- **Reset on auth events**: refer to the spec's truth table for which event creates vs. adopts vs. reuses vs. restores `InteractionSession`.
 
 ### Tests
 The behavior in this phase splits across two seams: (1) the **SQL upsert** at `InteractionService.cs:583` that handles concurrent INSERT/UPDATE for `InteractionSession` rows keyed by `RockSessionId`, and (2) the **auth-event handlers** (login, logout, impersonation start/end, legacy upgrade) that decide whether to keep or regenerate the browser-session identifier (`RockSessionId` or the comparable seam, see Deliverables) before the next interaction-tracking call. Mocked `RockContext` intercepts LINQ + `SaveChanges` but does NOT execute raw SQL, so any test whose assertion depends on the upsert running has to be Full integration. Auth-event-side decisions don't touch the upsert and can be mocked-db.
@@ -397,13 +399,13 @@ The behavior in this phase splits across two seams: (1) the **SQL upsert** at `I
 - SQL upsert UPDATE scope: the UPDATE only affects the row with the matching `RockSessionId`; other `InteractionSession` rows in the table are untouched. (Regression guard against an UPDATE that forgets its `WHERE` clause.)
 
 **Mocked-database (auth-event handlers, no SQL upsert exercised):**
-- Login when not already authenticated does NOT regenerate the browser-session identifier (so the next interaction-tracking call presents the existing `RockSessionId` and the SQL upsert's UPDATE path fires — verified by the Full integration test above).
+- Login when not already authenticated does NOT regenerate the browser-session identifier (so the next interaction-tracking call presents the existing `RockSessionId` and the SQL upsert's UPDATE path fires, verified by the Full integration test above).
 - Login as a different person regenerates the browser-session identifier (so the next interaction-tracking call presents a fresh `RockSessionId` and the SQL upsert's INSERT path fires).
 - Logout regenerates the browser-session identifier.
 - Admin-impersonation start regenerates the browser-session identifier; the new value is independent of the impersonator's prior value.
 - Legacy cookie upgrade does NOT regenerate the browser-session identifier (so the existing `InteractionSession` is adopted, mirroring the unauthenticated-→-login flow).
-- Admin-impersonation end via `EndImpersonationAndRestore` re-points the browser-session identifier to the value stored in `PersonSessionAdminImpersonationSettings.ImpersonatorInteractionSessionGuid`. The impersonation-period `InteractionSession` row remains queryable in the database afterward (not deleted, not modified — this is a plain LINQ assertion against the mocked context).
-- `EndImpersonationAndRestore` when the prior `InteractionSession` row referenced by `ImpersonatorInteractionSessionGuid` has been deleted: same dangling-reference handling as the `PersonSession` case — return null, mark current inactive, do not silently continue.
+- Admin-impersonation end via `EndImpersonationAndRestore` re-points the browser-session identifier to the value stored in `PersonSessionAdminImpersonationSettings.ImpersonatorInteractionSessionGuid`. The impersonation-period `InteractionSession` row remains queryable in the database afterward (not deleted, not modified, this is a plain LINQ assertion against the mocked context).
+- `EndImpersonationAndRestore` when the prior `InteractionSession` row referenced by `ImpersonatorInteractionSessionGuid` has been deleted: same dangling-reference handling as the `PersonSession` case, return null, mark current inactive, do not silently continue.
 
 ### Verification
 - `build` clean.
@@ -413,16 +415,16 @@ The behavior in this phase splits across two seams: (1) the **SQL upsert** at `I
 
 ---
 
-## Phase 10 — API key request integration
+## Phase 10, API key request integration
 
 ### Goal
 API-key requests participate in `PersonSession` via long-lived `ApiKey`-source sessions. JWT and OAuth bearer tokens explicitly do NOT.
 
 ### Deliverables
-- **`Rock.Rest/Filters/AuthenticateAttribute.cs`** — after resolving a `UserLogin` by `ApiKey` (via `Authorization-Token` header or `?apikey=` query parameter), call `PersonSessionService.FindOrCreateApiKeySession( userLogin )`. Attach the session to the current request.
+- **`Rock.Rest/Filters/AuthenticateAttribute.cs`**: after resolving a `UserLogin` by `ApiKey` (via `Authorization-Token` header or `?apikey=` query parameter), call `PersonSessionService.FindOrCreateApiKeySession( userLogin )`. Attach the session to the current request.
 - **JWT (`HeaderTokens.JWT`) and ASOS bearer paths**: leave alone. Add an explicit code comment on each branch stating the intentional non-participation, citing the spec's "API key requests" subsection.
 - **OIDC password-grant flow** (`Rock.Oidc/Authorization/AuthorizationProvider.cs:120-182`) similarly leave alone with a code comment.
-- **`UserLogin.LastLoginDateTime`** — preserved as-is (set on credential entry / impersonation). No change.
+- **`UserLogin.LastLoginDateTime`**: preserved as-is (set on credential entry / impersonation). No change.
 
 ### Tests
 - Full integration (upsert race): concurrent first-API-key requests for the same `UserLogin` produce exactly one `ApiKey` `PersonSession`.
@@ -439,7 +441,7 @@ API-key requests participate in `PersonSession` via long-lived `ApiKey`-source s
 
 ---
 
-## Phase 11 — Mobile and TV device authentication
+## Phase 11, Mobile and TV device authentication
 
 ### Goal
 Mobile and TV logins produce full persistent `Component` sessions. Subsequent requests with `Cookie: .ROCK=...` flow through the same auth pipeline as browsers (no special branch).
@@ -448,7 +450,7 @@ Mobile and TV logins produce full persistent `Component` sessions. Subsequent re
 - **Mobile login block** (`Rock/Mobile/MobileHelper.cs:206` and related): switch to `StartComponentSession( ..., isPersistent: true, mfaRecency: ... )` + save + `GetCookieValue( newSession )`. Return the opaque cookie value in the response body. Do NOT call `SetAuthCookie` (the device manages cookie storage manually).
 - **TV login block** (`Rock/Tv/TvHelper.cs:193` and related): same pattern.
 - **Device-token-refresh case**: same-person re-login reuses the existing active `PersonSession`; `GetCookieValue` is called against it to produce a fresh opaque value.
-- **`Authorization.GetSimpleAuthCookie`** (`Rock/Security/Authorization.cs:853`) — make it a thin wrapper around `GetCookieValue` during the dual-reader window, marked `[Obsolete]` `[RockObsolete( "20.0" )]`.
+- **`Authorization.GetSimpleAuthCookie`** (`Rock/Security/Authorization.cs:853`): make it a thin wrapper around `GetCookieValue` during the dual-reader window, marked `[Obsolete]` `[RockObsolete( "20.0" )]`.
 - Confirm the existing `AuthenticateAttribute.cs:215-219` short-circuit still applies (principal already set by the cookie validation path from Phase 5).
 
 ### Tests
@@ -467,23 +469,23 @@ Mobile and TV logins produce full persistent `Component` sessions. Subsequent re
 
 ---
 
-## Phase 12 — User-token impersonation (`ProcessImpersonationToken`)
+## Phase 12, User-token impersonation (`ProcessImpersonationToken`)
 
 ### Goal
 Single Pattern B seam for every code path that inspects `rckipid` on an incoming request. The Person Bio block (admin impersonation) is NOT a Pattern B caller after Phase 13; this phase handles user-token (email link) flows.
 
 ### Deliverables
-- **`PersonSessionService.ProcessImpersonationToken( string rckipidToken )`** — internal. Implements the five-rule matrix in the spec. Returns `ImpersonationProcessResult`. Sets `redirectRequired = true` for every rule including the invalid-token failure case.
+- **`PersonSessionService.ProcessImpersonationToken( string rckipidToken )`**: internal. Implements the five-rule matrix in the spec. Returns `ImpersonationProcessResult`. Sets `redirectRequired = true` for every rule including the invalid-token failure case.
 - **`PersonToken.TimesUsed` increment** only when `rckipid` is present in the query string AND differs from the token referenced by the current session (per spec).
 - **Page-scope re-validation hook**: on every request while a `UserToken` session is active, re-validate the referenced `PersonToken`'s page-scope, expiration, and revocation. Fail closed (mark session inactive on expiry/revocation; not-authorized on page-scope miss).
 - **Pattern B callers migrate**:
-  - `Rock/Web/UI/RockPage.cs:2111` (`ProcessImpersonation`) — single highest-priority migration target. Convert to call `ProcessImpersonationToken`.
-  - `Rock.Rest/ApiControllerBase.cs:103` — `rckipid=` prefix parsing moves to `ProcessImpersonationToken`.
-  - `Rock/Web/HttpModules/RockGateway.cs:499` — same.
-  - `UserLogin.WebForms.cs` helpers that parse `"rckipid=" + token` out of cookies — same.
+  - `Rock/Web/UI/RockPage.cs:2111` (`ProcessImpersonation`), single highest-priority migration target. Convert to call `ProcessImpersonationToken`.
+  - `Rock.Rest/ApiControllerBase.cs:103`, `rckipid=` prefix parsing moves to `ProcessImpersonationToken`.
+  - `Rock/Web/HttpModules/RockGateway.cs:499`: same.
+  - `UserLogin.WebForms.cs` helpers that parse `"rckipid=" + token` out of cookies: same.
 
 ### Tests
-The full matrix from spec "Test Plan / Impersonation: `ProcessImpersonationToken` matrix" — 11 rows. All mocked-database. Each row asserts: resulting `PersonSession` state, redirect-required flag, and (where applicable) `PersonToken.TimesUsed` advancement or non-advancement.
+The full matrix from spec "Test Plan / Impersonation: `ProcessImpersonationToken` matrix", 11 rows. All mocked-database. Each row asserts: resulting `PersonSession` state, redirect-required flag, and (where applicable) `PersonToken.TimesUsed` advancement or non-advancement.
 
 Plus:
 - Mocked-database: per-request page-scope re-validation fails when a `UserToken` session navigates to a page outside the token's scope; user receives not-authorized.
@@ -498,24 +500,24 @@ Plus:
 
 ---
 
-## Phase 13 — Admin impersonation rewrite
+## Phase 13, Admin impersonation rewrite
 
 ### Goal
 Person Bio block hands off impersonation server-side via the new `PersonSession` row plus reissued cookie. No `PersonToken` is involved.
 
 ### Deliverables
-- **`PersonSessionService.ImpersonatePerson( RockRequestContext context, int targetPersonAliasId )`** — `internal static`, returns `void`. The full server-side orchestration of an admin-impersonation handoff. Steps:
-  1. Read the admin's current `PersonSession` AND `InteractionSession` from `RockRequestContext` (both are needed for restore). If the request has no active `PersonSession` (e.g., the admin's session expired between rendering the Impersonate button and clicking it), **throw `InvalidOperationException`** — the operation is not valid in the current request state. The caller (the Bio block) is responsible for the rendering check that prevents this from happening in normal flow; the throw is a defensive backstop for edge cases.
+- **`PersonSessionService.ImpersonatePerson( RockRequestContext context, int targetPersonAliasId )`**: `internal static`, returns `void`. The full server-side orchestration of an admin-impersonation handoff. Steps:
+  1. Read the admin's current `PersonSession` AND `InteractionSession` from `RockRequestContext` (both are needed for restore). If the request has no active `PersonSession` (e.g., the admin's session expired between rendering the Impersonate button and clicking it), **throw `InvalidOperationException`**, the operation is not valid in the current request state. The caller (the Bio block) is responsible for the rendering check that prevents this from happening in normal flow; the throw is a defensive backstop for edge cases.
   2. Call `PersonSessionService.StartImpersonationSession( targetPersonAliasId, impersonatorSession, impersonatorInteractionSession )` (Phase 3). The Phase 3 method stamps `PersonSessionAdminImpersonationSettings` with both Guids internally; this orchestrator does NOT need to touch `SetAdditionalSettings`.
   3. Add the new session to a fresh `RockContext` (owned by this method, in a `using` block), save.
   4. Call `PersonSessionService.SetAuthCookie( newSession, context )` to write the new-format `.ROCK` cookie via `RockRequestContext`.
   5. Write a `HistoryLogin` audit row for the impersonation start (preserved from today's flow). Use the same audit fields the existing Bio block writes today; the only change is *where* the write lives.
   - The redirect to the configured target URL is NOT in this method. Redirect is the block's job (see next bullet) because the target URL is a block setting; the service shouldn't know about it. With the redirect in the block and no `rckipid` appending anywhere in this flow, the "no token in URL" property holds by construction.
-  - **Why this lives on `PersonSessionService` and not on the block:** Bio.ascx.cs is a WebForms code-behind compiled at runtime; its event handlers are not reachable from Rock.Tests for the same reason `Application_BeginRequest` and `PostAuthenticateRequest` aren't (see Guardrails). Moving the orchestration into a service method makes the actual logic mocked-database testable, leaving only a trivial untested shim in the block — the same factoring Phase 5 and Phase 6 use.
-- **`RockWeb/Blocks/Crm/PersonDetail/Bio.ascx.cs`** — the impersonate button click handler is a thin shim:
+  - **Why this lives on `PersonSessionService` and not on the block:** Bio.ascx.cs is a WebForms code-behind compiled at runtime; its event handlers are not reachable from Rock.Tests for the same reason `Application_BeginRequest` and `PostAuthenticateRequest` aren't (see Guardrails). Moving the orchestration into a service method makes the actual logic mocked-database testable, leaving only a trivial untested shim in the block, the same factoring Phase 5 and Phase 6 use.
+- **`RockWeb/Blocks/Crm/PersonDetail/Bio.ascx.cs`**: the impersonate button click handler is a thin shim:
   1. Call `PersonSessionService.ImpersonatePerson( rockRequestContext, targetPersonAliasId )`.
   2. Redirect to the configured target URL (block setting). The URL is whatever the admin or installer set; this code appends nothing to it, so `rckipid` cannot appear unless the configured URL already contains it (operator error, not a code bug).
-  3. If `ImpersonatePerson` throws `InvalidOperationException`, fall through to the page-level error handling that already exists for unauthenticated requests (the existing pattern Rock uses for "your session expired" — surface that, do not crash).
+  3. If `ImpersonatePerson` throws `InvalidOperationException`, fall through to the page-level error handling that already exists for unauthenticated requests (the existing pattern Rock uses for "your session expired", surface that, do not crash).
 - **Remove the `PersonToken` write** from the entire admin-impersonation flow. Confirm via grep that no remaining call site in Bio.ascx.cs creates a `PersonToken`.
 - **Wire `EndImpersonationAndRestore`** as the action for the "stop impersonating" path (find the existing UI affordance for this). Restoring re-attaches both the admin's prior `PersonSession` AND prior `InteractionSession`; the implementation reads both Guids out of `PersonSessionAdminImpersonationSettings`.
 
@@ -529,7 +531,7 @@ All tests target `PersonSessionService.ImpersonatePerson` directly with a mocked
 - Mocked-database: `PersonToken.TimesUsed` is unchanged across the entire `ImpersonatePerson` call (covers the "no PersonToken involvement" guarantee against accidental future re-coupling).
 - Mocked-database: ending impersonation via `EndImpersonationAndRestore` marks the impersonation session inactive and returns the impersonator's prior session.
 - Mocked-database: ending impersonation re-attaches the prior `InteractionSession` (the one whose Guid was stamped into `PersonSessionAdminImpersonationSettings.ImpersonatorInteractionSessionGuid` at impersonation start); the `InteractionSession` created at impersonation start remains in the database but is no longer the "current" row for the admin's browser session.
-- Mocked-database: dangling `ImpersonatorInteractionSessionGuid` (target row deleted between start and end) is treated the same way as a dangling `ImpersonatorPersonSessionGuid` — `EndImpersonationAndRestore` returns null and marks current inactive.
+- Mocked-database: dangling `ImpersonatorInteractionSessionGuid` (target row deleted between start and end) is treated the same way as a dangling `ImpersonatorPersonSessionGuid`, `EndImpersonationAndRestore` returns null and marks current inactive.
 
 ### Verification
 - `build` clean.
@@ -540,24 +542,24 @@ All tests target `PersonSessionService.ImpersonatePerson` directly with a mocked
 
 ---
 
-## Phase 14 — Pattern A migration + reader migrations
+## Phase 14, Pattern A migration + reader migrations
 
 ### Goal
 Every reader of the deprecated `UserLogin.*` properties or the legacy auth ticket payload moves to `PersonSession` / `RockRequestContext`. After this phase, no reader depends on the old shape.
 
 ### Deliverables
-- **Pattern A callers** — convert each call site that asks "is this an impersonated session?" to read `IsImpersonated()` against the current `PersonSession` via `RockRequestContext`:
+- **Pattern A callers**: convert each call site that asks "is this an impersonated session?" to read `IsImpersonated()` against the current `PersonSession` via `RockRequestContext`:
   - `Rock/Web/UI/RockPage.cs:2076`
   - `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:101`
   - any additional callers surfaced during the sweep.
-- **`UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated` consumers** — convert each consumer to check current session strength via `RockRequestContext.MeetsRequirement()`:
+- **`UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated` consumers**: convert each consumer to check current session strength via `RockRequestContext.MeetsRequirement()`:
   - `Rock.Blocks/Security/ChangePassword.cs:132,228`
   - `RockWeb/Blocks/Security/Authorize.ascx.cs`
   - `Rock/Web/UI/RockPage.cs:941`
   - any additional callers surfaced during the sweep.
-- **Active Users block** — read from `PersonSession.LastActivityDateTime` and `IsActive`, not from `UserLogin.LastActivityDateTime` / `IsOnLine`.
-- **Data Automation job** — reactivate people based on `PersonSession.LastActivityDateTime`.
-- **`Rock.Rest/Controllers/AuthController.cs:43-58`** — no behavior change, but add the engineering note required by the spec stating that this endpoint stamps MFA recency without verifying a second factor and that the security concern is deferred to the v2 REST conversion.
+- **Active Users block**: read from `PersonSession.LastActivityDateTime` and `IsActive`, not from `UserLogin.LastActivityDateTime` / `IsOnLine`.
+- **Data Automation job**: reactivate people based on `PersonSession.LastActivityDateTime`.
+- **`Rock.Rest/Controllers/AuthController.cs:43-58`**: no behavior change, but add the engineering note required by the spec stating that this endpoint stamps MFA recency without verifying a second factor and that the security concern is deferred to the v2 REST conversion.
 
 ### Tests
 - Mocked-database: Active Users block returns users with recent `PersonSession` activity.
@@ -573,7 +575,7 @@ Every reader of the deprecated `UserLogin.*` properties or the legacy auth ticke
 
 ---
 
-## Phase 15 — Deprecations and writer removals
+## Phase 15, Deprecations and writer removals
 
 ### Goal
 Mark deprecated public surface `[Obsolete]` `[RockObsolete( "20.0" )]`. Remove every writer of properties that the new model no longer needs. Add the `PersonSessionService.SignOut` seam that logout paths migrate onto. After this phase, the new model is the only authority.
@@ -586,73 +588,73 @@ Mark deprecated public surface `[Obsolete]` `[RockObsolete( "20.0" )]`. Remove e
 ### Deliverables
 
 #### New `PersonSessionService` method
-- **`PersonSessionService.SignOut( RockRequestContext requestContext )`** — `public`, `[RockInternal( "20.0" )]`. The single seam every logout path migrates onto in this phase. Steps:
+- **`PersonSessionService.SignOut( RockRequestContext requestContext )`**: `public`, `[RockInternal( "20.0" )]`. The single seam every logout path migrates onto in this phase. Steps:
   1. Read `requestContext.PersonSession`. If null, no-op (anonymous already; nothing to sign out).
   2. Reload that session through the service's `RockContext` so the `IsActive` flip + `PreSave` hook run against a tracked entity (mirrors the pattern in `_btnRestoreImpersonatedByUser_Click`). `Get( session.Guid )` is the path.
   3. Set `IsActive = false` on the tracked entity and call `SaveChanges()`. The existing `PreSave` hook stamps `InactiveDateTime`.
   4. Call the existing private `ExpireAuthCookie( requestContext )` helper at `Rock/Model/Security/PersonSession/PersonSessionService.cs:1367` to clear the `.ROCK` cookie via `requestContext.Response`.
   5. Call `requestContext.SetPersonSession( null )` so downstream code in the same request observes the anonymous state without having to re-resolve from the cookie.
   6. Returns `void`. Failure modes (session row already deleted, cookie already expired) are all silent; the post-condition "this request is anonymous" holds either way.
-  - **Why on `PersonSessionService` and not `RockRequestContext`.** Symmetry with `StartComponentSession`, `StartImpersonationSession`, `StartUserTokenSession`, and `EndImpersonationAndRestore` — every other session-lifecycle method is on the service. Putting `SignOut` on the context would force the context to acquire a `RockContext` (it has none today) and call back into the service, creating a circular layering against the current direction ("service uses context as a parameter for cookie work"). The caller verbosity tradeoff (`new PersonSessionService( rockContext ).SignOut( RequestContext )` vs a hypothetical `RequestContext.SignOut()`) is acceptable; if it becomes annoying we can add a thin `RockRequestContext.SignOut()` sugar method later — adding sugar is easy, undoing a layering inversion is not.
+  - **Why on `PersonSessionService` and not `RockRequestContext`.** Symmetry with `StartComponentSession`, `StartImpersonationSession`, `StartUserTokenSession`, and `EndImpersonationAndRestore`, every other session-lifecycle method is on the service. Putting `SignOut` on the context would force the context to acquire a `RockContext` (it has none today) and call back into the service, creating a circular layering against the current direction ("service uses context as a parameter for cookie work"). The caller verbosity tradeoff (`new PersonSessionService( rockContext ).SignOut( RequestContext )` vs a hypothetical `RequestContext.SignOut()`) is acceptable; if it becomes annoying we can add a thin `RockRequestContext.SignOut()` sugar method later, adding sugar is easy, undoing a layering inversion is not.
   - **Does NOT regenerate `RockSessionId`.** That stays the caller's responsibility, mirroring `Rock.Blocks/Security/Logout.cs:146` which calls `RequestContext.RegenerateBrowserSessionId()` after `Authorization.SignOut()` today. The reason: not every signout caller wants browser-session regen (the MFA bounce-out in `RockPage` is arguably a "re-login expected, keep the trail" case, whereas the explicit Logout block IS a "new session next request" case). Keeping the regen call at the caller's site preserves that distinction.
 
-#### Obsolete markers — `UserLogin` properties
-- **`UserLogin.LastActivityDateTime`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Property at `Rock/Model/CRM/UserLogin/UserLogin.cs:93`. All in-core writers removed (see "Writer removals" below). The writer inside the obsoleted `UpdateUserLastActivity` bus task body (`Rock/Tasks/UpdateUserLastActivity.cs:93`) is intentionally LEFT IN PLACE — plugins still calling the obsolete bus task should continue to function during the dual-reader window; the bus task itself is the obsolete entry point.
-- **`UserLogin.IsOnLine`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Property at `Rock/Model/CRM/UserLogin/UserLogin.cs:123`. Same writer-retention reasoning as `LastActivityDateTime` for `Rock/Tasks/UpdateUserLastActivity.cs:94`.
-- **`UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated`** — `[Obsolete]` `[RockObsolete( "20.0" )]`. Properties at `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:43,70`. Both keep their signatures **and** their functional Phase 14 PersonSession-bridge bodies: `IsAuthenticated` reads the current `PersonSession` (active and not impersonated), and `IsTwoFactorAuthenticated` calls `RockRequestContext.MeetsRequirement( MultiFactor )`. The `[Obsolete]` attribute is the deprecation notice for C# callers; the bodies are intentionally **NOT** collapsed to `return false;`. An earlier draft of this phase collapsed them to force Lava authors to notice (Lava has no obsolete-warning surface), but that would silently break Lava templates and plugins that read these properties with no transition period. Keeping the bridge bodies functional while obsolete-marked gives a proper deprecation window; neutering or removing the bodies is deferred to a later version once that window has passed. All in-core readers already moved to `MeetsRequirement` in Phase 14, so there is no in-core dependency on the bodies.
+#### Obsolete markers, `UserLogin` properties
+- **`UserLogin.LastActivityDateTime`**: `[Obsolete]` `[RockObsolete( "20.0" )]`. Property at `Rock/Model/CRM/UserLogin/UserLogin.cs:93`. All in-core writers removed (see "Writer removals" below). The writer inside the obsoleted `UpdateUserLastActivity` bus task body (`Rock/Tasks/UpdateUserLastActivity.cs:93`) is intentionally LEFT IN PLACE, plugins still calling the obsolete bus task should continue to function during the dual-reader window; the bus task itself is the obsolete entry point.
+- **`UserLogin.IsOnLine`**: `[Obsolete]` `[RockObsolete( "20.0" )]`. Property at `Rock/Model/CRM/UserLogin/UserLogin.cs:123`. Same writer-retention reasoning as `LastActivityDateTime` for `Rock/Tasks/UpdateUserLastActivity.cs:94`.
+- **`UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated`**: `[Obsolete]` `[RockObsolete( "20.0" )]`. Properties at `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:43,70`. Both keep their signatures **and** their functional Phase 14 PersonSession-bridge bodies: `IsAuthenticated` reads the current `PersonSession` (active and not impersonated), and `IsTwoFactorAuthenticated` calls `RockRequestContext.MeetsRequirement( MultiFactor )`. The `[Obsolete]` attribute is the deprecation notice for C# callers; the bodies are intentionally **NOT** collapsed to `return false;`. An earlier draft of this phase collapsed them to force Lava authors to notice (Lava has no obsolete-warning surface), but that would silently break Lava templates and plugins that read these properties with no transition period. Keeping the bridge bodies functional while obsolete-marked gives a proper deprecation window; neutering or removing the bodies is deferred to a later version once that window has passed. All in-core readers already moved to `MeetsRequirement` in Phase 14, so there is no in-core dependency on the bodies.
 
-#### Writer removals — `UserLogin.IsOnLine` / `UserLogin.LastActivityDateTime`
-- **`MarkOnlineUsersOffline()`** — remove the method entirely (`RockWeb/App_Code/Global.asax.cs:998`) and both call sites (`Global.asax.cs:204` startup, `Global.asax.cs:946` shutdown). Plan-draft line numbers `:203,782,834` are stale; only two call sites exist today.
-- **`Session_End` offline-flag block** — at `RockWeb/App_Code/Global.asax.cs:556-578` (plan draft said `:547-568`). Remove the `try` body that sets `user.IsOnLine = false`. The `Session_End` method shell stays (other handlers may live there in the future) but its body becomes empty after the removal.
-- **`UpdateUserLastActivity.Message.Send( ..., IsOnline = false )` callers** — delete the entire `new UpdateUserLastActivity.Message { ... }.Send()` block (including the `#pragma warning disable 618` wrapper) at:
+#### Writer removals, `UserLogin.IsOnLine` / `UserLogin.LastActivityDateTime`
+- **`MarkOnlineUsersOffline()`**: remove the method entirely (`RockWeb/App_Code/Global.asax.cs:998`) and both call sites (`Global.asax.cs:204` startup, `Global.asax.cs:946` shutdown). Plan-draft line numbers `:203,782,834` are stale; only two call sites exist today.
+- **`Session_End` offline-flag block**: at `RockWeb/App_Code/Global.asax.cs:556-578` (plan draft said `:547-568`). Remove the `try` body that sets `user.IsOnLine = false`. The `Session_End` method shell stays (other handlers may live there in the future) but its body becomes empty after the removal.
+- **`UpdateUserLastActivity.Message.Send( ..., IsOnline = false )` callers**: delete the entire `new UpdateUserLastActivity.Message { ... }.Send()` block (including the `#pragma warning disable 618` wrapper) at:
   - `Rock.Blocks/Security/Logout.cs:109-117`
   - `Rock.Blocks/Security/LoginStatus.cs:332-340`
-  - `Rock.Blocks/Security/ConfirmAccount.cs:391` (block continues to next non-Send line — pragma + Message + Send + restore)
+  - `Rock.Blocks/Security/ConfirmAccount.cs:391` (block continues to next non-Send line, pragma + Message + Send + restore)
   - `Rock/Web/UI/RockPage.cs:844-852` (plan draft said `:843`; off by one)
-  - `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78-118` — this file has TWO `UpdateUserLastActivity.Message.Send*` calls. Remove BOTH: the `userIsOnline == true` branch's `message.SendIfNeeded()` AND the locked-out/unconfirmed branch's `message.SendIfNeeded()` with `IsOnline = false`. The replacement is the existing `FireUpdatePersonSessionLastActivityIfPresent()` call already in place; nothing else has to change here besides the deletes.
+  - `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78-118`: this file has TWO `UpdateUserLastActivity.Message.Send*` calls. Remove BOTH: the `userIsOnline == true` branch's `message.SendIfNeeded()` AND the locked-out/unconfirmed branch's `message.SendIfNeeded()` with `IsOnline = false`. The replacement is the existing `FireUpdatePersonSessionLastActivityIfPresent()` call already in place; nothing else has to change here besides the deletes.
 
 #### Bus task and transaction
-- **`UpdateUserLastActivity` bus task** — already marked `[Obsolete]` `[RockObsolete( "20.0" )]` in Phase 8 (at `Rock/Tasks/UpdateUserLastActivity.cs:37-38`). The `IsOnline` property on the message is already obsoleted (`:134-135`). No new markers needed in this phase; just delete the in-core callers per the section above. The `Execute` body that writes `user.LastActivityDateTime` / `user.IsOnLine` stays in place for plugin compatibility (the whole class is the obsolete entry point — plugins still calling it should continue to function until the v23 removal target).
-- **`UserLastActivityTransaction`** — already removed in a previous version (grep finds zero matches). No work; preserved as a regression checkpoint.
+- **`UpdateUserLastActivity` bus task**: already marked `[Obsolete]` `[RockObsolete( "20.0" )]` in Phase 8 (at `Rock/Tasks/UpdateUserLastActivity.cs:37-38`). The `IsOnline` property on the message is already obsoleted (`:134-135`). No new markers needed in this phase; just delete the in-core callers per the section above. The `Execute` body that writes `user.LastActivityDateTime` / `user.IsOnLine` stays in place for plugin compatibility (the whole class is the obsolete entry point, plugins still calling it should continue to function until the v23 removal target).
+- **`UserLastActivityTransaction`**: already removed in a previous version (grep finds zero matches). No work; preserved as a regression checkpoint.
 
-#### Obsolete markers — `Authorization` helpers
+#### Obsolete markers, `Authorization` helpers
 Public surface only; private helpers are out of scope for this phase per the interpretation note above.
-- **`Authorization.GetSimpleAuthCookie`** at `Rock/Security/Authorization.cs:898` — already `[Obsolete]` (Phase 11). No new marker needed.
-- **`Authorization.SetAuthCookie( string, bool, bool )`** at `Rock/Security/Authorization.cs:969` — add `[Obsolete]` `[RockObsolete( "20.0" )]`. Message: `"Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead."`
-- **`Authorization.SetAuthCookie( string, bool, bool, bool )`** at `Rock/Security/Authorization.cs:981` — same marker and message.
-- **`Authorization.SignOut()`** at `Rock/Security/Authorization.cs:1050` — add `[Obsolete]` `[RockObsolete( "20.0" )]`. Message: `"Use PersonSessionService.SignOut( requestContext ) instead."` The body — including the `FormsAuthentication.SignOut()` call at `:1076` — stays as-is during the dual-reader window (the obsolete body is what keeps the bridge functional for plugins).
+- **`Authorization.GetSimpleAuthCookie`** at `Rock/Security/Authorization.cs:898`, already `[Obsolete]` (Phase 11). No new marker needed.
+- **`Authorization.SetAuthCookie( string, bool, bool )`** at `Rock/Security/Authorization.cs:969`, add `[Obsolete]` `[RockObsolete( "20.0" )]`. Message: `"Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead."`
+- **`Authorization.SetAuthCookie( string, bool, bool, bool )`** at `Rock/Security/Authorization.cs:981`: same marker and message.
+- **`Authorization.SignOut()`** at `Rock/Security/Authorization.cs:1050`, add `[Obsolete]` `[RockObsolete( "20.0" )]`. Message: `"Use PersonSessionService.SignOut( requestContext ) instead."` The body, including the `FormsAuthentication.SignOut()` call at `:1076`, stays as-is during the dual-reader window (the obsolete body is what keeps the bridge functional for plugins).
 
 #### `Authorization.SignOut` caller migration (7 sites)
 Convert each to `new PersonSessionService( rockContext ).SignOut( RequestContext )`. The `rockContext` source varies per site; all 7 already have a `RockContext` and `RockRequestContext` (or equivalent) in scope:
-- `RockWeb/Blocks/Security/Oidc/Logout.ascx.cs:73` — uses `RockPage.RequestContext`; build a local `RockContext` (no service field exists).
-- `Rock.Blocks/Security/Logout.cs:138` — block has `RockContext` and `RequestContext` properties.
-- `Rock.Blocks/Security/LoginStatus.cs:357` — same pattern as Logout.
-- `Rock.Blocks/Security/ConfirmAccount.cs:402` — same pattern.
-- `Rock/Web/UI/RockPage.cs:855` — the `?Logout` page-parameter handler. `RequestContext` is on the page; build a local `RockContext`.
-- `Rock/Web/UI/RockPage.cs:953` — the MFA-not-satisfied bounce-out branch added in Phase 14. Same as `:855`.
-- `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:115` — the locked-out / unconfirmed fallback. Service already has `RockContext` (it IS a service); `RequestContext` comes from `RockRequestContextAccessor.Current` since this method runs outside a block.
+- `RockWeb/Blocks/Security/Oidc/Logout.ascx.cs:73`, uses `RockPage.RequestContext`; build a local `RockContext` (no service field exists).
+- `Rock.Blocks/Security/Logout.cs:138`, block has `RockContext` and `RequestContext` properties.
+- `Rock.Blocks/Security/LoginStatus.cs:357`: same pattern as Logout.
+- `Rock.Blocks/Security/ConfirmAccount.cs:402`: same pattern.
+- `Rock/Web/UI/RockPage.cs:855`: the `?Logout` page-parameter handler. `RequestContext` is on the page; build a local `RockContext`.
+- `Rock/Web/UI/RockPage.cs:953`: the MFA-not-satisfied bounce-out branch added in Phase 14. Same as `:855`.
+- `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:115`: the locked-out / unconfirmed fallback. Service already has `RockContext` (it IS a service); `RequestContext` comes from `RockRequestContextAccessor.Current` since this method runs outside a block.
 
 #### `Authorization.SetAuthCookie` caller migration (4 sites)
 These callers create a new auth session and write the cookie. After the obsolete marker lands they'll emit warnings. Convert each to the documented replacement (`StartComponentSession` + save + `SetAuthCookie`):
 - `Rock.Blocks/Security/PhoneNumberIdentification.cs:429`
 - `Rock.Blocks/Security/AccountEntry.cs:598`
 - `RockWeb/Blocks/CheckIn/AttendanceSelfEntry.ascx.cs:874`
-- `Rock.Rest/Controllers/AuthController.cs:72` — leave the call in place but wrap in `#pragma warning disable 618` / `#pragma warning restore 618` so the engineering note added in Phase 14 (deferred to v2 REST conversion) is preserved without warning noise. This is the documented exception, not a migration.
+- `Rock.Rest/Controllers/AuthController.cs:72`: leave the call in place but wrap in `#pragma warning disable 618` / `#pragma warning restore 618` so the engineering note added in Phase 14 (deferred to v2 REST conversion) is preserved without warning noise. This is the documented exception, not a migration.
 
 #### `Authorization.GetSimpleAuthCookie` callers
-4 sites in `Rock/Blocks/Types/Mobile/Cms/{Register,Login}.cs` (`Register.cs:630`, `Login.cs:327`, `Login.cs:1002`, `Login.cs:1123`). These already wrap their calls in `#pragma warning disable 618` (Phase 11). No action required — the wrappers continue to suppress the existing obsolete warning.
+4 sites in `Rock/Blocks/Types/Mobile/Cms/{Register,Login}.cs` (`Register.cs:630`, `Login.cs:327`, `Login.cs:1002`, `Login.cs:1123`). These already wrap their calls in `#pragma warning disable 618` (Phase 11). No action required, the wrappers continue to suppress the existing obsolete warning.
 
 #### Sweep
 After the markers land, run `build` and treat every new `CS0618` warning as a migration candidate. Most will be in the lists above; surface anything unexpected before deleting it.
 
 ### Tests
 - No new plain-unit tests for `UserLogin.IsAuthenticated` / `IsTwoFactorAuthenticated`. They retain their functional Phase 14 PersonSession-bridge bodies (only the `[Obsolete]` markers are added in this phase), so their behavior is unchanged and is already exercised by the Phase 14 / `MeetsRequirement` coverage. (An earlier draft asserted these "always return `false`" after a body collapse; that collapse was dropped, so those assertions no longer apply.)
-- Static check (not a runtime test): `MarkOnlineUsersOffline()` no longer exists or has zero call sites — grep the codebase to confirm. (Booting `Global.asax` startup inside Rock.Tests is not feasible; see Guardrails. The cleanup is verified by absence at compile time and by the "App pool recycle does NOT mark all users offline" item in the Phase 17 manual checklist.)
+- Static check (not a runtime test): `MarkOnlineUsersOffline()` no longer exists or has zero call sites, grep the codebase to confirm. (Booting `Global.asax` startup inside Rock.Tests is not feasible; see Guardrails. The cleanup is verified by absence at compile time and by the "App pool recycle does NOT mark all users offline" item in the Phase 17 manual checklist.)
 - Mocked-database: a logout via `PersonSessionService.SignOut( requestContext )` marks the current `PersonSession` inactive (verify `IsActive == false` AND `InactiveDateTime != null`), clears the `.ROCK` cookie (verify via `TrackingResponseContext.RemovedCookies` like the existing Phase 6 legacy-upgrade tests do), and clears `requestContext.PersonSession`. New file: `Rock.Tests/Security/PersonSessionServiceSignOutTests.cs` (or fold into an existing file; the "Phase 17 follow-ups" already note that file consolidation is a pre-merge sweep).
 - Mocked-database: `PersonSessionService.SignOut` on a `requestContext` with no `PersonSession` is a no-op (no `SaveChanges` call, no cookie remove). Defensive regression test.
 
 ### Verification
-- `build` clean (warnings about obsoletes are expected and are exactly the point — every `CS0618` warning was a deliberate decision in this phase).
+- `build` clean (warnings about obsoletes are expected and are exactly the point, every `CS0618` warning was a deliberate decision in this phase).
 
 ### Spec references
 - "Design / Deprecations and removals"
@@ -660,14 +662,14 @@ After the markers land, run `build` and treat every new `CS0618` warning as a mi
 
 ---
 
-## Phase 16 — Final touch-points and cleanup
+## Phase 16, Final touch-points and cleanup
 
 ### Goal
 Sweep up remaining cross-cutting wiring and finalize the change.
 
 ### Deliverables
-- **Rock Cleanup job** — mark `PersonSession` rows inactive once `ExpiresDateTime` passes. Do NOT delete inactive rows (history is preserved).
-- **Sweep for missed `IsImpersonated` consumers** — anyone reading the legacy `UserData.IsImpersonated` from a `FormsAuthenticationTicket` must be migrated. The spec's touch-points list is not exhaustive; assume more will surface.
+- **Rock Cleanup job**: mark `PersonSession` rows inactive once `ExpiresDateTime` passes. Do NOT delete inactive rows (history is preserved).
+- **Sweep for missed `IsImpersonated` consumers**: anyone reading the legacy `UserData.IsImpersonated` from a `FormsAuthenticationTicket` must be migrated. The spec's touch-points list is not exhaustive; assume more will surface.
 - **`FormsAuthentication.RedirectToLoginPage` callers** verified to still work (`RockPage.cs:954`, `RockWeb/Blocks/Fundraising/FundraisingParticipant.ascx.cs:877`, `RockWeb/Blocks/Fundraising/FundraisingOpportunityView.ascx.cs:555`, `RockWeb/Blocks/CheckIn/AttendanceSelfEntry.ascx.cs:496`). These are generic fallback redirects; no spec impact, but confirm they still trigger correctly under the new pipeline.
 - **Final dual-reader window sanity check.** Run a fresh-database scenario and a populated-database scenario; confirm legacy cookies upgrade transparently and new logins produce new-format cookies.
 
@@ -681,7 +683,7 @@ Sweep up remaining cross-cutting wiring and finalize the change.
 
 ---
 
-## Phase 17 — Manual testing
+## Phase 17, Manual testing
 
 This phase is for a human, not the implementation agent. After phases 1-16 land and automated tests are green, the scenarios below must be exercised end-to-end against a running Rock instance (ideally one with seed data so legacy-cookie scenarios can be reproduced). Tick each one off; surface any failure as a follow-up issue against the implementation agent before the spec moves to `specs/completed/`.
 
@@ -691,6 +693,8 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 - [ ] "Remember me" checked → cookie persists across browser restart; same `PersonSession` is reused on first request post-restart.
 - [ ] "Remember me" unchecked → cookie has no `Expires` attribute; browser close clears it; next session is anonymous until login.
 - [ ] Standard logout marks the current `PersonSession` inactive, clears the `.ROCK` cookie, and does NOT log the user out of other devices.
+- [ ] Logout also clears the unsecured check-in person-identifier cookie (`.ROCK`-adjacent self-identification cookie), so a subsequent check-in self-service flow no longer recognizes the signed-out person.
+- [ ] Cross-subdomain logins (`DOMAINS_SHARING_LOGINS` configured): logging in on `sub1.example.org` issues the `.ROCK` cookie at the shared domain (`.example.org`) plus the companion `.ROCK_DOMAIN` breadcrumb cookie; logging out clears both at that same shared domain so the session ends on `sub2.example.org` as well.
 - [ ] Logging in as the same person while already authenticated reuses the existing session (does NOT create a duplicate row).
 - [ ] Logging in as a different person while authenticated marks the prior session inactive and creates a new one.
 
@@ -708,15 +712,16 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 - [ ] After redirect, the current user is the impersonated person, not the admin.
 - [ ] No `PersonToken` row was created during this flow (SQL check on the `PersonToken` table immediately before and after).
 - [ ] A `HistoryLogin` row is written capturing the impersonation start.
-- [ ] The admin's MFA recency is preserved on the impersonation session (verify by visiting an MFA-required page as the impersonated user — the admin's MFA stamping should grant access without re-prompting, assuming the admin was recently MFA-authenticated).
+- [ ] The admin's MFA recency is preserved on the impersonation session (verify by visiting an MFA-required page as the impersonated user; the admin's MFA stamping should grant access without re-prompting, assuming the admin was recently MFA-authenticated).
 - [ ] "Stop impersonating" returns the admin to their original session. The impersonation session is marked inactive; the impersonator's prior session is the current session again.
-- [ ] "Stop impersonating" also re-attaches the admin's original `InteractionSession` so the admin's pre-impersonation activity trail picks up where it left off (verify by inspecting the `InteractionSession` rows tied to the admin's browser session — the row from before impersonation should be the "current" one after restore, with the impersonation-period row preserved as historical).
-- [ ] If the impersonator's prior session is deleted or itself inactive while impersonation is in progress, "stop impersonating" gracefully fails closed (current session inactive, user becomes anonymous) — verify by manually marking the impersonator's session inactive in SQL and then clicking stop.
+- [ ] "Stop impersonating" also re-attaches the admin's original `InteractionSession` so the admin's pre-impersonation activity trail picks up where it left off (verify by inspecting the `InteractionSession` rows tied to the admin's browser session, the row from before impersonation should be the "current" one after restore, with the impersonation-period row preserved as historical).
+- [ ] If the impersonator's prior session is deleted or itself inactive while impersonation is in progress, "stop impersonating" gracefully fails closed (current session inactive, user becomes anonymous). Verify by manually marking the impersonator's session inactive in SQL and then clicking stop.
 - [ ] Two admins impersonating the same target person at the same time work independently (two separate impersonation sessions).
 
 ### User-token (`rckipid`) email links
 
 - [ ] Click an email link with a valid `rckipid`. The user lands on the target page authenticated as the token's target person; the URL no longer carries `rckipid`.
+- [ ] Personalized content renders for the token's target person on that page even though the `UserToken` session has NO backing `UserLogin` (e.g. `{{ CurrentPerson.FullName }}` and merge fields resolve to the target person). This verifies `RockRequestContext.CurrentPerson` is sourced from `PersonSession.PersonAlias.Person`, not from `CurrentUser?.Person`, for sessions with a null `UserLogin`.
 - [ ] `PersonToken.TimesUsed` advances to 1 on the first click.
 - [ ] Navigating to another page in the same browsing session does NOT advance `TimesUsed` (the token is "consumed" once per session, not per page).
 - [ ] Re-clicking the same email link in another tab while the session is active does NOT advance `TimesUsed` (rule 2 of the matrix).
@@ -725,14 +730,15 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 - [ ] Clicking the link while in an admin-impersonation session abandons impersonation and creates a `UserToken` session (rule 3).
 - [ ] Clicking an expired / revoked / over-`UsageLimit` token marks the current session inactive; the resulting page load is anonymous (rule 1).
 - [ ] Clicking a link to an MFA-required page prompts for MFA (NEW behavior; was previously bypassed). Without MFA, access is denied.
-- [ ] Clicking a link to a page outside the token's page scope returns a not-authorized error.
-- [ ] After navigating to a page outside the token's scope (no `rckipid`), per-request page-scope re-validation still fails the user (not-authorized).
+- [ ] Clicking an `rckipid` link whose token is page-scoped to page A, but the link URL targets a DIFFERENT page, is treated as an unusable token (rule 1): the current session is signed out, `rckipid` is stripped, and the resulting page load is anonymous (NOT a "not-authorized" error, because page-scope mismatch at session establishment folds into the invalid-token rule).
+- [ ] Establishing a `UserToken` session by clicking an `rckipid` link that DOES target its scoped page succeeds; the recipient can view that page.
+- [ ] After establishing a valid `UserToken` session, navigating to a page outside the token's scope (no `rckipid`) triggers per-request page-scope re-validation, which returns not-authorized while leaving the session active (the recipient can return to the in-scope page).
 
 ### Legacy cookie upgrade
 
 - [ ] A user with a legacy `.ROCK` cookie from before the deployment makes a request: the cookie is silently upgraded; a `PersonSession` is created with `CreationSource = Legacy` and `IssuedDateTime = ticket.IssueDate`; the cookie on the response is new-format.
 - [ ] The user is NOT forced to re-log in.
-- [ ] A second request with the same legacy cookie (e.g. from a client that does not honor `Set-Cookie`) hits the existing `PersonSession` row — no duplicate is created.
+- [ ] A second request with the same legacy cookie (e.g. from a client that does not honor `Set-Cookie`) hits the existing `PersonSession` row; no duplicate is created.
 - [ ] A legacy cookie with `IsImpersonated = true` is dropped on first request; the request is anonymous; no `PersonSession` is created.
 - [ ] The kill switch (`RejectAuthenticationCookiesIssuedBefore`) correctly marks an upgraded session inactive if its `IssuedDateTime` precedes the threshold.
 - [ ] An upgraded session reports `Authenticated` strength (NOT `Elevated` or `MultiFactor`) until the user next authenticates.
@@ -802,7 +808,7 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 - [ ] Web farm: a cookie issued by node A validates correctly on node B (the `DataEncryptionKey` is shared).
 - [ ] Active Users block lists users with recent `PersonSession.LastActivityDateTime`; matches expectations across multiple devices for the same person (each device = separate session row).
 - [ ] App pool recycle does NOT mark all users offline (no more `MarkOnlineUsersOffline`).
-- [ ] Data Automation job correctly reactivates people based on `PersonSession` activity (verify with a person whose `UserLogin.LastActivityDateTime` is stale but `PersonSession.LastActivityDateTime` is recent — they should be treated as active).
+- [ ] Data Automation job correctly reactivates people based on `PersonSession` activity (verify with a person whose `UserLogin.LastActivityDateTime` is stale but `PersonSession.LastActivityDateTime` is recent, they should be treated as active).
 - [ ] Person merge: existing `PersonSession` rows are left pointing at their original `PersonAlias` (no fix-up to merge target).
 - [ ] Rock Cleanup job marks expired `PersonSession` rows inactive but does NOT delete them. Historical rows remain queryable.
 - [ ] `Authorization.SignOut()` (and any caller routed through `PersonSessionService`) invalidates only the current session, leaving other active sessions for the same person intact.
@@ -818,7 +824,7 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 
 - [ ] Setting `RejectAuthenticationCookiesIssuedBefore` to `RockDateTime.Now` marks every active `PersonSession` issued before the threshold inactive on first request and expires their cookies. Users are forced to re-log in.
 - [ ] After kill-switch fires, fresh logins produce new `PersonSession` rows with `IssuedDateTime > threshold` that are not rejected.
-- [ ] Legacy-cookie kill-switch path: a user presenting a pre-deployment legacy `FormsAuthenticationTicket` whose `IssueDate` precedes the kill-switch threshold is rejected on the *current* request — the cookie is expired and the request is anonymous. (Verify by setting the threshold to a recent value, then making a request with a legacy cookie issued before it; the user should be forced to re-log in without ever briefly authenticating. This exercises the dual-reader bridge block in Phase 5's BeginRequest hook.)
+- [ ] Legacy-cookie kill-switch path: a user presenting a pre-deployment legacy `FormsAuthenticationTicket` whose `IssueDate` precedes the kill-switch threshold is rejected on the *current* request, the cookie is expired and the request is anonymous. (Verify by setting the threshold to a recent value, then making a request with a legacy cookie issued before it; the user should be forced to re-log in without ever briefly authenticating. This exercises the dual-reader bridge block in Phase 5's BeginRequest hook.)
 
 ### Manual follow-ups
 
@@ -826,27 +832,27 @@ Pre-merge developer sweeps, not user-facing scenarios. Perform these once the im
 
 - [ ] Determine if any mocked-db tests should be promoted to full integration. Some tests in `Rock.Tests/Security/PersonSessionServiceTests.cs` use a generic `try { ... } catch { }` around the create / save leg and treat any exception as "the find leg returned null" (e.g. the orphan-not-resurrected and expired-not-reused tests). Decide whether these should move to `Rock.Tests.Integration/Security/PersonSessionTests.cs` so the create / save leg actually runs and the assertion is positive rather than absence-of-the-wrong-result.
 - [ ] Verify file name and location of new test files. Confirm each Phase-introduced test file lives under the right project (mocked-db → `Rock.Tests/`, full-integration → `Rock.Tests.Integration/`), matches the `*Tests.cs` naming convention, and groups related tests under named `#region` blocks that align with the phase they cover.
-- [ ] **`RockRequestContext.CurrentPerson` should source from `PersonSession`.** Today `CurrentPerson` is computed as `CurrentUser?.Person` (where `CurrentUser` is the resolved `UserLogin`). Under the PersonSession model this returns null for `UserToken` and any other session type that has no concrete `UserLogin`, even though the session's `PersonAlias` clearly identifies a person. Update `CurrentPerson` to prefer `PersonSession?.PersonAlias?.Person` and fall back to `CurrentUser?.Person` only when no session is attached. Once that lands, `ApiControllerBase.GetPerson` (already simplified to read `RockRequestContext.CurrentPerson` in Phase 12) and any other read-side caller automatically pick up the correct person for `UserToken` sessions without further changes.
+- [x] **`RockRequestContext.CurrentPerson` sources from `PersonSession`.** DONE, implemented as part of the "Identity-resolution refactor" below. `CurrentPerson` is no longer computed as `CurrentUser?.Person`; it is a stored value set together with `CurrentUser` via `SetCurrentIdentity( Person, UserLogin )`, populated from `personSession?.PersonAlias?.Person` at the auth-pipeline hook. This makes the correct person resolve for `UserToken` / `Impersonation` sessions that have no backing `UserLogin`. `ApiControllerBase.GetPerson` (simplified to read `RockRequestContext.CurrentPerson` in Phase 12) and other read-side callers pick this up automatically. Manual verification lives in the "Identity-resolution refactor" section below and the new `UserToken` personalized-Lava item in the "User-token (`rckipid`) email links" section above.
 - [ ] Look at combining the PersonSessionService...Tests.cs files into one. This is our pattern, but discuss if this is a bad idea (file size growth).
 
 ### Identity-resolution refactor (RockPage proxy / activity gating / locked-out)
 
 Added for the change that made `RockPage.CurrentUser`/`CurrentPerson` (and `CurrentPersonId`/`CurrentPersonAlias`/`CurrentPersonAliasId`) proxy `RockRequestContext`, moved the `Context.Items["CurrentPerson"]`/`["CurrentUser"]` population into `Application_BeginRequest`, relocated `UpdatePersonSessionLastActivity` firing off `BeginRequest`, moved the locked-out / unconfirmed sign-out into `ResolveSessionForRequest`, decoupled `RockRequestContext.CurrentPerson` from `CurrentUser` (now set together via `SetCurrentIdentity`), and deprecated `UserLoginService.GetCurrentUser*` / `UserLogin.GetCurrentUserName`.
 
-- [ ] **Audit stamping (ambient CurrentPerson):** save a record from a WebForms block while logged in; confirm `CreatedByPersonAliasId` / `ModifiedByPersonAliasId` are stamped (these read `HttpContext.Items["CurrentPerson"]`, now populated in `BeginRequest` instead of by `RockPage`). Repeat while impersonating — audit columns should reflect the impersonated person.
+- [ ] **Audit stamping (ambient CurrentPerson):** save a record from a WebForms block while logged in; confirm `CreatedByPersonAliasId` / `ModifiedByPersonAliasId` are stamped (these read `HttpContext.Items["CurrentPerson"]`, now populated in `BeginRequest` instead of by `RockPage`). Repeat while impersonating, audit columns should reflect the impersonated person.
 - [ ] **Lava `CurrentPerson` on WebForms:** a Lava block/shortcode (e.g. `{{ CurrentPerson.FullName }}`) renders the correct person on a page load, and the impersonated person while impersonating.
-- [ ] **Locked-out eviction:** with an active logged-in session, mark the `UserLogin` locked out; the next request signs the user out (cookie cleared, redirected) — verify on a WebForms page **and** a cookie-authenticated REST/mobile request (this check moved into `ResolveSessionForRequest`, so it now applies to all request types).
+- [ ] **Locked-out eviction:** with an active logged-in session, mark the `UserLogin` locked out; the next request signs the user out (cookie cleared, redirected), verify on a WebForms page **and** a cookie-authenticated REST/mobile request (this check moved into `ResolveSessionForRequest`, so it now applies to all request types).
 - [ ] **Unconfirmed eviction:** same as above with `UserLogin.IsConfirmed = false`.
 - [ ] **Activity gating (no over-count):** load a page that pulls many static assets; confirm `PersonSession.LastActivityDateTime` advances once per real page load and NOT per static asset (activity is no longer fired from `BeginRequest`).
 - [ ] **Activity on API:** a cookie-authenticated REST / Obsidian block action advances `LastActivityDateTime` (fired from `ServiceScopeHandler`); an apikey request advances it (fired from `AuthenticateAttribute`); confirm a single request does not double-count.
 - [ ] **SignalR under impersonation:** connect a real-time hub while impersonating; the hub should see the impersonated person (the SignalR `RockRequestContext` now captures `CurrentPerson`, not just `CurrentUser`).
-- [ ] **SignalR detached identity:** confirm hub / real-time code reads only scalar identity (`CurrentPerson.Id`, names) — the SignalR `RockRequestContext` is built from entities loaded on an already-disposed `RockContext`, so navigation properties will not lazy-load. (Audit current RealTime engine usage of `CurrentUser`/`CurrentPerson`.)
+- [ ] **SignalR detached identity:** confirm hub / real-time code reads only scalar identity (`CurrentPerson.Id`, names); the SignalR `RockRequestContext` is built from entities loaded on an already-disposed `RockContext`, so navigation properties will not lazy-load. (Audit current RealTime engine usage of `CurrentUser`/`CurrentPerson`.)
 - [ ] **`RockPage.UserName`:** any page or plugin that reads `RockPage.UserName` still shows the person's full name (it is now repopulated from `CurrentPerson?.FullName`).
 - [ ] **`?Logout` control-flow:** logging out via `?Logout` clears the session/cookies and the next request is anonymous, for both an anonymous-viewable page and a non-anonymous page (re-verify given the OnInit early-return restructure).
 
 ---
 
-## Appendix A — Touch-point quick reference
+## Appendix A, Touch-point quick reference
 
 For each file the implementation will modify, the phase that owns the change. Use this when reviewing a partial PR or when triaging a missed touch-point.
 
@@ -887,7 +893,7 @@ For each file the implementation will modify, the phase that owns the change. Us
 | `Rock.Rest/ApiControllerBase.cs:103` | 12 |
 | `Rock/Web/HttpModules/RockGateway.cs:499` | 12 |
 | `Rock/Model/CRM/UserLogin/UserLogin.cs:93,123` (Obsolete markers on `LastActivityDateTime` and `IsOnLine`) | 15 |
-| `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:43,70` (Pattern A bridge bodies for `IsAuthenticated` and `IsTwoFactorAuthenticated` added in Phase 14; `[Obsolete]` markers added in Phase 15 with the functional bridge bodies retained — no `return false;` collapse, to avoid breaking Lava/plugins without a deprecation window) | 14 (bridge) / 15 (obsolete markers) |
+| `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:43,70` (Pattern A bridge bodies for `IsAuthenticated` and `IsTwoFactorAuthenticated` added in Phase 14; `[Obsolete]` markers added in Phase 15 with the functional bridge bodies retained, no `return false;` collapse, to avoid breaking Lava/plugins without a deprecation window) | 14 (bridge) / 15 (obsolete markers) |
 | `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78-118` (UpdateUserLastActivity removals, both branches) and `:115` (SignOut migration) | 15 |
 | `Rock/Mobile/MobileHelper.cs:206` | 11 |
 | `Rock/Tv/TvHelper.cs:193` | 11 |
@@ -901,4 +907,4 @@ For each file the implementation will modify, the phase that owns the change. Us
 | Data Automation job | 14 |
 | Rock Cleanup job | 16 |
 
-This list is **not exhaustive**. Treat it as a starter — the obsolete markers will surface additional callers during build, and the implementer is expected to follow up on each.
+This list is **not exhaustive**. Treat it as a starter; the obsolete markers will surface additional callers during build, and the implementer is expected to follow up on each.
