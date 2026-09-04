@@ -622,77 +622,20 @@ namespace RockWeb
             // Build the single RockRequestContext for this request and
             // register it on the accessor so downstream handlers (RockPage,
             // REST ServiceScopeHandler, etc.) consume the same instance
-            // instead of constructing their own. CurrentUser is left null
-            // here; PersonSessionService.ResolveSessionForRequest fills it
-            // in (or the legacy FormsAuthenticationModule does, with the
-            // page handler updating CurrentUser before block code runs).
-            var rockRequestContext = RockRequestContext.AttachToCurrentRequest( Context );
-
-            // Resolve the new-format .ROCK cookie via the single read-side
-            // seam owned by PersonSessionService. The service handles
-            // decode, validation, kill-switch, and reissue internally; the
-            // shim here just sets the authenticated principal on success.
-            // The block above already removed any legacy cookie that fails
-            // the kill switch, so by this point the request either carries
-            // a new-format cookie, a valid legacy cookie (it will be upgraded
-            // later in the pipeline), or no cookie at all.
-            try
-            {
-                // This RockContext is intentionally NOT disposed. The resolved
-                // PersonSession / UserLogin / PersonAlias.Person must remain
-                // usable (including lazy navigation) for the rest of the
-                // request, and the request context holds references to those
-                // entities. Rock already leaves most per-request RockContexts
-                // undisposed, so this does not introduce a new leak. This
-                // should be switched to the request-scoped DI RockContext once
-                // Application_BeginRequest owns a DI scope.
-                var rockContext = new Rock.Data.RockContext();
-
-                var personSession = new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
-
-                // Stash the resolved session on the request context so
-                // downstream callers (blocks, MeetsRequirement checks,
-                // SignalR hubs, etc.) read the same instance for the
-                // duration of the request. Null is legitimate for
-                // anonymous requests and is handled by consumers.
-                rockRequestContext.SetPersonSession( personSession );
-
-                // Resolve the identity for every session. CurrentPerson comes
-                // from the session's person and CurrentUser from its UserLogin,
-                // set together. Impersonation and UserToken sessions have no
-                // backing UserLogin but still carry a PersonAlias, so
-                // CurrentPerson is resolved for them too. Null propagation makes
-                // this a clean no-op (anonymous) when there is no session.
-                rockRequestContext.SetCurrentIdentity( personSession?.PersonAlias?.Person, personSession?.UserLogin );
-                Context.Items["CurrentPerson"] = personSession?.PersonAlias?.Person;
-                Context.Items["CurrentUser"] = personSession?.UserLogin;
-
-                // Only set the principal when the session has a backing
-                // UserLogin. Sessions without one (Impersonation / UserToken)
-                // do not set a principal here.
-                if ( personSession?.UserLogin != null )
-                {
-                    var identity = new System.Security.Principal.GenericIdentity( personSession.UserLogin.UserName );
-                    Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
-                }
-
-                // NOTE: Activity tracking (UpdatePersonSessionLastActivity) is
-                // intentionally NOT fired here. Application_BeginRequest runs for
-                // every request — including the 70+ static asset requests a
-                // single page load can generate — so firing here would massively
-                // over-count. Activity is instead ticked at the request entry
-                // points that represent real usage: RockPage (page requests) and
-                // the REST pipeline (ServiceScopeHandler / AuthenticateAttribute).
-            }
-            catch ( Exception ex )
-            {
-                // ResolveSessionForRequest handles tampered/invalid cookies
-                // internally by returning null, so anything that escapes
-                // here is an infrastructure-level failure. Swallow it so a
-                // single bad cookie cannot 500 the whole request pipeline;
-                // the request proceeds unauthenticated.
-                Debug.WriteLine( ex.Message );
-            }
+            // instead of constructing their own. This also snapshots the
+            // request cookies (see RockRequestContext), so the new-format
+            // .ROCK cookie can still be resolved later in the pipeline even
+            // though this handler does not read it.
+            //
+            // New-format .ROCK cookie resolution (the database session lookup)
+            // is intentionally deferred to Application_PostMapRequestHandler.
+            // Application_BeginRequest runs for every request, including the
+            // 70+ static asset requests a single authenticated page load can
+            // generate; resolving here would do a database hit per asset. By
+            // PostMapRequestHandler the request's handler is known, so static
+            // files (which map to no managed handler) can be skipped and only
+            // real dynamic requests pay for the lookup.
+            RockRequestContext.AttachToCurrentRequest( Context );
         }
 
         /// <summary>
@@ -702,6 +645,114 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_AuthenticateRequest( object sender, EventArgs e )
         {
+        }
+
+        /// <summary>
+        /// Handles the PostMapRequestHandler event of the Application control.
+        /// By this stage the request's handler has been selected, so a dynamic
+        /// request (which maps to a managed handler) can be told apart from a
+        /// natively served static file (which has no managed handler). The
+        /// new-format <c>.ROCK</c> cookie is resolved here, and only for
+        /// dynamic requests, so the many static asset requests a single
+        /// authenticated page load generates do not each incur a database
+        /// session lookup.
+        /// </summary>
+        /// <remarks>
+        /// Legacy cookies are resolved earlier, in
+        /// <c>Application_PostAuthenticateRequest</c>, via
+        /// <c>FormsAuthenticationModule</c> plus the upgrade shim. When that
+        /// path has already resolved a session this handler bails out so it
+        /// does not re-resolve (and clobber) it.
+        /// </remarks>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void Application_PostMapRequestHandler( object sender, EventArgs e )
+        {
+            // A null handler means the request is being served by a native IIS
+            // module (static files: CSS, JS, fonts, images). No block or REST
+            // code will run, so there is nothing to resolve a person for; skip
+            // the database lookup entirely. Managed handlers that serve
+            // near-static content (bundles, ScriptResource.axd, WebResource.axd)
+            // are non-null and still resolve, but that is a small bounded set
+            // and the lookup is harmless for them.
+            if ( Context.Handler == null )
+            {
+                return;
+            }
+
+            // Bridge-code escape hatch, same as Application_PostAuthenticateRequest:
+            // the canonical IRockRequestContextAccessor is internal and cannot be
+            // reached from RockWeb's runtime-generated assembly, so read the
+            // request context back out of HttpContext.Items where
+            // AttachToCurrentRequest stashed it in Application_BeginRequest.
+            var rockRequestContext = Context.Items[RockRequestContext.HttpContextItemsKey] as RockRequestContext;
+            if ( rockRequestContext == null )
+            {
+                return;
+            }
+
+            // A legacy cookie may already have been upgraded and its session
+            // resolved in Application_PostAuthenticateRequest. In that case the
+            // cookie snapshot still holds the pre-upgrade legacy value, so
+            // re-resolving here would fail to decode it and null out the
+            // upgraded session. Bail out when a session is already present.
+            if ( rockRequestContext.PersonSession != null )
+            {
+                return;
+            }
+
+            try
+            {
+                // This RockContext is intentionally NOT disposed. The resolved
+                // PersonSession / UserLogin / PersonAlias.Person must remain
+                // usable (including lazy navigation) for the rest of the
+                // request, and the request context holds references to those
+                // entities. Rock already leaves most per-request RockContexts
+                // undisposed, so this does not introduce a new leak.
+                var rockContext = new Rock.Data.RockContext();
+
+                var personSession = new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
+
+                // Stash the resolved session on the request context so downstream
+                // callers (blocks, MeetsRequirement checks, SignalR hubs, etc.)
+                // read the same instance for the duration of the request. Null is
+                // legitimate for anonymous requests and is handled by consumers.
+                rockRequestContext.SetPersonSession( personSession );
+
+                // CurrentPerson comes from the session's person and CurrentUser
+                // from its UserLogin, set together. Impersonation and UserToken
+                // sessions have no backing UserLogin but still carry a PersonAlias,
+                // so CurrentPerson is resolved for them too. Null propagation makes
+                // this a clean no-op (anonymous) when there is no session.
+                rockRequestContext.SetCurrentIdentity( personSession?.PersonAlias?.Person, personSession?.UserLogin );
+                Context.Items["CurrentPerson"] = personSession?.PersonAlias?.Person;
+                Context.Items["CurrentUser"] = personSession?.UserLogin;
+
+                // Only set the principal when the session has a backing UserLogin.
+                // Sessions without one (Impersonation / UserToken) do not set a
+                // principal here.
+                if ( personSession?.UserLogin != null )
+                {
+                    var identity = new System.Security.Principal.GenericIdentity( personSession.UserLogin.UserName );
+                    Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
+                }
+
+                // NOTE: Activity tracking (UpdatePersonSessionLastActivity) is
+                // intentionally NOT fired here. This event still runs for many
+                // near-static requests (bundles, .axd), so firing here would
+                // over-count. Activity is ticked at the request entry points that
+                // represent real usage: RockPage (page requests) and the REST
+                // pipeline (ServiceScopeHandler / AuthenticateAttribute).
+            }
+            catch ( Exception ex )
+            {
+                // ResolveSessionForRequest handles tampered/invalid cookies
+                // internally by returning null, so anything that escapes here is
+                // an infrastructure-level failure. Swallow it so a single bad
+                // cookie cannot 500 the whole request pipeline; the request
+                // proceeds unauthenticated.
+                Debug.WriteLine( ex.Message );
+            }
         }
 
         /// <summary>
