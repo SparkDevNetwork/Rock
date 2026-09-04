@@ -476,12 +476,19 @@ namespace Rock.Blocks.Group
                 return;
             }
 
-            // Recalculating here also saves the results, so only do it for an existing, unchanged member.
-            if ( GetAttributeValue( AttributeKey.AreRequirementsRefreshedOnLoad ).AsBoolean()
-                && entity.Id != 0
-                && !entity.IsNewOrChangedGroupMember( RockContext ) )
+            var alertSource = entity;
+
+            // Recalculating here also saves the results, so only do it for an existing member.
+            if ( GetAttributeValue( AttributeKey.AreRequirementsRefreshedOnLoad ).AsBoolean() && entity.Id != 0 )
             {
-                entity.CalculateRequirements( RockContext, true );
+                // The initial entity is detached, so the recalculated rows would not reach its requirement collection; a tracked copy stays current for the alerts below.
+                var trackedMember = new GroupMemberService( RockContext ).Get( entity.Id );
+
+                if ( trackedMember != null )
+                {
+                    trackedMember.CalculateRequirements( RockContext, true );
+                    alertSource = trackedMember;
+                }
             }
 
             // Hidden requirements are enforced here so their data is never serialized to the client, matching WebForms never rendering it.
@@ -490,7 +497,7 @@ namespace Rock.Blocks.Group
                 return;
             }
 
-            options.RequirementAlerts = GetRequirementAlerts( entity, entity.GroupRoleId, out var calculationErrors );
+            options.RequirementAlerts = GetRequirementAlerts( alertSource, entity.GroupRoleId, out var calculationErrors );
             options.RequirementCalculationErrors = calculationErrors;
         }
 
@@ -1375,22 +1382,28 @@ namespace Rock.Blocks.Group
             if ( groupMemberIdKey.IsNotNullOrWhiteSpace() )
             {
                 var groupMemberService = new GroupMemberService( RockContext );
-                var existingId = groupMemberService.Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+                var existing = groupMemberService.Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( existingId.HasValue )
+                if ( existing != null )
                 {
-                    var existing = groupMemberService.Queryable()
+
+                    if ( existing.GroupRoleId == selectedRoleId )
+                    {
+                        return existing;
+                    }
+
+                    var existingId = existing.Id;
+                    var detachedCopy = groupMemberService.Queryable()
                         .AsNoTracking()
                         .Include( m => m.Group )
                         .Include( m => m.Person )
-                        .FirstOrDefault( m => m.Id == existingId.Value );
+                        .FirstOrDefault( m => m.Id == existingId );
 
-                    if ( existing != null )
+                    if ( detachedCopy != null )
                     {
-                        // Match the in-memory role to the selection so the statuses reflect the pending change.
-                        existing.GroupRoleId = selectedRoleId;
+                        detachedCopy.GroupRoleId = selectedRoleId;
 
-                        return existing;
+                        return detachedCopy;
                     }
                 }
             }
