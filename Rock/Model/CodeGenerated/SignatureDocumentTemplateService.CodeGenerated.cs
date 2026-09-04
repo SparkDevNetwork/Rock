@@ -37,6 +37,8 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="SignatureDocumentTemplateService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public SignatureDocumentTemplateService(RockContext context) : base(context)
         {
         }
@@ -49,6 +51,8 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( SignatureDocumentTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -78,9 +82,13 @@ namespace Rock.Model
         /// or selecting values. Do <b>not</b> use it for accessing the
         /// attributes after the entity has been loaded.
         /// </summary>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public virtual ICollection<SignatureDocumentTemplateQueryableAttributeValue> SignatureDocumentTemplateAttributeValues { get; set; } 
 
         /// <inheritdoc/>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public class SignatureDocumentTemplateQueryableAttributeValue : QueryableAttributeValue
         {
         }
@@ -97,6 +105,8 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static SignatureDocumentTemplate Clone( this SignatureDocumentTemplate source, bool deepCopy )
         {
             if (deepCopy)
@@ -116,6 +126,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static SignatureDocumentTemplate CloneWithoutIdentity( this SignatureDocumentTemplate source )
         {
             var target = new SignatureDocumentTemplate();
@@ -139,6 +151,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this SignatureDocumentTemplate target, SignatureDocumentTemplate source )
         {
             target.Id = source.Id;

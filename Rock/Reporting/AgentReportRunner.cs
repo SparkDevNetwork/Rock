@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -101,7 +101,7 @@ namespace Rock.Reporting
         /// <param name="report">The report to run.</param>
         /// <param name="currentPerson">The person the report is run as, for per-field view security.</param>
         /// <param name="rockContext">The context to query against.</param>
-        /// <param name="sortByFieldId">The <see cref="ReportField.Id"/> to sort by, or <c>null</c> to use the report's own saved sort.</param>
+        /// <param name="sortByFieldId">The <c>ReportField.Id</c> to sort by, or <c>null</c> to use the report's own saved sort.</param>
         /// <param name="sortDescending">When sorting by <paramref name="sortByFieldId"/>, whether to sort descending.</param>
         /// <returns>The report rows.</returns>
         internal static AgentReportResult GetReportData( Report report, Person currentPerson, RockContext rockContext, int? sortByFieldId = null, bool sortDescending = false )

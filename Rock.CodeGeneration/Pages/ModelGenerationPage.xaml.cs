@@ -994,6 +994,8 @@ GO
             sb.AppendFormat( "        /// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
             sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( "        /// <param name=\"context\">The context.</param>" );
+            sb.AppendLine( "        [System.CodeDom.Compiler.GeneratedCode( \"Rock.CodeGeneration\", \"\" )]" );
+            sb.AppendLine( "        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]" );
 
             sb.AppendFormat( "        public {0}Service({1} context) : base(context)" + Environment.NewLine, type.Name, dbContextFullName );
             sb.AppendLine( "        {" );
@@ -1017,9 +1019,13 @@ GO
                 sb.AppendLine( "        /// or selecting values. Do <b>not</b> use it for accessing the" );
                 sb.AppendLine( "        /// attributes after the entity has been loaded." );
                 sb.AppendLine( "        /// </summary>" );
+                sb.AppendLine( "        [System.CodeDom.Compiler.GeneratedCode( \"Rock.CodeGeneration\", \"\" )]" );
+                sb.AppendLine( "        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]" );
                 sb.AppendLine( $"        public virtual ICollection<{type.Name}QueryableAttributeValue> {type.Name}AttributeValues {{ get; set; }} " );
                 sb.AppendLine();
                 sb.AppendLine( "        /// <inheritdoc/>" );
+                sb.AppendLine( "        [System.CodeDom.Compiler.GeneratedCode( \"Rock.CodeGeneration\", \"\" )]" );
+                sb.AppendLine( "        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]" );
                 sb.AppendLine( $"        public class {type.Name}QueryableAttributeValue : QueryableAttributeValue" );
                 sb.AppendLine( "        {" );
                 sb.AppendLine( "        }" );
@@ -1051,6 +1057,8 @@ GO
         /// <param name=""source"">The source.</param>
         /// <param name=""deepCopy"">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( ""Rock.CodeGeneration"", """" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static {0} Clone( this {0} source, bool deepCopy )
         {{
             if (deepCopy)
@@ -1070,6 +1078,8 @@ GO
         /// </summary>
         /// <param name=""source"">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( ""Rock.CodeGeneration"", """" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static {0} CloneWithoutIdentity( this {0} source )
         {{
             var target = new {0}();
@@ -1102,6 +1112,8 @@ GO
         /// </summary>
         /// <param name=""target"">The target.</param>
         /// <param name=""source"">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( ""Rock.CodeGeneration"", """" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this {0} target, {0} source )
         {{
 ", type.Name );
@@ -1337,6 +1349,8 @@ GO
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( ""Rock.CodeGeneration"", """" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( {0} item, out string errorMessage )
         {{
             errorMessage = string.Empty;
