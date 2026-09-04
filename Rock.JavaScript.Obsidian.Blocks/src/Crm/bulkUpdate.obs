@@ -189,7 +189,7 @@
                                         <DropDownList v-model="groupRole"
                                                       label="Group Role"
                                                       :items="groupRoleOptions"
-                                                      :showBlankItem="true" />
+                                                      :showBlankItem="false" />
 
                                         <RadioButtonList v-model="groupMemberStatus"
                                                          :items="groupMemberStatusOptions"
@@ -202,7 +202,7 @@
                                         <OptionalControl v-model="isUpdatingGroup.role" label="Group Role">
                                             <DropDownList v-model="groupRole"
                                                           :items="groupRoleOptions"
-                                                          :showBlankItem="true" />
+                                                          :showBlankItem="false" />
                                         </OptionalControl>
 
                                         <OptionalControl v-model="isUpdatingGroup.memberStatus" label="Group Member Status">
@@ -463,6 +463,7 @@
     import { BulkUpdateNoteBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateNoteBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { Guid } from "@Obsidian/Types";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -634,6 +635,13 @@
      * action when groupUpdate.group changes.
      */
     const groupRoleOptions = ref<ListItemBag[]>([]);
+
+    /**
+     * The role pre-selected in the role dropdown whenever the role is reset:
+     * the selected group type's default role, or its first role when the type
+     * has no default.
+     */
+    const initialGroupRole = ref<ListItemBag | null>(null);
 
     /**
      * Options for the Group Member Status radio button list (Active, Inactive, Pending).
@@ -1699,11 +1707,12 @@
 
     /**
      * When the selected group changes, ask the server for the group's roles
-     * (via GetGroupRoles) and its member attributes. Also clears any previously
-     * selected role and stale attribute state.
+     * (via GetGroupRoles) and its member attributes. Also resets the role to the
+     * initial role and clears stale attribute state.
      */
     watch(() => groupUpdate.group, async (group) => {
         groupRoleOptions.value = [];
+        initialGroupRole.value = null;
         groupUpdate.groupRole = null;
         groupMemberAttributes.value = {};
         groupMemberAttributeValues.value = {};
@@ -1724,6 +1733,12 @@
 
         if (rolesResult.isSuccess && rolesResult.data) {
             groupRoleOptions.value = rolesResult.data.roles ?? [];
+
+            const defaultRoleGuid = rolesResult.data.defaultGroupRoleGuid;
+            initialGroupRole.value = groupRoleOptions.value.find(r => areEqual(r.value, defaultRoleGuid))
+                ?? groupRoleOptions.value[0]
+                ?? null;
+            groupUpdate.groupRole = initialGroupRole.value;
         }
         else if (rolesResult.statusCode === 403) {
             groupNotAuthorizedMessage.value = "You are not authorized to update members for the selected group.";
@@ -1757,11 +1772,11 @@
     });
 
     /**
-     * Clear group sub-fields when the group action changes, preventing stale
-     * data or optional toggles from carrying over between actions.
+     * Reset group sub-fields to their defaults when the group action changes,
+     * preventing stale data or optional toggles from carrying over between actions.
      */
     watch(() => groupUpdate.action, () => {
-        groupUpdate.groupRole = null;
+        groupUpdate.groupRole = initialGroupRole.value;
         groupUpdate.memberStatus = GroupMemberStatus.Active;
         isUpdatingGroup.role = false;
         isUpdatingGroup.memberStatus = false;

@@ -935,10 +935,10 @@ namespace Rock.Blocks.Crm
 
         /// <summary>
         /// Gets the group roles available for the specified group, ordered by role
-        /// order then name.
+        /// order then name, along with the group type's default role.
         /// </summary>
         /// <param name="groupGuid">The unique identifier of the group.</param>
-        /// <returns>A block action result containing the group type guid and a list of role options.</returns>
+        /// <returns>A block action result containing the group type guid, the default role guid and a list of role options.</returns>
         [BlockAction]
         public BlockActionResult GetGroupRoles( Guid groupGuid )
         {
@@ -976,9 +976,14 @@ namespace Rock.Blocks.Crm
                 } )
                 .ToList();
 
+            var defaultGroupRoleGuid = groupType.Roles
+                .FirstOrDefault( r => r.Id == groupType.DefaultGroupRoleId )
+                ?.Guid;
+
             return ActionOk( new GroupRolesResponseBag
             {
                 GroupTypeGuid = groupType.Guid.ToString(),
+                DefaultGroupRoleGuid = defaultGroupRoleGuid,
                 Roles = roles
             } );
         }
