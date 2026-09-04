@@ -17,7 +17,7 @@
               :exportTitle="exportTitle"
               :stickyHeader="config.gridDefinition?.enableStickyHeader ?? false"
               :entityTypeGuid="entityTypeGuid"
-              :isCountMessageVisible="false"
+              :isCountMessageVisible="showResults"
               :personKeyField="personKeyField"
               :communicationRecipientPersonKeyFields="communicationRecipientPersonKeyFields"
               :mergeTemplateAsPerson="isPersonDataSet"
@@ -30,7 +30,7 @@
 
             <template #gridHeaderBadges>
                 <button type="button"
-                        class="btn btn-xs"
+                        class="btn btn-xs mr-spacing-md"
                         :class="showResults ? 'btn-default' : 'btn-primary'"
                         :title="showResults ? 'Hide Results' : 'Show Results'"
                         @click="onToggleResultsClick">
@@ -38,6 +38,8 @@
                     <template v-else>Show Results <i class="ti ti-chevron-down"></i></template>
                 </button>
             </template>
+
+            <SelectColumn v-if="isPersonDataSet" />
 
             <DynamicColumns :dynamicFields="dynamicFields"
                             :columnComponents="columnComponents"
@@ -56,8 +58,10 @@
     gridHeaderBadges slot). When the results are collapsed we keep the grid header
     (title + toggle) visible but hide the column headers, rows, footer, and
     right-side toolbar, so the toggle stays reachable without a surrounding
-    panel to host it. The row count badge is suppressed in every state via the
-    grid's isCountMessageVisible prop, so it needs no collapsed-state rule here.
+    panel to host it. The row count badge is bound to showResults (via the grid's
+    isCountMessageVisible prop), so it appears beside the toggle while results are
+    expanded and hides with the body when collapsed; it therefore needs no
+    collapsed-state rule here and never reports a stale count for unloaded data.
 */
 .dataview-results-collapsed :deep(.grid-content-container),
 .dataview-results-collapsed :deep(.grid-footing) {
@@ -71,7 +75,8 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, HtmlColumn, NumberColumn, PersonColumn, pickExistingValueFilter, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, HtmlColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NumberTextColumn from "./DataViewResults/numberTextColumn.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { Guid } from "@Obsidian/Types";
     import { ColumnFilter } from "@Obsidian/Types/Controls/grid";
@@ -88,13 +93,18 @@
 
     const showResultsPreferenceKey = "data-view-show-results";
 
+    // Plain numbers use the "number" column type so the grid sorts and filters them
+    // numerically and shows the number filter, but they are rendered with NumberTextColumn
+    // (a text cell) rather than the standard NumberColumn so they display without thousands
+    // separators and keep their exact server-formatted value (e.g. an Id shows as "12345",
+    // not "12,345"), matching the legacy grid.
     const columnComponents = {
         "boolean": BooleanColumn,
         "currency": CurrencyColumn,
         "date": DateColumn,
         "dateTime": DateTimeColumn,
         "html": HtmlColumn,
-        "number": NumberColumn,
+        "number": NumberTextColumn,
         "person": PersonColumn,
         "text": TextColumn
     };

@@ -249,15 +249,16 @@ namespace Rock.Blocks.Cms
         {
             if ( _categoryGuid == null )
             {
-                var categoryId = this.PageParameter( PageParameterKey.CategoryId ).AsIntegerOrNull();
+                var categoryParam = this.PageParameter( PageParameterKey.CategoryId );
+                var category = categoryParam.IsNotNullOrWhiteSpace() ? CategoryCache.Get( categoryParam, !PageCache.Layout.Site.DisablePredictableIds ) : null;
 
-                if ( !categoryId.HasValue )
+                if ( category == null )
                 {
                     _categoryGuid = this.PageParameter( PageParameterKey.CategoryGuid ).AsGuidOrNull();
                 }
                 else
                 {
-                    _categoryGuid = CategoryCache.Get( categoryId.Value )?.Guid;
+                    _categoryGuid = category.Guid;
                 }
             }
 

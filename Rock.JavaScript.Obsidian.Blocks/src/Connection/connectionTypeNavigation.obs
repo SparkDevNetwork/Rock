@@ -7,6 +7,14 @@
             <DropDownList v-model="typeVisibility"
                           :items="config.typeVisibilityItems ?? []"
                           :showBlankItem="false" />
+            <template #rightContent>
+                <RockButton isSquare
+                            title="My Connections"
+                            :btnSize="BtnSize.Small"
+                            @click="onMyConnectionsClick">
+                    <i class="ti ti-user-circle"></i>
+                </RockButton>
+            </template>
         </ContextSlicer>
 
         <div class="connection-types-container row">
@@ -14,6 +22,12 @@
             <div :class="connectionTypeListCssClass">
                 <Panel title="Connection Types">
                     <template v-if="config.showConfigureConnectionTypesButton" #headerActions>
+                        <RockButton v-if="isCelebrationReportEnabled"
+                                    title="View Celebrations"
+                                    :btnSize="BtnSize.Small"
+                                    @click="onCelebrationReportClick">
+                            <i class="ti ti-confetti"></i> <span v-if="breakpointHelper?.isSmOrLarger">Celebrations</span>
+                        </RockButton>
                         <button type="button"
                                 class="btn btn-panel-action"
                                 @click="onConfigurationClick">
@@ -177,7 +191,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, onMounted, onUnmounted, ref, watch } from "vue";
     import { NavigationUrlKey, PreferenceKey } from "./ConnectionTypeNavigation/types.partial";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
     import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
@@ -187,8 +201,10 @@
     import Following from "@Obsidian/Controls/following.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
@@ -241,15 +257,31 @@
     const connectionsHubBoardViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubBoardViewPage]);
     const connectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubGridViewPage]);
     const operationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OperationalSnapshotPage]);
+    const celebrationsReportPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.CelebrationsReportPage]);
+
+    // Tracks window width for responsive button labels in the panel header.
+    const windowWidth = ref(window.innerWidth);
 
     // Connection Opportunity-level URLs.
     const opportunityConnectionsHubListViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
     const opportunityConnectionsHubBoardViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubBoardViewPage]);
     const opportunityConnectionsHubGridViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubGridViewPage]);
 
+    // My Connections-level URLs.
+    const myConnectionsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
+
     // #endregion Values
 
     // #region Computed Values
+
+    /** Provides responsive breakpoint info for panel header button labels. */
+    const breakpointHelper = computed(() => ({ isSmOrLarger: windowWidth.value >= 768 }));
+
+    /** True when the celebrations report page is configured and at least one visible connection type has celebrations enabled. */
+    const isCelebrationReportEnabled = computed((): boolean => {
+        return !!celebrationsReportPageUrl.value
+            && connectionTypeSummaries.value.some(s => s.isCelebrationEnabled);
+    });
 
     /** Gets the campus page parameter for the current selection. */
     const campusPageParam = computed((): string => {
@@ -347,6 +379,17 @@
             });
         }
 
+        if (celebrationsReportPageUrl.value && summary.isCelebrationEnabled) {
+            actions.push({
+                iconCssClass: "ti ti-trophy",
+                title: "Celebrations",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${celebrationsReportPageUrl.value!}?ConnectionTypeId=${summary.idKey}`;
+                }
+            });
+        }
+
         return actions;
     }
 
@@ -418,6 +461,13 @@
         favoriteGroups.value = favoriteGroups.value.filter(g => !!g.opportunities?.length);
     }
 
+    /** Navigates to the celebrations report page. */
+    function onCelebrationReportClick(): void {
+        if (celebrationsReportPageUrl.value) {
+            window.location.href = celebrationsReportPageUrl.value;
+        }
+    }
+
     /** Navigates to the configuration page. */
     function onConfigurationClick(): void {
         if (configurationPageUrl.value) {
@@ -435,6 +485,13 @@
         }
     }
 
+    /** Navigates to the My Connections page for the current person. */
+    function onMyConnectionsClick(): void {
+        if (myConnectionsPageUrl.value) {
+            window.location.href = myConnectionsPageUrl.value;
+        }
+    }
+
     // #endregion Event Handlers
 
     // #region Watchers
@@ -447,6 +504,13 @@
     });
 
     // #endregion Watchers
+
+    function onWindowResize(): void {
+        windowWidth.value = window.innerWidth;
+    }
+
+    onMounted(() => window.addEventListener("resize", onWindowResize));
+    onUnmounted(() => window.removeEventListener("resize", onWindowResize));
 
     loadContextValues();
 </script>

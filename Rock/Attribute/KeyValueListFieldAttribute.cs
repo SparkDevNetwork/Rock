@@ -41,22 +41,32 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        /// <param name="fieldTypeClass">The field type class.</param>
+        /// <param name="fieldTypeClass">This parameter is ignored.</param>
         /// <param name="displayValueFirst">if set to <c>true</c> [display value first].</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public KeyValueListFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", 
             string keyPrompt = "", string valuePrompt = "", string definedTypeGuid = "", string customValues = "",
             string category = "", int order = 0, string key = null, string fieldTypeClass = null, bool displayValueFirst = false )
-           : base( name, description, required, defaultValue, valuePrompt, definedTypeGuid, customValues, category, order, key, 
-            typeof( Rock.Field.Types.KeyValueListFieldType ).FullName )
+           : base( name, description, required, defaultValue, valuePrompt, definedTypeGuid, customValues, category, order, key )
         {
+            DisplayValueFirst = displayValueFirst;
+            FieldTypeGuid = SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid();
+
             if ( !string.IsNullOrWhiteSpace( keyPrompt ) )
             {
-                var configValue = new Field.ConfigurationValue( keyPrompt );
-                FieldConfigurationValues.Add( KEY_PROMPT_KEY, configValue );
+                KeyPrompt = keyPrompt;
             }
+        }
 
-            var displayValueFirstConfigValue = new Field.ConfigurationValue( displayValueFirst.ToString() );
-            FieldConfigurationValues.Add( DISPLAY_VALUE_FIRST, displayValueFirstConfigValue );
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValueListFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public KeyValueListFieldAttribute( string name )
+           : base( name )
+        {
+            FieldTypeGuid = SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid();
         }
 
         /// <summary>
@@ -76,6 +86,16 @@ namespace Rock.Attribute
             {
                 FieldConfigurationValues.AddOrReplace( KEY_PROMPT_KEY, new Field.ConfigurationValue( value ) );
             }
+        }
+
+        /// <summary>
+        /// Determines if the value should be displyed before the key when
+        /// showing the user interface.
+        /// </summary>
+        public bool DisplayValueFirst
+        {
+            get => FieldConfigurationValues.GetValueOrNull( DISPLAY_VALUE_FIRST ).AsBoolean();
+            set => FieldConfigurationValues.AddOrReplace( DISPLAY_VALUE_FIRST, new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

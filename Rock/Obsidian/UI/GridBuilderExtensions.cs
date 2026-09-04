@@ -134,10 +134,27 @@ namespace Rock.Obsidian.UI
         /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
         public static GridBuilder<T> AddAttributeFieldsFrom<T>( this GridBuilder<T> builder, Func<T, IHasAttributes> selector, IEnumerable<AttributeCache> attributes )
         {
+            return builder.AddAttributeFieldsFrom( selector, attributes, "attr_" );
+        }
+
+        /// <summary>
+        /// Adds a set of attribute fields to the grid definition using a custom field
+        /// key prefix. Use this overload when a grid displays attributes from more
+        /// than one source entity, since attributes on different entities may share
+        /// a key; giving each source its own prefix keeps the grid field names unique.
+        /// </summary>
+        /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
+        /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
+        /// <param name="selector">The expression to call to get the <see cref="IHasAttributes"/> object from the item.</param>
+        /// <param name="attributes">The attributes that should be added to the grid definition.</param>
+        /// <param name="fieldKeyPrefix">The prefix prepended to each attribute key to form the grid field name.</param>
+        /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
+        public static GridBuilder<T> AddAttributeFieldsFrom<T>( this GridBuilder<T> builder, Func<T, IHasAttributes> selector, IEnumerable<AttributeCache> attributes, string fieldKeyPrefix )
+        {
             foreach ( var attribute in attributes )
             {
                 var key = attribute.Key;
-                var fieldKey = $"attr_{key}";
+                var fieldKey = $"{fieldKeyPrefix}{key}";
 
                 builder.AddField( fieldKey, item =>
                 {
@@ -189,6 +206,29 @@ namespace Rock.Obsidian.UI
         public static GridBuilder<T> WithBlock<T>( this GridBuilder<T> builder, IRockBlockType block )
         {
             return WithBlock( builder, block, null );
+        }
+
+        /// <summary>
+        /// Adds only the Launch Workflow action URL when the current person is
+        /// authorized for the route. Use this on embedded light grids that
+        /// should expose Launch Workflow without inheriting all the other
+        /// standard grid actions that <see cref="WithBlock{T}(GridBuilder{T}, IRockBlockType)"/> adds.
+        /// </summary>
+        /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
+        /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
+        /// <param name="block">The block that is displaying this grid.</param>
+        /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
+        public static GridBuilder<T> WithLaunchWorkflow<T>( this GridBuilder<T> builder, IRockBlockType block )
+        {
+            builder.AddDefinitionAction( definition =>
+            {
+                if ( IsAuthorizedForRoute( block.RequestContext, "/LaunchWorkflows/{EntitySetId}" ) )
+                {
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.LaunchWorkflow, "/LaunchWorkflows/{EntitySetId}" );
+                }
+            } );
+
+            return builder;
         }
 
         /// <summary>
@@ -433,14 +473,16 @@ namespace Rock.Obsidian.UI
 
                     if ( communicationPage.IsAuthorized( Security.Authorization.VIEW, block.RequestContext.CurrentPerson ) )
                     {
-                        pageRef.Parameters.AddOrReplace( "CommunicationId", "{CommunicationId}" );
+                        // See Spec:260625-grid-communicate-url-placeholder-encoding.md
+                        pageRef.Parameters.AddOrReplace( "CommunicationId", "((CommunicationId))" );
                         return pageRef.BuildUrl();
                     }
                 }
             }
             else if ( IsAuthorizedForRoute( block.RequestContext, "/Communication/{CommunicationId}" ) )
             {
-                return "/Communication/{CommunicationId}";
+                // See Spec:260625-grid-communicate-url-placeholder-encoding.md
+                return "/Communication/((CommunicationId))";
             }
 
             return null;

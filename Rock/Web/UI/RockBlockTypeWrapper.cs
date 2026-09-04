@@ -18,6 +18,7 @@ using System;
 using System.IO;
 using System.Web.UI;
 using Rock.Blocks;
+using Rock.Model;
 
 namespace Rock.Web.UI
 {
@@ -73,16 +74,56 @@ namespace Rock.Web.UI
 
                  Reason: The Obsidian block content was being reloaded and then discarded.
                          https://app.asana.com/0/1200625776837488/1206779635354257/f
+
+                 06/11/2026 - MSE
+
+                 The above only applies to partial (async) postbacks, where anything this
+                 wrapper renders is outside the UpdatePanel being refreshed and is therefore
+                 discarded by the PageRequestManager. During a full postback the rendered
+                 output is the complete new page, so skipping here caused every Obsidian
+                 block on the page to render empty (e.g. the Page Menu disappearing after
+                 the WebForms Transaction List block performed its "Move Transactions To
+                 Batch" full postback).
+
+                 Reason: Rock menu was removed after moving a transaction to another batch. (Fixes #6871)
             */
-            if ( Block is IRockWebBlockType webBlock && !IsPostBack )
+            var isInAsyncPostBack = ScriptManager.GetCurrent( Page )?.IsInAsyncPostBack == true;
+
+            if ( Block is IRockWebBlockType webBlock && !isInAsyncPostBack )
             {
                 var pageTask = new PageAsyncTask( async () =>
                 {
                     using ( var sw = new StringWriter() )
                     {
-                        sw.Write( await webBlock.GetControlMarkupAsync() );
+                        try
+                        {
+                            sw.Write( await webBlock.GetControlMarkupAsync() );
 
-                        _cachedRenderContent = sw.ToString();
+                            _cachedRenderContent = sw.ToString();
+                        }
+                        catch ( Exception ex )
+                        {
+                            _cachedRenderContent = $"<div class=\"alert alert-warning\">An error occurred while rendering the block: {ex.Message}</div>";
+
+                            ExceptionLogService.LogException( ex, Context );
+                        }
+                    }
+
+                    /*
+                        7/23/26 - MSE
+
+                        A block that returned no markup has chosen to render nothing at
+                        all, so mark the control as not visible. This lets the
+                        RockBlockWrapper suppress the block's Pre-HTML and Post-HTML the
+                        same way it does for a WebForms block that sets Visible = false
+                        (e.g. the Defined Type Check List block when it is empty and
+                        configured with "Hide Block When Empty").
+
+                        Reason: Hide Pre/Post-HTML when an Obsidian block renders no content.
+                    */
+                    if ( _cachedRenderContent.IsNullOrWhiteSpace() )
+                    {
+                        Visible = false;
                     }
                 } );
 

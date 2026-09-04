@@ -75,7 +75,7 @@
 
     const emit = defineEmits<{
         (e: "cancel"): void;
-        (e: "save"): void;
+        (e: "save", categoryId: number): void;
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -104,20 +104,24 @@
         errorMessage.value = "";
         isSaving.value = true;
 
+        const isEditing = props.blockState === BlockState.EditCategory;
+
         try {
             const bag: UpdateFormCategoryBag = {
-                categoryGuid: props.blockState === BlockState.EditCategory ? props.selectedCategoryGuid : null,
-                parentCategoryGuid: props.addNewCategoryAsChild ? props.selectedCategoryGuid : null,
+                categoryGuid: isEditing ? props.selectedCategoryGuid : null,
+                // A parent category only applies when adding. Sending one while editing would
+                // ask the server to make the category its own parent.
+                parentCategoryGuid: !isEditing && props.addNewCategoryAsChild ? props.selectedCategoryGuid : null,
                 name: name.value,
                 description: description.value,
                 iconCssClass: iconCssClass.value,
                 highlightColor: highlightColor.value
             };
 
-            const result = await invokeBlockAction("AddOrEditCategory", { bag: bag });
+            const result = await invokeBlockAction<number>("AddOrEditCategory", { bag: bag });
 
             if (result.isSuccess) {
-                emit("save");
+                emit("save", result.data ?? 0);
             }
             else {
                 errorMessage.value = result.errorMessage || "Unable to save the category.";

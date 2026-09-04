@@ -42,6 +42,19 @@ namespace Rock.Field.Types
 
         #endregion
 
+        /*
+            8/19/26 - CLAUDE
+
+            No GetFieldHints override. This stores a BinaryFile guid and reads the same
+            binaryFileType configuration as the type it inherits from, so the inherited
+            hint already says everything true about the value. An override here said
+            the file must match the configured type, which is what the base already
+            reports when a type is configured, and an unsupported claim when one is not.
+
+            Reason: Nothing about the value differs from the base, so nothing should be
+            added to its description.
+        */
+
         #region WebForms
 #if WEBFORMS
 

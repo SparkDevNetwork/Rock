@@ -57,25 +57,26 @@
     import TreeItemPicker from "@Obsidian/Controls/treeItemPicker.obs";
     import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
-    import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { areEqual } from "@Obsidian/Utility/guid";
-    import { ITreeItemProvider, LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { CheckInContextSetterOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/CheckInContextSetter/checkInContextSetterOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { ref } from "vue";
+    import { ref, watch } from "vue";
 
     const config = useConfigurationValues<CheckInContextSetterOptionsBag>();
     const invokeBlockAction = useInvokeBlockAction();
     const contextEntities = useContextEntities();
     const bus = useBlockBrowserBus();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
     const selectedCampus = ref<ListItemBag | null>(config.selectedCampus ?? null);
 
     const location = ref<ListItemBag | null>(config.selectedLocation ?? null);
-    const locationProvider = ref<ITreeItemProvider>(createLocationProvider(config.selectedCampus?.value));
+    const locationProvider = ref<LocationTreeItemProvider>(createLocationProvider(config.selectedCampus?.value));
 
     const schedule = ref<ListItemBag | null>(config.selectedSchedule ?? null);
     const scheduleItems = ref(config.schedules ?? []);
@@ -91,10 +92,11 @@
      *
      * @returns The location provider.
      */
-    function createLocationProvider(campusGuid: string | null | undefined): ITreeItemProvider {
+    function createLocationProvider(campusGuid: string | null | undefined): LocationTreeItemProvider {
         const provider = new LocationTreeItemProvider();
 
         provider.includeInactive = true;
+        provider.securityGrantToken = config.securityGrantToken;
 
         if (campusGuid) {
             provider.rootLocationGuid = config.rootLocations?.[campusGuid];
@@ -214,6 +216,12 @@
     }
 
     // #endregion
+
+    watch(securityGrant.token, () => {
+        locationProvider.value.securityGrantToken = securityGrant.token.value;
+    });
+
+    provideSecurityGrant(securityGrant);
 
     bus.subscribe(PageMessages.ContextEntityChanged, onContextEntityChanged);
 

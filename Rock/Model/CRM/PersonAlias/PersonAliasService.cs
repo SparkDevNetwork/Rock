@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
 using Rock.Data;
@@ -421,5 +423,148 @@ namespace Rock.Model
         {
             return this.Queryable().Where( a => a.Name == ChatHelper.ChatPersonAliasDeletedName );
         }
+
+        /*
+            8/24/2026 - CLAUDE
+
+            Lifted out of RockCleanup.RemoveStaleAnonymousVisitorRecord so the
+            post-update job that clears the orphaned Anonymous Visitor backlog
+            can reuse it. PersonAlias is referenced by a large number of tables,
+            so a bulk delete can fail on a single foreign key violation. The
+            per-row retry below is what keeps one bad record from costing an
+            entire batch.
+
+            Reason: Two callers needed identical, non-obvious delete mechanics.
+        */
+
+        /// <summary>
+        /// Deletes the supplied <see cref="PersonAlias"/> records in batches,
+        /// falling back to individual deletes when a batch fails so that a
+        /// single foreign key violation does not discard the whole batch.
+        /// </summary>
+        /// <param name="personAliasIds">The identifiers of the records to delete.</param>
+        /// <param name="contextFactory">Creates a new <see cref="RockContext"/>. A fresh context is needed per batch, and again after any failure, because a context that threw is no longer usable.</param>
+        /// <param name="logger">Receives a warning for each record that could not be deleted. May be <c>null</c>.</param>
+        /// <param name="beforeBatchDelete">Runs against each batch before the delete is attempted, for callers that must clear references first. May be <c>null</c>.</param>
+        /// <returns>The number of records actually deleted.</returns>
+        /// <remarks>
+        /// A record that cannot be deleted has the failure reason written to its
+        /// <see cref="PersonAlias.InternalMessage"/> so later passes can skip it.
+        /// </remarks>
+        internal static int DeletePersonAliasesInBatches( List<int> personAliasIds, Func<RockContext> contextFactory, ILogger logger, Action<RockContext, List<int>> beforeBatchDelete = null )
+        {
+            var deleteCount = 0;
+
+            if ( personAliasIds == null || !personAliasIds.Any() )
+            {
+                return deleteCount;
+            }
+
+            // personAliasIds could have over a million values. So instead of
+            // using Skip().ToList() to rebuild the list, we are going to use a
+            // for loop so we don't have to waste as much memory.
+            for ( int bulkStart = 0; bulkStart < personAliasIds.Count; bulkStart += BatchSize )
+            {
+                // Work in relatively small batches. Since we have to revert to
+                // single deletes if the batch fails this gives us a decent
+                // balance between speed when everything works and not having to
+                // do single deletes on too many records because a single record
+                // failed.
+                var batchPersonAliasIds = personAliasIds.Skip( bulkStart ).Take( BatchSize ).ToList();
+
+                using ( var bulkRockContext = contextFactory() )
+                {
+                    beforeBatchDelete?.Invoke( bulkRockContext, batchPersonAliasIds );
+
+                    try
+                    {
+                        // Try to delete all records in the batch in bulk.
+                        // NOTE: This will bypass any save hooks.
+                        var personAliasesQry = new PersonAliasService( bulkRockContext ).Queryable()
+                            .Where( pa => batchPersonAliasIds.Contains( pa.Id ) );
+
+                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry, BatchSize );
+                    }
+                    catch
+                    {
+                        // At least one record failed. Try again one record at
+                        // a time so we can log which one(s) failed.
+                        deleteCount += DeletePersonAliasesIndividually( batchPersonAliasIds, contextFactory, logger );
+                    }
+                }
+            }
+
+            return deleteCount;
+        }
+
+        /// <summary>
+        /// Deletes each record on its own so that a failure can be attributed to
+        /// a specific record rather than losing the entire batch.
+        /// </summary>
+        /// <param name="personAliasIds">The identifiers of the records to delete.</param>
+        /// <param name="contextFactory">Creates a new <see cref="RockContext"/>.</param>
+        /// <param name="logger">Receives a warning for each record that could not be deleted. May be <c>null</c>.</param>
+        /// <returns>The number of records actually deleted.</returns>
+        private static int DeletePersonAliasesIndividually( List<int> personAliasIds, Func<RockContext> contextFactory, ILogger logger )
+        {
+            var deleteCount = 0;
+
+            foreach ( var personAliasId in personAliasIds )
+            {
+                try
+                {
+                    using ( var singleRockContext = contextFactory() )
+                    {
+                        var singlePersonAliasService = new PersonAliasService( singleRockContext );
+                        var personAlias = singlePersonAliasService.Get( personAliasId );
+
+                        if ( personAlias != null )
+                        {
+                            singlePersonAliasService.Delete( personAlias );
+                            singleRockContext.SaveChanges();
+
+                            deleteCount += 1;
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // Something prevented us from deleting the record. This is
+                    // most likely a foreign key violation. Find the inner most
+                    // exception, log it, and then update the PersonAlias record
+                    // to note we couldn't delete it.
+                    var innerEx = ex;
+
+                    while ( innerEx.InnerException != null )
+                    {
+                        innerEx = innerEx.InnerException;
+                    }
+
+                    logger?.LogWarning( $"Error occurred deleting anonymous visitor PersonAlias record ID {personAliasId}: {innerEx.Message}" );
+
+                    // The context we used to attempt the deletion is no good to
+                    // use now since it is in a bad state. Create a new context.
+                    using ( var errorRockContext = contextFactory() )
+                    {
+                        var singlePersonAliasService = new PersonAliasService( errorRockContext );
+                        var personAlias = singlePersonAliasService.Get( personAliasId );
+
+                        if ( personAlias != null )
+                        {
+                            personAlias.InternalMessage = innerEx.Message.SubstringSafe( 0, 250 );
+
+                            errorRockContext.SaveChanges();
+                        }
+                    }
+                }
+            }
+
+            return deleteCount;
+        }
+
+        /// <summary>
+        /// The number of records to attempt to delete in a single bulk operation.
+        /// </summary>
+        private const int BatchSize = 500;
     }
 }

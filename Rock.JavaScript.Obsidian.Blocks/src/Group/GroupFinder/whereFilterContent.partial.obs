@@ -1,0 +1,101 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="groupfinder-where-filter">
+        <div v-if="config.isMeetingStyleFilterShown" class="form-group">
+            <RockLabel>Meeting Style</RockLabel>
+            <div class="control-wrapper">
+                <ToggleChipList v-model="selectedMeetingStyleItems" :items="config.meetingStyles ?? []">
+                    <template #chip="{ item }">
+                        <i v-if="meetingStyleIcon(item.text)" :class="meetingStyleIcon(item.text)"></i>
+                        {{ item.text }}
+                    </template>
+                </ToggleChipList>
+            </div>
+        </div>
+
+        <div v-if="config.isProximityEnabled" class="form-group">
+            <RockLabel>Search by Location</RockLabel>
+            <div class="control-wrapper">
+                <div class="groupfinder-proximity">
+                    <div v-if="isCurrentLocation" class="groupfinder-current-location">
+                        <span class="groupfinder-current-location-label">
+                            <i class="ti ti-current-location"></i> Current Location
+                        </span>
+                        <RockButton btnType="link" @click="onClearLocation">Change</RockButton>
+                    </div>
+                    <div v-else-if="isMapAreaLocation" class="groupfinder-current-location">
+                        <span class="groupfinder-current-location-label">
+                            <i class="ti ti-search"></i> Search this area
+                        </span>
+                        <RockButton btnType="link" @click="onClearLocation">Change</RockButton>
+                    </div>
+                    <template v-else>
+                        <AddressTypeAhead v-if="config.isLocationSearchAvailable" v-model="origin" />
+                        <RockButton btnType="link" class="groupfinder-use-location" @click="useCurrentLocation">
+                            <i class="ti ti-current-location"></i> Use Current Location
+                        </RockButton>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import ToggleChipList from "./toggleChipList.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import AddressTypeAhead from "./addressTypeAhead.partial.obs";
+    import { useGroupFinderFilters } from "./filterState.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // #region Values
+
+    const { config, selectedMeetingStyles, origin, isCurrentLocation, isMapAreaLocation, useCurrentLocation } = useGroupFinderFilters();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The filter state stores meeting-style values as a string array, so adapt it to and from the
+    // ListItemBag array the chip list binds to.
+    const selectedMeetingStyleItems = computed<ListItemBag[]>({
+        get() {
+            return (config.meetingStyles ?? []).filter(style => selectedMeetingStyles.value.includes(style.value ?? ""));
+        },
+        set(items) {
+            selectedMeetingStyles.value = items.map(item => item.value ?? "");
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    // The leading icon for a meeting style, keyed off its display text since the styles are a small,
+    // known set (in-person, online, hybrid). Returns "" for anything unrecognized, which the chip
+    // renders without an icon.
+    function meetingStyleIcon(text: string | null | undefined): string {
+        const value = (text ?? "").toLowerCase();
+        if (value.includes("person")) {
+            return "ti ti-users";
+        }
+        if (value.includes("online") || value.includes("virtual")) {
+            return "ti ti-device-computer-camera";
+        }
+        if (value.includes("hybrid")) {
+            return "ti ti-arrows-shuffle";
+        }
+        return "";
+    }
+
+    // Clear the current-location or map-area origin so the visitor can type an address instead.
+    function onClearLocation(): void {
+        isCurrentLocation.value = false;
+        isMapAreaLocation.value = false;
+        origin.value = "";
+    }
+
+    // #endregion Event Handlers
+</script>

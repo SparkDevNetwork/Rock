@@ -275,6 +275,24 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Stores a Location reference rather than an address, which the name does not suggest.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the Location table, not its id or idKey and not a written out address. Only one value is stored, so a comma separated list is not valid here. The address is held on the Location record, so this refers to a location that already exists rather than carrying the address itself.",
+                Instructions = "To find the correct value, read the locations and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

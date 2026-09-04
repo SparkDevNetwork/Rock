@@ -39,6 +39,8 @@ namespace Rock.Field.Types
     /// <seealso cref="Rock.Field.FieldType" />
     /// <seealso cref="Rock.Field.IEntityFieldType" />
     [FieldTypeUsage( FieldTypeUsage.System )]
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( SystemGuid.FieldType.AI_PROVIDER )]
     public class AIProviderFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -164,6 +166,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the AIProvider table. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the AI providers and take the guid of the one you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 

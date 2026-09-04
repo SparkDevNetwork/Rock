@@ -31,6 +31,7 @@ iframe {
         bodyGlobalAdapter,
         createComponentElement,
         createComponentElementPlaceholder,
+        decodeLavaEncodedEntities,
         EmptyDropzoneSvgPixelWidth,
         ensureBodyWrapsEmailWrapper,
         FontFamilies,
@@ -564,82 +565,6 @@ iframe {
                 throw e;
             }
         }
-    }
-
-    /**
-     * Decodes browser-encoded entities inside Lava tags that contain
-     * conditional logic or Rock Entity `where:'...'` filters.
-     *
-     * Browsers automatically encode characters like `&`, `>` and `<`
-     * in the HTML editor. That breaks Lava conditions such as:
-     *
-     * `{% if Total > Threshold %}`
-     *
-     * which becomes:
-     *
-     * `{% if Total &gt; Threshold %}`
-     *
-     * It also breaks Rock Entity filters like:
-     *
-     * `where:'IsActive == true && CampusId == 1'`
-     *
-     * which becomes:
-     *
-     * `where:'IsActive == true &amp;&amp; CampusId == 1'`
-     *
-     * This runs on the final HTML string, not DOM nodes, because modifying
-     * the DOM would cause the browser to re-encode these characters.
-     *
-     * Scope is intentionally narrow:
-     * - Only processes `{% %}` blocks
-     * - Decodes quoted `where:'...'` values
-     * - Decodes conditional Lava tags such as `if`, `elsif`, and `unless`
-     * - Leaves all other HTML and Lava content untouched
-     */
-    function decodeLavaEncodedEntities(html: string): string {
-        const lavaTagRegex = /{%[\s\S]*?%}/g;
-
-        // Used only for fast detection, avoids allocating lowercase strings.
-        const whereTestRegex = /\bwhere:\s*'/i;
-        const conditionalTagRegex = /{%\s*(if|elsif|unless)\b/i;
-
-        // Case-insensitive replacement of where clause values.
-        const whereReplaceRegex = /\bwhere:\s*'([^']*)'/gi;
-
-        // Use the browser's HTML parser to safely decode entities
-        // instead of hand-rolled replacements.
-        const template = document.createElement("template");
-
-        const decodeEntities = (value: string): string => {
-            if (!value.includes("&")) {
-                return value;
-            }
-
-            template.innerHTML = value;
-            const decoded = template.content.textContent ?? "";
-            template.innerHTML = ""; // Reset to avoid retaining references.
-
-            return decoded;
-        };
-
-        return html.replace(lavaTagRegex, (tag) => {
-            // Skip tags that clearly don't need processing.
-            if (!tag.includes("&")) {
-                return tag;
-            }
-
-            if (conditionalTagRegex.test(tag)) {
-                return decodeEntities(tag);
-            }
-
-            if (!whereTestRegex.test(tag)) {
-                return tag;
-            }
-
-            return tag.replace(whereReplaceRegex, (_, whereValue) => {
-                return `where:'${decodeEntities(whereValue)}'`;
-            });
-        });
     }
 
     function isComponentElement(element: HTMLElement): element is HTMLElement {

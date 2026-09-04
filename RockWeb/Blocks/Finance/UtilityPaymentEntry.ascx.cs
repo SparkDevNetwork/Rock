@@ -1252,6 +1252,34 @@ mission. We are so grateful for your commitment.</p>
                 }
             }
 
+            // If this is a transfer (page params carried Transfer=true and
+            // ScheduledTransactionGuid, and InitializeTransfer resolved a
+            // schedule), pre-populate the account amounts from the schedule's
+            // existing details so the transfer form arrives pre-filled. Also
+            // add any of the schedule's accounts that aren't already in the
+            // block's selectable list so they can be rendered (mirrors the
+            // AvailableAccounts.Except / SelectedAccounts.AddRange behavior
+            // that TransactionEntry.ascx.cs used to do). URL-provided amounts
+            // (populated above from ParseAccountUrlOptions) take precedence
+            // over the transfer amounts if both were supplied.
+            if ( accountAmounts == null && _scheduledTransactionToBeTransferred != null )
+            {
+                var transferAccountAmounts = _scheduledTransactionToBeTransferred.ScheduledTransactionDetails
+                    .GroupBy( d => d.AccountId )
+                    .Select( g => new CampusAccountAmountPicker.AccountIdAmount( g.Key, g.Sum( d => d.Amount ) ) )
+                    .ToArray();
+
+                foreach ( var transferAccountId in transferAccountAmounts.Select( a => a.AccountId ) )
+                {
+                    if ( !selectableAccountIds.Contains( transferAccountId ) )
+                    {
+                        selectableAccountIds.Add( transferAccountId );
+                    }
+                }
+
+                accountAmounts = transferAccountAmounts;
+            }
+
             caapPromptForAccountAmounts.SelectableAccountIds = selectableAccountIds.ToArray();
 
             ConfigureAvailableAccounts( rockContext );
@@ -1994,16 +2022,11 @@ $('#{btnHostedPaymentInfoNext.ClientID}, #{btnSavedAccountPaymentInfoNext.Client
                 var transactionEntityType = EntityTypeCache.Get( transactionEntityTypeGuid.Value );
                 if ( transactionEntityType != null )
                 {
-                    var entityId = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) ).AsIntegerOrNull();
-                    if ( entityId.HasValue )
+                    var entityKey = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) );
+                    if ( entityKey.IsNotNullOrWhiteSpace() )
                     {
-                        var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
-                        IService serviceInstance = Reflection.GetServiceForEntityType( transactionEntityType.GetEntityType(), dbContext );
-                        if ( serviceInstance != null )
-                        {
-                            System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                            transactionEntity = getMethod.Invoke( serviceInstance, new object[] { entityId.Value } ) as Rock.Data.IEntity;
-                        }
+                        // Resolve as an Id, IdKey, or Guid; integer ids stay accepted so existing links keep working.
+                        transactionEntity = Reflection.GetIEntityForEntityType( transactionEntityType.GetEntityType(), entityKey );
                     }
                 }
             }

@@ -274,6 +274,27 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// A single guid is read as the component rather than the channel, which is
+        /// the opposite of the order the two appear in when both are present. Worth
+        /// stating, because a caller supplying only a channel guid silently stores it
+        /// as a component.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two guids separated by a pipe, the InteractionChannel first and the InteractionComponent second. To store a component on its own, supply the two parts with the channel half empty rather than a bare guid, because a value with no pipe is read as the component and never as the channel.",
+                Instructions = "To find the correct values, read the interaction channels to get the channel guid, then read that channel's components to get the component guid."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

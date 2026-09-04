@@ -6,13 +6,19 @@
         <div v-if="config.preHtml" v-html="config.preHtml"></div>
 
         <form @submit.prevent="onSearch">
-            <div class="input-group searchbox">
-                <div class="input-group-addon"><i class="ti ti-search"></i></div>
-                <TextBox v-model="query" class="form-control" placeholder="Search" @keydown.enter.prevent="onSearch"></TextBox>
-                <span id="spanButtonGroup" runat="server" class="input-group-btn">
-                    <RockButton type="submit" btnType="primary" autoLoading :isLoading="isLoadingResults" :disabled="isLoadingResults" loadingText="Searching...">Go</RockButton>
-                </span>
-            </div>
+            <TextBox v-model="query"
+                     placeholder="Search"
+                     inputGroupClasses="searchbox"
+                     @keydown.enter.prevent="onSearch">
+                <template #inputGroupPrepend>
+                    <div class="input-group-addon"><i class="ti ti-search"></i></div>
+                </template>
+                <template #inputGroupAppend>
+                    <span class="input-group-btn">
+                        <RockButton type="submit" btnType="primary" autoLoading :isLoading="isLoadingResults" :disabled="isLoadingResults" loadingText="Searching...">Go</RockButton>
+                    </span>
+                </template>
+            </TextBox>
         </form>
 
         <div class="clearfix margin-t-sm">
@@ -503,5 +509,3 @@
     opacity: 1;
 }
 </style>
-
-

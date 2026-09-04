@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -32,8 +34,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ConnectionTypeFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ConnectionTypeFieldType ).FullName )
+            : base( SystemGuid.FieldType.CONNECTION_TYPE.AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionTypeFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public ConnectionTypeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CONNECTION_TYPE.AsGuid(), name )
         {
         }
     }

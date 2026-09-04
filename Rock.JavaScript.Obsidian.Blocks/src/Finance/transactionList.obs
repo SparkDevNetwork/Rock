@@ -1,0 +1,830 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid ref="gridElement"
+          :definition="config.gridDefinition ?? undefined"
+          :title="config.options?.title ?? ''"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Transaction"
+          liveUpdates
+          :entityTypeGuid="EntityType.FinancialTransaction"
+          :customActions="customActions"
+          :showMergeTemplate="isTransactionEntityActionEnabled"
+          :showLaunchWorkflow="isTransactionEntityActionEnabled"
+          :gridSettings="config.options?.areFiltersVisible ?? false"
+          :gridSettingsActive="hasSettingsFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @filteredRowsChanged="onFilteredRowsChanged"
+          @selectedKeysChanged="onSelectedKeysChanged"
+          @selectItem="onSelectItem">
+
+        <template #gridHeaderBadges>
+            <div class="d-flex justify-content-end px-3 py-2">
+                <div class="btn-group">
+                    <RockButton :btnType="(pendingViewMode ?? viewMode) === ViewMode.Transactions ? BtnType.Primary : BtnType.Default"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :disabled="pendingViewMode !== null"
+                                @click="onViewModeClick(ViewMode.Transactions)">
+                        Transactions
+                    </RockButton>
+                    <RockButton :btnType="(pendingViewMode ?? viewMode) === ViewMode.Accounts ? BtnType.Primary : BtnType.Default"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :disabled="pendingViewMode !== null"
+                                @click="onViewModeClick(ViewMode.Accounts)">
+                        Accounts
+                    </RockButton>
+                </div>
+            </div>
+        </template>
+
+        <template #gridHeaderPrepend v-if="config.options?.showClosedBatchWarning">
+            <NotificationBox
+                             alertType="info"
+                             heading="Note"
+                             class="mb-0">
+                This batch has been closed and transactions cannot be edited.
+            </NotificationBox>
+        </template>
+
+        <template v-if="hasToolbarActions" #actionToolbar>
+            <div v-if="isMoveToBatchAvailable" class="d-flex align-items-center gap-2 flex-grow-1">
+                <span class="text-nowrap">Move to Batch</span>
+                <div class="move-to-batch-group">
+                    <DropDownList v-model="selectedBatchKey"
+                                  blankValue="Select..."
+                                  :items="moveToBatchTargets"
+                                  :showBlankItem="true"
+                                  :enhanceForLongLists="true"
+                                  formGroupClasses="mb-0" />
+                </div>
+
+                <RockButton :btnType="BtnType.Primary"
+                            :btnSize="BtnSize.Small"
+                            :disabled="!selectedBatchKey || isMovingTransactions"
+                            @click="onMoveTransactions">
+                    Move
+                </RockButton>
+            </div>
+            <RockButton v-else-if="config.options?.isReassignVisible"
+                        :btnType="BtnType.Default"
+                        :btnSize="BtnSize.Small"
+                        @click="onReassignClick">
+                <i class="ti ti-arrows-left-right"></i>
+                Reassign Transactions
+            </RockButton>
+
+        </template>
+        <SelectColumn />
+
+        <TextColumn name="transactionIdKey" field="transactionIdKey" :hideOnScreen="true" />
+
+        <PersonColumn name="person"
+                      title="Name"
+                      field="person"
+                      width="300px"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="config.options?.isPersonFilterVisible ? getPersonNameFilterValue : undefined"
+                      :quickFilterValue="config.options?.isPersonFilterVisible ? getPersonNameFilterValue : undefined" />
+        <DateTimeColumn name="transactionDateTime" title="Date" field="transactionDateTime" :filter="dateValueFilter" width="200px" />
+
+        <Column name="daysSinceLastTransaction"
+                title="Last Transaction"
+                field="daysSinceLastTransaction"
+                headerClass="text-right"
+                itemClass="text-right"
+                width="150px"
+                :filter="numberValueFilter"
+                v-if="config.options?.showDaysSinceLastTransaction">
+            <template #format="{ row }">
+                <div class="w-100">
+                    <span v-if="row.daysSinceLastTransaction != null">{{ row.daysSinceLastTransaction }}d</span>
+                </div>
+            </template>
+        </Column>
+
+        <CurrencyColumn name="totalAmount"
+                        title="Amount"
+                        field="totalAmount"
+                        :filter="numberValueFilter"
+                        width="200px" />
+        <TextColumn name="foreignCurrency"
+                    v-if="config?.options?.isForeignCurrencyEnabled"
+                    title="Foreign Currency"
+                    field="foreignCurrency"
+                    width="150px"
+                    :filter="textValueFilter" />
+        <TextColumn name="currencyType"
+                    title="Currency Type"
+                    field="currencyType"
+                    width="200px"
+                    :filter="pickExistingValueFilter" />
+        <TextColumn name="transactionCode"
+                    title="Transaction Code"
+                    field="transactionCode"
+                    width="200px"
+                    :filter="textValueFilter" />
+        <TextColumn name="foreignKey"
+                    title="Foreign Key"
+                    field="foreignKey"
+                    width="150px"
+                    :filter="textValueFilter"
+                    v-if="config.options?.showForeignKeyColumn" />
+
+        <Column name="batchId"
+                title="Batch Id"
+                field="batchId"
+                :filter="numberValueFilter"
+                v-if="!config.options?.isBatchContext">
+            <template #format="{ row }">
+                <a v-if="config.navigationUrls?.[NavigationUrlKey.BatchPage] && row.batchIdKey"
+                   :href="config.navigationUrls[NavigationUrlKey.BatchPage].replace('((Key))', String(row.batchIdKey))">{{ row.batchId }}</a>
+                <span v-else>{{ row.batchId }}</span>
+            </template>
+        </Column>
+
+        <TextColumn name="batchIdKey" field="batchIdKey" :hideOnScreen="true" />
+
+        <Column name="accounts"
+                title="Accounts"
+                field="accounts"
+                :filter="pickExistingValueFilter"
+                :filterValue="getRowAccountsFilterValue"
+                :quickFilterValue="getRowAccountsFilterValue"
+                width="200px">
+            <template #format="{ row }">
+                <div class="text-sm">
+                    <div v-for="account in row.accounts">
+                        {{ account.name }}: {{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}
+                    </div>
+                </div>
+            </template>
+        </Column>
+
+        <TextColumn name="summary"
+                    title="Comments"
+                    field="summary"
+                    :filter="textValueFilter" />
+        <AttributeColumns :attributes="attributeFields" />
+
+        <Column name="image" title="Image" field="image" v-if="showImages" :width="imageColumnWidth">
+            <template #format="{ row }">
+                <img v-if="row.image"
+                     :src="row.image"
+                     :max-height="`${imageHeight}px`"
+                     width="auto"
+                     class="cursor-pointer"
+                     @load="onImageLoad"
+                     @click.stop.prevent="openImage(String(row.image))" />
+            </template>
+        </Column>
+
+        <TextColumn name="status"
+                    title="Status"
+                    field="status"
+                    :hideOnScreen="true"
+                    :filter="pickExistingValueFilter" />
+        <DateTimeColumn name="settledDate"
+                        title="Settled Date"
+                        field="settledDate"
+                        :hideOnScreen="true"
+                        :filter="dateValueFilter" />
+        <TextColumn name="processorBatchId"
+                    title="Processor Batch Id"
+                    field="processorBatchId"
+                    :hideOnScreen="true"
+                    :filter="textValueFilter" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+        <template #gridFooterAppend v-if="config.options?.showAccountSummary">
+            <div class="d-flex justify-content-end">
+                <div class="col-sm-12 col-md-5 pt-3 pb-3">
+                    <ContentSection title="Total Results" disableCollapse>
+                        <div class="account-summary">
+                            <div v-for="account in accountSummaries" :key="account.name" class="d-flex justify-content-between">
+                                <p class="text-muted">{{ account.name }}</p>
+                                <p class="text-right">{{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between text-bold">
+                            <span>Total:</span>
+                            <span class="text-right">{{ toCurrencyOrNull(summaryTotal, config.options?.currencyInfo) }}</span>
+                        </div>
+                    </ContentSection>
+                </div>
+            </div>
+        </template>
+
+    </Grid>
+
+    <GridSettingsModal :modelValue="gridSettings"
+                       @update:modelValue="onGridSettingsApply"
+                       v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange"
+                       :isForeignKeyFilterVisible="config.options?.showForeignKeyColumn ?? false"
+                       :isAccountFilterVisible="!config.options?.accountConfigured"
+                       :isActiveAccountsOnlyFilter="config.options?.isActiveAccountsOnlyFilter ?? false"
+                       :isCampusFilterVisible="!config.options?.isPersonContext" />
+
+    <ReassignTransactionsModal v-model="isReassignModalVisible"
+                               @save="onReassignSave" />
+
+    <transition name="img-zoom">
+        <div v-if="zoomedImage"
+             class="image-zoom-overlay"
+             @click="closeImage">
+            <img :src="zoomedImage" />
+        </div>
+    </transition>
+</template>
+
+<style scoped>
+.account-summary {
+    border-bottom: 1px var(--color-interface-soft) solid;
+}
+
+.move-to-batch-group {
+    flex: 1 1 auto;
+    min-width: 200px;
+    max-width: 400px;
+}
+</style>
+
+<script setup lang="ts">
+    import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, Column, CurrencyColumn, DateTimeColumn, dateValueFilter, DeleteColumn, numberValueFilter, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { TransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionList/transactionListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
+    import { computed, reactive, ref } from "vue";
+    import { AccountSummary, GridSettingsOptions, NavigationUrlKey, PreferenceKey, ViewMode } from "./TransactionList/types.partial";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import GridSettingsModal from "./TransactionList/gridSettingsModal.partial.obs";
+    import ReassignTransactionsModal from "./TransactionList/reassignTransactionsModal.partial.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ListBlockBox<TransactionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const browserBus = useBlockBrowserBus();
+
+    // Browser bus message published when transactions are moved to another batch. Sibling blocks
+    // (e.g. Batch Detail) subscribe to this same string to refresh their batch totals.
+    const transactionsMovedMessage = "finance.transactionList.transactionsMoved";
+
+    // Default to the last 6 months when the individual has no saved date range, so the grid stays
+    // bounded rather than loading the entire transaction history. Kept in sync with the server-side
+    // default in TransactionList.cs.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 6
+    };
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const viewMode = ref<string>(config.options?.viewMode ?? ViewMode.Transactions);
+    const pendingViewMode = ref<string | null>(null);
+
+    const showImages = ref<boolean>(config.options?.isImagesToggleVisible === true && preferences.getValue(PreferenceKey.ShowImages) === "true");
+    const imageHeight = config.options?.imageHeight ?? 200;
+
+    // The widest rendered image measured so far, in pixels. The column grows to fit the widest
+    // image as each one loads. Reset whenever the grid data reloads.
+    const maxImageWidth = ref<number>(0);
+
+    // The image URL currently shown in the full-screen zoom overlay, or null when closed.
+    const zoomedImage = ref<string | null>(null);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>(loadGridSettingsFromPreferences(viewMode.value));
+
+    // Per-account totals shown in the "Total Results" summary panel, and their grand total.
+    const accountSummaries = ref<AccountSummary[]>([]);
+    const summaryTotal = ref<number>(0);
+    const isAccountSummaryFiltered = ref<boolean>(false);
+
+    // Move to Batch action state.
+    const gridElement = ref<InstanceType<typeof Grid> | undefined>();
+    const hasSelectedRows = ref<boolean>(false);
+    const selectedCount = ref<number>(0);
+    const selectedTransactionKeys = ref<string[]>([]);
+    const moveToBatchTargets = config.options?.moveToBatchTargets ?? [];
+    const selectedBatchKey = ref<string>("");
+    const isMovingTransactions = ref<boolean>(false);
+
+    // Reassign action state.
+    const isReassignModalVisible = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const imageColumnWidth = computed<string | undefined>(() => {
+        return maxImageWidth.value > 0 ? `${maxImageWidth.value}px` : undefined;
+    });
+
+    const attributeFields = computed<AttributeFieldDefinitionBag[]>(() => {
+        return viewMode.value === ViewMode.Accounts
+            ? (config.options?.transactionDetailAttributeOptions ?? [])
+            : (config.options?.transactionAttributeOptions ?? []);
+    });
+
+    const customActions = computed((): GridAction[] => {
+        if (!config.options?.isImagesToggleVisible) {
+            return [];
+        }
+
+        return [{
+            title: showImages.value ? "Hide Images" : "Show Images",
+            iconCssClass: showImages.value ? "ti ti-photo-off" : "ti ti-photo",
+            handler: onToggleImages
+        }];
+    });
+
+    const isTransactionEntityActionEnabled = computed((): boolean | undefined => {
+        return viewMode.value === ViewMode.Accounts ? false : undefined;
+    });
+
+    /**
+     * Whether Move to Batch is available. Mirrors the WebForms behavior: only in an editable batch
+     * context and in Transactions mode (the move control is hidden in Accounts/Details mode).
+     */
+    const isMoveToBatchAvailable = computed((): boolean => {
+        return !!config.options?.isMoveToBatchVisible
+            && viewMode.value === ViewMode.Transactions;
+    });
+
+    /**
+     * Whether any selection action (Move to Batch or Reassign) will render in the toolbar. When
+     * false, the action toolbar is not provided at all so no empty toolbar appears for selected rows.
+     */
+    const hasToolbarActions = computed((): boolean => {
+        return isMoveToBatchAvailable.value || !!config.options?.isReassignVisible;
+    });
+
+    const hasSettingsFilters = computed((): boolean => {
+        const s = gridSettings.value;
+        return !!s.dateRange
+            || !!s.amountRange?.lower
+            || !!s.amountRange?.upper
+            || !!s.currencyType?.value
+            || !!s.creditCardType?.value
+            || !!s.sourceType?.value
+            || !!s.transactionCode
+            || !!s.foreignKey
+            || !!s.account?.length
+            || !!s.transactionType?.value
+            || !!s.campusOfBatch?.value
+            || !!s.campusOfAccount?.value
+            || !!s.person?.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Reads all filter preferences for the given view mode and returns them as a
+     * GridSettingsOptions object. Called on initial load and whenever the view mode changes
+     * so the filter drawer always reflects the correct mode's saved values.
+     *
+     * @param mode The view mode whose preferences should be loaded.
+     */
+    function loadGridSettingsFromPreferences(mode: string): GridSettingsOptions {
+        const key = (baseKey: string): string => `${mode}-${baseKey}`;
+        const jsonOrNull = <T>(raw: string): T | null => {
+            const trimmed = raw.trim();
+            return trimmed ? JSON.parse(trimmed) as T : null;
+        };
+
+        return {
+            dateRange: parseSlidingDateRangeString(preferences.getValue(key(PreferenceKey.FilterDateRange))) ?? defaultSlidingDateRange,
+            amountRange: {
+                lower: toNumberOrNull(preferences.getValue(key(PreferenceKey.FilterAmountRangeFrom))),
+                upper: toNumberOrNull(preferences.getValue(key(PreferenceKey.FilterAmountRangeTo)))
+            },
+            currencyType: jsonOrNull(preferences.getValue(key(PreferenceKey.FilterCurrencyType))),
+            creditCardType: jsonOrNull(preferences.getValue(key(PreferenceKey.FilterCreditCardType))),
+            sourceType: jsonOrNull(preferences.getValue(key(PreferenceKey.FilterSourceType))),
+            transactionCode: preferences.getValue(key(PreferenceKey.FilterTransactionCode)) || null,
+            foreignKey: preferences.getValue(key(PreferenceKey.FilterForeignKey)) || null,
+            account: jsonOrNull(preferences.getValue(key(PreferenceKey.FilterAccount))) ?? undefined,
+            transactionType: jsonOrNull(preferences.getValue(key(PreferenceKey.FilterTransactionType))),
+            campusOfBatch: jsonOrNull(preferences.getValue(key(PreferenceKey.FilterCampusOfBatch))) ?? undefined,
+            campusOfAccount: jsonOrNull(preferences.getValue(key(PreferenceKey.FilterCampusOfAccount))) ?? undefined,
+            person: jsonOrNull(preferences.getValue(key(PreferenceKey.FilterPerson))) ?? undefined,
+        };
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            // Reset the measured width so a new data set re-fits the column to its own images.
+            maxImageWidth.value = 0;
+
+            if (config.options?.showAccountSummary) {
+                calculateAccountSummary(gridData.rows ?? []);
+            }
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the combined left and right padding, in pixels, of the grid cell containing the given
+     * element. The cell padding is driven by `--table-cell-padding-x`; reading the resolved
+     * padding off the cell returns pixels regardless of the unit the variable is authored in.
+     *
+     * @param element An element inside the grid cell.
+     * @returns The horizontal padding in pixels, or 0 if the cell cannot be found.
+     */
+    function getCellPaddingX(element: HTMLElement): number {
+        const cell = element.closest(".grid-cell") as HTMLElement | null;
+
+        if (!cell) {
+            return 0;
+        }
+
+        const style = getComputedStyle(cell);
+
+        return parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    }
+
+    /**
+     * Builds the per-account totals for the "Total Results" summary panel from the full result
+     * set. Each row's accounts entries are summed by account name, mirroring the WebForms summary
+     * which totals every transaction detail (not just the current grid page). Accounts are kept in
+     * first-seen order, which follows the account display order produced by the server query.
+     *
+     * @param rows The full set of rows returned for the current filters and view mode.
+     */
+    function calculateAccountSummary(rows: Record<string, unknown>[]): void {
+        const summaries = new Map<string, AccountSummary>();
+
+        for (const row of rows) {
+            const accounts = (row["accounts"] as Array<{ name: string; amount: number }>) ?? [];
+
+            for (const account of accounts) {
+                let summary = summaries.get(account.name);
+
+                if (!summary) {
+                    summary = { name: account.name, amount: 0 };
+                    summaries.set(account.name, summary);
+                }
+
+                summary.amount += account.amount;
+            }
+        }
+
+        let entries = [...summaries.values()];
+
+        /*
+            If filtered to a specific account, and in transaction mode, transactions
+            with contributions to other accounts will still be included but our total
+            summary will not account for those contributions.
+        */
+        const filteredAccountNames = !config.options?.accountConfigured
+            ? (gridSettings.value.account ?? []).map(a => a.text).filter((name): name is string => !!name)
+            : [];
+
+        if (filteredAccountNames.length > 0) {
+            entries = entries.filter(entry => filteredAccountNames.includes(entry.name));
+        }
+
+        accountSummaries.value = entries;
+        summaryTotal.value = entries.reduce((sum, entry) => sum + entry.amount, 0);
+        isAccountSummaryFiltered.value = filteredAccountNames.length > 0;
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Gets the filter value text for the accounts column by joining all account names and amounts.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowAccountsFilterValue(row: Record<string, unknown>): string {
+        const accounts = row["accounts"] as Array<{ name: string; amount: number }>;
+        if (!accounts?.length) {
+            return "";
+        }
+
+        let filterValue = "";
+        for (const account of accounts) {
+            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount, config.options?.currencyInfo) ?? ""}`;
+        }
+        return filterValue;
+    }
+
+    /**
+     * Saves the given filter settings as block person preferences, prefixed by the current view
+     * mode so each mode keeps its own independent filter state.
+     *
+     * @param settings The filter settings to persist.
+     */
+    function persistFilterPreferences(settings: GridSettingsOptions): void {
+        const key = (baseKey: string): string => `${viewMode.value}-${baseKey}`;
+
+        preferences.setValue(key(PreferenceKey.FilterDateRange), settings.dateRange ? slidingDateRangeToString(settings.dateRange) : "");
+        preferences.setValue(key(PreferenceKey.FilterAmountRangeFrom), settings.amountRange?.lower?.toString() ?? "");
+        preferences.setValue(key(PreferenceKey.FilterAmountRangeTo), settings.amountRange?.upper?.toString() ?? "");
+        preferences.setValue(key(PreferenceKey.FilterCurrencyType), JSON.stringify(settings.currencyType ?? null));
+        preferences.setValue(key(PreferenceKey.FilterCreditCardType), JSON.stringify(settings.creditCardType ?? null));
+        preferences.setValue(key(PreferenceKey.FilterSourceType), JSON.stringify(settings.sourceType ?? null));
+        preferences.setValue(key(PreferenceKey.FilterTransactionCode), settings.transactionCode ?? "");
+        preferences.setValue(key(PreferenceKey.FilterForeignKey), settings.foreignKey ?? "");
+        preferences.setValue(key(PreferenceKey.FilterAccount), JSON.stringify(settings.account ?? null));
+        preferences.setValue(key(PreferenceKey.FilterTransactionType), JSON.stringify(settings.transactionType ?? null));
+        preferences.setValue(key(PreferenceKey.FilterCampusOfBatch), JSON.stringify(settings.campusOfBatch ?? null));
+        preferences.setValue(key(PreferenceKey.FilterCampusOfAccount), JSON.stringify(settings.campusOfAccount ?? null));
+        preferences.setValue(key(PreferenceKey.FilterPerson), JSON.stringify(settings.person ?? null));
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the user clicks a row. Navigates to the transaction detail page.
+     * In Accounts mode the row key is the detail IdKey, so the transaction IdKey is
+     * resolved from the loaded grid data instead.
+     *
+     * @param key The idKey of the selected row.
+     */
+    function onSelectItem(key: string): void {
+        if (!config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            return;
+        }
+
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        const transactionKey = (row?.["transactionIdKey"] as string | undefined) ?? key;
+
+        window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", transactionKey);
+    }
+
+    /**
+     * Called when the Add button is clicked. Navigates to the detail page to create a new
+     * transaction. The batch context is already baked into the detail page URL.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a row's delete button is clicked. Deletes the transaction (Transactions mode) or
+     * transaction detail (Accounts mode); the server enforces the closed/automated batch guards.
+     *
+     * @param key The idKey of the row to delete.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+
+            loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the transaction.");
+        }
+    }
+
+    /**
+     * Tracks the current selection so the Move to Batch toolbar can show, enable, and act on it.
+     *
+     * @param state The current grid state.
+     */
+    function onSelectedKeysChanged(state: IGridState): void {
+        selectedTransactionKeys.value = [...state.selectedKeys] as string[];
+        selectedCount.value = state.selectedKeys.length;
+        hasSelectedRows.value = state.selectedKeys.length > 0;
+    }
+
+    /**
+     * Moves the selected transactions to the chosen batch, then clears the selection and reloads
+     * the grid on success.
+     */
+    async function onMoveTransactions(): Promise<void> {
+        if (!selectedBatchKey.value || selectedTransactionKeys.value.length === 0) {
+            return;
+        }
+
+        const confirmed = await confirm("Move the selected transactions to a new batch? Each batch's control amount will update to reflect the change.");
+
+        if (!confirmed) {
+            return;
+        }
+
+        isMovingTransactions.value = true;
+
+        try {
+            const result = await invokeBlockAction<{ movedCount: number; batchName: string }>("MoveTransactions", {
+                transactionKeys: selectedTransactionKeys.value,
+                batchKey: selectedBatchKey.value
+            });
+
+            if (result.isSuccess && result.data) {
+                // Notify sibling blocks (e.g. Batch Detail) so they refresh their batch totals,
+                // matching the WebForms UpdateBlocks behavior without a full page reload.
+                browserBus.publish(transactionsMovedMessage);
+
+                selectedBatchKey.value = "";
+                gridElement.value?.clearSelectedKeys();
+                gridDataSource.value = loadGridData();
+            }
+            else {
+                await alert(result.errorMessage ?? "Unknown error while trying to move the transactions.");
+            }
+        }
+        finally {
+            isMovingTransactions.value = false;
+        }
+    }
+
+    /**
+     * Called when the "Reassign Transactions" action is clicked. Opens the reassign modal for the
+     * currently selected transactions.
+     */
+    function onReassignClick(): void {
+        if (selectedTransactionKeys.value.length === 0) {
+            return;
+        }
+
+        isReassignModalVisible.value = true;
+    }
+
+    /**
+     * Called when the user confirms the reassign modal.
+     *
+     * @param person The person to reassign the selected transactions to.
+     * @param bankAccountAction How the source person's saved bank accounts should be handled ("MOVE", "COPY", or "NONE").
+     */
+    async function onReassignSave(person: ListItemBag, bankAccountAction: string): Promise<void> {
+        const result = await invokeBlockAction("ReassignTransactions", {
+            transactionKeys: selectedTransactionKeys.value,
+            personAliasKey: person.value,
+            bankAccountAction
+        });
+
+        isReassignModalVisible.value = false;
+
+        if (result.isSuccess) {
+            gridElement.value?.clearSelectedKeys();
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to reassign the transactions.");
+        }
+    }
+
+    /**
+     * Called when one of the view mode toggle buttons is clicked. Saves the selected
+     * view mode on the server, then reloads the grid data for the new mode.
+     *
+     * @param mode The view mode that was selected.
+     */
+    async function onViewModeClick(mode: string): Promise<void> {
+        if (viewMode.value === mode || pendingViewMode.value === mode) {
+            return;
+        }
+
+        pendingViewMode.value = mode;
+
+        await invokeBlockAction("SetViewMode", { viewMode: mode });
+
+        const data = await loadGridData();
+
+        viewMode.value = mode;
+
+        // Load the new mode's saved filter values into the drawer. This is a plain state update
+        // with no side effect: persisting and reloading only happen when the user saves the
+        // settings modal (onGridSettingsApply), so switching modes does a single grid load.
+        gridSettings.value = loadGridSettingsFromPreferences(mode);
+
+        pendingViewMode.value = null;
+        gridDataSource.value = Promise.resolve(data);
+    }
+
+    /**
+     * Called when the user saves the grid settings modal with changed filter values. Persists the
+     * filters for the current view mode and reloads the grid. Programmatic updates to the settings
+     * (e.g. switching view mode) do not flow through here, so they never trigger an extra reload.
+     *
+     * @param value The updated grid settings from the modal.
+     */
+    async function onGridSettingsApply(value: GridSettingsOptions): Promise<void> {
+        gridSettings.value = value;
+
+        persistFilterPreferences(value);
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    }
+
+    /**
+     * Toggles the "Show Images" preference and reloads the grid so image URLs
+     * are included or excluded in the next data response.
+     */
+    async function onToggleImages(): Promise<void> {
+        showImages.value = !showImages.value;
+        preferences.setValue(PreferenceKey.ShowImages, showImages.value.toString());
+        await preferences.save();
+
+        // Reload so the server includes or excludes the image URLs based on the new preference.
+        // The URLs are omitted from the payload while images are hidden, so turning the column on
+        // requires a fresh data load to populate them.
+        gridDataSource.value = loadGridData();
+    }
+
+    /**
+     * Measures each image as it loads and grows the column to fit the widest one. The rendered
+     * width is the natural aspect ratio scaled to the configured image height, plus the cell's
+     * horizontal padding so the image is not clipped by the column edge.
+     *
+     * @param event The image load event.
+     */
+    function onImageLoad(event: Event): void {
+        const img = event.target as HTMLImageElement;
+
+        if (img.naturalHeight === 0) {
+            return;
+        }
+
+        const renderedWidth = (img.naturalWidth / img.naturalHeight) * imageHeight;
+        const totalWidth = renderedWidth + getCellPaddingX(img);
+
+        if (totalWidth > maxImageWidth.value) {
+            maxImageWidth.value = totalWidth;
+        }
+    }
+
+    /**
+     * Opens the full-screen image zoom overlay for the given image URL.
+     *
+     * @param image The URL of the image to zoom into.
+     */
+    function openImage(image: string): void {
+        zoomedImage.value = image;
+    }
+
+    /** Closes the full-screen image zoom overlay. */
+    function closeImage(): void {
+        zoomedImage.value = null;
+    }
+
+    /**
+     * Recomputes the account summary whenever the grid's column value filters change so the
+     * "Total Results" panel reflects only the rows currently visible in the grid.
+     *
+     * @param state The current grid state, including the rows that pass the active column filters.
+     */
+    function onFilteredRowsChanged(state: IGridState): void {
+        if (config.options?.showAccountSummary) {
+            calculateAccountSummary(state.filteredRows as Record<string, unknown>[]);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    gridDataSource.value = loadGridData();
+</script>

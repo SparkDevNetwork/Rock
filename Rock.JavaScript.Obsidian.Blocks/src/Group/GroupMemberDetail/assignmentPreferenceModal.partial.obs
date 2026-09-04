@@ -1,0 +1,193 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isShown" title="Assignment Preference" saveText="Save" @save="onSave">
+        <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="scheduleId"
+                              label="Schedule"
+                              help="The specific schedule this assignment covers, chosen from the group's schedules."
+                              :items="scheduleItems"
+                              rules="required" />
+
+                <DropDownList v-model="locationId"
+                              label="Location"
+                              help="The location this assignment is for. Leave blank if there's no location preference for this schedule."
+                              :items="locationItems"
+                              :disabled="!scheduleId" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GroupScheduleAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupScheduleAssignmentBag";
+    import { ScheduleAssignmentOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/scheduleAssignmentOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The saved member's IdKey, or empty while adding. */
+        groupMemberIdKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The row being edited, or null when adding a new assignment. */
+        assignment: {
+            type: Object as PropType<GroupScheduleAssignmentBag | null>,
+            default: null
+        },
+
+        /** Schedule ids already used by other rows, hidden from the dropdown. */
+        usedScheduleIds: {
+            type: Array as PropType<number[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", value: GroupScheduleAssignmentBag): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isShown = useVModelPassthrough(props, "modelValue", emit);
+
+    const scheduleId = ref("");
+    const locationId = ref("");
+
+    /** Every available schedule for the group, with the sort metadata a saved row needs. */
+    const schedules = ref<GroupScheduleAssignmentBag[]>([]);
+
+    const locationItems = ref<ListItemBag[]>([]);
+
+    const errorMessage = ref("");
+
+    /** Suppresses the schedule watcher while the modal seeds its own values on open. */
+    let isSeeding = false;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The schedules not yet assigned to another row, keeping the one being edited. */
+    const scheduleItems = computed((): ListItemBag[] => {
+        return schedules.value
+            .filter(s => !props.usedScheduleIds.includes(s.scheduleId) || s.scheduleId === props.assignment?.scheduleId)
+            .map(s => ({
+                text: s.formattedScheduleName,
+                value: s.scheduleId.toString()
+            }));
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the schedule and location options for the given schedule
+     * selection.
+     */
+    async function loadOptions(selectedScheduleId: number | null): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ScheduleAssignmentOptionsBag>("GetScheduleAssignmentOptions", {
+            groupMemberIdKey: props.groupMemberIdKey,
+            selectedScheduleId
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to load the schedule options.";
+            return;
+        }
+
+        schedules.value = result.data.schedules ?? [];
+        locationItems.value = result.data.locationItems ?? [];
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Emits the completed assignment row back to the grid. The row keeps its
+     * guid when editing so the save reconciliation updates in place.
+     */
+    function onSave(): void {
+        const schedule = schedules.value.find(s => s.scheduleId === toNumberOrNull(scheduleId.value));
+
+        if (!schedule) {
+            return;
+        }
+
+        const selectedLocationId = toNumberOrNull(locationId.value);
+
+        emit("save", {
+            ...schedule,
+            guid: props.assignment?.guid ?? newGuid(),
+            locationId: selectedLocationId,
+            locationName: selectedLocationId !== null
+                ? locationItems.value.find(l => l.value === locationId.value)?.text ?? ""
+                : "No Location Preference"
+        });
+
+        isShown.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isShown, async () => {
+        if (!isShown.value) {
+            return;
+        }
+
+        // The values seed only after the options land: DropDownList wipes any
+        // value its item list does not contain, so seeding first would blank
+        // the row being edited while the load is in flight.
+        isSeeding = true;
+        scheduleId.value = "";
+        locationId.value = "";
+
+        await loadOptions(props.assignment?.scheduleId ?? null);
+
+        scheduleId.value = props.assignment?.scheduleId.toString() ?? "";
+        locationId.value = props.assignment?.locationId?.toString() ?? "";
+
+        // Watchers flush on the next tick, so the guard has to outlive this call to suppress them.
+        nextTick(() => {
+            isSeeding = false;
+        });
+    });
+
+    // A new schedule selection invalidates the location list, which is specific to the schedule.
+    watch(scheduleId, async () => {
+        if (isSeeding) {
+            return;
+        }
+
+        locationId.value = "";
+
+        await loadOptions(toNumberOrNull(scheduleId.value));
+    });
+
+    // #endregion Watchers
+</script>

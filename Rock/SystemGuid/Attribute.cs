@@ -569,6 +569,13 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string COUNTRY_ADDRESS_POSTCODE_REQUIREMENT = "0037453D-0D26-4F02-8AB3-6AD675D85AAE";
 
+        /// <summary>
+        /// Country - ISO 3166-1 Alpha-3 Code. Stored on each Country DefinedValue so
+        /// responses from the Smarty International Street Address API (which return alpha-3)
+        /// can be mapped back to Rock's alpha-2 country values.
+        /// </summary>
+        public const string COUNTRY_ISO3166_ALPHA3 = "65776D88-0C89-4B9C-B705-683F028948E3";
+
         #endregion
 
         #region Fundraising Attributes
@@ -1052,6 +1059,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The AI service to use for the Category.
         /// </summary>
+        [Obsolete( "This attribute is deprecated and will be removed in the future." )]
+        [RockObsolete( "21.0" )]
         public const string AI_AUTOMATION_AI_PROVIDER = "6A1991F6-AB4A-4B92-9790-0E2ED62C079F";
 
         /// <summary>
@@ -1102,5 +1111,12 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_SIGNUP_GROUP_PROJECT_TYPE = "46FFBB10-6E4B-4B3A-A560-61B36C6B0E09";
 
         #endregion
+
+        /// <summary>
+        /// The "Default Component Daily Counts" attribute on the "Interaction Mediums" defined type.
+        /// Controls whether newly created <see cref="Rock.Model.InteractionChannel"/> records of a
+        /// given medium default to having <c>EnableComponentDailyCounts = true</c>.
+        /// </summary>
+        public const string DEFINED_TYPE_INTERACTION_MEDIUM_DEFAULT_COMPONENT_DAILY_COUNT = "813B4E21-D77F-45E8-B702-120EE7C90451";
     }
 }

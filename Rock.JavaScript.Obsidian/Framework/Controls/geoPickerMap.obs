@@ -1,9 +1,44 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="gm-container" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'">
-        <!-- Our custom clear button that we add to the map for deleting polygons. -->
-        <button type="button" ref="clearButton" v-show="isClearButtonEnabled" @click.prevent="deleteSelectedShape()" class="gm-clear-button" title="Delete selected shape" aria-label="Delete selected shape"><i class="ti ti-x"></i></button>
-        <!-- This is where the Google Map (with Drawing Tools) will go. -->
+        <!--
+            On-map drawing toolbar. Positioned absolutely inside gm-container,
+            overlaid on the map to the right of Google's Map / Styled Map
+            toggles. We deliberately do not use map.controls.push for this
+            toolbar because Google's internal control-layout pass happens at
+            an unpredictable point after the map's idle event, which causes
+            a visible slide as the wrapper's wrapper gets repositioned. By
+            owning the position ourselves the toolbar appears at its final
+            spot on the first paint. The left offset is tuned to clear the
+            Map / Styled Map controls; if those grow (e.g. localized labels)
+            this may need adjustment.
+        -->
+        <div class="gm-tool-bar">
+            <button ref="panButton"
+                    type="button"
+                    class="gm-tool-button"
+                    :disabled="!isDrawing"
+                    @click.prevent="cancelDrawing"
+                    title="Cancel drawing"
+                    aria-label="Cancel drawing"><i class="ti ti-hand-stop"></i></button>
+            <button ref="drawButton"
+                    type="button"
+                    class="gm-tool-button"
+                    :class="{ 'text-info': isDrawing }"
+                    :disabled="isDrawing || hasShapeOnMap"
+                    v-show="!hasShapeOnMap"
+                    @click.prevent="startDrawing"
+                    :title="drawingMode === 'Polygon' ? 'Draw a geo-fence' : 'Draw point'"
+                    :aria-label="drawingMode === 'Polygon' ? 'Draw a geo-fence' : 'Draw point'"><i class="ti" :class="drawingMode === 'Polygon' ? 'ti-polygon' : 'ti-map-pin'"></i></button>
+            <button ref="clearButton"
+                    type="button"
+                    class="gm-tool-button"
+                    :disabled="!isShapeSelected"
+                    @click.prevent="deleteSelectedShape()"
+                    title="Delete selected shape"
+                    aria-label="Delete selected shape"><i class="ti ti-x"></i></button>
+        </div>
+        <!-- This is where the Google Map (with our custom drawing toolbar) will go. -->
         <Loading :isLoading="!isReady" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'">
             <div ref="mapContainer" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'" class="gm-map"></div>
         </Loading>
@@ -12,6 +47,7 @@
 
 <script setup lang="ts">
     /* global google */
+    /// <reference types="google.maps" />
     import { computed, nextTick, onBeforeMount, onMounted, PropType, ref, watch } from "vue";
     import { Guid } from "@Obsidian/Types";
     import { DrawingMode, Coordinate } from "@Obsidian/Types/Controls/geo";
@@ -21,11 +57,6 @@
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
-
-    /**
-     * The types of shapes Google Maps uses internally
-     */
-    type Shape = google.maps.Polygon | google.maps.Marker;
 
     const props = defineProps({
         /**
@@ -86,6 +117,8 @@
     // #region Values
 
     // References to DOM elements
+    const panButton = ref<HTMLButtonElement | null>(null);
+    const drawButton = ref<HTMLButtonElement | null>(null);
     const clearButton = ref<HTMLButtonElement | null>(null);
     const mapContainer = ref<HTMLDivElement | null>(null);
 
@@ -94,11 +127,15 @@
     const isMounted = ref(false);
     const isReady = computed(() => isGoogleLoaded.value && isMounted.value);
 
-    const isClearButtonEnabled = ref(false);
+    // Reactive toolbar state. The three buttons are gated on these:
+    //   pan  -> active only while in-progress polygon vertices are being collected
+    //   draw -> active only when no shape exists and we are not currently drawing
+    //   x    -> active only when a shape exists AND is currently selected
+    const isDrawing = ref(false);
+    const hasShapeOnMap = ref(false);
+    const isShapeSelected = ref(false);
 
     let drawingMode = props.drawingMode;
-    let drawingModes: google.maps.drawing.OverlayType[] = [];
-    let drawingManager: google.maps.drawing.DrawingManager | null = null;
     let map: google.maps.Map | null = null;
     let centerLatitude = props.centerLatitude; // Get from prop on init; we aren't reacting to it
     let centerLongitude = props.centerLongitude; // Get from prop on init; we aren't reacting to it
@@ -109,9 +146,32 @@
     let fillColor = "0088cc";
     let strokeColor = "0088cc";
     let styles: google.maps.MapTypeStyle[] = [];
-    let shape: Shape | null = null;
+    // Custom wrapper around AdvancedMarkerElement that ducktypes the parts of
+    // the Marker API we touch, used when the active Map Style has a mapId.
+    type AdvancedMarkerWrapper = {
+        position: google.maps.LatLng;
+        map: google.maps.Map | null;
+        marker_element: google.maps.marker.AdvancedMarkerElement;
+        getPosition(): google.maps.LatLng;
+        getPath(): string;
+        setPosition(position: google.maps.LatLng): void;
+        setMap(newMap: google.maps.Map | null): void;
+    };
+    type SelectableShape = google.maps.Polygon | google.maps.Marker | AdvancedMarkerWrapper;
+
+    // The committed shape (Polygon, Marker, or custom AdvancedMarker wrapper).
+    let shape: SelectableShape | null = null;
     let marker: google.maps.Symbol | null = null;
     let mapId: string | null = null;
+
+    // In-progress polygon drawing state. These are cleared when a polygon is
+    // finished, the user cancels via the pan button, or the polyline is abandoned.
+    let workingVertices: google.maps.LatLng[] = [];
+    let workingPolyline: google.maps.Polyline | null = null;
+    let firstVertexMarker: google.maps.Marker | null = null;
+    let mapClickListener: google.maps.MapsEventListener | null = null;
+    let mapDblclickListener: google.maps.MapsEventListener | null = null;
+    let mapMousemoveListener: google.maps.MapsEventListener | null = null;
 
     // #endregion
 
@@ -151,10 +211,12 @@
     // #region Functions
 
     /**
-     * Initialize the map
+     * Initialize the map and our custom drawing toolbar.
      */
     async function initialize(isReady): Promise<void> {
-        if (!isReady) return;
+        if (!isReady) {
+            return;
+        }
 
         marker = {
             path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
@@ -168,8 +230,6 @@
 
         // Make sure the map's DIV will be rendered so we have a reference to it
         await nextTick();
-
-        drawingModes = [drawingMode === "Polygon" ? google.maps.drawing.OverlayType.POLYGON : google.maps.drawing.OverlayType.MARKER];
 
         // Create a new StyledMapType object, passing it the array of styles,
         // as well as the name to be displayed on the map type control.
@@ -193,36 +253,22 @@
 
         map = new google.maps.Map(mapContainer.value as HTMLElement, mapOptions);
 
-        // Add our clear button to the Google Map control flow so we don't need to position it
-        map.controls[google.maps.ControlPosition.TOP_LEFT].push(clearButton.value as HTMLElement);
+        // Note: the on-map drawing toolbar lives in our own DOM (inside
+        // gm-container, position:absolute) rather than being pushed into
+        // map.controls. Doing it this way avoids Google's unpredictable
+        // post-idle control-layout pass, which caused the toolbar to slide
+        // into place after first paint. See the .gm-tool-bar CSS rule.
 
         //Associate the styled map with the MapTypeId and set it to display.
         map.mapTypes.set("map_style", styledMap);
         map.setMapTypeId("map_style");
 
-        // Set up the Drawing Manager for creating polygons, circles, etc.
-        drawingManager = new google.maps.drawing.DrawingManager({
-            drawingControl: true,
-            drawingControlOptions: {
-                drawingModes: drawingModes
-            },
-            polygonOptions: {
-                editable: true,
-                strokeColor: strokeColor,
-                fillColor: fillColor,
-                strokeWeight: 2
-            },
-            markerOptions: {
-                icon: marker
-            },
-            map
-        });
-
-        // Create the shape overlay if we already have a value for it
+        // Render a saved shape if one is already present, then enter hasShape.
         if (internalValue.value && internalValue.value.length > 0) {
-            let shape;
+            let initialShape: SelectableShape;
+
             if (drawingMode === "Polygon") {
-                shape = new google.maps.Polygon({
+                initialShape = new google.maps.Polygon({
                     paths: internalValue.value.map((c: Coordinate) => createLatLng(...c)),
                     clickable: true,
                     editable: true,
@@ -233,96 +279,324 @@
                 });
             }
             else {
-                if (isMapIdEmpty) {
-                    shape = new google.maps.Marker({
-                        position: new google.maps.LatLng(...internalValue.value[0]),
-                        map: map,
-                        clickable: true,
-                        icon: marker
-                    });
-                }
-                else {
-                    const position = new google.maps.LatLng(...internalValue.value[0]);
-                    shape = {
-                        position: position,
-                        map: map,
-                        marker_element: new google.maps.marker.AdvancedMarkerElement({
-                            position: position,
-                            map: map
-                        }),
-                        getPosition: function () {
-                            return this.position;
-                        },
-                        getPath: function () {
-                            return this.position.toUrlValue();
-                        },
-                        setPosition: function (position) {
-                            this.position = position;
-                            this.marker_element.position = position;
-                        },
-                        setMap: function (newMap) {
-                            this.map = newMap;
-                            this.marker_element.map = newMap;
-                        }
-                    };
-                }
+                initialShape = createPointMarker(new google.maps.LatLng(...internalValue.value[0]));
             }
 
-            setCurrentShape(shape);
+            setCurrentShape(initialShape);
             fitBounds(map);
         }
 
-        // Handle when the polygon shape drawing is "complete"
-        google.maps.event.addListener(drawingManager, "overlaycomplete", function (e) {
-            setCurrentShape(e.overlay as Shape);
-        });
+        // Clicking the map (in empty space) while a shape exists deselects it
+        // so the X button goes inactive. Guard against deselecting while the
+        // user is mid-draw, where map clicks are how we collect vertices.
+        // We never remove this listener; it lives for the map's lifetime.
+        google.maps.event.addListener(map, "click", () => {
+            if (isDrawing.value) {
+                return;
+            }
 
-        // Clear the current selection when the drawing mode is changed, or when the
-        // map is clicked.
-        google.maps.event.addListener(drawingManager, "drawingmode_changed", deselect);
-        google.maps.event.addListener(map, "click", deselect);
+            deselect();
+        });
     }
 
     /**
-     * Create a new shape, add it to the map, and add listeners for updates to it
+     * Enter drawing mode. From idle, this switches the cursor to crosshair and
+     * binds the map listeners that collect either a single point click or a
+     * sequence of polygon vertices.
      */
-    function setCurrentShape(newShape: Shape): void {
-        disableDrawing();
+    function startDrawing(): void {
+        if (isDrawing.value || hasShapeOnMap.value || !map) {
+            return;
+        }
+
+        isDrawing.value = true;
+        map.setOptions({ draggableCursor: "crosshair" });
+
+        if (drawingMode === "Point") {
+            mapClickListener = google.maps.event.addListener(map, "click", (e: google.maps.MapMouseEvent) => {
+                if (!e.latLng) {
+                    return;
+                }
+
+                finishPoint(e.latLng);
+            });
+        }
+        else {
+            // While the user is laying down polygon vertices, suppress Google's
+            // default dblclick-to-zoom so the dblclick that finalizes the
+            // polygon doesn't also zoom the map. Restored on finish/cancel.
+            map.setOptions({ disableDoubleClickZoom: true });
+
+            workingVertices = [];
+            workingPolyline = new google.maps.Polyline({
+                path: [],
+                strokeColor: strokeColor,
+                strokeWeight: 2,
+                // The rubber-band line follows the cursor; if it were clickable
+                // Google Maps would treat clicks on it as polyline hits and
+                // swallow the map click that should be adding the next vertex.
+                clickable: false,
+                map: map as google.maps.Map
+            });
+
+            mapClickListener = google.maps.event.addListener(map, "click", (e: google.maps.MapMouseEvent) => {
+                if (!e.latLng) {
+                    return;
+                }
+
+                addPolygonVertex(e.latLng);
+            });
+
+            // Double-clicking the map places a final vertex at the dblclick
+            // position and then closes the polygon back to the first vertex,
+            // mirroring the legacy DrawingManager. Because browsers fire two
+            // click events before a dblclick, the second click produces a
+            // near-duplicate trailing vertex that we strip before closing.
+            mapDblclickListener = google.maps.event.addListener(map, "dblclick", () => {
+                dedupeTrailingVertex();
+                tryFinishPolygon();
+            });
+
+            // Rubber-band the working polyline from the last placed vertex to
+            // the cursor so the user can see where the next segment will land.
+            mapMousemoveListener = google.maps.event.addListener(map, "mousemove", (e: google.maps.MapMouseEvent) => {
+                if (!e.latLng || workingVertices.length === 0) {
+                    return;
+                }
+
+                workingPolyline?.setPath([...workingVertices, e.latLng]);
+            });
+        }
+    }
+
+    /**
+     * Append a vertex to the in-progress polyline. The first vertex also gets
+     * a small marker so the user can click it to snap-close the polygon.
+     */
+    function addPolygonVertex(latLng: google.maps.LatLng): void {
+        workingVertices.push(latLng);
+        workingPolyline?.setPath(workingVertices);
+
+        if (workingVertices.length === 1) {
+            firstVertexMarker = new google.maps.Marker({
+                position: latLng,
+                map: map as google.maps.Map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 6,
+                    fillColor: fillColor,
+                    fillOpacity: 1,
+                    strokeColor: strokeColor,
+                    strokeWeight: 2
+                },
+                zIndex: 100
+            });
+
+            google.maps.event.addListener(firstVertexMarker, "click", () => {
+                tryFinishPolygon();
+            });
+        }
+    }
+
+    /**
+     * Close the polygon if the user has placed enough vertices (at least 3).
+     * Fewer vertices is treated as "still drawing"; this lets a stray
+     * double-click or first-vertex click early in the draw fall through silently.
+     */
+    function tryFinishPolygon(): void {
+        if (workingVertices.length < 3) {
+            return;
+        }
+
+        finishPolygon();
+    }
+
+    /**
+     * Pop the trailing vertex if it is a near-duplicate of the one before it.
+     * A double-click delivers two click events at the same position followed by
+     * a dblclick; the second click would otherwise leave a redundant vertex at
+     * the dblclick site.
+     */
+    function dedupeTrailingVertex(): void {
+        if (workingVertices.length < 2) {
+            return;
+        }
+
+        const last = workingVertices[workingVertices.length - 1];
+        const secondLast = workingVertices[workingVertices.length - 2];
+
+        if (Math.abs(last.lat() - secondLast.lat()) < 0.00001
+            && Math.abs(last.lng() - secondLast.lng()) < 0.00001) {
+            workingVertices.pop();
+            workingPolyline?.setPath(workingVertices);
+        }
+    }
+
+    /**
+     * Build the final editable Polygon from the working vertices and commit it
+     * as the current shape.
+     */
+    function finishPolygon(): void {
+        removeMapDrawListeners();
+        map?.setOptions({ draggableCursor: null, disableDoubleClickZoom: false });
+
+        const polygon = new google.maps.Polygon({
+            paths: workingVertices,
+            clickable: true,
+            editable: true,
+            strokeColor: strokeColor,
+            fillColor: fillColor,
+            strokeWeight: 2,
+            map: map as google.maps.Map
+        });
+
+        cleanupWorkingShapes();
+        isDrawing.value = false;
+        setCurrentShape(polygon);
+    }
+
+    /**
+     * Commit the single point click as the current shape.
+     */
+    function finishPoint(latLng: google.maps.LatLng): void {
+        removeMapDrawListeners();
+        map?.setOptions({ draggableCursor: null });
+
+        const marker = createPointMarker(latLng);
+        isDrawing.value = false;
+        setCurrentShape(marker);
+    }
+
+    /**
+     * Cancel an in-progress draw. Used by the active Pan button. Discards any
+     * in-progress polyline / vertex marker and returns to idle.
+     */
+    function cancelDrawing(): void {
+        if (!isDrawing.value) {
+            return;
+        }
+
+        removeMapDrawListeners();
+        map?.setOptions({ draggableCursor: null, disableDoubleClickZoom: false });
+        cleanupWorkingShapes();
+        isDrawing.value = false;
+    }
+
+    function removeMapDrawListeners(): void {
+        if (mapClickListener) {
+            google.maps.event.removeListener(mapClickListener);
+            mapClickListener = null;
+        }
+
+        if (mapDblclickListener) {
+            google.maps.event.removeListener(mapDblclickListener);
+            mapDblclickListener = null;
+        }
+
+        if (mapMousemoveListener) {
+            google.maps.event.removeListener(mapMousemoveListener);
+            mapMousemoveListener = null;
+        }
+    }
+
+    function cleanupWorkingShapes(): void {
+        if (workingPolyline) {
+            workingPolyline.setMap(null);
+            workingPolyline = null;
+        }
+
+        if (firstVertexMarker) {
+            firstVertexMarker.setMap(null);
+            firstVertexMarker = null;
+        }
+
+        workingVertices = [];
+    }
+
+    /**
+     * Build a Marker (or AdvancedMarkerElement wrapper when a mapId is set on
+     * the active Map Style). Used by both the pre-loaded value path and the
+     * point-mode draw completion.
+     */
+    function createPointMarker(position: google.maps.LatLng): SelectableShape {
+        if (isNullOrWhiteSpace(mapId)) {
+            return new google.maps.Marker({
+                position: position,
+                map: map as google.maps.Map,
+                clickable: true,
+                icon: marker as google.maps.Symbol
+            });
+        }
+        else {
+            // Typed local so TypeScript can bind `this` inside each method
+            // to AdvancedMarkerWrapper (rather than the SelectableShape union,
+            // whose Polygon branch has no `position` / `map` / `marker_element`).
+            const wrapper: AdvancedMarkerWrapper = {
+                position: position,
+                map: map,
+                marker_element: new google.maps.marker.AdvancedMarkerElement({
+                    position: position,
+                    map: map
+                }),
+                getPosition: function () {
+                    return this.position;
+                },
+                getPath: function () {
+                    return this.position.toUrlValue();
+                },
+                setPosition: function (position) {
+                    this.position = position;
+                    this.marker_element.position = position;
+                },
+                setMap: function (newMap) {
+                    this.map = newMap;
+                    this.marker_element.map = newMap;
+                }
+            };
+            return wrapper;
+        }
+    }
+
+    /**
+     * Commit a shape (either newly drawn or loaded from a saved value) as the
+     * current selection. Wires the standard mutation and click listeners.
+     */
+    function setCurrentShape(newShape: SelectableShape): void {
+        shape = newShape;
+        hasShapeOnMap.value = true;
         select(newShape);
 
         if (drawingMode === "Polygon") {
-            shape = newShape as google.maps.Polygon;
-            setEditable(true);
-
-            internalValue.value = pathToCoordinates(shape.getPath());
+            const poly = shape as google.maps.Polygon;
+            internalValue.value = pathToCoordinates(poly.getPath());
 
             // add listener for moving polygon points.
-            google.maps.event.addListener(shape.getPath(), "set_at", () => {
-                updateShape(shape as google.maps.Polygon);
+            google.maps.event.addListener(poly.getPath(), "set_at", () => {
+                updateShape(poly);
             });
 
             // add listener for adding new points.
-            google.maps.event.addListener(shape.getPath(), "insert_at", () => {
-                updateShape(shape as google.maps.Polygon);
+            google.maps.event.addListener(poly.getPath(), "insert_at", () => {
+                updateShape(poly);
             });
 
             // Add an event listener to implement right-click to delete node
-            google.maps.event.addListener(shape, "rightclick", (ev) => {
+            google.maps.event.addListener(poly, "rightclick", (ev) => {
                 if (ev.vertex != null) {
-                    (shape as google.maps.Polygon).getPath().removeAt(ev.vertex);
+                    poly.getPath().removeAt(ev.vertex);
                 }
 
-                updateShape(shape as google.maps.Polygon);
+                updateShape(poly);
             });
 
             // add listener for selecting the polygon
-            google.maps.event.addListener(shape, "click", () => {
-                select(shape);
+            google.maps.event.addListener(poly, "click", () => {
+                select(poly);
             });
         }
-        else if (drawingMode === "Point") {
-            shape = newShape as google.maps.Marker;
-            let position = shape.getPosition();
+        else {
+            const m = shape as google.maps.Marker;
+            const position = m.getPosition();
 
             if (!position) {
                 internalValue.value = [];
@@ -331,9 +605,9 @@
                 internalValue.value = [toCoordinate(position)];
             }
 
-            // add listener for selecting the polygon
-            google.maps.event.addListener(shape, "click", () => {
-                select(shape);
+            // add listener for re-selecting the marker
+            google.maps.event.addListener(m, "click", () => {
+                select(m);
             });
         }
     }
@@ -360,11 +634,13 @@
     /**
      * Select the shape for editing/deleting
      */
-    function select(shape: Shape | null): void {
-        if (shape == null) return;
+    function select(s: SelectableShape | null): void {
+        if (s == null) {
+            return;
+        }
 
         setEditable(true);
-        isClearButtonEnabled.value = true;
+        isShapeSelected.value = true;
     }
 
     /**
@@ -372,7 +648,7 @@
      */
     function deselect(): void {
         setEditable(false);
-        isClearButtonEnabled.value = false;
+        isShapeSelected.value = false;
     }
 
     /**
@@ -432,38 +708,8 @@
     }
 
     /**
-     * Disables the drawing manager so they cannot add anything to the map.
-     */
-    function disableDrawing(): void {
-        if (!drawingManager) {
-            return;
-        }
-
-        drawingManager.setDrawingMode(null);
-
-        // disable the drawing controls so we only get one polygon
-        // and we'll add it back on deleting the existing polygon.
-        drawingManager.setOptions({
-            drawingControlOptions: { drawingModes: [] }
-        });
-    }
-
-    /**
-     * Disables the drawing manager so they cannot add anything to the map.
-     */
-    function enableDrawing(): void {
-        if (!drawingManager) {
-            return;
-        }
-
-        drawingManager?.setOptions({
-            drawingControlOptions: { drawingModes: drawingModes }
-        });
-    }
-
-    /**
-     * Delete the selected shape and enable the drawing controls
-     * if they were deleted.  Also removes the polygon from the hidden variable.
+     * Delete the selected shape and return to the idle drawing state so the
+     * Draw button becomes active again.
      */
     async function deleteSelectedShape(confirmed: boolean = false): Promise<void> {
         if (shape && (confirmed || await confirm("Delete selected shape?"))) {
@@ -471,8 +717,8 @@
             shape.setMap(null);
             shape = null;
 
+            hasShapeOnMap.value = false;
             internalValue.value = [];
-            enableDrawing();
         }
     }
 
@@ -541,34 +787,63 @@
     overflow: hidden;
 }
 
-.gm-clear-button {
-    z-index: 10;
+/* Wrapper around the three drawing toolbar buttons. Positioned absolutely
+   over the map at top-left, offset past Google's Map / Styled Map toggles.
+   We position it ourselves (rather than pushing it into map.controls) so
+   the toolbar appears at its final spot on the first paint and is not
+   subject to Google's post-idle control-layout pass. */
+.gm-tool-bar {
     position: absolute;
-    /* right: 0px; */
-    margin-top: 5px;
-    line-height: 0;
-    overflow: hidden;
-    color: #8c4b4b;
-    background: white;
-    padding: 4px;
-    border-radius: 2px;
-    box-shadow: rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
-    border: 0;
-    text-align: left;
+    top: 5px;
+    left: 220px;
+    z-index: 10;
+    display: inline-flex;
 }
 
-.gm-clear-button:hover {
+/* Shared chrome for the three on-map drawing toolbar buttons. Sized and shadowed
+   to harmonize with Google's Map / Styled Map toggles. */
+.gm-tool-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin: 5px 0 0 5px;
+    background: white;
+    color: #333;
+    border: 0;
+    border-radius: 2px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    line-height: 0;
+}
+
+.gm-tool-button:hover:not(:disabled) {
     background: whitesmoke;
 }
 
-.gm-clear-button:disabled {
+.gm-tool-button:disabled {
     color: #aaa;
-    background: white;
+    cursor: default;
 }
 
-.gm-clear-button i.ti {
-    font-size: 16px;
-    padding: 0 2.5px;
+/* When a tool is disabled because its mode is currently in use (e.g. the Draw
+   button while polygon drawing is in progress), text-info signals "in use".
+   The default :disabled color would otherwise force #aaa. */
+.gm-tool-button.text-info:disabled {
+    color: var(--color-info-strong);
+}
+
+/* The X (delete) tool uses the red-brown color from the legacy clear button
+   to signal a destructive action. Only when clickable; a disabled X stays #aaa. */
+.gm-tool-button:not(:disabled) i.ti-x {
+    color: #8c4b4b;
+}
+
+.gm-tool-button i.ti {
+    line-height: 1;
 }
 
 .static-map-size {

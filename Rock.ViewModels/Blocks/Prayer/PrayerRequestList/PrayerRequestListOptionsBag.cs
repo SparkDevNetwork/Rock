@@ -23,8 +23,10 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerRequestList
     public class PrayerRequestListOptionsBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the current person is authorized
-        /// to approve prayer requests (via the block's "Approve" security action).
+        /// Gets or sets a value indicating whether the Approved column should be
+        /// shown. This is true when the block's "Show 'Approved' column" setting is
+        /// enabled AND the current person is authorized to approve prayer requests
+        /// (via the block's "Approve" security action).
         /// </summary>
         public bool ShowIsApprovedColumn { get; set; }
 
@@ -34,5 +36,34 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerRequestList
         /// than one active campus.
         /// </summary>
         public bool IsCampusColumnVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Name column should be visible.
+        /// This is false when the block is scoped to a person via context, since every
+        /// row would show the same name in that case.
+        /// </summary>
+        public bool IsNameColumnVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Prayer Count column should
+        /// be visible. This is controlled by the block's "Show Prayer Count" setting.
+        /// </summary>
+        public bool IsPrayerCountColumnVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the grid filter (settings)
+        /// button should be visible. This is controlled by the block's "Show Grid
+        /// Filter" setting.
+        /// </summary>
+        public bool IsGridFilterVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the block is configured to only
+        /// show public prayer requests. When true, the query is forced to public
+        /// requests only and the Public / Private filter in the grid settings is
+        /// hidden from the individual. Controlled by the block's "Show Public Only"
+        /// setting.
+        /// </summary>
+        public bool IsPublicOnly { get; set; }
     }
 }

@@ -116,10 +116,5 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         /// Gets or sets the criteria for AI to automatically approve notes. 
         /// </summary>
         public string AIApprovalGuidelines { get; set; }
-
-        /// <summary>
-        /// Gets or sets the AI provider to use for AI approvals.
-        /// </summary>
-        public ListItemBag AIProvider { get; set; }
     }
 }

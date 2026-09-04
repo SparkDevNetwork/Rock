@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -36,8 +37,12 @@ namespace Rock.Reporting.DataSelect.Person
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Name" )]
 
-    [BooleanField( "Show As Link", "", true )]
-    [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
+    [BooleanField( "Show As Link",
+        DefaultBooleanValue = true )]
+    [CustomRadioListField( "Display Order",
+        ListSource = "0^FirstName LastName,1^LastName&#44; FirstName",
+        IsRequired = true,
+        DefaultValue = "0" )]
     [Rock.SystemGuid.EntityTypeGuid( "6301F6B4-B2EF-469A-8EC2-7D5F06B55C60" )]
     public class PersonLinkSelect : DataSelectComponent
     {
@@ -171,6 +176,12 @@ namespace Rock.Reporting.DataSelect.Person
             var result = new BoundField();
             result.HtmlEncode = false;
             return result;
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new HtmlObsidianGridField();
         }
 
         /// <summary>

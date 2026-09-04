@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -289,6 +290,50 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var listSource = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            if ( listSource.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
+
+            if ( !configuredValues.Any() )
+            {
+                return null;
+            }
+
+            // A SQL or Lava sourced list can answer differently next time, so it is
+            // reported as a sample rather than the complete set. See the same note on
+            // SelectSingleFieldType.
+            var upperSource = listSource.ToUpper();
+            var isDynamicSource = ( upperSource.Contains( "SELECT" ) && upperSource.Contains( "FROM" ) )
+                || listSource.IsLavaTemplate();
+
+            return new FieldTypeHints
+            {
+                Values = configuredValues
+                    .Select( v => new ListItemBag { Value = v.Key, Text = v.Value } )
+                    .ToList(),
+                IsCompleteList = !isDynamicSource,
+
+                // Unlike the single-select case this does carry a format, because how
+                // several selections combine cannot be read off the list itself.
+                ValueFormat = "One or more entries from the list, stored as their values rather than their labels, separated by commas.",
+                Instructions = isDynamicSource
+                    ? "These values are produced by a query rather than a fixed list, and the query may resolve differently depending on the context it runs in. Treat them as the values available at the moment they were read rather than the complete set, and read them again rather than caching them."
+                    : null
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -320,20 +365,30 @@ namespace Rock.Field.Types
                     publicConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY] = publicConfigurationValues[VALUES_KEY];
                 }
 
-                var options = Helper.GetConfiguredValues( privateConfigurationValues )
-                    .Select( kvp => new
-                    {
-                        value = kvp.Key,
-                        text = kvp.Value
-                    } );
-
-                if ( usage == ConfigurationValueUsage.View )
+                try
                 {
-                    var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                    options = options.Where( o => selectedValues.Contains( o.value ) );
-                }
+                    var options = Helper.GetConfiguredValues( privateConfigurationValues )
+                        .Select( kvp => new
+                        {
+                            value = kvp.Key,
+                            text = kvp.Value
+                        } );
 
-                publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+                    if ( usage == ConfigurationValueUsage.View )
+                    {
+                        var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                        options = options.Where( o => selectedValues.Contains( o.value ) );
+                    }
+
+                    publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+                }
+                catch
+                {
+                    // If there was an error parsing the configured values,
+                    // return an empty set. In the future this should probably
+                    // also include some sort of error message for the UI.
+                    publicConfigurationValues[VALUES_KEY] = "[]";
+                }
             }
             else
             {

@@ -6,29 +6,29 @@
         </template>
 
         <div v-if="isRootException && exception.description" class="exception-description">
-            <h5 class="text-danger m-0">{{ isDescriptionExpanded ? fullDescription : truncatedDescription }}</h5>
+            <h5 style="margin: 0;">{{ isDescriptionExpanded ? fullDescription : truncatedDescription }}</h5>
 
-            <div class="d-flex align-items-center gap-2">
+            <div class="exception-description-actions">
                 <RockButton v-if="isDescriptionTruncated" :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" @click="onToggleDescription">
                     {{ isDescriptionExpanded ? "Hide Full Description" : "View Full Description" }}
-                    <i :class="['ti ti-chevron-up align-middle', { 'chevron-collapsed': !isDescriptionExpanded }]"></i>
+                    <i :class="['ti ti-chevron-up exception-description-chevron', { 'exception-description-chevron-collapsed': !isDescriptionExpanded }]"></i>
                 </RockButton>
 
                 <CopyButton :value="fullDescription" :btnSize="BtnSize.ExtraSmall" tooltip="Copy Description" />
             </div>
         </div>
 
-        <dl class="mb-0">
+        <dl class="exception-properties">
             <template v-if="!isRootException && exception.description">
                 <dt>Description</dt>
                 <dd>
                     <div class="exception-description">
-                        <span class="text-wrap">{{ isDescriptionExpanded ? fullDescription : truncatedDescription }}</span>
+                        <span style="white-space: normal;">{{ isDescriptionExpanded ? fullDescription : truncatedDescription }}</span>
 
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="exception-description-actions">
                             <RockButton v-if="isDescriptionTruncated" :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" @click="onToggleDescription">
                                 {{ isDescriptionExpanded ? "Hide Full Description" : "View Full Description" }}
-                                <i :class="['ti ti-chevron-up align-middle', { 'chevron-collapsed': !isDescriptionExpanded }]"></i>
+                                <i :class="['ti ti-chevron-up exception-description-chevron', { 'exception-description-chevron-collapsed': !isDescriptionExpanded }]"></i>
                             </RockButton>
 
                             <CopyButton :value="fullDescription" :btnSize="BtnSize.ExtraSmall" tooltip="Copy Description" />
@@ -65,7 +65,7 @@
                 <dt>Query String</dt>
                 <dd>
                     <div v-for="(item, index) in exception.queryStringItems" :key="index">
-                        <i class="ti ti-point-filled text-xs mr-2 ml-1"></i>{{ item.text }}: {{ item.value }}
+                        <i class="ti ti-point-filled exception-querystring-bullet"></i>{{ item.text }}: {{ item.value }}
                     </div>
                 </dd>
             </template>
@@ -82,7 +82,7 @@
         </dl>
 
         <div v-if="exception.stackTrace">
-            <RockButton :btnType="BtnType.Link" class="p-0 text-decoration-none font-weight-semibold" @click="onToggleStackTrace">
+            <RockButton :btnType="BtnType.Link" class="exception-stacktrace-toggle" @click="onToggleStackTrace">
                 <i class="ti ti-stack"></i>
                 {{ isStackTraceVisible ? "Hide" : "Show" }} Stack Trace
                 <i :class="['ti ti-chevron-up stacktrace-chevron', { 'stacktrace-chevron-collapsed': !isStackTraceVisible }]"></i>
@@ -90,9 +90,9 @@
 
             <TransitionVerticalCollapse>
                 <div v-if="isStackTraceVisible" class="contentsection-body-collapse">
-                    <div class="well mt-3 mb-0">
-                        <div class="d-flex align-items-start gap-2">
-                            <div class="stacktrace-text text-sm line-height-normal font-monospace text-muted flex-fill">{{ exception.stackTrace }}</div>
+                    <div class="well exception-stacktrace-well">
+                        <div class="exception-stacktrace-actions">
+                            <div class="stacktrace-text">{{ exception.stackTrace }}</div>
                             <CopyButton :value="exception.stackTrace ?? ''" :btnSize="BtnSize.ExtraSmall" tooltip="Copy Stack Trace" />
                         </div>
                     </div>
@@ -101,34 +101,6 @@
         </div>
     </ContentSection>
 </template>
-
-<style scoped>
-.exception-description {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-small);
-}
-
-.stacktrace-chevron {
-    transition: transform 0.35s ease-in-out;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.stacktrace-chevron-collapsed {
-    transform: rotate(180deg);
-}
-
-.chevron-collapsed {
-    transform: rotate(180deg);
-}
-
-.stacktrace-text {
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-</style>
-
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";

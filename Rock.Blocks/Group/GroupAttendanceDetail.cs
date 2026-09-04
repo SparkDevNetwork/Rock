@@ -532,7 +532,7 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Gets the Schedule ID page parameter.
         /// </summary>
-        private int? ScheduleIdPageParameter => PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
+        private int? ScheduleIdPageParameter => Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ScheduleId ) ) ?? ( !PageCache.Layout.Site.DisablePredictableIds ? PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull() : null );
 
         /// <summary>
         /// Gets the entity set identifier page parameter.
@@ -1276,6 +1276,7 @@ namespace Rock.Blocks.Group
                 .Where( gl => gl.Location.Guid == bag.LocationGuid.Value )
                 .Where( gl => gl.Schedules.Any() )
                 .SelectMany( gl => gl.Schedules )
+                .Where( s => s.IsActive )
                 .OrderBy( s => s.Name )
                 .Distinct()
                 .ToList();

@@ -25,7 +25,7 @@ using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared.Constants;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.Filters
 {

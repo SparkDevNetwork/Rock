@@ -36,6 +36,8 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="EntityTypeService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public EntityTypeService(RockContext context) : base(context)
         {
         }
@@ -48,6 +50,8 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( EntityType item, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -58,11 +62,13 @@ namespace Rock.Model
                 return false;
             }
 
+            #pragma warning disable 612, 618 // AIProvider is obsolete, but we still need this code generated
             if ( new Service<AIProvider>( Context ).Queryable().Any( a => a.ProviderComponentEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AIProvider.FriendlyTypeName );
                 return false;
             }
+            #pragma warning restore 612, 618
 
             if ( new Service<AISkill>( Context ).Queryable().Any( a => a.CodeEntityTypeId == item.Id ) )
             {
@@ -404,6 +410,8 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static EntityType Clone( this EntityType source, bool deepCopy )
         {
             if (deepCopy)
@@ -423,6 +431,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static EntityType CloneWithoutIdentity( this EntityType source )
         {
             var target = new EntityType();
@@ -442,6 +452,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this EntityType target, EntityType source )
         {
             target.Id = source.Id;

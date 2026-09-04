@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="box.errorMessage" :alertType="AlertType.Warning">
+        {{ box.errorMessage }}
+    </NotificationBox>
+
+    <template v-else>
+        <EditPanel v-if="isEditMode"
+                   @save="onEditSave"
+                   @cancel="onEditCancel" />
+
+        <ViewPanel v-else
+                   :box="box"
+                   @editProfile="onEditProfile" />
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import EditPanel from "./fundraisingParticipant/editPanel.partial.obs";
+    import ViewPanel from "./fundraisingParticipant/viewPanel.partial.obs";
+    import { FundraisingParticipantInitializationBox } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingParticipant/fundraisingParticipantInitializationBox";
+
+    // #region Values
+
+    // The box is held reactively so the view can refresh in place after a save returns the
+    // updated payload (no full page reload needed).
+    const box = ref(useConfigurationValues<FundraisingParticipantInitializationBox>());
+
+    const isEditMode = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Switches the block into edit profile mode.
+     */
+    function onEditProfile(): void {
+        isEditMode.value = true;
+    }
+
+    /**
+     * Handles a successful save of the edited profile by applying the refreshed view payload
+     * returned from the server and returning to view mode.
+     */
+    function onEditSave(updatedBox: FundraisingParticipantInitializationBox): void {
+        box.value = updatedBox;
+        isEditMode.value = false;
+    }
+
+    /**
+     * Cancels editing and returns to view mode.
+     */
+    function onEditCancel(): void {
+        isEditMode.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

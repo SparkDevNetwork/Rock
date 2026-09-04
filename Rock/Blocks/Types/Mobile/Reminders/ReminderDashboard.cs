@@ -86,7 +86,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         #region Keys
 
         /// <summary>
-        /// The block setting attribute keys for the <see cref="ConnectionTypeList"/> block.
+        /// The block setting attribute keys for the block.
         /// </summary>
         private static class AttributeKey
         {

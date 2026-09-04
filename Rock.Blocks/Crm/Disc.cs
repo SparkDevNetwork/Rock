@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Model;
-using Rock.SystemGuid;
 using Rock.ViewModels.Blocks.Crm.Disc;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -63,7 +62,8 @@ namespace Rock.Blocks.Crm
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "5D8108B4-4877-4214-819F-78CA058A82E0" )]
-    [Rock.SystemGuid.BlockTypeGuid( "F9261A63-92C8-4029-9CCA-2F9EDCCF6F7E" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "F9261A63-92C8-4029-9CCA-2F9EDCCF6F7E" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.DISC )]
     public class Disc : RockBlockType
     {
 
@@ -131,9 +131,49 @@ namespace Rock.Blocks.Crm
         #region Attributes and Parameters
 
         /// <summary>
-        /// The AssessmentId from the page parameter.
+        /// Backing store for the lazily-resolved <see cref="AssessmentId"/>.
         /// </summary>
-        private int? AssessmentId => PageParameter( PageParameterKey.AssessmentId ).AsIntegerOrNull();
+        private int? _assessmentId;
+        private bool _isAssessmentIdResolved;
+
+        /// <summary>
+        /// The Assessment identifier from the page parameter. The parameter accepts an IdKey,
+        /// a Guid, or an integer id (the latter only when the site allows predictable ids), in
+        /// addition to the special "0" value used to request a new (user-directed) assessment.
+        /// </summary>
+        private int? AssessmentId
+        {
+            get
+            {
+                if ( _isAssessmentIdResolved )
+                {
+                    return _assessmentId;
+                }
+
+                var assessmentKey = PageParameter( PageParameterKey.AssessmentId );
+
+                if ( assessmentKey.IsNullOrWhiteSpace() )
+                {
+                    _assessmentId = null;
+                }
+                else if ( assessmentKey == "0" )
+                {
+                    // "0" is a sentinel value requesting a new (user-directed) assessment.
+                    _assessmentId = 0;
+                }
+                else
+                {
+                    // Resolve from an IdKey, Guid, or integer id (integer only when the site
+                    // allows predictable ids) so the parameter accepts obfuscated keys.
+                    _assessmentId = new AssessmentService( RockContext )
+                        .Get( assessmentKey, !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+                }
+
+                _isAssessmentIdResolved = true;
+
+                return _assessmentId;
+            }
+        }
 
         /// <summary>
         /// The PersonKey from the page parameter.
@@ -310,6 +350,10 @@ namespace Rock.Blocks.Crm
                 }
             }
 
+            // Carry the resolved assessment id back to the client so a completed test updates this
+            // record on save, even when it was not identified by an AssessmentId page parameter.
+            box.AssessmentId = assessment.Id;
+
             // If assessment is completed show the results
             if ( assessment.Status == AssessmentRequestStatus.Complete )
             {
@@ -364,7 +408,7 @@ namespace Rock.Blocks.Crm
                 mergeFields.Add( "Person", targetPerson );
             }
 
-            return GetAttributeValue( AttributeKey.Instructions ).ResolveMergeFields( mergeFields );
+            return GetAttributeValue( AttributeKey.Instructions ).ResolveMergeFields( mergeFields ).SanitizeHtml( strict: false );
         }
 
         /// <summary>
@@ -387,7 +431,8 @@ namespace Rock.Blocks.Crm
         /// Saves the assessment scores and populates the results poperties for the box.
         /// </summary>
         /// <param name="box">The box whose responses are used for saving the assessment and whose result properties will be set.</param>
-        private void SaveAssessment( DiscInitializationBox box )
+        /// <returns><c>true</c> if the assessment was saved successfully; otherwise <c>false</c>.</returns>
+        private bool SaveAssessment( DiscInitializationBox box )
         {
             try
             {
@@ -435,16 +480,24 @@ namespace Rock.Blocks.Crm
                     } );
 
                 var assessmentService = new AssessmentService( RockContext );
+                var assessmentType = new AssessmentTypeService( RockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
                 Assessment assessment = null;
 
-                if ( AssessmentId.ToIntSafe() > 0 )
+                // On a retake, ignore the resolved assessment so a brand new assessment is created
+                // rather than overwriting the previously completed one. The lookup is scoped to the
+                // target person and the DISC type so a forged or foreign id cannot overwrite another
+                // person's assessment.
+                if ( !box.IsRetake && box.AssessmentId > 0 )
                 {
-                    assessment = assessmentService.Get( AssessmentId.Value );
+                    assessment = assessmentService.Queryable()
+                        .FirstOrDefault( a => a.Id == box.AssessmentId
+                            && a.PersonAlias != null
+                            && a.PersonAlias.PersonId == targetPerson.Id
+                            && a.AssessmentTypeId == assessmentType.Id );
                 }
 
                 if ( assessment == null )
                 {
-                    var assessmentType = new AssessmentTypeService( RockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
                     assessment = new Assessment()
                     {
                         AssessmentTypeId = assessmentType.Id,
@@ -460,10 +513,14 @@ namespace Rock.Blocks.Crm
                 RockContext.SaveChanges();
 
                 SetResult( results, assessment, box );
+
+                return true;
             }
             catch ( Exception ex )
             {
-                Logger.LogError( "", ex );
+                Logger.LogError( ex, "Unable to save the DISC assessment results." );
+
+                return false;
             }
         }
 
@@ -562,13 +619,18 @@ namespace Rock.Blocks.Crm
                              && a.PersonAlias.PersonId == targetPerson.Id
                              && a.AssessmentTypeId == assessmentType.Id );
 
-            if ( AssessmentId == 0 && assessmentType.RequiresRequest && !hasAssessment )
+            if ( box.AssessmentId == 0 && assessmentType.RequiresRequest && !hasAssessment )
             {
                 return ActionBadRequest( "Sorry, this test requires a request from someone before it can be taken." );
             }
 
             // Save the assessment and return the box with the updated information.
-            SaveAssessment( box );
+            // If saving fails, surface an error so the individual isn't left on a blank
+            // panel with their answers silently discarded.
+            if ( !SaveAssessment( box ) )
+            {
+                return ActionBadRequest( "Something went wrong while trying to save your test results." );
+            }
 
             return ActionOk( box );
         }

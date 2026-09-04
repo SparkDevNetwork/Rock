@@ -26,7 +26,6 @@ using System.Linq.Expressions;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Cms;
-using Rock.Field.Types;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Reporting;
@@ -893,7 +892,7 @@ namespace Rock.Blocks.Cms
                     var computedKey = $"C^{attribute.Key}";
 
                     if ( !metaImageAttributes.ContainsKey( computedKey )
-                            && attribute.Value.FieldType.Field is ImageFieldType )
+                            && attribute.Value.FieldType.Guid == SystemGuid.FieldType.IMAGE.AsGuid() )
                     {
                         metaImageAttributes.Add( computedKey, $"Channel: {attribute.Value.Name}" );
                     }

@@ -404,13 +404,29 @@ namespace Rock.Web.Cache
 
                 if ( actionDetails.Length >= 2 )
                 {
-                    DefinedValueCache btnType;
+                    DefinedValueCache btnType = null;
 
                     if ( !actionDetails[1].IsNullOrWhiteSpace() )
                     {
                         btnType = DefinedValueCache.Get( actionDetails[1].AsGuid(), rockContext );
                     }
-                    else
+
+                    /*
+                         7/7/2026 - MSE
+
+                         The button type Guid may not resolve to a Defined Value. In particular,
+                         workflows imported via the Share Workflow feature can end up with a
+                         button type of Guid.Empty, because the importer converts a blank button
+                         type (the default for a new form action) into an empty Guid string.
+
+                         Fall back to the default button type for any unresolvable Guid instead
+                         of dropping the action, otherwise the form renders without its buttons.
+                         This matches the behavior of the legacy WebForms Workflow Entry block,
+                         which renders a default button when the Guid cannot be resolved.
+
+                         Reason: Submit button was missing on the Workflow Entry block.
+                    */
+                    if ( btnType == null )
                     {
                         btnType = DefinedTypeCache.Get( SystemGuid.DefinedType.BUTTON_HTML.AsGuid(), rockContext )
                             .DefinedValues

@@ -46,9 +46,11 @@
                         unitPlacement="above"
                         help="How often this group sync runs. It cannot run more often than the Group Sync job." />
 
-        <InlineCheckBox label="Create Login During Sync"
-                        v-model="theGroupSync.addUserAccountsDuringSync"
-                        help="Creates a login for synced people who do not already have one." />
+        <div class="form-group">
+            <InlineCheckBox label="Create Login During Sync"
+                            v-model="theGroupSync.addUserAccountsDuringSync"
+                            help="Creates a login for synced people who do not already have one." />
+        </div>
 
         <DropDownList label="Welcome Communication"
                       v-model="welcomeCommunicationValue"

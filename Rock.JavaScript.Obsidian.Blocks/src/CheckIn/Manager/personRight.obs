@@ -1,0 +1,426 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="config.isVisible" class="person-recent-attendances">
+        <!-- Gender, Age, Grade widgets + Reprint / Attendance History actions + Badges -->
+        <div class="panel panel-block">
+            <div class="row no-gutters mx-spacing-sm d-flex flex-wrap">
+                <div class="col d-flex flex-grow-1 justify-content-center justify-content-sm-start align-items-center">
+                    <div class="profile-widget widget-gender p-spacing-xs text-center" v-html="config.genderHtml ?? ''"></div>
+                    <div class="profile-widget widget-age p-spacing-xs text-center" v-html="config.ageHtml ?? ''"></div>
+                    <div class="profile-widget widget-grade p-spacing-xs text-center" v-html="config.gradeHtml ?? ''"></div>
+                </div>
+
+                <div class="col d-flex flex-column justify-content-center align-items-end">
+                    <NotificationBox v-if="printMessageHtml"
+                                     alertType="info"
+                                     :dismissible="true"
+                                     @dismiss="printMessageHtml = ''">
+                        <span v-html="printMessageHtml"></span>
+                    </NotificationBox>
+
+                    <div>
+                        <a v-if="config.attendanceHistoryUrl"
+                           :href="config.attendanceHistoryUrl"
+                           class="btn btn-default btn-sm my-spacing-xs"
+                           title="Attendance History"><i class="ti ti-history"></i></a>
+                        <a v-if="config.isReprintLabelsVisible"
+                           href="#"
+                           class="btn btn-default btn-sm my-spacing-xs"
+                           title="Reprint Labels"
+                           :class="{ disabled: isLoadingReprint }"
+                           @click.prevent="onReprintLabelsClick"><i class="ti ti-printer"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row no-gutters mx-spacing-sm d-flex flex-wrap">
+                <div ref="leftBadgeZoneRef" class="badge-zone d-flex flex-grow-1 justify-content-center justify-content-sm-start align-items-center" v-html="leftBadgesHtml"></div>
+                <div ref="rightBadgeZoneRef" class="badge-zone d-flex flex-grow-1 justify-content-center justify-content-sm-end align-items-center" v-html="rightBadgesHtml"></div>
+            </div>
+        </div>
+
+        <!-- Recent check-in history grid -->
+        <div v-if="hasAttendances" class="panel panel-block">
+            <Grid light
+                  keyField="idKey"
+                  :data="attendanceGridData"
+                  :rowClass="attendanceRowClass"
+                  itemTerm="Attendance"
+                  liveUpdates
+                  @selectItem="onAttendanceRowSelected"
+                  class="table-responsive">
+                <HtmlColumn name="when" title="When" field="whenHtml" />
+                <HtmlColumn name="location" title="Location" field="locationHtml" />
+                <HtmlColumn name="code" title="Code" field="codeHtml" itemClass="align-middle" />
+                <TextColumn name="searchFamily"
+                            title="Search Family"
+                            itemClass="text-sm"
+                            field="searchResultGroupName" />
+                <Column name="chevron"
+                        title=""
+                        width="20px"
+                        headerClass="grid-chevron-header"
+                        itemClass="grid-chevron-cell">
+                    <template #format>
+                        <i class="ti ti-chevron-right"></i>
+                    </template>
+                </Column>
+            </Grid>
+        </div>
+
+        <ReprintLegacyLabelsModal v-model="isLegacyModalOpen"
+                                  :labels="reprintLabels"
+                                  :printers="reprintPrinters"
+                                  :initialPrinterGuid="reprintInitialPrinterGuid"
+                                  :onPrint="onPrintLegacyLabels" />
+
+        <ReprintNextGenLabelsModal v-model="isNextGenModalOpen"
+                                   :labels="reprintLabels"
+                                   :printers="reprintPrinters"
+                                   :initialPrinterGuid="reprintInitialPrinterGuid"
+                                   :onPrint="onPrintNextGenLabels" />
+    </div>
+</template>
+
+<!--
+    Unscoped styles: target the row classes the Grid emits.
+
+    The Grid's light mode intentionally drops the .grid-striped class
+    (see Framework/Controls/grid/grid.partial.obs line 4), so light grids
+    have no default row striping. WebForms uses <Rock:Grid DisplayType="Light"
+    UseFullStylesForLightGrid="true"> which keeps striping on -- we restore
+    the same visual with a small rule, matching the theme's soft interface
+    color.
+
+    The chevron column gets a compact right-aligned cell like the WebForms
+    lChevronRight column (ItemStyle-HorizontalAlign="Right", ItemStyle-CssClass="align-middle").
+-->
+<style>
+.person-recent-attendances .grid-body .grid-row.grid-row-even .grid-cell {
+    background-color: var(--color-interface-softer);
+}
+
+/*
+    Rows tagged .success (currently-active attendances) get the theme's soft
+    success color instead of the alternating stripe, matching the WebForms
+    <tr class="success"> row highlight. The selector uses .grid-row.success
+    to beat the .grid-row.grid-row-even rule above on specificity.
+*/
+.person-recent-attendances .grid-body .grid-row.success .grid-cell {
+    background-color: var(--color-success-soft);
+}
+
+.person-recent-attendances .grid-chevron-cell {
+    width: 1%;
+    vertical-align: middle;
+    color: var(--color-interface-medium);
+    justify-content: flex-end;
+}
+
+.person-recent-attendances .grid-chevron-header {
+    width: 1%;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, ref } from "vue";
+    import ReprintLegacyLabelsModal from "./PersonRight/reprintLegacyLabelsModal.partial.obs";
+    import ReprintNextGenLabelsModal from "./PersonRight/reprintNextGenLabelsModal.partial.obs";
+    import Grid, { Column, HtmlColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { popover } from "@Obsidian/Utility/popover";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonRightInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonRight/personRightInitializationBox";
+    import { PersonRightPrintLegacyLabelsRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonRight/personRightPrintLegacyLabelsRequestBag";
+    import { PersonRightPrintNextGenLabelsRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonRight/personRightPrintNextGenLabelsRequestBag";
+    import { PersonRightPrintResultBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonRight/personRightPrintResultBag";
+    import { PersonRightReprintModalDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonRight/personRightReprintModalDataBag";
+
+    const config = useConfigurationValues<PersonRightInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Types
+
+    /*
+        Native bridges exposed by the check-in Windows / iPad host apps.
+        Both are optional. We access them defensively via `window as any`
+        to avoid pulling in an ambient .d.ts here.
+    */
+
+    // #endregion Types
+
+    // #region Values
+
+    const leftBadgeZoneRef = ref<HTMLElement | null>(null);
+    const rightBadgeZoneRef = ref<HTMLElement | null>(null);
+    const isLoadingReprint = ref(false);
+    const isLegacyModalOpen = ref(false);
+    const isNextGenModalOpen = ref(false);
+    const reprintLabels = ref<ListItemBag[]>([]);
+    const reprintPrinters = ref<ListItemBag[]>([]);
+    const reprintInitialPrinterGuid = ref<string | null>(null);
+    const printMessageHtml = ref<string>("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const leftBadgesHtml = computed((): string => {
+        return (config.leftBadges ?? []).map(b => b.html ?? "").join("");
+    });
+
+    const rightBadgesHtml = computed((): string => {
+        return (config.rightBadges ?? []).map(b => b.html ?? "").join("");
+    });
+
+    const hasAttendances = computed((): boolean => {
+        return (config.attendances?.length ?? 0) > 0;
+    });
+
+    const attendanceGridData = computed((): GridDataBag => ({
+        rows: (config.attendances ?? []).map(a => ({
+            idKey: a.idKey,
+            whenHtml: a.whenHtml,
+            locationHtml: a.locationHtml,
+            codeHtml: a.codeHtml,
+            searchResultGroupName: a.searchResultGroupName,
+            isActive: a.isActive,
+            rowUrl: a.rowUrl
+        }))
+    }));
+
+    /**
+     * The IdKeys of currently-active attendances, used as the reprint
+     * candidate set. Matches the WebForms `hfCurrentAttendanceIds` hidden
+     * field that was populated during row-databind.
+     */
+    const currentAttendanceIdKeys = computed((): string[] => {
+        return (config.attendances ?? [])
+            .filter(a => a.isActive && a.idKey)
+            .map(a => a.idKey as string);
+    });
+
+    /**
+     * Applies the `success` class to rows whose attendance is currently
+     * active, matching the WebForms `e.Row.AddCssClass("success")` behavior
+     * in gAttendanceHistory_RowDataBound.
+     */
+    function attendanceRowClass(row: Record<string, unknown>): string {
+        return row.isActive === true ? "success" : "";
+    }
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the Attendance Detail page when a row is selected.
+     */
+    function onAttendanceRowSelected(key: string): void {
+        const row = (config.attendances ?? []).find(a => a.idKey === key);
+        if (row?.rowUrl) {
+            window.location.href = row.rowUrl;
+        }
+    }
+
+    /**
+     * Opens the reprint-labels flow by asking the server which modal to
+     * show (Legacy or NextGen). The response also carries the label + printer
+     * options to bind into the appropriate modal.
+     */
+    async function onReprintLabelsClick(): Promise<void> {
+        if (isLoadingReprint.value) {
+            return;
+        }
+
+        isLoadingReprint.value = true;
+        printMessageHtml.value = "";
+
+        try {
+            const result = await invokeBlockAction<PersonRightReprintModalDataBag>("ShowReprintLabelsModal", {
+                bag: { hasClientPrinter: hasZebraClientPrinter() },
+                attendanceIdKeys: currentAttendanceIdKeys.value
+            });
+
+            if (!result.isSuccess || !result.data) {
+                await alert(result.errorMessage ?? "Unable to load reprint options.");
+                return;
+            }
+
+            const data = result.data;
+            if (data.errorMessage) {
+                await alert(data.errorMessage);
+                return;
+            }
+
+            reprintLabels.value = data.labels ?? [];
+            reprintPrinters.value = data.printers ?? [];
+            reprintInitialPrinterGuid.value = data.selectedPrinterGuid ?? null;
+
+            if (data.mode === "Legacy") {
+                isLegacyModalOpen.value = true;
+            }
+            else if (data.mode === "NextGen") {
+                isNextGenModalOpen.value = true;
+            }
+        }
+        finally {
+            isLoadingReprint.value = false;
+        }
+    }
+
+    /**
+     * Sends the legacy label selection to the server. When the server
+     * returns client labels (JSON), the WebView native bridge printer
+     * plugin is invoked directly.
+     */
+    async function onPrintLegacyLabels(bag: PersonRightPrintLegacyLabelsRequestBag): Promise<void> {
+        const result = await invokeBlockAction<PersonRightPrintResultBag>("PrintLegacyLabels", {
+            bag,
+            attendanceIdKeys: currentAttendanceIdKeys.value
+        });
+
+        handlePrintResult(result, "legacy");
+    }
+
+    /**
+     * Sends the next-gen label selection to the server. When client labels
+     * are returned, hands them to `window.RockCheckinNative.PrintV2Labels`.
+     */
+    async function onPrintNextGenLabels(bag: PersonRightPrintNextGenLabelsRequestBag): Promise<void> {
+        const result = await invokeBlockAction<PersonRightPrintResultBag>("PrintNextGenLabels", {
+            bag,
+            attendanceIdKeys: currentAttendanceIdKeys.value
+        });
+
+        handlePrintResult(result, "nextGen");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Detects the Zebra client-printer plugin exposed by the check-in
+     * Windows / iPad host apps. The WebForms block does the same detection
+     * client-side (see PersonRight.ascx) then round-trips through a hidden
+     * field. In Obsidian we pass the boolean directly when opening the modal.
+     */
+    function hasZebraClientPrinter(): boolean {
+        const zebra = (window as unknown as { ZebraPrintPlugin?: { hasClientPrinter?: () => boolean } }).ZebraPrintPlugin;
+        return typeof zebra?.hasClientPrinter === "function" && zebra.hasClientPrinter() === true;
+    }
+
+    /**
+     * Common post-print handling: shows the server's message, closes the
+     * modal, and dispatches any client-label JSON to the appropriate
+     * native bridge.
+     */
+    function handlePrintResult(
+        result: { isSuccess: boolean; errorMessage?: string | null; data?: PersonRightPrintResultBag | null },
+        variant: "legacy" | "nextGen"
+    ): void {
+        if (!result.isSuccess || !result.data) {
+            alert(result.errorMessage ?? "Unable to print labels.");
+            return;
+        }
+
+        printMessageHtml.value = result.data.message ?? "";
+
+        if (result.data.clientLabelsJson) {
+            const nativeBridge = (window as unknown as {
+                RockCheckinNative?: { PrintV2Labels?: (json: string) => void };
+                ZebraPrintPlugin?: {
+                    printTags?: (
+                        json: string,
+                        success: (result: unknown) => void,
+                        error: (error: [string, boolean?]) => void
+                    ) => void;
+                };
+            });
+
+            if (variant === "nextGen" && nativeBridge.RockCheckinNative?.PrintV2Labels) {
+                nativeBridge.RockCheckinNative.PrintV2Labels(result.data.clientLabelsJson);
+            }
+            else if (variant === "legacy" && nativeBridge.ZebraPrintPlugin?.printTags) {
+                // Matches the WebForms AddLabelScript(...) call signature:
+                // ZebraPrintPlugin.printTags(jsonString, successCallback, errorCallback).
+                // The error callback receives [errorMessage, canRetry?].
+                nativeBridge.ZebraPrintPlugin.printTags(
+                    result.data.clientLabelsJson,
+                    () => {
+                        // eslint-disable-next-line no-console
+                        console.log("Tag printed");
+                    },
+                    (error) => {
+                        const errorMessage = Array.isArray(error) ? error[0] : String(error);
+                        // eslint-disable-next-line no-console
+                        console.log(`An error occurred: ${errorMessage}`);
+                        alert(`An error occurred while printing the labels. ${errorMessage}`);
+                    }
+                );
+            }
+        }
+
+        isLegacyModalOpen.value = false;
+        isNextGenModalOpen.value = false;
+    }
+
+    /**
+     * Initializes Bootstrap tooltips and popovers on any badge that
+     * declares them via data-toggle attributes. WebForms initialized these
+     * globally at page load; in Obsidian the block itself has to wire them
+     * up after the badge HTML is in the DOM.
+     */
+    function initializeBadgeTooltips(): void {
+        for (const zone of [leftBadgeZoneRef.value, rightBadgeZoneRef.value]) {
+            if (!zone) {
+                continue;
+            }
+
+            tooltip(Array.from(zone.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")), { html: true, sanitize: false });
+            popover(Array.from(zone.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
+        }
+    }
+
+    /**
+     * Runs each badge's JavaScript after the badge HTML is in the DOM.
+     * Each badge script is injected as its own script tag (like WebForms
+     * ScriptManager per badge) so one failing badge does not prevent later
+     * badges from running.
+     */
+    function runBadgeScripts(): void {
+        const scripts = [
+            ...(config.leftBadges ?? []),
+            ...(config.rightBadges ?? [])
+        ].map(b => b.javaScript ?? "").filter(s => s !== "");
+
+        for (const script of scripts) {
+            const scriptNode = document.createElement("script");
+            scriptNode.type = "text/javascript";
+            scriptNode.appendChild(document.createTextNode(script));
+            document.body.appendChild(scriptNode);
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // Give the badge HTML one tick to render before executing badge
+        // scripts (which typically bind to DOM elements the HTML just
+        // rendered) and initializing tooltips / popovers on badges that
+        // declare them.
+        nextTick(() => {
+            runBadgeScripts();
+            initializeBadgeTooltips();
+        });
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

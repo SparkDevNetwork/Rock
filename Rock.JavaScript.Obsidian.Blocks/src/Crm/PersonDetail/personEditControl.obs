@@ -1,0 +1,21 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="editPageUrl" class="d-flex flex-row flex-nowrap">
+        <div class="d-flex flex-column align-items-center p-1 text-sm text-muted position-relative" title="Edit Person">
+            <a :href="editPageUrl" class="btn btn-default btn-sm btn-go btn-square">
+                <i class="ti ti-pencil"></i>
+            </a>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PersonEditControlOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/PersonEditControl/personEditControlOptionsBag";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+
+    const config = useConfigurationValues<PersonEditControlOptionsBag>();
+
+    const editPageUrl = config.editPageUrl ?? "";
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

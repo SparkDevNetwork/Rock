@@ -10,7 +10,7 @@
                          v-html="roleLimitWarningMessage" />
 
         <div class="row">
-            <div :class="isRightRailVisible ? 'col-md-7' : 'col-md-12'">
+            <div :class="isRightRailVisible ? 'col-md-8' : 'col-md-12'">
                 <ContentSection title="Overview" icon="ti ti-list-details" :disableCollapse="true">
                     <img v-if="modelValue?.photoUrl"
                          class="img-fluid rounded mb-3"
@@ -67,6 +67,15 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div v-if="meetingStyleText" class="col-md-6">
+                                <div class="form-group static-control">
+                                    <label class="control-label">Meeting Style</label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-static">{{ meetingStyleText }}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <AttributeValuesContainer v-if="hasAttributes"
@@ -119,7 +128,7 @@
                 </ContentSection>
             </div>
 
-            <div v-if="isRightRailVisible" class="col-md-5">
+            <div v-if="isRightRailVisible" class="col-md-4">
                 <div class="d-flex flex-column" style="gap: 30px;">
                     <ContentSection v-if="hasGroupTools"
                                     title="Group Tools"
@@ -128,33 +137,33 @@
                         <div>
                             <div v-if="hasParticipationTools" class="form-group static-control">
                                 <label class="control-label">Participation</label>
-                                <ul class="list-unstyled mb-0 pl-3">
+                                <ul class="list-unstyled mb-0">
                                     <li v-if="options.isAttendanceVisible">
-                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.AttendancePage])" class="tool-link">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.AttendancePage])" class="list-group-item nav-link">
                                             <i class="ti ti-checkbox"></i>
                                             <span>Attendance</span>
                                         </a>
                                     </li>
                                     <li v-if="options.isSchedulerVisible">
-                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupSchedulerPage])" class="tool-link">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupSchedulerPage])" class="list-group-item nav-link">
                                             <i class="ti ti-calendar-month"></i>
                                             <span>Scheduler</span>
                                         </a>
                                     </li>
                                     <li v-if="options.isRsvpVisible">
-                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupRSVPPage])" class="tool-link">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupRSVPPage])" class="list-group-item nav-link">
                                             <i class="ti ti-user-check"></i>
                                             <span>RSVP</span>
                                         </a>
                                     </li>
                                     <li v-if="options.isPlacementVisible">
-                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupPlacementPage])" class="tool-link">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupPlacementPage])" class="list-group-item nav-link">
                                             <i class="ti ti-chart-dots-3"></i>
                                             <span>Placement</span>
                                         </a>
                                     </li>
                                     <li v-if="options.isFundraisingVisible">
-                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.FundraisingProgressPage])" class="tool-link">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.FundraisingProgressPage])" class="list-group-item nav-link">
                                             <i class="ti ti-cash"></i>
                                             <span>Fundraising</span>
                                         </a>
@@ -164,15 +173,15 @@
 
                             <div v-if="hasViewTools" class="form-group static-control mb-0">
                                 <label class="control-label">Views</label>
-                                <ul class="list-unstyled mb-0 pl-3">
+                                <ul class="list-unstyled mb-0">
                                     <li v-if="options.isMapVisible">
-                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupMapPage])" class="tool-link">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupMapPage])" class="list-group-item nav-link">
                                             <i class="ti ti-map-pin"></i>
                                             <span>Interactive Map</span>
                                         </a>
                                     </li>
                                     <li v-if="options.isHistoryVisible">
-                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupHistoryPage])" class="tool-link">
+                                        <a :href="resolveUrl(navigationUrls?.[NavigationUrlKey.GroupHistoryPage])" class="list-group-item nav-link">
                                             <i class="ti ti-history"></i>
                                             <span>History</span>
                                         </a>
@@ -183,7 +192,7 @@
                     </ContentSection>
 
                     <ContentSection v-if="hasMeetingLocations"
-                                    title="Meeting Locations"
+                                    title="Locations"
                                     icon="ti ti-map-pin"
                                     :disableCollapse="true">
                         <LocationCard v-for="location in meetingLocations"
@@ -198,65 +207,14 @@
 </template>
 
 <style scoped>
-/* Drop the .alert's built-in margin-bottom on every notification in the view panel. */
-:deep(.alert) {
-    margin-bottom: 0;
-}
-
-/* Hide the default ("Attributes") category heading. AttributeValuesContainer
-   always renders the empty-Guid default category first, so :first-child is a
-   stable target. Named categories keep their headings. */
-:deep(.attributevaluescontainer > .attributevaluescontainer-category:first-child > h4) {
-    display: none;
-}
-
-/* Render named category headings in the interface-strong color. */
-:deep(.attributevaluescontainer > .attributevaluescontainer-category > h4) {
-    color: var(--color-interface-strong);
-}
-
-/* Group Tools list link. The whole anchor (including padding) is the
-   hover / click surface so the entire row highlights on hover, not just
-   the link text. */
-.tool-link {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-small);
-    padding: var(--spacing-xsmall) var(--spacing-small);
-    border-radius: var(--rounded-small);
-    color: var(--color-interface-strong);
-    font-weight: var(--font-weight-semibold);
-}
-
-.tool-link:hover {
-    background-color: var(--color-interface-soft);
-    color: var(--color-interface-strong);
-    text-decoration: none;
-}
-
-.linkages-list {
-    list-style: none;
-    padding-left: var(--spacing-medium);
-}
-
-.linkages-list li {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-}
-
-.linkages-list li::before {
-    content: "•";
-    color: var(--color-link);
-    font-size: var(--font-size-xsmall);
-    line-height: 1;
-}
-
-/* Drop the trailing form-group margin on whichever linkage section is the
-   last visible one. Registrations / event occurrences / content items each
-   render conditionally, so :last-child handles the dynamic case. */
-.overview-linkages > .form-group:last-child {
-    margin-bottom: 0;
+/* Long, unbreakable values (URL/link attributes such as an Asana board link)
+   have no break opportunities, so with the default overflow-wrap they spill out
+   of their column in the two-column Overview layout and render on top of the
+   adjacent column's values. Force them to wrap within their column. The
+   attribute values are rendered by the AttributeValuesContainer child
+   component, so :deep is required to pierce the scoped boundary. */
+:deep(.form-control-static) {
+    overflow-wrap: break-word;
 }
 </style>
 
@@ -265,6 +223,7 @@
     import { GroupDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupDetailOptionsBag";
     import { GroupLinkageBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupLinkageBag";
     import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupBag";
+    import { MeetingStyleDescription } from "@Obsidian/Enums/Group/meetingStyle";
     import { NavigationUrlKey } from "./types.partial";
     import { computed, PropType } from "vue";
     import LocationCard from "./locationCard.partial.obs";
@@ -328,6 +287,14 @@
      * Whether the group has any public attributes to render.
      */
     const hasAttributes = computed((): boolean => Object.keys(attributes.value).length > 0);
+
+    /**
+     * Friendly Meeting Style label, or empty when the group has no meeting style set.
+     */
+    const meetingStyleText = computed((): string => {
+        const value = props.modelValue?.meetingStyle;
+        return value != null ? (MeetingStyleDescription[value] ?? "") : "";
+    });
 
     /**
      * Registration linkages for the group (Registration Instances pointing at this group).

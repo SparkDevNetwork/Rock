@@ -1,0 +1,136 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.options?.errorMessage" :alertType="AlertType.Warning">
+        {{ config.options.errorMessage }}
+    </NotificationBox>
+
+    <template v-else>
+        <div class="row">
+            <!-- Left Sidebar -->
+            <div class="col-md-4 margin-t-lg">
+                <img v-if="config.options?.photoUrl" :src="config.options.photoUrl" class="title-image img-responsive" />
+                <RockButton btnType="primary" class="btn-block margin-t-md" @click="onMainPageClick">Main Page</RockButton>
+            </div>
+
+            <!-- Main -->
+            <div class="col-md-8 margin-b-md" v-html="config.options?.summaryHtml"></div>
+        </div>
+
+        <div class="margin-t-md">
+            <Grid :definition="config.gridDefinition ?? undefined"
+                  :data="gridDataSource"
+                  keyField="idKey"
+                  personKeyField="personIdKey"
+                  itemTerm="Participant"
+                  :entityTypeGuid="EntityType.GroupMember"
+                  :exportTitle="config.options?.groupName ?? undefined"
+                  stickyHeader
+                  liveUpdates
+                  :showMergeTemplate="false"
+                  :showLaunchWorkflow="false"
+                  :showBulkUpdate="false"
+                  :showPersonMerge="false"
+                  @selectItem="onSelectItem">
+
+                <SelectColumn />
+
+                <PersonColumn name="person"
+                              title="Name"
+                              field="person"
+                              :filter="pickExistingValueFilter" />
+
+                <DateTimeColumn name="dateTimeAdded"
+                                title="Date Added"
+                                field="dateTimeAdded"
+                                :filter="dateValueFilter" />
+
+                <TextColumn name="gender"
+                            title="Gender"
+                            field="gender"
+                            :filter="pickExistingValueFilter" />
+
+                <CurrencyColumn name="fundingRemaining"
+                                title="Funding Remaining"
+                                field="fundingRemaining" />
+
+                <TextColumn name="roleName"
+                            title="Role"
+                            field="roleName"
+                            :filter="pickExistingValueFilter" />
+            </Grid>
+        </div>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { CurrencyColumn, DateTimeColumn, PersonColumn, SelectColumn, TextColumn, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FundraisingLeaderToolboxOptionsBag } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingLeaderToolbox/fundraisingLeaderToolboxOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./FundraisingLeaderToolbox/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<FundraisingLeaderToolboxOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = result.data;
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        const participantUrl = config.navigationUrls?.[NavigationUrlKey.ParticipantPage];
+
+        if (participantUrl) {
+            window.location.href = participantUrl.replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the Main Page button has been clicked by the individual.
+     */
+    function onMainPageClick(): void {
+        const mainPageUrl = config.navigationUrls?.[NavigationUrlKey.MainPage];
+
+        if (mainPageUrl) {
+            window.location.href = mainPageUrl;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    gridDataSource.value = loadGridData();
+</script>

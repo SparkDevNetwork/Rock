@@ -71,5 +71,12 @@ namespace Rock.SystemKey
         /// The descriptive name for the "Postal Code" component of a postal address.
         /// </summary>
         public const string AddressPostalCodeLabel = "PostalCodeLabel";
+
+        /// <summary>
+        /// The ISO 3166-1 alpha-3 code for this country.
+        /// Used to map responses from the Smarty International Street Address API
+        /// (which returns alpha-3) back to Rock's alpha-2 country values.
+        /// </summary>
+        public const string ISO3166Alpha3 = "core_CountryISO3166Alpha3";
     }
 }

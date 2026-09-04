@@ -335,14 +335,14 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         protected void ShowDetails()
         {
-            int? registrationTemplatePlacementId = this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ).AsIntegerOrNull();
+            int? registrationTemplatePlacementId = this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ) );
 
             var rockContext = new RockContext();
 
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
 
-            int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrationInstanceId ) );
 
             int? registrationTemplateId;
             Guid? registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
@@ -352,16 +352,16 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+                registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrationTemplateId ) );
             }
 
             // in case a specific registrant is specified
-            int? registrantId = this.PageParameter( PageParameterKey.RegistrantId ).AsIntegerOrNull();
+            int? registrantId = this.PageParameter( PageParameterKey.RegistrantId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrantId ) );
 
             if ( registrantId.HasValue )
             {
                 hfRegistrantId.Value = registrantId.ToString();
-                registrationInstanceId = new RegistrationRegistrantService( rockContext ).GetSelect( registrantId.Value, s => s.Registration.RegistrationInstanceId );
+                registrationInstanceId = new RegistrationRegistrantService( rockContext ).GetSelect( this.PageParameter( PageParameterKey.RegistrantId ), s => ( int? ) s.Registration.RegistrationInstanceId, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             if ( registrationInstanceId.HasValue )

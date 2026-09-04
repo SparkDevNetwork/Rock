@@ -1,0 +1,290 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="scheduledtransaction-list">
+        <div v-if="showBlockHeader" class="scheduledtransaction-list-header">
+            <div class="scheduledtransaction-list-header-icon">
+                <i :class="blockHeaderIconCssClass"></i>
+            </div>
+            <h3 class="scheduledtransaction-list-header-title">{{ blockHeaderTitle }}</h3>
+            <p v-if="blockHeaderDescription" class="scheduledtransaction-list-header-description">
+                {{ blockHeaderDescription }}
+            </p>
+        </div>
+
+        <NotificationBox v-if="isEmpty" alertType="info">
+            {{ emptyMessage }}
+        </NotificationBox>
+
+        <DisplayCardContainer v-if="items.length > 0">
+            <template v-for="(item, index) in items" :key="item.idKey ?? index">
+                <NotificationBox v-if="item.alertMessage"
+                                 :alertType="alertTypeFor(item)">
+                    {{ item.alertMessage }}
+                </NotificationBox>
+                <DisplayCard v-else
+                             :iconCssClass="item.iconCssClass ?? undefined"
+                             :title="item.title ?? ''"
+                             :description="item.description ?? ''"
+                             :primaryActions="primaryActionsFor(item)">
+                    <template #middleSection>
+                        <div class="scheduledtransaction-middle-lines">
+                            <div v-if="item.nextPaymentText" class="scheduledtransaction-middle-line">
+                                <i class="ti ti-calendar"></i>
+                                <span>{{ item.nextPaymentText }}</span>
+                            </div>
+                            <div v-if="item.personName" class="scheduledtransaction-middle-line">
+                                <i class="ti ti-user-circle"></i>
+                                <span>{{ item.personName }}</span>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-if="item.frequencyLabel" #rightMiddleSection>
+                        <span class="scheduledtransaction-frequency-pill">
+                            <i v-if="item.frequencyIconCssClass" :class="item.frequencyIconCssClass"></i>
+                            <span>{{ item.frequencyLabel }}</span>
+                        </span>
+                    </template>
+                </DisplayCard>
+            </template>
+        </DisplayCardContainer>
+    </div>
+
+    <RockButton v-if="showAddButton"
+                btnType="primary"
+                @click="onAddClick">
+        {{ addButtonText }}
+    </RockButton>
+
+    <Modal v-model="isConfirmOpen"
+           title="Are you sure?"
+           isNarrow
+           saveText="Delete"
+           cancelText="Cancel"
+           saveAutoDisable
+           saveAutoLoading
+           @save="onConfirmDelete">
+        <p>Are you sure you want to delete this transaction?</p>
+    </Modal>
+</template>
+
+<style scoped>
+.scheduledtransaction-list {
+    margin-bottom: var(--spacing-large);
+}
+
+.scheduledtransaction-list-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--spacing-large);
+    margin-bottom: var(--spacing-large);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+    background: var(--color-interface-softest);
+}
+
+.scheduledtransaction-list-header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--rounded-small);
+    background: var(--color-warning-soft);
+    color: var(--color-warning-strong);
+    font-size: 20px;
+    margin-bottom: var(--spacing-medium);
+}
+
+.scheduledtransaction-list-header-title {
+    margin: 0 0 var(--spacing-xsmall) 0;
+    color: var(--color-interface-strong);
+}
+
+.scheduledtransaction-list-header-description {
+    margin: 0;
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    max-width: 640px;
+}
+
+.scheduledtransaction-middle-lines {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.scheduledtransaction-middle-line {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    line-height: 1.4;
+}
+
+.scheduledtransaction-middle-line + .scheduledtransaction-middle-line {
+    margin-top: var(--spacing-tiny);
+}
+
+.scheduledtransaction-frequency-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--color-info-soft);
+    color: var(--color-info-strong);
+    font-size: var(--font-size-small);
+    font-weight: 500;
+    white-space: nowrap;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PublicScheduledTransactionListBag } from "@Obsidian/ViewModels/Blocks/Finance/PublicScheduledTransactionList/publicScheduledTransactionListBag";
+    import { PublicScheduledTransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/PublicScheduledTransactionList/publicScheduledTransactionListOptionsBag";
+    import { ScheduledTransactionItemBag } from "@Obsidian/ViewModels/Blocks/Finance/PublicScheduledTransactionList/scheduledTransactionItemBag";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    // #region Types
+
+    const enum NavigationUrlKey {
+        EntryPage = "EntryPage"
+    }
+
+    // #endregion Types
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<PublicScheduledTransactionListBag, PublicScheduledTransactionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const items = ref<ScheduledTransactionItemBag[]>(config.bag?.items ?? []);
+    const isEmpty = ref<boolean>(config.bag?.isEmpty ?? false);
+    const emptyMessage = ref<string>(config.bag?.emptyMessage ?? "");
+    const showAddButton = ref<boolean>(config.bag?.showAddButton ?? false);
+    const addButtonText = ref<string>(config.bag?.addButtonText ?? "");
+    const showBlockHeader = ref<boolean>(config.bag?.showBlockHeader ?? false);
+    const blockHeaderTitle = ref<string>(config.bag?.blockHeaderTitle ?? "");
+    const blockHeaderDescription = ref<string>(config.bag?.blockHeaderDescription ?? "");
+    const blockHeaderIconCssClass = ref<string>(config.bag?.blockHeaderIconCssClass ?? "ti ti-cash");
+
+    const isConfirmOpen = ref<boolean>(false);
+    const pendingIdKey = ref<string>("");
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Maps the server-provided alert-type string to the AlertType enum for
+     * NotificationBox. Defaults to Info when the value is unrecognized.
+     */
+    function alertTypeFor(item: ScheduledTransactionItemBag): AlertType {
+        switch ((item.alertType ?? "").toLowerCase()) {
+            case "success": return AlertType.Success;
+            case "danger": return AlertType.Danger;
+            case "warning": return AlertType.Warning;
+            default: return AlertType.Info;
+        }
+    }
+
+    /**
+     * Builds the DisplayCard primary-action buttons for one row. Edit (or the
+     * Transfer variant) is added only when the server marked it visible for
+     * this row; Delete is always present until a Cancel completes.
+     */
+    function primaryActionsFor(item: ScheduledTransactionItemBag): MenuAction[] {
+        const actions: MenuAction[] = [];
+
+        if (item.showEditButton) {
+            actions.push({
+                iconCssClass: item.editIconCssClass ?? "ti ti-pencil",
+                title: item.editButtonText ?? "Edit",
+                type: "default",
+                handler: () => {
+                    if (item.editUrl) {
+                        window.location.href = item.editUrl;
+                    }
+                }
+            });
+        }
+
+        actions.push({
+            iconCssClass: "ti ti-x",
+            title: "Delete",
+            type: "danger",
+            handler: () => {
+                if (item.idKey) {
+                    pendingIdKey.value = item.idKey;
+                    isConfirmOpen.value = true;
+                }
+            }
+        });
+
+        return actions;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the configured entry page so the user can add a new
+     * scheduled transaction.
+     */
+    function onAddClick(): void {
+        const url = config.navigationUrls?.[NavigationUrlKey.EntryPage];
+
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    /**
+     * Fired when the user confirms the delete in the modal. Awaits the Cancel
+     * block action (which round-trips to the gateway) before closing the modal,
+     * so the Modal's saveAutoDisable + saveAutoLoading props can keep the
+     * Delete button in its disabled/spinning state during the wait. The
+     * affected row's bag is swapped with the server's replacement (which
+     * carries AlertMessage / AlertType instead of the DisplayCard fields),
+     * so the row's DisplayCard collapses into an inline NotificationBox.
+     */
+    async function onConfirmDelete(): Promise<void> {
+        const idKey = pendingIdKey.value;
+
+        if (!idKey) {
+            isConfirmOpen.value = false;
+            return;
+        }
+
+        const result = await invokeBlockAction<ScheduledTransactionItemBag>("CancelScheduledTransaction", { idKey });
+
+        if (result.isSuccess && result.data) {
+            const targetIndex = items.value.findIndex(item => item.idKey === idKey);
+
+            if (targetIndex >= 0) {
+                items.value.splice(targetIndex, 1, result.data);
+            }
+        }
+
+        isConfirmOpen.value = false;
+        pendingIdKey.value = "";
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

@@ -209,6 +209,43 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Which of the two node shapes is being read is decided by nothing but the
+        /// presence of a Filters property, so a group written without one is silently
+        /// read as a comparison and the nested filters are lost. That rule is not
+        /// visible from the value, which is why it is stated first.
+        /// </para>
+        /// <para>
+        /// The two enums are written as numbers, and neither is a plain sequence
+        /// where guessing would land on the right one, so both are enumerated rather
+        /// than named.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var comparisonValues = Enum.GetValues( typeof( Model.ComparisonType ) )
+                .Cast<Model.ComparisonType>()
+                .Select( c => $"{( int ) c} is {c.ConvertToString()}" )
+                .JoinStrings( ", " );
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A JSON object describing a filter, not a written comparison, so text such as \"Age > 18\" is not valid here. There are two shapes and Rock tells them apart purely by whether a Filters property is present. "
+                    + "A single comparison has no Filters property and looks like {\"Comparison\":128,\"Value\":\"18\"}, where Comparison is the number for the comparison type and Value is the text being compared against. "
+                    + "A group has a Filters property and looks like {\"ExpressionType\":1,\"Filters\":[{\"Comparison\":128,\"Value\":\"18\"}]}, where Filters is an array of either shape so groups can nest. "
+                    + "ExpressionType is 1 for match all, 2 for match any, 3 for all must be false, and 4 for at least one must be false; 0 means a single filter rather than a group. "
+                    + "Omitting Filters from something intended as a group makes it read as a comparison and the nested filters are discarded. "
+                    + $"The comparison numbers are {comparisonValues}."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

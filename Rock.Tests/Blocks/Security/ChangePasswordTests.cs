@@ -58,7 +58,7 @@ public class ChangePasswordTests
     [TestMethod]
     public void GetObsidianBlockInitialization_HidesPasswordChange_WhenNoCurrentUser()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var block = BuildBlock( rockContext, currentUser: null, session: null );
@@ -77,7 +77,7 @@ public class ChangePasswordTests
     [TestMethod]
     public void GetObsidianBlockInitialization_HidesPasswordChange_WhenSessionIsImpersonation()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
 
@@ -100,7 +100,7 @@ public class ChangePasswordTests
     [TestMethod]
     public void GetObsidianBlockInitialization_HidesPasswordChange_WhenSessionIsUserToken()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
 
@@ -126,7 +126,7 @@ public class ChangePasswordTests
     [TestMethod]
     public void GetObsidianBlockInitialization_AllowsPasswordChange_WhenSessionIsComponent()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
 
@@ -151,7 +151,7 @@ public class ChangePasswordTests
     [TestMethod]
     public void GetObsidianBlockInitialization_AllowsPasswordChange_WhenCurrentUserButNoPersonSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
 

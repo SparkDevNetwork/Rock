@@ -1,0 +1,81 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!categoryItems.length"
+                     alertType="warning">
+        The category list could not be retrieved from the knowledge base. Saving without
+        selecting categories scopes this skill to every category, which is the same as
+        leaving it blank.
+    </NotificationBox>
+
+    <DropDownList v-else
+                  label="Categories"
+                  v-model="categories"
+                  :items="categoryItems"
+                  multiple
+                  enhanceForLongLists
+                  help="Limits knowledge searches to these categories. Select none to search all of them. This does not limit the source code or curated topic tools, which carry no categories." />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { standardDynamicComponentProps, updateRefValue } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+
+    const enum ConfigurationKey {
+        Categories = "categories"
+    }
+
+    const props = defineProps(standardDynamicComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    // Stored as a comma delimited string of raw slugs, which is the form the remote
+    // service accepts. The picker shows a friendlier label but never sends it.
+    const categories = ref<string[]>(splitValue(props.modelValue[ConfigurationKey.Categories]));
+
+    const categoryItems = ref<ListItemBag[]>(
+        safeParseJson<ListItemBag[]>(props.options?.categories) ?? []
+    );
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Splits the stored configuration value into the array the picker binds to.
+     *
+     * @param value The comma delimited value from configuration.
+     *
+     * @returns The individual category slugs.
+     */
+    function splitValue(value: string | null | undefined): string[] {
+        return (value ?? "").split(",").filter(v => v.length > 0);
+    }
+
+    // #endregion
+
+    // #region Watches
+
+    watch(categories, () => {
+        const newValues = { ...props.modelValue };
+        newValues[ConfigurationKey.Categories] = categories.value.join(",");
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue[ConfigurationKey.Categories], (value) => {
+        updateRefValue(categories, splitValue(value as string | undefined));
+    });
+
+    watch(() => props.options, () => {
+        categoryItems.value = safeParseJson<ListItemBag[]>(props.options?.categories) ?? [];
+    });
+
+    // #endregion
+</script>

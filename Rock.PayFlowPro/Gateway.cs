@@ -39,11 +39,29 @@ namespace Rock.PayFlowPro
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "PayFlowPro" )]
 
-    [TextField( "PayPal Partner", "", true, "", "", 0, "Partner" )]
-    [TextField( "PayPal Merchant Login", "", true, "", "", 1, "Vendor" )]
-    [TextField( "PayPal User", "", false, "", "", 2, "User" )]
-    [TextField( "PayPal Password", "", true, "", "", 3, "Password", true )]
-    [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
+    [TextField( "PayPal Partner",
+        IsRequired = true,
+        Order = 0,
+        Key = "Partner" )]
+    [TextField( "PayPal Merchant Login",
+        IsRequired = true,
+        Order = 1,
+        Key = "Vendor" )]
+    [TextField( "PayPal User",
+        IsRequired = false,
+        Order = 2,
+        Key = "User" )]
+    [TextField( "PayPal Password",
+        IsRequired = true,
+        Order = 3,
+        Key = "Password",
+        IsPassword = true )]
+    [CustomRadioListField( "Mode",
+        Description = "Mode to use for transactions",
+        ListSource = "Live,Test",
+        IsRequired = true,
+        DefaultValue = "Live",
+        Order = 4 )]
 
     public class Gateway : GatewayComponent
     {

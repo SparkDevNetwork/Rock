@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -326,6 +327,59 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var listSource = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            if ( listSource.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var configuredValues = Helper.GetConfiguredValues( privateConfigurationValues );
+
+            if ( !configuredValues.Any() )
+            {
+                return null;
+            }
+
+            /*
+                8/19/26 - CLAUDE
+
+                A list sourced from SQL is reported as incomplete even though every
+                row it returned is here. The query can return different rows later,
+                and any Lava inside it resolves against whoever is asking, so a
+                consumer that treated this as the definitive set could reject a value
+                that is perfectly valid at the moment it is used.
+
+                Reason: A list that can answer differently next time is a sample, not
+                a complete set, no matter how complete it looks right now.
+            */
+            var upperSource = listSource.ToUpper();
+            var isDynamicSource = ( upperSource.Contains( "SELECT" ) && upperSource.Contains( "FROM" ) )
+                || listSource.IsLavaTemplate();
+
+            return new FieldTypeHints
+            {
+                Values = configuredValues
+                    .Select( v => new ListItemBag { Value = v.Key, Text = v.Value } )
+                    .ToList(),
+                IsCompleteList = !isDynamicSource,
+
+                // ValueFormat is deliberately absent. The stored value is one entry
+                // taken from Values with no external referent, so there is nothing
+                // to say that Values does not already show.
+                Instructions = isDynamicSource
+                    ? "These values are produced by a query rather than a fixed list, and the query may resolve differently depending on the context it runs in. Treat them as the values available at the moment they were read rather than the complete set, and read them again rather than caching them."
+                    : null
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -356,14 +410,24 @@ namespace Rock.Field.Types
                     publicConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY] = publicConfigurationValues[VALUES_KEY];
                 }
 
-                var options = Helper.GetConfiguredValues( privateConfigurationValues )
-                    .Select( kvp => new
-                    {
-                        value = kvp.Key,
-                        text = kvp.Value
-                    } );
+                try
+                {
+                    var options = Helper.GetConfiguredValues( privateConfigurationValues )
+                        .Select( kvp => new
+                        {
+                            value = kvp.Key,
+                            text = kvp.Value
+                        } );
 
-                publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+                    publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+                }
+                catch
+                {
+                    // If there was an error parsing the configured values,
+                    // return an empty set. In the future this should probably
+                    // also include some sort of error message for the UI.
+                    publicConfigurationValues[VALUES_KEY] = "[]";
+                }
             }
             else
             {

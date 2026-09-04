@@ -1,0 +1,186 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="panelTitle" :titleIconCssClass="panelIconCssClass" type="block">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+            <div v-if="entityTypeName" class="margin-t-md">
+                <strong>{{ entityTypeName }}</strong>
+            </div>
+
+            <div class="row d-flex flex-wrap margin-t-sm">
+                <div v-for="(item, index) in items" :key="index" class="col-xs-12 col-sm-6 col-md-3 mb-sm-3">
+                    {{ item.text }}
+                    <template v-if="item.subText">
+                        <br />
+                        <sup>({{ item.subText }})</sup>
+                    </template>
+                </div>
+            </div>
+
+            <div v-if="!showAll && remainingItemCount > 0" class="d-flex align-items-center margin-b-lg">
+                <small class="text-muted">... and {{ remainingItemCount }} more.</small>
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" class="margin-l-sm" :isLoading="isLoadingAll" @click="onShowAll">Show All</RockButton>
+            </div>
+
+            <NotificationBox v-if="launchErrorMessage" :alertType="AlertType.Danger">
+                {{ launchErrorMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="successMessage" :alertType="AlertType.Success">
+                {{ successMessage }}
+            </NotificationBox>
+
+            <RockForm v-if="!hasLaunched" @submit="onLaunch">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3">
+                        <div v-if="lockedWorkflowTypeName">
+                            <strong>Workflow Type</strong><br />
+                            {{ lockedWorkflowTypeName }}
+                        </div>
+                        <DropDownList v-else-if="workflowTypeOptions.length"
+                                      label="Workflow Type"
+                                      v-model="selectedWorkflowTypeValue"
+                                      :items="workflowTypeOptions"
+                                      rules="required" />
+                        <WorkflowTypePicker v-else
+                                            label="Workflow Type"
+                                            v-model="selectedWorkflowType"
+                                            rules="required" />
+                    </div>
+                </div>
+
+                <div class="margin-t-lg">
+                    <RockButton :btnType="BtnType.Primary" type="submit" :isLoading="isLaunching">Launch</RockButton>
+                </div>
+            </RockForm>
+
+            <div v-if="hasLaunched && allowMultipleWorkflowLaunches" class="margin-t-lg">
+                <RockButton :btnType="BtnType.Default" @click="onReset">Launch Another Workflow</RockButton>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { WorkflowLaunchBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/WorkflowLaunch/workflowLaunchBag";
+    import { WorkflowLaunchOptionsBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/WorkflowLaunch/workflowLaunchOptionsBag";
+    import { WorkflowLaunchItemBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/WorkflowLaunch/workflowLaunchItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<WorkflowLaunchBag, WorkflowLaunchOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const errorMessage = config.bag?.errorMessage ?? "";
+    const entityTypeName = config.bag?.entityTypeName ?? "";
+    const totalItemCount = config.bag?.totalItemCount ?? 0;
+    const lockedWorkflowTypeName = config.bag?.lockedWorkflowTypeName ?? "";
+
+    const items = ref<WorkflowLaunchItemBag[]>(config.bag?.items ?? []);
+    const hasLaunched = ref(config.bag?.hasLaunched ?? false);
+    const successMessage = ref(config.bag?.successMessage ?? "");
+    const launchErrorMessage = ref("");
+    const showAll = ref(false);
+    const isLoadingAll = ref(false);
+    const isLaunching = ref(false);
+
+    const selectedWorkflowType = ref<ListItemBag | null>(null);
+    const selectedWorkflowTypeValue = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const panelTitle = computed((): string => config.options?.panelTitle || "Workflow Launch");
+    const panelIconCssClass = computed((): string => config.options?.panelIconCssClass || "ti ti-settings");
+    const allowMultipleWorkflowLaunches = computed((): boolean => config.options?.allowMultipleWorkflowLaunches ?? true);
+    const workflowTypeOptions = computed((): ListItemBag[] => config.options?.workflowTypeOptions ?? []);
+    const remainingItemCount = computed((): number => totalItemCount - items.value.length);
+
+    const selectedWorkflowTypeGuid = computed((): string => {
+        if (workflowTypeOptions.value.length) {
+            return selectedWorkflowTypeValue.value;
+        }
+
+        return selectedWorkflowType.value?.value ?? "";
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Loads and displays every item in the entity set, replacing the limited preview.
+     */
+    async function onShowAll(): Promise<void> {
+        isLoadingAll.value = true;
+
+        try {
+            const result = await invokeBlockAction<WorkflowLaunchItemBag[]>("GetAllItems");
+
+            if (result.isSuccess && result.data) {
+                items.value = result.data;
+                showAll.value = true;
+            }
+        }
+        finally {
+            isLoadingAll.value = false;
+        }
+    }
+
+    /**
+     * Launches a workflow for each item in the entity set.
+     */
+    async function onLaunch(): Promise<void> {
+        isLaunching.value = true;
+        launchErrorMessage.value = "";
+
+        try {
+            const result = await invokeBlockAction<string>("LaunchWorkflows", {
+                workflowTypeGuid: selectedWorkflowTypeGuid.value
+            });
+
+            if (result.isSuccess) {
+                successMessage.value = result.data ?? "";
+                hasLaunched.value = true;
+            }
+            else {
+                launchErrorMessage.value = result.errorMessage ?? "Unable to launch the workflow.";
+            }
+        }
+        finally {
+            isLaunching.value = false;
+        }
+    }
+
+    /**
+     * Resets the block so another workflow can be launched.
+     */
+    function onReset(): void {
+        hasLaunched.value = false;
+        successMessage.value = "";
+        launchErrorMessage.value = "";
+        selectedWorkflowType.value = null;
+        selectedWorkflowTypeValue.value = "";
+    }
+
+    // #endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

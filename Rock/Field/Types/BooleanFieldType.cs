@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -126,6 +127,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// The type of the control (DropDown, CheckBox, Toggle, or Switch) to use to edit the value
         /// </summary>
+        [Obsolete( "Use the BooleanControlType defined in Rock.Enums.Controls instead." )]
+        [RockObsolete( "20.0" )]
         public enum BooleanControlType
         {
             /// <summary>
@@ -342,6 +345,40 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            /*
+                8/19/26 - CLAUDE
+
+                The labels come from configuration because an attribute can present
+                itself as Yes/No, On/Off, or anything else its author chose, but the
+                stored value is always the word True or the word False. Reporting the
+                configured label as the Text keeps the pair honest: it is what a person
+                sees, and the Value beside it is what has to be written.
+
+                Reason: The two sides of a boolean are only obvious until someone
+                renames them.
+            */
+            var trueText = privateConfigurationValues.GetValueOrNull( ConfigurationKey.TrueText );
+            var falseText = privateConfigurationValues.GetValueOrNull( ConfigurationKey.FalseText );
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = new List<ListItemBag>
+                {
+                    new ListItemBag { Value = "True", Text = trueText.IsNotNullOrWhiteSpace() ? trueText : "Yes" },
+                    new ListItemBag { Value = "False", Text = falseText.IsNotNullOrWhiteSpace() ? falseText : "No" }
+                },
+                ValueFormat = "The word True or the word False. Not 1 or 0, and not the label shown to a person."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -384,7 +421,7 @@ namespace Rock.Field.Types
 
             RockDropDownList ddlBooleanControlType = new RockDropDownList();
             controls.Add( ddlBooleanControlType );
-            ddlBooleanControlType.BindToEnum<BooleanControlType>();
+            ddlBooleanControlType.BindToEnum<Rock.Enums.Controls.BooleanControlType>();
             ddlBooleanControlType.Label = "Control Type";
             ddlBooleanControlType.Help = "The type of control to use when editing the value";
             ddlBooleanControlType.AutoPostBack = true;
@@ -407,7 +444,7 @@ namespace Rock.Field.Types
                 "The text to display when value is false (default is 'No').", "No" ) );
 
             configurationValues.Add( ConfigurationKey.BooleanControlType, new ConfigurationValue( "Control Type",
-                "The type of control to use when editing the value", BooleanControlType.DropDown.ConvertToString( false ) ) );
+                "The type of control to use when editing the value", Rock.Enums.Controls.BooleanControlType.DropDown.ConvertToString( false ) ) );
 
             if ( controls != null && controls.Count == 3 )
             {
@@ -501,7 +538,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var booleanControlType = configurationValues.GetValueOrNull( ConfigurationKey.BooleanControlType )?.ConvertToEnum<BooleanControlType>() ?? BooleanControlType.DropDown;
+            var booleanControlType = configurationValues.GetValueOrNull( ConfigurationKey.BooleanControlType )?.ConvertToEnum<Rock.Enums.Controls.BooleanControlType>() ?? Rock.Enums.Controls.BooleanControlType.DropDown;
 
             return CreateBooleanEditControl( configurationValues, id, booleanControlType );
         }
@@ -513,7 +550,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         /// <param name="booleanControlType">Type of the boolean control.</param>
         /// <returns></returns>
-        private Control CreateBooleanEditControl( Dictionary<string, ConfigurationValue> configurationValues, string id, BooleanControlType booleanControlType )
+        private Control CreateBooleanEditControl( Dictionary<string, ConfigurationValue> configurationValues, string id, Rock.Enums.Controls.BooleanControlType booleanControlType )
         {
 
             string yesText = "Yes";
@@ -537,12 +574,12 @@ namespace Rock.Field.Types
 
             Control editControl;
 
-            if ( booleanControlType == BooleanControlType.Checkbox )
+            if ( booleanControlType == Rock.Enums.Controls.BooleanControlType.Checkbox )
             {
                 var checkboxEditControl = new RockCheckBox { ID = id };
                 editControl = checkboxEditControl;
             }
-            else if ( booleanControlType == BooleanControlType.Toggle )
+            else if ( booleanControlType == Rock.Enums.Controls.BooleanControlType.Toggle )
             {
                 var toggleEditControl = new Toggle
                 {

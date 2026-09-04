@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,7 +45,7 @@ public class UpdatePersonSessionLastActivityTests
     [TestMethod]
     public void Execute_WithinThrottleWindow_DoesNotAdvanceLastActivityDateTime()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var existingActivity = new DateTime( 2026, 6, 9, 12, 0, 0 );
@@ -81,7 +81,7 @@ public class UpdatePersonSessionLastActivityTests
     [TestMethod]
     public void Execute_PastThrottleWindow_AdvancesLastActivityDateTime()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var existingActivity = new DateTime( 2026, 6, 9, 12, 0, 0 );

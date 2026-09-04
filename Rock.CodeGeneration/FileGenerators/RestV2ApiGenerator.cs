@@ -34,8 +34,10 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="endpoints">The endpoints to be generated.</param>
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        /// <param name="obsoleteMessage">If not null or empty then the generated class will be marked as obsolete with this message.</param>
+        /// <param name="rockObsoleteVersion">If not null or empty then the generated class will be marked as obsolete with this version of Rock.</param>
         /// <returns>A string that contains the file content that should be written to disk.</returns>
-        public string GenerateStandardFileContent( string modelTypeName, string modelTypeFullName, CodeGenerateRestEndpoint endpoints, bool disableEntitySecurity )
+        public string GenerateStandardFileContent( string modelTypeName, string modelTypeFullName, CodeGenerateRestEndpoint endpoints, bool disableEntitySecurity, string obsoleteMessage, string rockObsoleteVersion )
         {
             var modelControllerNamespaceGuid = new Guid( "d9b3e947-5c19-4145-a356-712851d544de" );
             var usings = new List<string>();
@@ -88,6 +90,17 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( $"/// Provides data API endpoints for {modelTypeName.Pluralize().SplitCase()}." );
             codeBuilder.AppendLine( "/// </summary>" );
             codeBuilder.AppendLine( $"[RoutePrefix( \"{routePrefix}\" )]" );
+
+            if ( !string.IsNullOrEmpty( obsoleteMessage ) )
+            {
+                if ( !string.IsNullOrEmpty( rockObsoleteVersion ) )
+                {
+                    codeBuilder.AppendLine( $"[RockObsolete( \"{rockObsoleteVersion}\" )]" );
+                }
+
+                codeBuilder.AppendLine( $"[System.Obsolete( \"{obsoleteMessage}\" )]" );
+            }
+
             codeBuilder.AppendLine( $"[Rock.SystemGuid.RestControllerGuid( \"{controllerGuid}\" )]" );
             codeBuilder.AppendLine( $"public partial class {modelTypeName.Pluralize()}Controller : ApiControllerBase" );
             codeBuilder.AppendLine( "{" );

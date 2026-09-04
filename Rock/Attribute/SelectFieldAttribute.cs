@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -31,6 +33,16 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectFieldAttribute"/> class.
         /// </summary>
+        /// <param name="fieldTypeGuid">The unique identifier of the field type.</param>
+        /// <param name="name">The name.</param>
+        protected SelectFieldAttribute( Guid fieldTypeGuid, string name )
+            : base( fieldTypeGuid, name )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectFieldAttribute"/> class.
+        /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
@@ -40,6 +52,8 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
         /// <param name="fieldTypeAssembly">The field type assembly.</param>
+        [Obsolete( "Use the constructor that takes a fieldTypeGuid instead." )]
+        [RockObsolete( "20.0" )]
         public SelectFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string fieldTypeClass = null, string fieldTypeAssembly = "Rock" )
             : base( name, description, required, defaultValue, category, order, key, fieldTypeClass, fieldTypeAssembly )
         {

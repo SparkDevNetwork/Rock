@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,8 +31,16 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonBaptized" )]
 
-    [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 0)]
-    [IntegerField( "Anniversary Count", "The anniversary number that this event will trigger on. If you want to catch the 5th anniversary of the person being baptized set this to 5.", false, 0, order: 1 )]
+    [IntegerField( "Max Days Back",
+        Description = "Maximum number of days back to consider",
+        IsRequired = false,
+        DefaultIntegerValue = 30,
+        Order = 0 )]
+    [IntegerField( "Anniversary Count",
+        Description = "The anniversary number that this event will trigger on. If you want to catch the 5th anniversary of the person being baptized set this to 5.",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Order = 1 )]
     [Rock.SystemGuid.EntityTypeGuid( "A156E5A0-FEE8-4730-8AC7-B3239B35F9F2")]
     public class PersonBaptized : EventComponent
     {

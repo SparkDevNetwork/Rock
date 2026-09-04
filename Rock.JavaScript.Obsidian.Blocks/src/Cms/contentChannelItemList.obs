@@ -3,7 +3,7 @@
     <Grid v-if="config"
           :definition="config?.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="id"
+          keyField="idKey"
           :itemTerm="config?.options?.contentItemName + ' Item'"
           :entityTypeGuid="EntityType.ContentChannelItem"
           stickyHeader
@@ -117,6 +117,21 @@
                       name="linkedMediaElements"
                       iconClass=""
                       :formatComponent="LinkedMediaElementsCell" />
+
+        <Column v-if="showMetricsColumn"
+                name="metrics"
+                title="Metrics"
+                itemClass="grid-columncommand justify-content-center"
+                width="80">
+            <template #format="{ row }">
+                <RockButton title="Metrics"
+                            btnType="default"
+                            btnSize="sm"
+                            @click.stop="onMetricsClick(row as GridRowItem)">
+                    <i class="ti ti-chart-line" aria-label="Metrics"></i>
+                </RockButton>
+            </template>
+        </Column>
 
         <SecurityColumn v-if="config?.options?.showSecurityColumn" />
 
@@ -261,6 +276,10 @@
         return !!(hasEventOccurrences.value && config.options?.showOccurrencesColumn);
     });
 
+    const showMetricsColumn = computed<boolean>(() => {
+        return !!config.navigationUrls?.[NavigationUrlKey.MetricsPage];
+    });
+
     // #endregion Computed Values
 
     // #region Functions
@@ -368,6 +387,18 @@
     }
 
     /**
+     * Called when a row's metrics button has been clicked by the individual.
+     *
+     * @param row The row whose metrics page should be opened.
+     */
+    function onMetricsClick(row: GridRowItem): void {
+        const url = config.navigationUrls?.[NavigationUrlKey.MetricsPage];
+        if (url) {
+            window.location.href = url.replace("((Key))", row.idKey ?? "");
+        }
+    }
+
+    /**
      * Called when a row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
@@ -378,7 +409,7 @@
 
         if (result.isSuccess) {
             if (gridData && gridData.rows) {
-                const index = gridData.rows.findIndex(r => r["id"] === key);
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
 
                 if (index !== -1) {
                     gridData.rows?.splice(index, 1);
@@ -425,7 +456,7 @@
         isLoading.value = true;
 
         const result = await invokeBlockAction<string>("UpdateContentLibraryItem", {
-            key: currentRow.value?.id ?? 0
+            key: currentRow.value?.idKey ?? ""
         });
 
         isLoading.value = false;
@@ -450,7 +481,7 @@
         isLoading.value = true;
 
         const result = await invokeBlockAction<string>("ReDownloadContentLibraryItem", {
-            key: currentRow.value?.id ?? 0
+            key: currentRow.value?.idKey ?? ""
         });
 
         isLoading.value = false;
@@ -475,7 +506,7 @@
         isLoading.value = true;
 
         const result = await invokeBlockAction<string>("UploadContentLibraryItem", {
-            key: currentRow.value?.id ?? 0
+            key: currentRow.value?.idKey ?? ""
         });
 
         isLoading.value = false;

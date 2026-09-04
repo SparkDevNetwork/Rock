@@ -794,7 +794,14 @@
 
         if (response.data) {
             flowEdges.value = response.data.edges ?? [];
-            flowNodes.value = response.data.nodes ?? [];
+
+            // Each node's color is either an admin-picked hex value or a CSS custom property name
+            // (the default categorical palette). The SVG fill attribute this feeds doesn't reliably
+            // resolve CSS variables, so resolve it here; a plain hex value falls back to itself.
+            flowNodes.value = (response.data.nodes ?? []).map(node => ({
+                ...node,
+                color: node.color ? getCssVariableValue(node.color, node.color) : node.color
+            }));
             flowSettings.value.legendHtml = response.data.legendHtml ?? "";
 
             // State is up-to-date.

@@ -35,5 +35,15 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the communication templates that can be selected for the email communication.
         /// </summary>
         public List<CommunicationTemplateBag> CommunicationTemplates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default From Name for the sender (the current person).
+        /// </summary>
+        public string FromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default From Address for the sender (the current person).
+        /// </summary>
+        public string FromEmail { get; set; }
     }
 }

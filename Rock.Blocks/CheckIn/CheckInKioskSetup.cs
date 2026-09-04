@@ -151,6 +151,7 @@ namespace Rock.Blocks.CheckIn
             var isAddingFamiliesAllowed = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean();
             var isEditingFamiliesAllowed = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean();
             var allowAddingIndividualsToExistingFamilies = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_INDIVIDUALS_TO_EXISTING_FAMILIES ).ConvertToEnum<AdultsOrChildrenSelectionMode>();
+            var skipScreenBehavior = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_SKIP_SCREEN_BEHAVIOR ).ConvertToEnum<SkipScreenBehavior>( SkipScreenBehavior.ShowWhenNeeded );
 
             var bag = new WebKioskBag
             {
@@ -163,7 +164,8 @@ namespace Rock.Blocks.CheckIn
                 CameraMode = kiosk.CameraBarcodeConfigurationType ?? CameraBarcodeConfiguration.Off,
                 IsRegistrationModeEnabled = isAddingFamiliesAllowed || isEditingFamiliesAllowed,
                 IsAddingFamiliesEnabled = isAddingFamiliesAllowed,
-                IsEditingFamiliesEnabled = isEditingFamiliesAllowed
+                IsEditingFamiliesEnabled = isEditingFamiliesAllowed,
+                SkipScreenBehavior = skipScreenBehavior
             };
 
             return bag;
@@ -512,6 +514,40 @@ namespace Rock.Blocks.CheckIn
         [BlockAction]
         public BlockActionResult GetConfiguration( string kioskId )
         {
+            return GetConfigurationInternal( kioskId, null );
+        }
+
+        /// <summary>
+        /// Gets the available configuration options for a kiosk while forcing
+        /// the specified additional areas to be present in the result. This is
+        /// used by the Edit Saved Configuration UI so that areas selected on
+        /// the saved template stay visible (and correctly named) even when the
+        /// current kiosk's campus would otherwise exclude them.
+        /// </summary>
+        /// <param name="kioskId">The encrypted kiosk identifier.</param>
+        /// <param name="additionalAreaIds">
+        /// The area IdKeys that must always be included in the response, even
+        /// when they are not part of the kiosk's normal scope.
+        /// </param>
+        /// <returns>An instance of <see cref="ConfigurationResponseBag"/>.</returns>
+        [BlockAction]
+        public BlockActionResult GetEditConfiguration( string kioskId, List<string> additionalAreaIds )
+        {
+            return GetConfigurationInternal( kioskId, additionalAreaIds );
+        }
+
+        /// <summary>
+        /// Shared implementation for the GetConfiguration and
+        /// GetEditConfiguration block actions.
+        /// </summary>
+        /// <param name="kioskId">The encrypted kiosk identifier, or <c>null</c>.</param>
+        /// <param name="additionalAreaIds">
+        /// Optional area IdKeys that should always be included in the result,
+        /// regardless of the current kiosk's scope.
+        /// </param>
+        /// <returns>An instance of <see cref="ConfigurationResponseBag"/>.</returns>
+        private BlockActionResult GetConfigurationInternal( string kioskId, List<string> additionalAreaIds )
+        {
             var director = new CheckInDirector( RockContext );
             DeviceCache kiosk = null;
 
@@ -530,7 +566,7 @@ namespace Rock.Blocks.CheckIn
                 return ActionOk( new ConfigurationResponseBag
                 {
                     Templates = director.GetConfigurationTemplateBags(),
-                    Areas = director.GetCheckInAreaSummaries( kiosk, null )
+                    Areas = director.GetCheckInAreaSummaries( kiosk, null, additionalAreaIds )
                 } );
             }
             catch ( CheckInMessageException ex )

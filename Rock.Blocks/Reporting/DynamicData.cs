@@ -24,7 +24,6 @@ using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -53,7 +52,7 @@ namespace Rock.Blocks.Reporting
     [BooleanField( "Enable Quick Return",
         Key = AttributeKey.EnableQuickReturn,
         Description = "When enabled, viewing the block will cause it to be added to the Quick Return list in the bookmarks feature.",
-        ControlType = BooleanFieldType.BooleanControlType.DropDown,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.DropDown,
         DefaultBooleanValue = false,
         Order = 0,
         IsRequired = false )]
@@ -61,7 +60,7 @@ namespace Rock.Blocks.Reporting
     [BooleanField( "Update Page",
         Key = AttributeKey.UpdatePage,
         Description = "If True, provides fields for updating the parent page's Name and Description.",
-        ControlType = BooleanFieldType.BooleanControlType.DropDown,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.DropDown,
         DefaultBooleanValue = true,
         Order = 1,
         IsRequired = false )]
@@ -76,7 +75,7 @@ namespace Rock.Blocks.Reporting
 
     #region Shared Settings (shared between grid and Lava results formatting display modes)
 
-    [TextField( "SQL Query",
+    [CodeEditorField( "SQL Query",
         Key = AttributeKey.Query,
         Description = "The SQL query or stored procedure name to execute. If you are providing SQL you can add items from the query string using Lava like this: '{{ QueryParmName }}'. If SQL parameters are included they will also need to be in the Parameters field below.<br><span class='tip tip-lava'></span>",
         Category = "CustomSetting",
@@ -110,7 +109,7 @@ namespace Rock.Blocks.Reporting
         DefaultValue = "Grid",
         IsRequired = true )]
 
-    [TextField( "Page Title Lava",
+    [CodeEditorField( "Page Title Lava",
         Key = AttributeKey.PageTitleLava,
         Description = "Optional Lava for setting the page title. If nothing is provided then the page's title will be used. Example '{{rows[0].FullName}}' or if the query returns multiple result sets '{{table1.rows[0].FullName}}'.<br><span class='tip tip-lava'></span>",
         Category = "CustomSetting",
@@ -124,6 +123,8 @@ namespace Rock.Blocks.Reporting
         Key = AttributeKey.ColumnConfigurations,
         Description = "A JSON object describing how each column of the grid results should be displayed, as well as rules for filtering, exporting, Etc.",
         Category = "CustomSetting",
+        AllowHtml = true,
+        AllowLava = true,
         IsRequired = false )]
 
     [BooleanField( "Show Checkbox Selection Column",
@@ -226,13 +227,13 @@ namespace Rock.Blocks.Reporting
         Category = "CustomSetting",
         IsRequired = false )]
 
-    [TextField( "Grid Header Content",
+    [CodeEditorField( "Grid Header Content",
         Key = AttributeKey.GridHeaderContent,
         Description = "This Lava template will be rendered above the grid. It will have access to the same dataset as the grid.<br><span class='tip tip-lava'></span>",
         Category = "CustomSetting",
         IsRequired = false )]
 
-    [TextField( "Grid Footer Content",
+    [CodeEditorField( "Grid Footer Content",
         Key = AttributeKey.GridFooterContent,
         Description = "This Lava template will be rendered below the grid (best used for custom totaling). It will have access to the same dataset as the grid.<br><span class='tip tip-lava'></span>",
         Category = "CustomSetting",
@@ -242,7 +243,7 @@ namespace Rock.Blocks.Reporting
 
     #region Results Formatting - Lava Settings
 
-    [TextField( "Lava Template",
+    [CodeEditorField( "Lava Template",
         Key = AttributeKey.FormattedOutput,
         Description = "Formatting to apply to the returned results. Example: '{% for row in rows %}{{ row.FirstName }}{% endfor %}' or if the query returns multiple result sets: '{% for row in table1.rows %}{{ row.FirstName }}{% endfor %}'. Alternatively, you may iterate over all tables within the returned results. For example: '{% for table in tables %}{% for row in table.rows %}{{ row.FirstName }}{% endfor %}{% endfor %}'.<br><span class='tip tip-lava'></span>",
         Category = "CustomSetting",

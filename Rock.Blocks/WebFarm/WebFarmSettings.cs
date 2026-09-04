@@ -348,14 +348,17 @@ namespace Rock.Blocks.WebFarm
                 return string.Empty;
             }
 
+            // This is a single-series chart, so it uses the default chart color rather than a categorical
+            // one. borderColor is a CSS custom property name (not a resolved color) because Chart.js runs
+            // client-side: the client resolves it and derives the translucent backgroundColor from it, since
+            // canvas rendering can't resolve CSS variables the way an element style can.
             return string.Format(
 @"{{
             ""labels"": [{0}],
             ""datasets"": [{{
                 ""data"": [{1}],
                 ""fill"": true,
-                ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
-                ""borderColor"": ""#009CE3"",
+                ""borderColor"": ""--color-metric-primary"",
                 ""borderWidth"": 2,
                 ""pointRadius"": 0,
                 ""pointHoverRadius"": 0,

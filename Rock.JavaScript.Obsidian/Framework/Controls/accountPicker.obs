@@ -242,7 +242,10 @@
 
     /** Determines if the clear button should be shown. */
     const showClear = computed((): boolean => {
-        return valuesAsArray.value.length > 0;
+        // Only show clear when something with an actual value is selected. Callers commonly
+        // represent "nothing selected" with an empty ListItemBag ({}), which forceToArray wraps
+        // into a single-element array; checking length alone would show clear for an empty picker.
+        return valuesAsArray.value.some(v => !!v.value);
     });
 
     const showInactiveCheckbox = computed(() => !props.activeOnly);

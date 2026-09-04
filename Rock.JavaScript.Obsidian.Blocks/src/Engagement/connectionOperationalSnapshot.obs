@@ -23,19 +23,19 @@
 
                             <div class="row row-grouped gutter-0" :class="breakpointHelper?.breakpoint">
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Active" :value="currentMetricsKpis.active.value" />
+                                    <KpiTile isBorderless label="Active" :value="currentMetricsKpis.active.value" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
+                                    <KpiTile isBorderless label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
+                                    <KpiTile isBorderless label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
                                 </div>
 
                                 <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
-                                    <KpiTile noBorders label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
+                                    <KpiTile isBorderless label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
                                 </div>
                             </div>
 
@@ -84,7 +84,7 @@
                             <div class="row row-grid gutter-4" :class="{ [`${breakpointHelper?.breakpoint}-actual`]: true, [`${breakpointHelper?.breakpoints}`]: true, 'stacked': breakpointHelper?.isXsOrSmaller || breakpointHelper?.isMd }">
                                 <div class="col-lg-6 col-md-12 col-sm-6">
                                     <KpiTile label="Timeliness"
-                                             help="The percentage of requests which were completed on time."
+                                             help="The percentage of completed requests that were finished on or before their due date during this period."
                                              :value="completionMetricsKpis.timeliness.value">
                                         <template #footer>
                                             <span :style="{ color: completionMetricsKpis.timeliness.color }">{{ completionMetricsKpis.timeliness.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
@@ -94,7 +94,7 @@
 
                                 <div class="col-lg-6 col-md-12 col-sm-6">
                                     <KpiTile label="Responsiveness (Rsp)"
-                                             help=""
+                                             help="The average number of days between when a request was submitted and when a connector first acted on it during this period."
                                              :value="completionMetricsKpis.responsiveness.value">
                                         <template #footer>
                                             <span :style="{ color: completionMetricsKpis.responsiveness.color }">{{ completionMetricsKpis.responsiveness.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
@@ -104,6 +104,7 @@
 
                                 <div class="col-lg-6 col-md-12 col-sm-6">
                                     <KpiTile label="Requests Completed"
+                                             help="The total number of requests marked as completed during this period."
                                              :value="completionMetricsKpis.requestsCompleted.value">
                                         <template #footer>
                                             <span :style="{ color: completionMetricsKpis.requestsCompleted.color }">{{ completionMetricsKpis.requestsCompleted.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
@@ -113,6 +114,7 @@
 
                                 <div class="col-lg-6 col-md-12 col-sm-6">
                                     <KpiTile label="Average Time to Complete"
+                                             help="The average number of days from request submission to completion, across all requests closed in this period."
                                              :value="completionMetricsKpis.averageTimeToComplete.value">
                                         <template #footer>
                                             <span :style="{ color: completionMetricsKpis.averageTimeToComplete.color }">{{ completionMetricsKpis.averageTimeToComplete.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
@@ -149,9 +151,7 @@
                         <PersonColumn :field="getGridRowPropertyName('person')"
                                       :name="getGridRowPropertyName('person')"
                                       title="Name"
-                                      :filter="pickExistingValueFilter"
-                                      :filterValue="getPersonTextValue"
-                                      :quickFilterValue="getPersonTextValue"><template #></template></PersonColumn>
+                                      :filter="pickExistingValueFilter" />
 
                         <NumberColumn :field="getGridRowPropertyName('activeRequestCount')"
                                       :name="getGridRowPropertyName('activeRequestCount')"
@@ -181,8 +181,8 @@
                                 width="180px">
                             <template #format="{ row }">
                                 <div class="performance-column-data">
-                                    <div v-ellipsis-tooltip><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
-                                    <div v-ellipsis-tooltip><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
+                                    <div v-tooltip.overflow="`Completed: ${(row as ConnectorBag).completedRequestCount}`"><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
+                                    <div v-tooltip.overflow="`Avg Time: ${(row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 })}d`"><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
                                 </div>
                             </template>
                         </Column>
@@ -346,14 +346,21 @@
     font-size: var(--font-size-small);
     color: var(--color-interface-strong);
 }
+
+/* Each stat clips to a single line; the overflow tooltip reveals the full text. */
+.performance-column-data > div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 </style>
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import BreakpointObserver from "./ConnectionOperationalSnapshot/breakpointObserver.partial.obs";
     import ChartPanel from "./ConnectionOperationalSnapshot/chartPanel.partial.obs";
-    import { ellipsisTooltip as vEllipsisTooltip } from "./ConnectionOperationalSnapshot/ellipsisTooltipDirective.partial";
-    import KpiTile from "./ConnectionOperationalSnapshot/kpiTile.partial.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
     import { BreakpointHelper } from "./ConnectionOperationalSnapshot/types.partial";
     import BarChart from "@Obsidian/Controls/barChart.obs";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
@@ -382,6 +389,7 @@
     import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Enumerable } from "@Obsidian/Utility/linq";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ConnectorBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/connectorBag";
     import { MetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/metricsBag";
@@ -493,11 +501,11 @@
             },
             dueSoon: {
                 value: state?.totalDueSoon ?? 0,
-                color: "var(--color-warning-strong)"
+                color: "var(--color-caution-primary)"
             },
             overdue: {
                 value: state?.totalOverdue ?? 0,
-                color: "var(--color-danger-strong)"
+                color: "var(--color-negative-primary)"
             }
         };
     });
@@ -547,9 +555,9 @@
         const state = requestState.value;
 
         return [
-            { label: "On Track", data: [state?.totalOnTrack ?? 0], color: "var(--color-success-strong)" },
-            { label: "Due Soon", data: [state?.totalDueSoon ?? 0], color: "#F59E0B" },
-            { label: "Overdue", data: [state?.totalOverdue ?? 0], color: "#EF4444" },
+            { label: "On Track", data: [state?.totalOnTrack ?? 0], color: "var(--color-positive-primary)" },
+            { label: "Due Soon", data: [state?.totalDueSoon ?? 0], color: "var(--color-caution-primary)" },
+            { label: "Overdue", data: [state?.totalOverdue ?? 0], color: "var(--color-negative-primary)" },
         ];
     });
 
@@ -573,7 +581,7 @@
                         .withIndex()
                         .select<number | null>(([_, i]) => i === index ? f.count : null)
                         .toArray(),
-                    color: getTimelineColor(index)
+                    color: getCssVariableValue("--color-metric-primary")
                 };
             })
             .toArray();
@@ -603,21 +611,6 @@
     // #endregion Computed Values
 
     // #region Functions
-
-    function getTimelineColor(index: number): string {
-        const colors = ["#2C5282", "#3182CE", "#90CDF4"];
-        return colors[index % colors.length];
-    }
-
-    /**
-     * Gets the text value for the "Person" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getPersonTextValue(row: Record<string, unknown>): string {
-        const person = (row as ConnectorBag).person;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
 
     function wrapByWords(text: string, lineSize: number): string | string[] {
         if (text.length <= lineSize) {

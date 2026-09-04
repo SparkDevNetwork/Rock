@@ -30,6 +30,12 @@ namespace Rock.Blocks
     public abstract class RockDetailBlockType : RockBlockType
     {
         /// <summary>
+        /// The page parameter that requests the block open directly into edit mode.
+        /// Recognized by the Obsidian detail block template.
+        /// </summary>
+        internal const string AutoEditPageParameterKey = "autoEdit";
+
+        /// <summary>
         /// Gets the initial entity from page parameters or creates a new entity
         /// if page parameters requested creation.
         /// </summary>
@@ -84,6 +90,33 @@ namespace Rock.Blocks
             var entityService = ( Service<TEntity> ) Reflection.GetServiceForEntityType( typeof( TEntity ), RockContext );
 
             return entityService.GetNoTracking( entityId, !PageCache.Layout.Site.DisablePredictableIds );
+        }
+
+        /// <inheritdoc/>
+        protected override string GetPlaceholderContent( RockClientType clientType )
+        {
+            var placeholder = base.GetPlaceholderContent( clientType );
+
+            if ( clientType != RockClientType.Web || !PageParameter( AutoEditPageParameterKey ).AsBoolean() )
+            {
+                return placeholder;
+            }
+
+            /*
+                8/26/26 - MSE
+
+                This covers the WebForms secondary blocks, such as the group member
+                list. The detail block hides them too, but not until the Obsidian
+                bundle has downloaded and run, by which point they have long since
+                painted. Adding the class here happens during parsing, so they never
+                paint at all. Obsidian secondary blocks are excluded from the
+                stylesheet rule this drives and are left to the detail block.
+
+                Reason: Keep WebForms secondary blocks from painting on an auto-edit load.
+            */
+            var roleName = Rock.Enums.Cms.BlockRole.Secondary.ToString().ToLower();
+
+            return $"{placeholder}<script>document.body.classList.add( \"hide-block-role-{roleName}\" );</script>";
         }
     }
 }

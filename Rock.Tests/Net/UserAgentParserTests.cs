@@ -72,6 +72,19 @@ namespace Rock.Tests.Net
         [DataRow( "Microsoft Office/16.0 (Windows NT 10.0; Microsoft Outlook 16.0.4266; Pro)", "Outlook" )]
         [DataRow( "Mozilla/5.0 (compatible; proximic; +http://www.proximic.com/info/spider.php)", "Crawler" )]
         [DataRow( "", "None" )]
+        // Googlebot Smartphone contains both "Android" and "Mobile Safari". When
+        // the mobile test ran before the crawler test this returned "Mobile".
+        [DataRow( "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)", "Crawler" )]
+        [DataRow( "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/136.0.0.0 Safari/537.36", "Crawler" )]
+        [DataRow( "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)", "Crawler" )]
+        // Crawlers that the previous eleven-keyword expression did not cover.
+        [DataRow( "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/126.0.0.0 Safari/537.36", "Crawler" )]
+        [DataRow( "python-requests/2.31.0", "Crawler" )]
+        [DataRow( "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Chrome-Lighthouse", "Crawler" )]
+        // A real CUBOT phone. The legacy expression matched the bare token "bot",
+        // so moving the crawler test first would have misclassified these as
+        // crawlers had the pattern list not been replaced at the same time.
+        [DataRow( "Mozilla/5.0 (Linux; Android 10; CUBOT_X30 Build/QP1A.190711.020) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Mobile Safari/537.36", "Mobile" )]
         public void ClientType_ReturnsCorrectValue( string userAgent, string expected )
         {
             var parser = new UserAgentParser();
@@ -101,6 +114,24 @@ namespace Rock.Tests.Net
             var info = parser.Parse( userAgent );
 
             Assert.AreEqual( expected, info.ToString() );
+        }
+
+        /// <summary>
+        /// A request with no User-Agent header yields a null user-agent string
+        /// (e.g. bots and health checks). Parsing must not throw; it should
+        /// return a non-null result classified as "None", matching the empty
+        /// string behavior. Before the null guard in Parse, this threw
+        /// ArgumentNullException from ConcurrentDictionary.GetOrAdd.
+        /// </summary>
+        [TestMethod]
+        public void Parse_NullUserAgent_DoesNotThrowAndReturnsNone()
+        {
+            var parser = new UserAgentParser();
+
+            var info = parser.Parse( null );
+
+            Assert.IsNotNull( info );
+            Assert.AreEqual( "None", info.ClientType );
         }
     }
 }

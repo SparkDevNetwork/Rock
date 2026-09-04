@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
 
 using Rock.Attribute;
 using Rock.Cms;
@@ -979,6 +978,25 @@ namespace Rock.Blocks.Administration
                 }
             } );
 
+            /*
+                7/23/26 - MSE
+
+                PageRoute is not ICacheable and the PageRoute save hook only removes
+                deleted routes from the route table, so saved routes never take effect
+                on the running node without these two calls. The page cache flush makes
+                PageCache.PageRoutes (used by PageReference.BuildUrl) pick up the route
+                changes, and ReregisterRoutes rebuilds this node's route table and
+                publishes a message bus event so other web farm nodes do the same. The
+                legacy WebForms block made the same ReregisterRoutes call after saving.
+
+                Reason: Routes saved from Page Properties did not work until an application restart.
+            */
+            PageCache.FlushPage( entity.Id );
+
+#if REVIEW_WEBFORMS
+            Rock.Web.RockRouteHandler.ReregisterRoutes();
+#endif
+
             // Ensure navigation properties will work now.
             entity = entityService.Get( entity.Id );
             entity.LoadAttributes( RockContext );
@@ -1049,7 +1067,7 @@ namespace Rock.Blocks.Administration
                 }
             }
 
-            string parentPageId = entity.ParentPage.IdKey;
+            string parentPageId = entity.ParentPage?.IdKey;
 
             pageService.Delete( entity );
 

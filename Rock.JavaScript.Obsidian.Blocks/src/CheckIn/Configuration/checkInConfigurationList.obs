@@ -53,10 +53,10 @@
                             <span class="section-header">
                                 Locations & Schedules
                             </span>
-                            <a v-if="namedLocationsPageUrl" :href="namedLocationsPageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="namedLocationsPageUrl" :href="namedLocationsPageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-map-pin"></i> Named Locations
                             </a>
-                            <a v-if="schedulesPageUrl" :href="schedulesPageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="schedulesPageUrl" :href="schedulesPageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-calendar-month"></i> Schedules
                             </a>
                         </div>
@@ -64,16 +64,16 @@
                             <span class="section-header">
                                 Kiosk Settings
                             </span>
-                            <a v-if="devicesPageUrl" :href="devicesPageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="devicesPageUrl" :href="devicesPageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-device-imac"></i> Devices
                             </a>
-                            <a v-if="labelsPageUrl" :href="labelsPageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="labelsPageUrl" :href="labelsPageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-tag-starred"></i> Labels
                             </a>
-                            <a v-if="classicLabelsPageUrl" :href="classicLabelsPageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="classicLabelsPageUrl" :href="classicLabelsPageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-tag"></i> Classic Labels
                             </a>
-                            <a v-if="cloudPrintPageUrl" :href="cloudPrintPageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="cloudPrintPageUrl" :href="cloudPrintPageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-wifi"></i> Cloud Print
                             </a>
                         </div>
@@ -81,13 +81,13 @@
                             <span class="section-header">
                                 Additional Configuration
                             </span>
-                            <a v-if="classicLabelMergeFieldsPageUrl" :href="classicLabelMergeFieldsPageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="classicLabelMergeFieldsPageUrl" :href="classicLabelMergeFieldsPageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-tag-plus"></i> Classic Label Merge Fields
                             </a>
-                            <a v-if="abilityLevelsPageUrl" :href="abilityLevelsPageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="abilityLevelsPageUrl" :href="abilityLevelsPageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-user-screen"></i> Ability Levels
                             </a>
-                            <a v-if="searchTypePageUrl" :href="searchTypePageUrl" class="list-group-item check-ins-related-link">
+                            <a v-if="searchTypePageUrl" :href="searchTypePageUrl" class="list-group-item nav-link">
                                 <i class="ti ti-search"></i> Search Type
                             </a>
                         </div>
@@ -125,18 +125,6 @@
     line-height: var(--line-height-tight);
 }
 
-.check-ins-related-link {
-    border: none;
-    border-radius: var(--rounded-small);
-    background-color: transparent;
-    color: var(--color-interface-strong);
-    font-weight: var(--font-weight-semibold);
-    padding: var(--spacing-xsmall) var(--spacing-small);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-tiny);
-    margin-top: var(--spacing-tiny);
-}
 </style>
 
 <script setup lang="ts">

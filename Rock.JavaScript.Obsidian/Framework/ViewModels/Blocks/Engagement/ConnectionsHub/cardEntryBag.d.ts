@@ -34,6 +34,14 @@ export type CardEntryBag = {
     /** Gets or sets the list of file attachments associated with this card entry. */
     attachments?: ListItemBag[] | null;
 
+    /**
+     * Gets or sets whether the current person is permitted to edit or delete this entry.
+     * Populated for Activity entries and for status-change notes so the UI only offers edit and
+     * delete actions when the server will actually allow them, matching the authorization enforced
+     * by the block actions.
+     */
+    canEdit: boolean;
+
     /** Gets or sets the encrypted identifier key of the connection opportunity associated with this entry. */
     connectionOpportunityIdKey?: string | null;
 
@@ -52,11 +60,35 @@ export type CardEntryBag = {
     /** Gets or sets the main content body of this card entry. */
     content?: string | null;
 
+    /**
+     * Gets or sets whether a note is required for this status-change entry because the status that
+     * ended is configured to require one. Defaults to false.
+     */
+    isNoteRequired: boolean;
+
     /** Gets or sets whether or not the activity type for this entry is a system activity type. Populated for Activity entries to support editing. */
     isSystemActivityType?: boolean | null;
 
+    /** Gets or sets the status the request moved to, for a status-change entry. */
+    newValue?: string | null;
+
     /** Gets or sets the URL of the author's profile photo. */
     photoUrl?: string | null;
+
+    /**
+     * Gets or sets the status the request moved from, for a status-change entry. Null for the
+     * initial status assignment (which has no prior status).
+     */
+    previousValue?: string | null;
+
+    /**
+     * Gets or sets the IdKey of the ConnectionRequestStatusHistory record linked to a status-change
+     * entry, when one exists. Populated only for status updates that have a linked status-history
+     * record (v19+); it is the key used by the note add/edit/delete block actions. Null when there is
+     * no linked record (for example, the initial status assignment or a status change recorded before
+     * the status-history table existed), in which case the client should not offer note editing.
+     */
+    statusHistoryIdKey?: string | null;
 
     /** Gets or sets the title of this card entry. */
     title?: string | null;

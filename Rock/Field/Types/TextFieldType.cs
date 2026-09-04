@@ -48,20 +48,18 @@ namespace Rock.Field.Types
         private const string SHOW_COUNT_DOWN = "showcountdown";
         private const string IS_FIRST_NAME = "isfirstname";
         private const string ALLOW_HTML = "allowhtml";
+        private const string ALLOW_LAVA = "allowlava";
 
         /// <summary>
         /// Determines whether the Attribute Configuration for this field has IsPassword = True
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
+        [Obsolete( "Helper.IsTextFieldPassword() instead." )]
+        [RockObsolete( "20.0" )]
         public bool IsPassword( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
-            {
-                return configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
-            }
-
-            return false;
+            return Helper.IsTextFieldPassword( configurationValues?.ToDictionary( a => a.Key, a => a.Value?.Value ) );
         }
 
         #endregion
@@ -106,13 +104,24 @@ namespace Rock.Field.Types
                 return StringValueValidator.GetEffectiveRules( StringValidationProfile.Name );
             }
 
-            if ( privateConfigurationValues?.TryGetValue( ALLOW_HTML, out var allowHtml ) == true && allowHtml.AsBoolean() )
+            var allowHtml = privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
+            var allowLava = privateConfigurationValues.GetValueOrDefault( ALLOW_LAVA, string.Empty ).AsBoolean();
+
+            if ( allowHtml && allowLava )
             {
                 return StringValueValidator.GetEffectiveRules( StringValidationProfile.LavaAndBasicHtml );
             }
+            else if ( allowHtml )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.BasicHtml );
+            }
+            else if ( allowLava )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
+                    excludedRules: StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands );
+            }
 
-            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
-                excludedRules: StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands );
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText );
         }
 
         #endregion
@@ -144,6 +153,65 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Silent unless the configuration makes the value something other than
+        /// ordinary text. This backs a very large share of the attributes in a Rock
+        /// database, so a hint saying "text" would be noise on thousands of them and
+        /// would train a reader to skim past hints that do carry something.
+        /// </para>
+        /// <para>
+        /// What the configuration can add is worth saying: whether the stored text is
+        /// treated as Lava or HTML when it is used, and whether it is masked. Those
+        /// change what a value means rather than merely how it looks.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var isPassword = privateConfigurationValues.GetValueOrDefault( IS_PASSWORD_KEY, string.Empty ).AsBoolean();
+            var allowsHtml = privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
+            var allowsLava = privateConfigurationValues.GetValueOrDefault( ALLOW_LAVA, string.Empty ).AsBoolean();
+            var maximumCharacters = privateConfigurationValues.GetValueOrNull( MAX_CHARACTERS ).AsIntegerOrNull();
+
+            if ( !isPassword && !allowsHtml && !allowsLava && !maximumCharacters.HasValue )
+            {
+                return null;
+            }
+
+            var notes = new List<string>();
+
+            if ( allowsLava )
+            {
+                notes.Add( "Lava in this value is resolved when the value is used, so it is stored as written rather than as its result" );
+            }
+
+            if ( allowsHtml )
+            {
+                notes.Add( "HTML is kept rather than stripped" );
+            }
+
+            if ( isPassword )
+            {
+                notes.Add( "the value is masked when displayed, though it is stored as plain text and is not encrypted" );
+            }
+
+            if ( maximumCharacters.HasValue )
+            {
+                notes.Add( $"it is limited to {maximumCharacters.Value} characters" );
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = $"Text, stored exactly as supplied. On this field {notes.JoinStrings( ", " )}."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -159,6 +227,7 @@ namespace Rock.Field.Types
             configKeys.Add( SHOW_COUNT_DOWN );
             configKeys.Add( IS_FIRST_NAME );
             configKeys.Add( ALLOW_HTML );
+            configKeys.Add( ALLOW_LAVA );
             return configKeys;
         }
 
@@ -209,7 +278,15 @@ namespace Rock.Field.Types
             cbAllowHtml.AutoPostBack = true;
             cbAllowHtml.CheckedChanged += OnQualifierUpdated;
             cbAllowHtml.Label = "Allow HTML";
-            cbAllowHtml.Help = "Controls whether server should prevent HTML from being entered in this field or not.";
+            cbAllowHtml.Help = "Controls whether server should allow HTML in this field or not. This can often be a security risk so use with caution.";
+
+            // Add checkbox for deciding if the text should allow Lava syntax or not.
+            var cbAllowLava = new RockCheckBox();
+            controls.Add( cbAllowLava );
+            cbAllowLava.AutoPostBack = true;
+            cbAllowLava.CheckedChanged += OnQualifierUpdated;
+            cbAllowLava.Label = "Allow Lava";
+            cbAllowLava.Help = "Controls whether server should allow Lava syntax in this field or not. This can often be a security risk so use with caution.";
 
             return controls;
         }
@@ -227,6 +304,7 @@ namespace Rock.Field.Types
             configurationValues.Add( SHOW_COUNT_DOWN, new ConfigurationValue( "Show Character Limit Countdown", "When set, displays a countdown showing how many characters remain (for the Max Characters setting).", "" ) );
             configurationValues.Add( IS_FIRST_NAME, new ConfigurationValue( "FirstName Field", "When set, edit field will be validated as a first name.", "" ) );
             configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
+            configurationValues.Add( ALLOW_LAVA, new ConfigurationValue( "Allow Lava", "Controls whether server should allow Lava syntax in this field or not.", "" ) );
 
             if ( controls != null )
             {
@@ -271,6 +349,14 @@ namespace Rock.Field.Types
                     if ( controls[4] is CheckBox cbAllowHtml )
                     {
                         configurationValues[ALLOW_HTML].Value = cbAllowHtml.Checked.ToString();
+                    }
+                }
+
+                if ( controls.Count > 5 )
+                {
+                    if ( controls[5] is CheckBox cbAllowLava )
+                    {
+                        configurationValues[ALLOW_LAVA].Value = cbAllowLava.Checked.ToString();
                     }
                 }
             }
@@ -328,6 +414,14 @@ namespace Rock.Field.Types
                     if ( controls[4] is CheckBox cbAllowHtml )
                     {
                         cbAllowHtml.Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
+                    }
+                }
+
+                if ( controls.Count > 5 && configurationValues.ContainsKey( ALLOW_LAVA ) )
+                {
+                    if ( controls[5] is CheckBox cbAllowLava )
+                    {
+                        cbAllowLava.Checked = configurationValues[ALLOW_LAVA].Value.AsBoolean();
                     }
                 }
             }

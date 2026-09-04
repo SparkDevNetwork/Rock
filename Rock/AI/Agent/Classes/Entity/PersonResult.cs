@@ -16,11 +16,9 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 
-using Rock.AI.Agent.Classes.Common;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
@@ -32,16 +30,10 @@ namespace Rock.AI.Agent.Classes.Entity
     /// A common POCO for storing information about a person. Apply only the properties that are needed for the specific use case.
     /// Null properties will not be serialized.
     /// </summary>
-    internal class PersonResult : EntityResultBase
+    public class PersonResult : EntityResultBase
     {
         #region Ignored Properties
         // These properties exist to help with internal logic but they should not be serialized to JSON.
-
-        /// <summary>
-        /// Gets or sets the primary family identifier.
-        /// </summary>
-        [JsonIgnore]
-        public int? PrimaryFamilyId { get; set; }
 
         /// <summary>
         /// Gets or sets the photo identifier.
@@ -56,10 +48,10 @@ namespace Rock.AI.Agent.Classes.Entity
         public int? RecordTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the marital status unique identifier.
+        /// Determines if the avatar URL should be included in the return.
         /// </summary>
         [JsonIgnore]
-        public Guid? MaritalStatusGuid { get; set; }
+        public bool IncludeAvatarUrl { get; set; } = true;
 
         /// <summary>
         /// Determines if the internal profile should be included in the return.
@@ -67,36 +59,15 @@ namespace Rock.AI.Agent.Classes.Entity
         [JsonIgnore]
         public bool IncludeProfileLink { get; set; }
 
-        /// <summary>
-        /// Determines if the avatar URL should be included in the return.
-        /// </summary>
-        [JsonIgnore]
-        public bool IncludeAvatarUrl { get; set; } = true;
-
         #endregion
 
         #region Common Properties
 
         /// <summary>
-        /// Gets or sets the stable identifier for the person's primary family (used by tools; avoid showing to end users).
+        /// Gets or sets the unique identifier of the person's primary alias. This
+        /// is the value to use when a person alias is required.
         /// </summary>
-        public string PrimaryFamilyIdKey { get; set; }
-
-        /// <summary>
-        /// The URL to the person's internal profile.
-        /// </summary>
-        public string InternalProfileUrl
-        {
-            get
-            {
-                if ( !IncludeProfileLink )
-                {
-                    return null;
-                }
-
-                return $"{GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ).EnsureTrailingForwardslash()}person/{IdKey}";
-            }
-        }
+        public Guid? PrimaryAliasGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the person's first/given name.
@@ -109,19 +80,9 @@ namespace Rock.AI.Agent.Classes.Entity
         public string NickName { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's middle name.
-        /// </summary>
-        public string MiddleName { get; set; }
-
-        /// <summary>
         /// Gets or sets the person's last/family name.
         /// </summary>
         public string LastName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of previous last names.
-        /// </summary>
-        public List<string> PreviousLastNames { get; set; }
 
         /// <summary>
         /// Gets or sets the person's name suffix.
@@ -132,11 +93,6 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Gets or sets the person's e-mail.
         /// </summary>
         public string Email { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of phone numbers.
-        /// </summary>
-        public List<PhoneNumberResult> PhoneNumbers { get; set; }
 
         /// <summary>
         /// Gets the URL for the person's avatar image.
@@ -174,50 +130,26 @@ namespace Rock.AI.Agent.Classes.Entity
         }
 
         /// <summary>
-        /// Gets or sets the list of addresses.
+        /// The URL to the person's internal profile.
         /// </summary>
-        public List<LocationResult> Addresses { get; set; }
+        public string InternalProfileUrl
+        {
+            get
+            {
+                if ( !IncludeProfileLink )
+                {
+                    return null;
+                }
+
+                return $"{GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ).EnsureTrailingForwardslash()}person/{IdKey}";
+            }
+        }
 
         /// <summary>
         /// Gets or sets the age classification.
         /// </summary>
         [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
         public AgeClassification AgeClassification { get; set; }
-
-        /// <summary>
-        /// Gets or sets the spouse person result.
-        /// </summary>
-        public PersonResult Spouse { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of children in the family.
-        /// </summary>
-        public List<PersonResult> ChildrenInFamily { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of adults in the family.
-        /// </summary>
-        public List<PersonResult> AdultsInFamily { get; set; }
-
-        /// <summary>
-        /// Gets or sets the campus name.
-        /// </summary>
-        public KeyNameResult Campus { get; set; }
-
-        /// <summary>
-        /// Gets or sets the connection status.
-        /// </summary>
-        public string ConnectionStatus { get; set; }
-
-        /// <summary>
-        /// Gets or sets the record status.
-        /// </summary>
-        public string RecordStatus { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marital status.
-        /// </summary>
-        public string MaritalStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the age.
@@ -249,26 +181,6 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Gets or sets the anniversary date.
         /// </summary>
         public DateTime? AnniversaryDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the graduation year.
-        /// </summary>
-        public int? GraduationYear { get; set; }
-
-        /// <summary>
-        /// Gets or sets the known relationships (e.g. Aunt, Uncle, Grandparent, etc.) where the key is the relationship name and the value is the related person.
-        /// </summary>
-        public List<GroupMemberResult> KnownRelationships { get; set; }
-
-        /// <summary>
-        /// Gets or sets the notes.
-        /// </summary>
-        public List<NoteResult> Notes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the prayer requests.
-        /// </summary>
-        public List<PrayerRequestResult> PrayerRequests { get; set; }
 
         #endregion
 

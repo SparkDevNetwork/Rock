@@ -31,6 +31,13 @@ export type BulkUpdateOptionsBag = {
     /** Gets or sets the attribute categories. */
     attributeCategories?: BulkUpdateAttributeCategoryBag[] | null;
 
+    /**
+     * Gets or sets an optional, non-blocking notice shown to block administrators
+     * when one or more attributes were configured in more than one selected category
+     * and de-duplicated to a single category.
+     */
+    attributeConfigurationWarning?: string | null;
+
     /** Gets or sets a value indicating whether the current user can edit the connection status. */
     canEditConnectionStatus: boolean;
 
@@ -42,8 +49,7 @@ export type BulkUpdateOptionsBag = {
 
     /**
      * Gets or sets an optional configuration error message to display
-     * to the user when block settings are misconfigured (e.g. an attribute
-     * appearing in more than one category).
+     * to the user when block settings are misconfigured.
      */
     errorMessage?: string | null;
 

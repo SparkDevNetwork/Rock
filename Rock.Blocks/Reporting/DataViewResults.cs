@@ -103,6 +103,22 @@ namespace Rock.Blocks.Reporting
             public const string Text = "text";
         }
 
+        /// <summary>
+        /// The relative widths applied to dynamic columns by value type, expressed as percentages.
+        /// Percentages let the columns grow to fill the available width, so a data view with only a
+        /// few columns does not leave a large empty gap on the right, and shrink (down to the grid's
+        /// minimum cell width, after which the grid scrolls) when there are many columns. Text columns
+        /// are the widest so values such as email addresses have room; the compact value types are
+        /// narrower.
+        /// </summary>
+        private static class ColumnWidth
+        {
+            public const string Boolean = "8%";
+            public const string Date = "10%";
+            public const string Number = "10%";
+            public const string Text = "20%";
+        }
+
         #endregion Keys
 
         #region Constants
@@ -125,6 +141,7 @@ namespace Rock.Blocks.Reporting
 
         private const string BoundFieldTypeAttributeName = "BoundFieldTypeAttribute";
         private const string CurrencyFieldControlName = "CurrencyField";
+        private static readonly Guid DateFieldTypeGuid = new Guid( Rock.SystemGuid.FieldType.DATE );
 
         /// <summary>
         /// Framework audit and foreign-key property names that are excluded from the
@@ -241,8 +258,18 @@ namespace Rock.Blocks.Reporting
                 }
 
                 var title = propertyInfo.Name.SplitCase();
-                var columnType = GetColumnType( propertyInfo );
                 var underlyingType = Nullable.GetUnderlyingType( propertyInfo.PropertyType ) ?? propertyInfo.PropertyType;
+                var isDateKeyField = IsDateKeyField( propertyInfo );
+
+                // Resolve the value to a grid column type. Plain (non-currency) numbers keep the
+                // number column type so the grid sorts and filters them numerically, but the block
+                // renders that type with a text cell on the client so they display without thousands
+                // separators. An Id such as 12345 therefore shows as "12345" rather than "12,345",
+                // matching the legacy grid, while still sorting and filtering as a number. Currency
+                // keeps its own numeric formatting.
+                var columnType = isDateKeyField ? ColumnType.Date : GetColumnType( propertyInfo );
+                var isPlainNumberField = columnType == ColumnType.Number;
+                var columnWidth = GetColumnWidth( columnType );
 
                 builder.AddField( fieldName, entity =>
                 {
@@ -257,10 +284,30 @@ namespace Rock.Blocks.Reporting
                         return ( ( Enum ) value ).ConvertToString();
                     }
 
+                    if ( isDateKeyField )
+                    {
+                        // Date keys are stored as yyyyMMdd integers (e.g. 20230523). Convert the key
+                        // back to its date so the grid renders it as a date rather than as a large,
+                        // comma-grouped number. The value is offset-aware to match the date column's
+                        // ISO 8601 parser, exactly like a real date column below. A non-positive key
+                        // means there is no date, so render the cell empty.
+                        var dateKey = Convert.ToInt32( value );
+                        return dateKey > 0 ? ( object ) dateKey.GetDateKeyDate().ToRockDateTimeOffset() : null;
+                    }
+
                     if ( columnType == ColumnType.Date )
                     {
                         // The date column parses an offset-aware ISO 8601 value, so normalize DateTime to a Rock DateTimeOffset.
                         return value is DateTime dateTimeValue ? ( object ) dateTimeValue.ToRockDateTimeOffset() : value;
+                    }
+
+                    if ( isPlainNumberField )
+                    {
+                        // Emit the value as a pre-formatted string so it renders without thousands
+                        // separators (and keeps its exact decimal scale), matching the legacy grid.
+                        // The client number column parses this back to a number for numeric sorting
+                        // and filtering, and exports the string as-is.
+                        return value.ToString();
                     }
 
                     if ( value is IEnumerable enumerableValue && !( value is string ) )
@@ -277,14 +324,7 @@ namespace Rock.Blocks.Reporting
 
                 builder.AddDefinitionAction( definition =>
                 {
-                    definition.DynamicFields.Add( new DynamicFieldDefinitionBag
-                    {
-                        Name = fieldName,
-                        Title = title,
-                        ColumnType = columnType,
-                        EnableFiltering = true,
-                        VisiblePriority = VisiblePriorityExtraSmall
-                    } );
+                    definition.DynamicFields.Add( CreateDynamicField( fieldName, title, columnType, columnWidth ) );
                 } );
             }
 
@@ -292,21 +332,61 @@ namespace Rock.Blocks.Reporting
             // no rows even when the query returns data, so fall back to showing the Id.
             if ( addedFieldNames.Count == 1 )
             {
-                builder.AddField( "id", entity => entity.Id );
+                builder.AddField( "id", entity => entity.Id.ToString() );
                 builder.AddDefinitionAction( definition =>
                 {
-                    definition.DynamicFields.Add( new DynamicFieldDefinitionBag
-                    {
-                        Name = "id",
-                        Title = "Id",
-                        ColumnType = ColumnType.Number,
-                        EnableFiltering = true,
-                        VisiblePriority = VisiblePriorityExtraSmall
-                    } );
+                    // The Id is a number, so it uses the number column type to sort and filter
+                    // numerically; the client renders that type as raw text (no grouping).
+                    definition.DynamicFields.Add( CreateDynamicField( "id", "Id", ColumnType.Number, GetColumnWidth( ColumnType.Number ) ) );
                 } );
             }
 
             return builder;
+        }
+
+        /// <summary>
+        /// Creates a dynamic field definition for a preview column with the supplied
+        /// display column type and width. The display type can differ from the value's
+        /// natural type (for example, plain numbers are shown as text to avoid thousands
+        /// separators while still being sized like a number).
+        /// </summary>
+        /// <param name="fieldName">The grid field name (the camelCase property name).</param>
+        /// <param name="title">The column header text.</param>
+        /// <param name="columnType">The grid column type used to render the column.</param>
+        /// <param name="width">The column width.</param>
+        /// <returns>The configured dynamic field definition.</returns>
+        private static DynamicFieldDefinitionBag CreateDynamicField( string fieldName, string title, string columnType, string width )
+        {
+            return new DynamicFieldDefinitionBag
+            {
+                Name = fieldName,
+                Title = title,
+                ColumnType = columnType,
+                EnableFiltering = true,
+                VisiblePriority = VisiblePriorityExtraSmall,
+                Width = width
+            };
+        }
+
+        /// <summary>
+        /// Gets the relative (percentage) width to use for a dynamic column based on its value type.
+        /// </summary>
+        /// <param name="columnType">The grid column type identifier.</param>
+        /// <returns>A width string suitable for the dynamic column definition.</returns>
+        private static string GetColumnWidth( string columnType )
+        {
+            switch ( columnType )
+            {
+                case ColumnType.Boolean:
+                    return ColumnWidth.Boolean;
+                case ColumnType.Date:
+                    return ColumnWidth.Date;
+                case ColumnType.Number:
+                case ColumnType.Currency:
+                    return ColumnWidth.Number;
+                default:
+                    return ColumnWidth.Text;
+            }
         }
 
         /// <summary>
@@ -352,6 +432,26 @@ namespace Rock.Blocks.Reporting
                     && p.GetCustomAttribute<HideFromReportingAttribute>() == null
                     && !SystemPropertyNames.Contains( p.Name ) )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Determines whether a property is a "date key" — an integer that encodes a date as a
+        /// yyyyMMdd value (e.g. <c>TransactionDateKey</c>, <c>CreatedDateKey</c>). These properties
+        /// are integers but are decorated with <c>[FieldType( FieldType.DATE )]</c>, so they should
+        /// be rendered as dates instead of plain, comma-grouped numbers.
+        /// </summary>
+        /// <param name="propertyInfo">The property to inspect.</param>
+        /// <returns><c>true</c> when the property is an integer date key.</returns>
+        private static bool IsDateKeyField( PropertyInfo propertyInfo )
+        {
+            var underlyingType = Nullable.GetUnderlyingType( propertyInfo.PropertyType ) ?? propertyInfo.PropertyType;
+            if ( underlyingType != typeof( int ) )
+            {
+                return false;
+            }
+
+            var fieldTypeAttribute = propertyInfo.GetCustomAttribute<FieldTypeAttribute>();
+            return fieldTypeAttribute != null && fieldTypeAttribute.FieldTypeGuid == DateFieldTypeGuid;
         }
 
         /// <summary>

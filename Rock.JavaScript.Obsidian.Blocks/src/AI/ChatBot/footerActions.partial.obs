@@ -14,7 +14,7 @@
             <div class="action-bar-container">
                 <TextBox v-model="message"
                          textMode="multiline"
-                         :rows="inputRowCount"
+                         :rows="1"
                          placeholder="Ask me anything..."
                          @keydown.enter="onKeyDown"
                          @keyup.enter="onSubmit">
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import { nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { ChatAnchorBag } from "./types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
@@ -75,7 +75,12 @@
         isSendDisabled: {
             type: Boolean as PropType<boolean>,
             required: true
-        }
+        },
+
+        isDockedMode: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
     });
 
     const emit = defineEmits<{
@@ -87,14 +92,45 @@
         (e: "updateBottomPadding", value: number): void;
     }>();
 
+    // The maximum number of text lines the input will grow to before it begins
+    // to scroll internally instead of growing any taller.
+    const maxInputRows = 6;
+
     const footerActionsElement = ref<HTMLElement | null>(null);
     const message = useVModelPassthrough(props, "message", emit);
     let shiftKeyPressedAtStart = false;
 
-    const inputRowCount = computed(() => {
-        const lineCount = message.value.split("\n").length;
-        return Math.min(Math.max(lineCount, 1), 8);
-    });
+    /**
+     * Resizes the message input so its height grows with the entered text
+     * (including soft-wrapped lines), up to a maximum number of rows. Once the
+     * content exceeds that maximum the input stops growing and scrolls instead.
+     */
+    function autoResizeInput(): void {
+        const textArea = footerActionsElement.value?.querySelector("textarea");
+
+        if (!textArea) {
+            return;
+        }
+
+        const style = window.getComputedStyle(textArea);
+        const lineHeight = parseFloat(style.lineHeight) || 20;
+        const verticalPadding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+        const verticalBorder = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+
+        // The maximum height that fits maxInputRows lines of text. The textarea
+        // uses border-box sizing, so include the padding and border.
+        const maxHeight = (lineHeight * maxInputRows) + verticalPadding + verticalBorder;
+
+        // Collapse the height first so scrollHeight reflects only the content
+        // height rather than the previously applied height.
+        textArea.style.height = "auto";
+
+        const contentHeight = textArea.scrollHeight + verticalBorder;
+        const newHeight = Math.min(contentHeight, maxHeight);
+
+        textArea.style.height = `${newHeight}px`;
+        textArea.style.overflowY = contentHeight > maxHeight ? "auto" : "hidden";
+    }
 
     function onKeyDown(ev: KeyboardEvent): void {
         if (ev.shiftKey) {
@@ -125,19 +161,47 @@
         emit("deleteAnchor", entityTypeId);
     }
 
-    watch(inputRowCount, () => {
-        nextTick(() => {
-            if (footerActionsElement.value) {
-                const newPadding = footerActionsElement.value.clientHeight;
-                emit("updateBottomPadding", newPadding);
-            }
-        });
+    /**
+     * Resizes the input and reports the footer's new height so the message list
+     * keeps enough bottom padding to clear the input.
+     */
+    function resizeAndReportHeight(): void {
+        autoResizeInput();
+
+        if (footerActionsElement.value) {
+            emit("updateBottomPadding", footerActionsElement.value.clientHeight);
+        }
+    }
+
+    // Resize the input whenever the message changes from outside the textarea
+    // (for example, when it is cleared after a message is sent). Typed input is
+    // handled by the native input listener attached in onMounted.
+    watch(message, () => {
+        nextTick(resizeAndReportHeight);
     });
 
     onMounted(() => {
-        if (footerActionsElement.value) {
-            const initialPadding = footerActionsElement.value.clientHeight;
-            emit("updateBottomPadding", initialPadding);
+        // If we aren't docked, then focus the input so the user can start
+        // typing immediately.
+        if (!props.isDockedMode) {
+            const textArea = footerActionsElement.value?.querySelector("textarea");
+            if (textArea) {
+                // Calling focus() directly here doesn't work for unknown
+                // reasons, but wrapping it in a setTimeout does. This might
+                // be caused by some other focus event being processed after
+                // we initialize.
+                setTimeout(() => textArea.focus(), 0);
+            }
         }
+
+        // Resize directly off the textarea's input event so the height tracks
+        // every keystroke and paste, independent of Vue's reactivity timing.
+        footerActionsElement.value?.querySelector("textarea")?.addEventListener("input", resizeAndReportHeight);
+
+        resizeAndReportHeight();
+    });
+
+    onBeforeUnmount(() => {
+        footerActionsElement.value?.querySelector("textarea")?.removeEventListener("input", resizeAndReportHeight);
     });
 </script>

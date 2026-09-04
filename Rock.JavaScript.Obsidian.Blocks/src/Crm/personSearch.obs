@@ -1,0 +1,234 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="alternateMatches.length > 0" alertType="info">
+        Other Possible Matches:
+        <template v-for="(match, index) in alternateMatches" :key="match.value ?? index">
+            <a :href="match.value ?? ''">{{ match.text }}</a><span v-if="index < alternateMatches.length - 1">, </span>
+        </template>
+    </NotificationBox>
+
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          :entityTypeGuid="EntityType.Person"
+          keyField="id"
+          personKeyField="id"
+          itemTerm="Person"
+          emptyDataText="No People Found"
+          stickyHeader
+          :isTitleHidden="true"
+          liveUpdates
+          :rowClass="getRowClass"
+          :showLaunchWorkflow="true"
+          :showBulkUpdate="true"
+          :showCommunicate="true"
+          :showPersonMerge="true"
+          @selectItem="onSelectItem">
+
+        <SelectColumn />
+
+        <HtmlColumn name="person"
+                    title="Person"
+                    field="personHtml"
+                    width="20%"
+                    :disableSort="false"
+                    :sortValue="getPersonNameValue"
+                    :filter="textValueFilter"
+                    :filterValue="getPersonNameValue"
+                    :quickFilterValue="getPersonNameValue"
+                    :exportValue="getPersonNameValue" />
+
+        <Column v-if="config.options?.isHighlightIndicatorsColumnVisible"
+                name="indicators"
+                itemClass="justify-content-center"
+                :excludeFromExport="true">
+            <template #format="{ row }">
+                <div class="d-flex align-items-center justify-content-center">
+                    <template v-for="(indicator, index) in getIndicators(row)" :key="index">
+                        <i v-if="indicator.iconCssClass"
+                           v-tooltip="indicator.tooltip ?? ''"
+                           class="ti-2x ti-fw"
+                           :class="indicator.iconCssClass"
+                           :style="{ color: indicator.highlightColor || undefined }"></i>
+                        <span v-else class="ti-2x ti-fw">&nbsp;</span>
+                    </template>
+                </div>
+            </template>
+        </Column>
+
+        <DateColumn v-if="config.options?.isBirthdateColumnVisible"
+                    name="birthDate"
+                    title="Birthdate"
+                    field="birthDate"
+                    :filter="dateValueFilter" />
+
+        <NumberColumn v-if="config.options?.isAgeColumnVisible"
+                      name="age"
+                      title="Age"
+                      field="age"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
+                      :filter="numberValueFilter" />
+
+        <TextColumn v-if="config.options?.isGenderColumnVisible"
+                    name="gender"
+                    title="Gender"
+                    field="gender"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="config.options?.isSpouseColumnVisible"
+                    name="spouseName"
+                    title="Spouse"
+                    field="spouseName"
+                    :filter="textValueFilter" />
+
+        <TextColumn name="connectionStatus"
+                    title="Connection Status"
+                    field="connectionStatus"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn name="recordStatus"
+                    title="Record Status"
+                    field="recordStatus"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="config.options?.isEnvelopeNumberColumnVisible"
+                    name="envelopeNumber"
+                    title="Envelope #"
+                    field="envelopeNumber"
+                    :filter="textValueFilter" />
+    </Grid>
+
+    <div v-if="config.options?.isPerformanceShown && searchTimeMs !== null" class="text-muted text-sm margin-t-sm">
+        Search time: {{ searchTimeMs }} ms.
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, reactive, ref } from "vue";
+    import Grid, { Column, SelectColumn, HtmlColumn, TextColumn, NumberColumn, DateColumn, textValueFilter, numberValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PersonSearchOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonSearch/personSearchOptionsBag";
+    import { PersonSearchIndicatorBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonSearch/personSearchIndicatorBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./PersonSearch/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<PersonSearchOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const alternateMatches = config.options?.alternateMatches ?? [];
+    const searchTimeMs = ref<number | null>(null);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const startTime = performance.now();
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            searchTimeMs.value = Math.round(performance.now() - startTime);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the searchable / sortable / exportable name value for the rich person cell.
+     *
+     * @param row The row containing the person data.
+     */
+    function getPersonNameValue(row: Record<string, unknown>): string {
+        return (row.fullNameReversed as string) ?? "";
+    }
+
+    /**
+     * Gets the highlight indicator icons for a row, including the blank placeholders used to keep
+     * each data view's icon aligned in the same position across every row.
+     *
+     * @param row The row containing the indicator data.
+     */
+    function getIndicators(row: Record<string, unknown>): PersonSearchIndicatorBag[] {
+        return (row.indicators as PersonSearchIndicatorBag[]) ?? [];
+    }
+
+    /**
+     * Gets the CSS class applied to a row so deceased and inactive people are styled.
+     *
+     * @param row The row to evaluate.
+     */
+    function getRowClass(row: Record<string, unknown>): string {
+        const classes: string[] = [];
+
+        if (asBoolean(row.isInactive)) {
+            classes.push("is-inactive");
+        }
+
+        if (asBoolean(row.isDeceased)) {
+            classes.push("is-deceased");
+        }
+
+        return classes.join(" ");
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        const detailPageUrl = config.navigationUrls?.[NavigationUrlKey.PersonDetailPage];
+        if (!detailPageUrl) {
+            return;
+        }
+
+        const row = gridData?.rows?.find(r => `${r.id}` === `${key}`);
+        const idKey = row?.idKey as string | undefined;
+        if (idKey) {
+            window.location.href = detailPageUrl.replace("((Key))", idKey);
+        }
+    }
+
+    // #endregion
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // A single search result skips the grid and jumps straight to the person profile.
+        if (config.options?.redirectUrl) {
+            window.location.href = config.options.redirectUrl;
+            return;
+        }
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

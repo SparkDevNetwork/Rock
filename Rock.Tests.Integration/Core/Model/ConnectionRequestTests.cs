@@ -28,27 +28,6 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void ConnectionRequestCreatedDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                ConnectionRequest connectionRequest = new ConnectionRequest();
-                connectionRequest.CreatedDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, connectionRequest.CreatedDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void ConnectionRequestCreatedDateKeyWorksWithNullValue()
-        {
-            ConnectionRequest connectionRequest = new ConnectionRequest();
-            connectionRequest.CreatedDateTime = null;
-            Assert.IsNull( connectionRequest.CreatedDateKey );
-        }
-
-        [TestMethod]
         public void ConnectionRequestDateKeySavesCorrectlyWhenNull()
         {
             var rockContext = new RockContext();

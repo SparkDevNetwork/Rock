@@ -21,11 +21,11 @@ export const enum NavigationUrlKey {
     DetailPage = "DetailPage",
     NewItemPage = "NewItemPage",
     LibraryDownloadPage = "LibraryDownloadPage",
-    MediaElementPage = "MediaElementPage"
+    MediaElementPage = "MediaElementPage",
+    MetricsPage = "MetricsPage"
 }
 
 export type GridRowItem = {
-    id: string,
     idKey: string,
     contentChannelId: number,
     title: string,

@@ -30,6 +30,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormList
 		public int Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the workflow type IdKey.
+        /// </summary>
+        public string IdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the form name.
         /// </summary>
         public string Name { get; set; }

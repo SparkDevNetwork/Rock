@@ -12,6 +12,7 @@
 //  + Reminder List
 //  + Notifications
 //  + Webfarm Settings
+//  + Exception Detail
 // =============================================================
 
 .rock-fullscreen-toggle {
@@ -1325,5 +1326,80 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
   }
 
 }
+
+
+// ======================== EXCEPTION DETAIL ========================
+
+// From exceptionItem.partial.obs
+.exception-description {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+
+  &-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+  }
+
+  &-chevron {
+    display: inline-block;
+    vertical-align: middle;
+    transition: transform 0.35s ease-in-out;
+
+    &-collapsed {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.exception-properties {
+  margin-bottom: 0;
+}
+
+.exception-querystring-bullet {
+  font-size: var(--font-size-xsmall);
+  margin-right: var(--spacing-xsmall);
+  margin-left: var(--spacing-tiny);
+}
+
+.exception-stacktrace-toggle {
+  padding: 0;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.stacktrace-chevron {
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 0.35s ease-in-out;
+}
+
+.stacktrace-chevron-collapsed {
+  transform: rotate(180deg);
+}
+
+.exception-stacktrace-well {
+  margin-top: var(--spacing-medium);
+  margin-bottom: 0;
+}
+
+.exception-stacktrace-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xsmall);
+}
+
+.stacktrace-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-normal);
+  opacity: .8; // Matches .text-muted's opacity-based styling.
+  flex: 1 1 auto;
+}
+
+// ====================== END EXCEPTION DETAIL ======================
 
 // ===================== END WEBFARM SETTINGS ======================

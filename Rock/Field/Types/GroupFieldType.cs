@@ -199,6 +199,11 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 ValueFormat = $"A guid that represents a single entity from the Group table.",
+
+                // No Values, because every group in the database is far too many to
+                // enumerate. The format says what the value is, so this says where to
+                // go and find one.
+                Instructions = "To find the correct value, search the groups by name and use the guid of the one you want.",
             };
         }
 

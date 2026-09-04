@@ -89,7 +89,10 @@ namespace Rock.Lms
         {
             if ( presentation == PresentedFor.Configuration )
             {
-                return new Dictionary<string, string>();
+                return new Dictionary<string, string>
+                {
+                    [BaseConfigurationKey.SupportsRetake] = "true"
+                };
             }
             else
             {

@@ -35,10 +35,34 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CheckListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.CheckListFieldType ).FullName )
+            : base( SystemGuid.FieldType.CHECK_LIST.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
-            FieldConfigurationValues.Add( "values", new Field.ConfigurationValue( listSource ) );
+            ListSource = listSource;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckListFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CheckListFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CHECK_LIST.AsGuid(), name )
+        {
+            ListSource = string.Empty;
+        }
+
+        /// <summary>
+        /// The source of the values to display in a list. Format is either
+        /// 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...',
+        /// or a SQL Select statement that returns result set with a 'Value'
+        /// and 'Text' column.
+        /// </summary>
+        public string ListSource
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "values" );
+            set => FieldConfigurationValues.AddOrReplace( "values", new Field.ConfigurationValue( value ) );
         }
     }
 }

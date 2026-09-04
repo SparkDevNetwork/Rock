@@ -12,6 +12,11 @@
                           label="Active" />
             </div>
             <div class="col-md-6">
+                <CheckBox v-model="enableComponentDailyCounts"
+                          label="Enable Component Daily Counts"
+                          help="When enabled, the Rock Cleanup job will populate the InteractionComponentDailyCount table with daily summary counts for the components of this channel." />
+            </div>
+            <div class="col-md-6">
                 <NumberBox label="Engagement Strength"
                            v-model="engagementStrength"
                            :minimumValue="0" />
@@ -126,6 +131,7 @@
     const attributes = ref(props.modelValue?.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
     const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const enableComponentDailyCounts = propertyRef(props.modelValue?.bag?.enableComponentDailyCounts ?? false, "EnableComponentDailyCounts");
     const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
     const engagementStrength = propertyRef(props.modelValue?.bag?.engagementStrength, "EngagementStrength");
     const retentionDuration = propertyRef(props.modelValue?.bag?.retentionDuration, "RetentionDuration");
@@ -143,7 +149,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [isActive, name, engagementStrength, retentionDuration, componentCacheDuration, interactionCustom1Label, interactionCustom2Label,
+    const propRefs = [isActive, enableComponentDailyCounts, name, engagementStrength, retentionDuration, componentCacheDuration, interactionCustom1Label, interactionCustom2Label,
         interactionCustomIndexed1Label, channelListTemplate, channelDetailTemplate, componentListTemplate, componentDetailTemplate, sessionListTemplate,
         interactionListTemplate, interactionDetailTemplate];
 
@@ -154,6 +160,7 @@
         updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
         updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(enableComponentDailyCounts, props.modelValue?.bag?.enableComponentDailyCounts ?? false);
         updateRefValue(name, props.modelValue?.bag?.name ?? "");
         updateRefValue(engagementStrength, props.modelValue?.bag?.engagementStrength);
         updateRefValue(retentionDuration, props.modelValue?.bag?.retentionDuration);
@@ -179,6 +186,7 @@
 
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
         setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "enableComponentDailyCounts", enableComponentDailyCounts.value);
         setPropertiesBoxValue(newValue, "name", name.value);
         setPropertiesBoxValue(newValue, "engagementStrength", engagementStrength.value);
         setPropertiesBoxValue(newValue, "retentionDuration", retentionDuration.value);

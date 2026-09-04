@@ -891,7 +891,7 @@ namespace Rock.Blocks.Group.Scheduling
                         GroupOrder = gls.Group.Order,
                         GroupId = gls.Group.Id,
                         GroupName = gls.Group.Name,
-                        ParentGroupId = gls.ParentGroup.Id,
+                        ParentGroupId = gls.ParentGroup?.Id,
                         ParentGroupName = gls.ParentGroup?.Name,
                         GroupLocationOrder = gls.GroupLocation.Order,
                         LocationId = gls.Location.Id,

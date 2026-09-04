@@ -1,164 +1,106 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel type="block" :hasTitle="false" :hasNoBodyPadding="true" class="formlist-block">
-    <div class="panel-flex-fill-body formlist">
-        <div class="formlist-wrapper styled-scroll">
-            <Panel class="formlist-aside" title="Form Categories">
-                    <template v-if="config.canAddNewCategory" #headerActions>
-                        <button type="button"
-                                class="btn btn-panel-action"
-                                title="Add Category"
-                                @click.prevent="onAddTopLevelCategory">
-                            <i class="ti ti-folder-plus"></i>
-                        </button>
-                        <button type="button"
-                                class="btn btn-panel-action text-info"
-                                title="Add Sub-Category"
-                                :disabled="!selectedCategory"
-                                @click.prevent="onAddChildCategory">
-                            <i class="ti ti-square-plus"></i>
-                        </button>
-                    </template>
+    <div class="formlist">
+        <div class="formlist-main">
+            <NotificationBox v-if="config.errorMessage || errorMessage" alertType="danger">
+                {{ config.errorMessage || errorMessage }}
+            </NotificationBox>
 
-                    <CategoryTree v-model="selectedCategory"
-                                  :entityTypeGuid="EntityType.WorkflowType"
-                                  selectFirstByDefault />
-                </Panel>
+            <Panel v-if="blockState === BlockState.FormList" :title="headerTitle">
+                <template #headerActions>
+                    <button v-if="canEditCategory"
+                            type="button"
+                            class="btn btn-panel-action text-info"
+                            title="Add Form"
+                            @click.prevent="onAddForm">
+                        <i class="ti ti-square-plus"></i>
+                    </button>
+                </template>
 
-                <div class="formlist-main">
-                    <NotificationBox v-if="config.errorMessage || errorMessage" alertType="danger">
-                        {{ config.errorMessage || errorMessage }}
-                    </NotificationBox>
-
-                    <div v-if="blockState === BlockState.FormList" class="formlist-main-panel-fill">
-                    <Panel :title="headerTitle">
-                        <template v-if="canEditCategory" #headerActions>
-                            <button type="button"
-                                    class="btn btn-panel-action text-info"
-                                    title="Add Form"
-                                    @click.prevent="onAddForm">
-                                <i class="ti ti-square-plus"></i>
-                            </button>
-                        </template>
-
-                        <template v-if="!selectedCategory">
-                            <div class="formlist-main-empty">
-                                <i class="ti ti-folder-open" style="font-size: 2rem;"></i>
-                                <h5 class="mb-0">Select a Category</h5>
-                                <p class="mb-0">Choose a category from the left to view its forms.</p>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <DisplayCardContainer>
-                                <div class="formlist-main-actions">
-                                    <div class="formlist-main-sort col-md-6">
-                                        <DropDownList label="Sort By"
-                                                      v-model="sortBy"
-                                                      :items="sortByOptions" />
-                                    </div>
-                                </div>
-                                <DisplayCard v-for="form in filteredForms"
-                                             :key="form.guid"
-                                             :title="form.name"
-                                             :description="form.description"
-                                             :badgeText="form.submissionCount.toString()"
-                                             :badgeType="BadgeType.Info"
-                                             :primaryActions="getPrimaryActions(form)"
-                                             :secondaryActions="getSecondaryActions(form)">
-                                    <template #middleSection>
-                                        <div v-if="form.createdByPersonName">
-                                            <small class="displaycard-text">
-                                                <i class="ti ti-calendar-plus"></i>
-                                                {{ getCreatedByText(form) }}
-                                            </small>
-                                        </div>
-                                    </template>
-                                </DisplayCard>
-                            </DisplayCardContainer>
-                        </template>
-
-                        <template v-if="selectedCategory && (canEditCategory || canDeleteCategory)" #footerContent>
-                            <div class="formlist-panel-footer">
-                                <div class="formlist-panel-footer-actions">
-                                    <RockButton v-if="canEditCategory"
-                                                btnType="primary"
-                                                @click="onEditCategory">
-                                        Edit
-                                    </RockButton>
-                                    <RockButton v-if="canDeleteCategory"
-                                                btnType="link"
-                                                class="text-danger"
-                                                :title="categoryHasForms ? deleteTooltipText : ''"
-                                                :disabled="categoryHasForms"
-                                                @click="onDeleteCategory">
-                                        Delete
-                                    </RockButton>
-                                </div>
-                                <SecurityButton v-if="canDeleteCategory"
-                                                :entityTypeIdKey="EntityType.Category"
-                                                :entityIdKey="selectedCategory.value ?? ''"
-                                                :title="selectedCategory.text ?? 'Category'" />
-                            </div>
-                        </template>
-                    </Panel>
+                <template v-if="!selectedCategory">
+                    <div class="formlist-main-empty">
+                        <i class="ti ti-folder-open" style="font-size: 2rem;"></i>
+                        <h5 class="mb-0">Select a Category</h5>
+                        <p class="mb-0">Choose a category from the tree to view its forms.</p>
                     </div>
+                </template>
+                <template v-else>
+                    <DisplayCardContainer>
+                        <div class="formlist-main-actions">
+                            <div class="formlist-main-sort col-md-6">
+                                <DropDownList label="Sort By"
+                                              v-model="sortBy"
+                                              :items="sortByOptions" />
+                            </div>
+                        </div>
+                        <DisplayCard v-for="form in filteredForms"
+                                     :key="form.guid"
+                                     :title="form.name"
+                                     :description="form.description"
+                                     :badgeText="form.submissionCount.toString()"
+                                     :badgeType="BadgeType.Info"
+                                     :primaryActions="getPrimaryActions(form)"
+                                     :secondaryActions="getSecondaryActions(form)">
+                            <template #aside>
+                                <div v-if="getCreatedByName(form)" class="formlist-card-aside-line">
+                                    <i class="ti ti-user"></i>
+                                    <small v-tooltip.overflow="getCreatedByName(form)">{{ getCreatedByName(form) }}</small>
+                                </div>
+                                <div v-if="getCreatedDate(form)" class="formlist-card-aside-line">
+                                    <i class="ti ti-calendar"></i>
+                                    <small v-tooltip.overflow="getCreatedDate(form)">{{ getCreatedDate(form) }}</small>
+                                </div>
+                            </template>
+                        </DisplayCard>
+                    </DisplayCardContainer>
+                </template>
 
-                    <NewForm v-if="blockState === BlockState.AddNewForm"
-                             :selectedCategory="selectedCategory"
-                             @save="onNewFormCreated"
-                             @cancel="onCancel" />
+                <template v-if="selectedCategory && (canEditCategory || canDeleteCategory)" #footerContent>
+                    <div class="formlist-panel-footer">
+                        <div class="formlist-panel-footer-actions">
+                            <RockButton v-if="canEditCategory"
+                                        btnType="primary"
+                                        @click="onEditCategory">
+                                Edit
+                            </RockButton>
+                            <RockButton v-if="canDeleteCategory"
+                                        btnType="link"
+                                        class="text-danger"
+                                        :title="categoryHasForms ? deleteTooltipText : ''"
+                                        :disabled="categoryHasForms"
+                                        @click="onDeleteCategory">
+                                Delete
+                            </RockButton>
+                        </div>
+                        <SecurityButton v-if="canDeleteCategory"
+                                        :entityTypeIdKey="EntityType.Category"
+                                        :entityIdKey="selectedCategory.value ?? ''"
+                                        :title="selectedCategory.text ?? 'Category'" />
+                    </div>
+                </template>
+            </Panel>
 
-                    <AddOrEditCategory v-if="blockState === BlockState.AddCategory || blockState === BlockState.EditCategory"
-                                       :blockState="blockState"
-                                       :selectedCategoryGuid="selectedCategory?.value ?? ''"
-                                       :addNewCategoryAsChild="addNewCategoryAsChild"
-                                       @save="onCategorySaved"
-                                       @cancel="onCancel" />
+            <NewForm v-if="blockState === BlockState.AddNewForm"
+                     :selectedCategory="selectedCategory"
+                     @save="onNewFormCreated"
+                     @cancel="onCancel" />
 
-                    <LinkToFormModal v-model="isLinkToFormModalVisible"
-                                     :workflowTypeGuid="linkToFormWorkflowTypeGuid" />
-            </div>
+            <AddOrEditCategory v-if="blockState === BlockState.AddCategory || blockState === BlockState.EditCategory"
+                               :blockState="blockState"
+                               :selectedCategoryGuid="selectedCategory?.value ?? ''"
+                               :addNewCategoryAsChild="addNewCategoryAsChild"
+                               @save="onCategorySaved"
+                               @cancel="onCancel" />
+
+            <LinkToFormModal v-model="isLinkToFormModalVisible"
+                             :workflowTypeGuid="linkToFormWorkflowTypeGuid" />
         </div>
     </div>
-    </Panel>
 </template>
 
 <style scoped>
-:deep(.formlist-block) {
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    margin-bottom: 0;
-}
-
 .formlist-main {
     padding-top: 0;
-}
-
-.formlist-main-panel-fill {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.formlist-main-panel-fill > :deep(div) {
-    /* The outer wrapper rendered by the Panel control (Fullscreen). */
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.formlist-main-panel-fill :deep(.panel) {
-    flex: 1 1 auto;
-    min-height: 0;
-}
-
-.formlist-main-panel-fill :deep(.panel-body) {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
 }
 
 .formlist-panel-footer {
@@ -184,33 +126,59 @@
     color: var(--color-interface-medium);
     gap: var(--spacing-small);
 }
+
+/*
+    Inside each forms card the title and description take priority: the
+    "Created By" aside yields its width first and ellipsizes, and the title
+    truncates only once the aside has fully collapsed. The heading holds its
+    content width while the aside's large flex-shrink makes it give way first.
+*/
+.formlist-main :deep(.displaycard-heading) {
+    flex: 1 1 auto;
+}
+
+.formlist-main :deep(.displaycard-aside) {
+    flex-shrink: 100;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: var(--spacing-tiny);
+}
+
+.formlist-card-aside-line {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    max-width: 100%;
+}
 </style>
 
 <script setup lang="ts">
-    import { ref, computed, watch } from "vue";
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { computed, onMounted, ref, watch } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
-    import CategoryTree from "@Obsidian/Controls/categoryTree.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import SecurityButton from "@Obsidian/Controls/securityButton.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { confirm } from "@Obsidian/Utility/dialogs";
     import { FormListBag } from "@Obsidian/ViewModels/Blocks/Workflow/FormBuilder/FormList/formListBag";
     import { FormListItemBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormList/formListItemBag";
+    import { FormListCategoryBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormList/formListCategoryBag";
     import { FormListCategorySecurityBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormList/formListCategorySecurityBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { Guid } from "@Obsidian/Types";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import NewForm from "./FormList/newForm.partial.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { confirm } from "@Obsidian/Utility/dialogs";
     import AddOrEditCategory from "./FormList/addOrEditCategory.partial.obs";
     import LinkToFormModal from "./FormList/linkToFormModal.partial.obs";
-    import { BlockState, NavigationUrlKey, PreferenceKey } from "./FormList/types.partial";
+    import { BlockState, NavigationUrlKey } from "./FormList/types.partial";
 
     const enum SortOption {
         DateNewest = "date-newest",
@@ -225,17 +193,34 @@
     const config = useConfigurationValues<FormListBag>();
     const invokeBlockAction = useInvokeBlockAction();
     const reloadBlock = useReloadBlock();
-    const preferences = usePersonPreferences().blockPreferences;
     const errorMessage = ref<string | null>("");
+
+    // The page-level Category Tree block navigates here with the selected category's integer Id in
+    // this query string parameter; this block reads it to choose which forms to show. The tree's
+    // Add Category affordance navigates with CategoryId=0 (and an optional ParentCategoryId), which
+    // opens the category editor in this panel.
+    const pageParameterKey = "CategoryId";
+
+    // The selection travels as an integer Id, while forms are keyed by category
+    // Guid. These maps translate between the two at the URL boundary so the
+    // rest of the block stays Guid-based.
+    const guidByIntId = new Map<string, string>();
+    const intIdByGuid = new Map<string, string>();
+    const nameByGuid = new Map<string, string>();
+
+    for (const category of config.categories ?? []) {
+        if (category.guid && category.id) {
+            const idStr = category.id.toString();
+            guidByIntId.set(idStr, category.guid);
+            intIdByGuid.set(category.guid.toLowerCase(), idStr);
+            nameByGuid.set(category.guid.toLowerCase(), category.name ?? "");
+        }
+    }
 
     const forms = ref<Record<Guid, FormListItemBag[]>>(config.forms ?? {});
     const blockState = ref<BlockState>(BlockState.FormList);
 
-    const savedCategoryGuid = preferences.getValue(PreferenceKey.SelectedCategoryGuid);
-    const savedCategoryName = preferences.getValue(PreferenceKey.SelectedCategoryName);
-    const selectedCategory = ref<ListItemBag | null>(savedCategoryGuid && savedCategoryName
-        ? { value: savedCategoryGuid, text: savedCategoryName }
-        : null);
+    const selectedCategory = ref<ListItemBag | null>(categoryFromUrl());
     const canEditCategory = ref<boolean>(false);
     const canDeleteCategory = ref<boolean>(false);
 
@@ -322,17 +307,77 @@
     // #region Helper Functions
 
     /**
-     * Gets the text to display for the "Created By" information.
+     * Resolves a category integer Id into the Guid and name the block works with.
+     *
+     * @returns The matching category, or null when the Id is absent or unknown.
+     */
+    function categoryFromIntId(intId: string | null | undefined): ListItemBag | null {
+        if (!intId) {
+            return null;
+        }
+
+        const guid = guidByIntId.get(intId);
+        if (!guid) {
+            return null;
+        }
+
+        return { value: guid, text: nameByGuid.get(guid.toLowerCase()) ?? "" };
+    }
+
+    /**
+     * Resolves the selected category from the CategoryId page parameter, which
+     * carries an integer Id, into the Guid and name the block works with.
+     *
+     * @returns The selected category, or null when the parameter is absent or unknown.
+     */
+    function categoryFromUrl(): ListItemBag | null {
+        return categoryFromIntId(new URLSearchParams(window.location.search).get(pageParameterKey));
+    }
+
+    /**
+     * Reloads the page with the given category's integer Id selected (or with the selection
+     * cleared), which also refreshes the page-level category tree. The add-category trigger
+     * parameters are dropped so the reload does not reopen the editor.
+     *
+     * @param intId The category's integer Id to select, or null to clear the selection.
+     */
+    function navigateToCategory(intId: string | null): void {
+        const params = new URLSearchParams(window.location.search);
+
+        if (intId) {
+            params.set(pageParameterKey, intId);
+        }
+        else {
+            params.delete(pageParameterKey);
+        }
+
+        params.delete("ParentCategoryId");
+
+        const queryString = params.toString();
+        window.location.href = `${window.location.pathname}${queryString ? `?${queryString}` : ""}${window.location.hash}`;
+    }
+
+    /**
+     * Gets the "Created By" person line for a form card.
      *
      * @param form The form item bag.
-     * @returns A string containing the created by person name and relative date.
+     * @returns "Created By {name}", or an empty string when the creator is unknown.
      */
-    function getCreatedByText(form: FormListItemBag): string {
+    function getCreatedByName(form: FormListItemBag): string {
         const who = form.createdByPersonName ?? "";
-        const when = form.createdDateTime
-            ? RockDateTime.parseISO(form.createdDateTime as string)?.localDateTime.toElapsedString()
+        return who ? `Created By ${who}` : "";
+    }
+
+    /**
+     * Gets the relative creation date line for a form card.
+     *
+     * @param form The form item bag.
+     * @returns The elapsed-time text (e.g. "7 Minutes Ago"), or an empty string when unknown.
+     */
+    function getCreatedDate(form: FormListItemBag): string {
+        return form.createdDateTime
+            ? RockDateTime.parseISO(form.createdDateTime as string)?.localDateTime.toElapsedString() ?? ""
             : "";
-        return [who && `Created By ${who}`, when].filter(Boolean).join(" ");
     }
 
     /**
@@ -349,13 +394,13 @@
                 iconCssClass: "ti ti-list",
                 title: "Submissions",
                 type: "default",
-                handler: () => onClickSubmissions(form.id)
+                handler: () => onClickSubmissions(form.idKey ?? "")
             },
             {
                 iconCssClass: "ti ti-chart-bar",
                 title: "Analytics",
                 type: "default",
-                handler: () => onClickAnalytics(form.id)
+                handler: () => onClickAnalytics(form.idKey ?? "")
             },
             {
                 iconCssClass: "ti ti-link",
@@ -368,7 +413,7 @@
                 title: "Builder",
                 type: "default",
                 disabled: !form.canEdit,
-                handler: () => onClickFormBuilder(form.id)
+                handler: () => onClickFormBuilder(form.idKey ?? "")
             }
         ];
     }
@@ -429,21 +474,13 @@
         blockState.value = BlockState.AddNewForm;
     }
 
-    /**
-     * Event handler for the folder-plus icon button in the Form Categories
-     * panel header. Opens the Add Category editor without a parent so the
-     * new category lands at the root.
-     */
+    /** Opens the Add Category editor for a new top-level category (no parent). */
     function onAddTopLevelCategory(): void {
         addNewCategoryAsChild.value = false;
         blockState.value = BlockState.AddCategory;
     }
 
-    /**
-     * Event handler for the square-plus icon button in the Form Categories
-     * panel header. Opens the Add Category editor with the current selection
-     * as the parent, producing a child of the selected category.
-     */
+    /** Opens the Add Category editor for a child of the currently selected category. */
     function onAddChildCategory(): void {
         if (!selectedCategory.value) {
             return;
@@ -477,14 +514,20 @@
      * Event handler for the "Edit Category" button.
      */
     function onEditCategory(): void {
+        // Reset the add-as-child flag so a previous (e.g. canceled) add-child action
+        // cannot cause the edit to send the category itself as its own parent.
+        addNewCategoryAsChild.value = false;
         blockState.value = BlockState.EditCategory;
     }
 
     /**
-     * Event handler for when a category is saved.
+     * Event handler for when a category is saved. Reloads the page on the saved category so both
+     * this block and the page-level tree pick up the change.
+     *
+     * @param categoryId The saved category's integer Id.
      */
-    function onCategorySaved(): void {
-        reloadBlock();
+    function onCategorySaved(categoryId: number): void {
+        navigateToCategory(categoryId ? categoryId.toString() : null);
     }
 
     /**
@@ -495,10 +538,9 @@
     }
 
     /**
-     * Event handler for the "Delete Category" button.
-     * Deletes the selected category after confirmation, then shifts the
-     * tree selection to the deleted category's parent (or clears it so
-     * `selectFirstByDefault` falls back to the first remaining category).
+     * Event handler for the "Delete Category" button. Deletes the selected category after
+     * confirmation, then reloads the page on the deleted category's parent (or clears the
+     * selection) so the tree and this block reflect the change.
      */
     async function onDeleteCategory(): Promise<void> {
         if (!selectedCategory.value) {
@@ -517,31 +559,27 @@
             return;
         }
 
-        // The server returns the parent category (or null for a top-level
-        // delete). Persisting the new selection through preferences before
-        // reload lets the CategoryTree restore on the right item; clearing
-        // them lets `selectFirstByDefault` pick the first remaining root.
+        // The server returns the parent category (or null for a top-level delete). Reloading the
+        // page on the parent lands the user there and refreshes the tree; a null parent clears the
+        // selection and falls back to the empty state.
         const parent = result.data ?? null;
-        preferences.setValue(PreferenceKey.SelectedCategoryGuid, parent?.value ?? "");
-        preferences.setValue(PreferenceKey.SelectedCategoryName, parent?.text ?? "");
-        await preferences.save();
-
-        reloadBlock();
+        const parentIntId = parent?.value ? (intIdByGuid.get(parent.value.toLowerCase()) ?? null) : null;
+        navigateToCategory(parentIntId);
     }
 
     /**
      * Event handler for the "Submissions" button.
      * Redirects the user to the submissions page for the selected form.
      *
-     * @param id The ID of the form (WorkflowType).
+     * @param idKey The IdKey of the form (WorkflowType).
      */
-    function onClickSubmissions(id: number): void {
+    function onClickSubmissions(idKey: string): void {
         if (!config.navigationUrls?.[NavigationUrlKey.SubmissionsPage]) {
             errorMessage.value = "The Submissions Page URL is not configured.";
             return;
         }
 
-        const url = config.navigationUrls[NavigationUrlKey.SubmissionsPage] + `?WorkflowTypeId=${id}`;
+        const url = config.navigationUrls[NavigationUrlKey.SubmissionsPage] + `?WorkflowTypeId=${idKey}`;
 
         window.location.href = url;
     }
@@ -550,15 +588,15 @@
      * Event handler for the "Builder" button.
      * Redirects the user to the form builder page for the selected form.
      *
-     * @param id The ID of the form (WorkflowType).
+     * @param idKey The IdKey of the form (WorkflowType).
      */
-    function onClickFormBuilder(id: number): void {
+    function onClickFormBuilder(idKey: string): void {
         if (!config.navigationUrls?.[NavigationUrlKey.FormBuilderPage]) {
             errorMessage.value = "The Form Builder Page URL is not configured.";
             return;
         }
 
-        const url = config.navigationUrls[NavigationUrlKey.FormBuilderPage] + `?WorkflowTypeId=${id}`;
+        const url = config.navigationUrls[NavigationUrlKey.FormBuilderPage] + `?WorkflowTypeId=${idKey}`;
 
         window.location.href = url;
     }
@@ -567,15 +605,15 @@
      * Event handler for the "Analytics" button.
      * Redirects the user to the analytics page for the selected form.
      *
-     * @param id The ID of the form (WorkflowType).
+     * @param idKey The IdKey of the form (WorkflowType).
      */
-    function onClickAnalytics(id: number): void {
+    function onClickAnalytics(idKey: string): void {
         if (!config.navigationUrls?.[NavigationUrlKey.AnalyticsPage]) {
             errorMessage.value = "The Analytics Page URL is not configured.";
             return;
         }
 
-        const url = config.navigationUrls[NavigationUrlKey.AnalyticsPage] + `?WorkflowTypeId=${id}`;
+        const url = config.navigationUrls[NavigationUrlKey.AnalyticsPage] + `?WorkflowTypeId=${idKey}`;
 
         window.location.href = url;
     }
@@ -635,14 +673,45 @@
 
     watch(selectedCategory, () => {
         errorMessage.value = null;
-
-        preferences.setValue(PreferenceKey.SelectedCategoryGuid, selectedCategory.value?.value ?? "");
-        preferences.setValue(PreferenceKey.SelectedCategoryName, selectedCategory.value?.text ?? "");
-
-        preferences.save();
-
         fetchCategorySecurity();
     }, { immediate: true });
 
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(async () => {
+        const params = new URLSearchParams(window.location.search);
+
+        // The tree's Add Category affordance navigates here with CategoryId=0 and an optional
+        // ParentCategoryId. Open the category editor (in this panel) instead of treating 0 as a
+        // selection; a present ParentCategoryId makes the new category a child of that parent.
+        if (params.get(pageParameterKey) === "0") {
+            const parentIntId = params.get("ParentCategoryId");
+            if (parentIntId) {
+                selectedCategory.value = categoryFromIntId(parentIntId);
+                onAddChildCategory();
+            }
+            else {
+                onAddTopLevelCategory();
+            }
+
+            return;
+        }
+
+        // A deep-link CategoryId that did not match the client map (for example a Guid or an
+        // integer Id not in the initial category list) needs a server round-trip to resolve.
+        // ResolveCategoryKey returns the integer Id when found.
+        if (!selectedCategory.value) {
+            const key = params.get(pageParameterKey);
+            if (key) {
+                const result = await invokeBlockAction<string>("ResolveCategoryKey", { key });
+                if (result.isSuccess && result.data) {
+                    selectedCategory.value = categoryFromIntId(result.data);
+                }
+            }
+        }
+    });
+
+    // #endregion Lifecycle Hooks
 </script>

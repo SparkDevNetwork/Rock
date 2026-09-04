@@ -8,14 +8,14 @@
             <div class="contentsection-header-title-and-description">
                 <i v-if="icon" :class="icon" class="contentsection-header-icon"></i>
                 <div class="contentsection-header-title-description-stack">
-                    <h5 class="contentsection-header-title">
+                    <h6 class="contentsection-header-title">
                         <template v-if="title">
                             {{ title }}
                         </template>
                         <template v-else>
                             <slot name="title" />
                         </template>
-                    </h5>
+                    </h6>
                     <div v-if="$slots.description" class="contentsection-header-description">
                         <slot name="description" />
                     </div>

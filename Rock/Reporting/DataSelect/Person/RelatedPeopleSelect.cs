@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.ViewModels.Controls;
@@ -184,6 +185,12 @@ namespace Rock.Reporting.DataSelect.Person
         public override DataControlField GetGridField( Type entityType, string selection )
         {
             return new ListDelimitedField();
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new ListObsidianGridField();
         }
 
         /// <summary>

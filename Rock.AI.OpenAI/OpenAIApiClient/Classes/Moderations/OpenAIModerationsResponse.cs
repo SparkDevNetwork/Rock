@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,6 +28,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
     /// <summary>
     /// The Response object for a moderation.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIModerationsResponse
     {
         #region Properties

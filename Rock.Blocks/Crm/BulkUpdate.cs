@@ -152,7 +152,7 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var attributeCategories = GetAttributeCategories( out var errorMessage );
+            var attributeCategories = GetAttributeCategories( out var duplicateAttributeNames );
 
             return new BulkUpdateOptionsBag
             {
@@ -165,7 +165,7 @@ namespace Rock.Blocks.Crm
                 NoteTypeOptions = GetNoteTypeOptions(),
                 TagOptions = GetTagOptions(),
                 StepProgramOptions = GetStepProgramOptions(),
-                ErrorMessage = errorMessage
+                AttributeConfigurationWarning = GetDuplicateAttributeWarning( duplicateAttributeNames )
             };
         }
 
@@ -624,9 +624,13 @@ namespace Rock.Blocks.Crm
         /// <summary>
         /// Gets the attribute categories.
         /// </summary>
-        /// <param name="errorMessage">An optional error message if any attribute appears in more than one category.</param>
+        /// <param name="duplicateAttributeNames">
+        /// Outputs the distinct names of any attributes that were configured in more than
+        /// one selected category and de-duplicated to a single category. Empty when there
+        /// were no duplicates.
+        /// </param>
         /// <returns>The list of bulk update attribute categories.</returns>
-        private List<BulkUpdateAttributeCategoryBag> GetAttributeCategories( out string errorMessage )
+        private List<BulkUpdateAttributeCategoryBag> GetAttributeCategories( out List<string> duplicateAttributeNames )
         {
             var guids = GetAttributeValue( AttributeKey.AttributeCategories ).SplitDelimitedValues().AsGuidList();
 
@@ -661,31 +665,66 @@ namespace Rock.Blocks.Crm
             var result = categories.OrderBy( c => c.Name ).ToList();
 
             /*
-                 3/3/2026 - MSE
+                 6/9/26 - MSE
 
-                 Added validation to display an error if an Attribute appears in more than one Category.
-                 This avoids duplicate assignments that could cause confusion when managing Attributes.
+                 An attribute can belong to more than one category in Rock, but Bulk Update
+                 edits each attribute by its key into a single value, so showing it under
+                 two categories would let a user enter conflicting values (last one wins).
+                 De-duplicate: keep each attribute in the first category it appears in (by
+                 name) and drop it from later ones. The dropped names are returned so the
+                 caller can surface a non-blocking notice to administrators.
+
+                 Reason: Avoid ambiguous duplicate attribute editing without breaking valid configs.
             */
-            var seenGuids = new Dictionary<Guid, string>();
+            var seenAttributeGuids = new HashSet<Guid>();
+            var duplicateNames = new List<string>();
             foreach ( var category in result )
             {
+                var keptAttributes = new List<PublicAttributeBag>();
+
                 foreach ( var attribute in category.Attributes )
                 {
-                    if ( seenGuids.TryGetValue( attribute.AttributeGuid, out var existingCategoryName ) )
+                    if ( seenAttributeGuids.Add( attribute.AttributeGuid ) )
                     {
-                        errorMessage =
-                            $"Attribute \"{attribute.Name}\" appears in both the \"{existingCategoryName}\" and \"{category.Name}\" categories. " +
-                            "Each attribute may only belong to one of the configured Bulk Update attribute categories.";
-
-                        return result;
+                        keptAttributes.Add( attribute );
                     }
-
-                    seenGuids[attribute.AttributeGuid] = category.Name;
+                    else if ( !duplicateNames.Contains( attribute.Name ) )
+                    {
+                        duplicateNames.Add( attribute.Name );
+                    }
                 }
+
+                category.Attributes = keptAttributes;
             }
 
-            errorMessage = null;
+            duplicateAttributeNames = duplicateNames;
             return result;
+        }
+
+        /// <summary>
+        /// Builds the non-blocking notice shown to block administrators when one or more
+        /// attributes were configured in multiple selected categories and therefore
+        /// de-duplicated to a single category. Returns <c>null</c> when there are no
+        /// duplicates or the current user cannot administrate the block, since the notice
+        /// is only actionable by someone who can change the block's category configuration.
+        /// </summary>
+        /// <param name="duplicateAttributeNames">The distinct names of the de-duplicated attributes.</param>
+        /// <returns>The notice text, or <c>null</c> when nothing should be shown.</returns>
+        private string GetDuplicateAttributeWarning( List<string> duplicateAttributeNames )
+        {
+            if ( duplicateAttributeNames.Count == 0 )
+            {
+                return null;
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return null;
+            }
+
+            var subject = duplicateAttributeNames.Count == 1 ? "attribute is" : "attributes are";
+            return $"The following {subject} configured in more than one selected category and shown only once, " +
+                $"in the first category alphabetically: {string.Join( ", ", duplicateAttributeNames )}.";
         }
 
         /// <summary>

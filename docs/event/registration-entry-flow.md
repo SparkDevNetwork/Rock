@@ -1,6 +1,6 @@
 ---
 title: Registration Entry Flow
-last_updated: 2026-05-01
+last_updated: 2026-06-16
 related_files:
   - Rock.Blocks/Event/RegistrationEntry.cs
   - Rock/Model/Event/Registration/Registration.cs
@@ -53,6 +53,8 @@ Each step persists progress in `RegistrationSession` so an abandoned flow can re
 **Mid-flow state persists in `RegistrationSession`.** Resume support: the user can close their browser and come back; the session row holds their progress. Cleaned up periodically by maintenance jobs.
 
 **Payment happens before final commit.** The gateway is called with the calculated total. On success, the Registration row is created and tied to the gateway transaction. Failed payment does NOT create the Registration.
+
+**The saved-account offer requires a usable login path.** On the success step, "Save account information for future payments" appears only when the registrar is logged in or Database (username/password) authentication is enabled. An anonymous saver on a Passwordless-only site (Database auth disabled) would otherwise be forced to create a login that can never be used to sign in, so the option is hidden. The save endpoint enforces the same rule: `SaveFinancialAccountFormSaveAccount` in `Rock.Rest/v2/ControlsController.cs` rejects the anonymous create when Database auth is inactive, so the gate is not UI-only.
 
 **Eligibility is enforced.** Per `b15a1d0946` (eligibility rules) and `8cb0f95aba` (duplicate prevention), the entry block blocks ineligible registrations. Custom flows must respect.
 
@@ -150,6 +152,7 @@ Rejected. Family registrations register multiple Persons; the model supports thi
 
 ## Recent Impactful Changes
 
+- **2026-06-16** ([commit `f2774f6a6d`](https://github.com/SparkDevNetwork/Rock/commit/f2774f6a6d)). Registration Entry now hides the "Save account information for future payments" option when an anonymous registrar has no usable login (Database auth disabled), enforced server-side (Fixes #6877).
 - **2026-02-24** ([commit `8dd76e4bd3`](https://github.com/SparkDevNetwork/Rock/commit/8dd76e4bd3)). Empty-form configurations no longer log exceptions on submission (Fixes #6708).
 - **2026-01-26** ([commit `134ce18e4c`](https://github.com/SparkDevNetwork/Rock/commit/134ce18e4c)). Server-side required-field validation now correctly enforced (Fixes #5091).
 - **2026-01-05** ([commit `194da6e90c`](https://github.com/SparkDevNetwork/Rock/commit/194da6e90c)). Registration full during submission no longer charges + adds to wait list when wait list is disabled (Fixes #6462).

@@ -22,9 +22,17 @@
 //
 
 import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
+import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 
 /** Represents the combined response when a connection request is updated, containing both the refreshed grid row data and the updated detail panel payload. */
 export type ConnectionListUpdateBox = {
+    /**
+     * Gets or sets the grouping metadata for the request's currently assigned connector.
+     * Used by the client to label the connector's group when the connector is not part
+     * of the block-load available groupings list. Null when the request is unassigned.
+     */
+    connectorGroupingField?: GroupingFieldBag | null;
+
     /** Gets or sets the updated detail panel payload for the connection request. */
     detailBox?: ConnectionRequestDetailBox | null;
 

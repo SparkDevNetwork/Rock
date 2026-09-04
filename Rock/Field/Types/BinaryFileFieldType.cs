@@ -137,10 +137,42 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <remarks>
+        ///     <inheritdoc/>
+        ///     <para>
+        ///     Returns the value as a JSON <see cref="ListItemBag"/> (the binary file's Guid and
+        ///     file name) instead of just the file name. Obsidian renders attribute values on the
+        ///     client, so the client component formats this value itself and needs the Guid to
+        ///     build the file's "View" link. (WebForms does not need this because it renders the
+        ///     HTML server side through FormatValue.) This matches the public value already
+        ///     returned by the Image, Audio, and Video file field types.
+        ///     </para>
+        /// </remarks>
         /// <inheritdoc/>
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue || guid.Value.IsEmpty() )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var fileName = new BinaryFileService( rockContext ).GetSelect( guid.Value, f => f.FileName );
+
+                if ( fileName == null )
+                {
+                    return string.Empty;
+                }
+
+                return new ListItemBag
+                {
+                    Text = fileName,
+                    Value = guid.Value.ToString()
+                }.ToCamelCaseJson( false, true );
+            }
         }
 
         /// <inheritdoc/>
@@ -404,6 +436,39 @@ namespace Rock.Field.Types
             {
                 grant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.VIEW ) );
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Implemented here rather than on each descendant because they all store the
+        /// same thing. File, Image, Label, Audio File, Video File and Background Check
+        /// differ in what they will accept and how they render, not in the shape of
+        /// the value.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var binaryFileTypeGuid = privateConfigurationValues.GetValueOrNull( BINARY_FILE_TYPE ).AsGuidOrNull();
+            var binaryFileType = binaryFileTypeGuid.HasValue
+                ? BinaryFileTypeCache.Get( binaryFileTypeGuid.Value )
+                : null;
+
+            var valueFormat = "The guid of a row in the BinaryFile table. Not its id or idKey, and not a file name or url.";
+
+            if ( binaryFileType != null )
+            {
+                valueFormat += $" The file must belong to the '{binaryFileType.Name}' binary file type.";
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = valueFormat,
+                Instructions = "A value here points at a file that has already been uploaded, so it is the guid of an existing BinaryFile rather than file content or a path. A guid that does not match a stored file leaves the field looking empty rather than reporting a problem."
+            };
         }
 
         #endregion

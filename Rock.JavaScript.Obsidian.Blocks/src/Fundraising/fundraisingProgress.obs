@@ -1,0 +1,284 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :hasTitle="false">
+        <NotificationBox v-if="box.errorMessage" :alertType="AlertType.Warning">
+            {{ box.errorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+            <ContentSection :title="box.title ?? ''"
+                            icon="ti ti-certificate"
+                            :disableCollapse="true">
+                <div class="displaycard" v-if="box.isGroupTotalVisible">
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-uppercase text-semibold text-muted">Total Goals</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span><strong>{{ formatCurrency(box.groupContributionTotal) }}</strong> / {{ formatCurrency(box.groupFundraisingGoal) }}</span>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-11">
+                                <ProgressBar :percent="isVisible ? (box.percentComplete ?? 0) : 0" :progressBarType="getProgressBarType(box.percentComplete ?? 0)"></ProgressBar>
+                            </div>
+                            <div class="col-md-1 d-flex justify-content-end">
+                                <span class="text-semibold" :style="{ color: getPercentColor(box.percentComplete ?? 0) }">{{ box.percentComplete }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-for="(item, index) in box.progressItems"
+                     :key="index"
+                     class="fundraising-progress-group"
+                     :class="{ 'fundraising-progress-group-collapsed': isFamilyParent(item) && !isFamilyExpanded(index) }">
+                    <div class="fundraising-progress-item">
+                        <div>
+                            <PersonAvatar :photoUrl="item.photoUrl ?? ''" marginRight="0" v-if="item.photoUrl" />
+                            <span v-else class="fundraising-avatar">
+                                <i class="ti ti-users"></i>
+                            </span>
+                        </div>
+                        <div class="w-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-3 align-items-center">
+                                    <span class="text-semibold">{{ item.progressTitle }}</span>
+                                    <HighlightLabel v-if="isFamilyParent(item)">{{ item.childItems?.length }} Members</HighlightLabel>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span><strong>{{ formatCurrency(item.contributionTotal) }}</strong> / {{ formatCurrency(item.fundraisingGoal) }}</span>
+                                    <span v-if="hasExpandableFamilies" class="fundraising-expand-toggle-slot">
+                                        <button v-if="isFamilyParent(item)"
+                                                type="button"
+                                                class="btn btn-action fundraising-expand-toggle"
+                                                @click="toggleFamilyExpanded(index)">
+                                            <i class="ti ti-chevron-up"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-md-11">
+                                    <ProgressBar :percent="isVisible ? (item.percentComplete ?? 0) : 0"
+                                                 :progressBarType="getProgressBarType(item.percentComplete ?? 0)" />
+                                </div>
+                                <div class="col-md-1 d-flex justify-content-end">
+                                    <span v-if="item.percentComplete != null" class="text-semibold fundraising-progress-stat" :style="{ color: getPercentColor(item.percentComplete ?? 0) }">{{ item.percentComplete }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <TransitionVerticalCollapse v-if="isFamilyParent(item)">
+                        <div v-show="isFamilyExpanded(index)" class="fundraising-progress-children">
+                            <div v-for="(childItem, childIndex) in item.childItems"
+                                 :key="childIndex"
+                                 class="fundraising-progress-child">
+                                <div>
+                                    <PersonAvatar :photoUrl="childItem.photoUrl ?? ''" />
+                                </div>
+                                <div class="w-100">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-semibold fundraising-progress-child-name">{{ childItem.progressTitle }}</span>
+                                        <span class="fundraising-progress-child-amount"><strong>{{ formatCurrency(childItem.contributionTotal) }}</strong> / {{ formatCurrency(childItem.fundraisingGoal) }}</span>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-11">
+                                            <ProgressBar :percent="isVisible ? (childItem.percentComplete ?? 0) : 0"
+                                                         :progressBarType="getProgressBarType(childItem.percentComplete ?? 0)" />
+                                        </div>
+                                        <div class="col-md-1 d-flex justify-content-end">
+                                            <span v-if="childItem.percentComplete != null" class="text-semibold fundraising-progress-stat" :style="{ color: getPercentColor(childItem.percentComplete ?? 0) }">{{ childItem.percentComplete }}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </TransitionVerticalCollapse>
+                </div>
+            </ContentSection>
+
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+.fundraising-progress-group {
+    border-bottom: 1px solid var(--color-interface-soft);
+    padding: 0 0 var(--spacing-large) 0;
+}
+
+.fundraising-progress-item {
+    display: flex;
+    gap: var(--spacing-large);
+}
+
+.fundraising-progress-children {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+    padding-top: var(--spacing-large);
+    padding-left: calc(var(--font-size-h2) + var(--spacing-large));
+}
+
+.fundraising-progress-stat {
+    font-size: var(--font-size-small);
+}
+
+.fundraising-progress-child {
+    /* Child rows sit a step down from their family parent: a tighter avatar
+       gap and smaller name/amount text to make the hierarchy visible. */
+    display: flex;
+    gap: var(--spacing-small);
+}
+
+.fundraising-progress-child-amount {
+    font-size: var(--font-size-small);
+}
+
+.fundraising-avatar {
+    /* Only variable to get 36px to match person avatar */
+    width: var(--font-size-h2);
+    height: var(--font-size-h2);
+    border-radius: 50%;
+    background-color: var(--color-interface-soft);
+    color: var(--color-interface-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fundraising-expand-toggle-slot {
+    /* Reserves space for the expand chevron so dollar totals align to the
+       same right edge whether or not a given row has a chevron to show. */
+    width: 28px;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.fundraising-expand-toggle {
+    border-radius: var(--rounded-small);
+    padding: var(--spacing-tiny);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-interface-strong);
+    border: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.fundraising-expand-toggle:hover,
+.fundraising-expand-toggle:focus {
+    background-color: var(--color-interface-softest);
+    color: var(--color-interface-strong);
+    box-shadow: none;
+}
+
+.fundraising-expand-toggle .ti-chevron-up {
+    /* Matches the rotation speed used by ContentSection's own collapse chevron. */
+    transition: transform 0.35s ease-in-out;
+}
+
+.fundraising-progress-group-collapsed .fundraising-expand-toggle .ti-chevron-up {
+    transform: rotate(180deg);
+}
+
+:deep(.progress) {
+    margin-bottom: 0;
+}
+
+:deep(.progress-bar) {
+    transition: width 0.8s ease;
+}
+
+:deep(.content-header-description) {
+    width: 100%;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, onMounted, nextTick } from "vue";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { FundraisingProgressInitializationBox } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingProgress/fundraisingProgressInitializationBox";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { FundraisingProgressBag } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingProgress/fundraisingProgressBag";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+
+    // #region Values
+
+    const box = ref(useConfigurationValues<FundraisingProgressInitializationBox>());
+    const isVisible = ref(false);
+    const expandedFamilyIndexes = ref(new Set<number>());
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasExpandableFamilies = computed((): boolean => {
+        return (box.value.progressItems ?? []).some(isFamilyParent);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function formatCurrency(value: number): string {
+        // Format goal and contribution amounts with the organization currency symbol,
+        // thousands separators, and a consistent 2 decimal places.
+        return toCurrencyOrNull(value) ?? "";
+    }
+
+    function getProgressBarType(pct: number): "success" | "info" | "warning" {
+        if (pct >= 100) {
+            return AlertType.Success;
+        }
+
+        if (pct > 40) {
+            return AlertType.Info;
+        }
+
+        return AlertType.Warning;
+    }
+
+    function getPercentColor(pct: number): string {
+        // Match the percent label to the progress bar fill color for the same status.
+        return `var(--color-${getProgressBarType(pct)}-strong)`;
+    }
+
+    function isFamilyParent(item: FundraisingProgressBag): boolean {
+        return (item.childItems?.length ?? 0) > 1;
+    }
+
+    function isFamilyExpanded(index: number): boolean {
+        return expandedFamilyIndexes.value.has(index);
+    }
+
+    function toggleFamilyExpanded(index: number): void {
+        if (expandedFamilyIndexes.value.has(index)) {
+            expandedFamilyIndexes.value.delete(index);
+        }
+        else {
+            expandedFamilyIndexes.value.add(index);
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(async () => {
+        await nextTick();
+        isVisible.value = true;
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

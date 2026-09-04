@@ -51,25 +51,48 @@ export function setInnerHTML(element: HTMLElement, html: string): void {
             }
         });
 
-    // Load the external scripts one by one and wait for them to load.
-    const loadPromises = externalScriptEls.map(oldScriptEl => {
-        return new Promise<void>((resolve, reject) => {
-            const newScriptEl = document.createElement("script");
-            Array.from(oldScriptEl.attributes).forEach(attr => {
-                newScriptEl.setAttribute(attr.name, attr.value);
+    /*
+        6/24/26 - MSE
+
+        Load external scripts sequentially (in document order) and only once each.
+        Dynamically created <script> elements are async by default, so loading them in
+        parallel can run a dependent before its dependency, and duplicates can re-run a
+        library and wipe what an earlier copy registered on it.
+
+        Reason: Lava charts (e.g. the Motivators gauge, whose Gauge.js plugin needs
+        Chart.js first) only rendered after a page refresh.
+    */
+    async function loadExternalScriptsInOrder(): Promise<void> {
+        const requestedSources = new Set<string>();
+
+        for (const oldScriptEl of externalScriptEls) {
+            // De-duplicate by the resolved source so a library referenced by more than
+            // one shortcode is not loaded (and re-executed) multiple times.
+            if (requestedSources.has(oldScriptEl.src)) {
+                oldScriptEl.parentNode?.removeChild(oldScriptEl);
+                continue;
+            }
+
+            requestedSources.add(oldScriptEl.src);
+
+            await new Promise<void>((resolve, reject) => {
+                const newScriptEl = document.createElement("script");
+                Array.from(oldScriptEl.attributes).forEach(attr => {
+                    newScriptEl.setAttribute(attr.name, attr.value);
+                });
+
+                // When the script has loaded, resolve the promise.
+                newScriptEl.onload = () => resolve();
+                newScriptEl.onerror = () => reject(new Error(`Failed to load script: ${oldScriptEl.src}`));
+
+                // Append the new script to the target element to trigger loading.
+                oldScriptEl.parentNode?.replaceChild(newScriptEl, oldScriptEl);
             });
+        }
+    }
 
-            // When the script has loaded, resolve the promise.
-            newScriptEl.onload = () => resolve();
-            newScriptEl.onerror = () => reject(new Error(`Failed to load script: ${oldScriptEl.src}`));
-
-            // Append the new script to the target element to trigger loading.
-            oldScriptEl.parentNode?.replaceChild(newScriptEl, oldScriptEl);
-        });
-    });
-
-    // Once all external scripts are loaded, execute the inline scripts.
-    Promise.all(loadPromises)
+    // Once all external scripts have loaded (in order), execute the inline scripts.
+    loadExternalScriptsInOrder()
         .then(() => {
             inlineScriptEls.forEach(oldScriptEl => {
                 const newScriptEl = document.createElement("script");

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -28,7 +30,10 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="ConnectionOpportunityFieldAttribute"/> class.
         /// If using Object Initializer syntax include all properties in the obj init syntax.
         /// </summary>
-        public ConnectionOpportunityFieldAttribute() : base( string.Empty, string.Empty, true, string.Empty, string.Empty, 0, null, typeof( Rock.Field.Types.ConnectionOpportunityFieldType ).FullName ) { }
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
+        public ConnectionOpportunityFieldAttribute()
+            : base( SystemGuid.FieldType.CONNECTION_OPPORTUNITY.AsGuid(), string.Empty, string.Empty, true, string.Empty, string.Empty, 0, null ) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
@@ -41,11 +46,31 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ConnectionOpportunityFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", bool includeInactive = false, string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ConnectionOpportunityFieldType ).FullName )
+            : base( SystemGuid.FieldType.CONNECTION_OPPORTUNITY.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
-            var includeInactiveConfigValue = new Field.ConfigurationValue( includeInactive.ToString() );
-            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
+            IncludeInactive = includeInactive;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionOpportunityFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public ConnectionOpportunityFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CONNECTION_OPPORTUNITY.AsGuid(), name )
+        {
+            IncludeInactive = false;
+        }
+
+        /// <summary>
+        /// Determines if inactive connection opportunities are included.
+        /// </summary>
+        public bool IncludeInactive
+        {
+            get => FieldConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBoolean();
+            set => FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

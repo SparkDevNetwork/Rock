@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using Rock.Field.Types;
 
 namespace Rock.Attribute
 {
@@ -35,8 +34,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public UrlLinkFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.UrlLinkFieldType ).FullName )
+            : base( SystemGuid.FieldType.URL_LINK.AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UrlLinkFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public UrlLinkFieldAttribute( string name )
+            : base( SystemGuid.FieldType.URL_LINK.AsGuid(), name )
         {
         }
 
@@ -50,11 +60,11 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrDefault( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
+                return FieldConfigurationValues.GetValueOrDefault( "ShouldRequireTrailingForwardSlash", new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
             }
             set
             {
-                FieldConfigurationValues.AddOrReplace( UrlLinkFieldType.ConfigurationKey.ShouldRequireTrailingForwardSlash, new Field.ConfigurationValue( value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( "ShouldRequireTrailingForwardSlash", new Field.ConfigurationValue( value.ToString() ) );
             }
         }
 
@@ -68,11 +78,11 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrDefault( UrlLinkFieldType.ConfigurationKey.ShouldAlwaysShowCondensed, new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
+                return FieldConfigurationValues.GetValueOrDefault( "ShouldAlwaysShowCondensed", new Field.ConfigurationValue( "false" ) ).Value.AsBoolean();
             }
             set
             {
-                FieldConfigurationValues.AddOrReplace( UrlLinkFieldType.ConfigurationKey.ShouldAlwaysShowCondensed, new Field.ConfigurationValue( value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( "ShouldAlwaysShowCondensed", new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }

@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.CheckIn
             _isGroupSpecific = GetAttributeValue( AttributeKeys.GroupSpecific ).AsBoolean();
             if ( _isGroupSpecific )
             {
-                int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( "GroupId" ) );
                 if ( groupId.HasValue )
                 {
                     _specificGroup = new GroupService( rockContextAnalytics ).Get( groupId.Value );

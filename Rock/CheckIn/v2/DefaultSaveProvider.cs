@@ -682,7 +682,7 @@ namespace Rock.CheckIn.v2
         {
             int? threshold;
 
-            if ( sessionRequest.IsOverride )
+            if ( Session.IsOverrideEnabled )
             {
                 threshold = request.Location.FirmRoomThreshold;
             }

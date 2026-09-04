@@ -1,0 +1,539 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          liveUpdates
+          keyField="idKey"
+          itemTerm="Wait List Individual"
+          title="Wait List"
+          :entityTypeGuid="EntityType.RegistrationRegistrant"
+          :exportTitle="config.options?.exportTitle ?? 'Wait List'"
+          :isCountMessageVisible="false"
+          gridSettings
+          personKeyField="personIdKey"
+          :gridSettingsActive="hasSettingsFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem"
+          @selectedKeysChanged="onSelectedKeysChanged"
+          @gridSettingsClick="isGridSettingsVisible = true">
+
+        <template #gridHeaderBadges>
+            <span class="label label-default">
+                <span class="label-value">{{ waitListCountMessage }}</span>
+            </span>
+        </template>
+
+        <template v-if="config.isAddEnabled" #actionToolbar>
+            <RockButton :btnType="BtnType.Info"
+                        :btnSize="BtnSize.Small"
+                        :isLoading="isMovingToRegistrantList"
+                        loadingText="Moving..."
+                        @click="onMoveToRegistrantListClick">
+                <i class="ti ti-arrow-right"></i>
+                Move to Registrant List
+            </RockButton>
+        </template>
+
+        <SelectColumn />
+
+        <Column name="waitListOrder"
+                title="Wait List Order"
+                field="waitListOrder">
+            <template #format="{ row }">
+                <HighlightLabel labelType="default">{{ row.waitListOrder }}</HighlightLabel>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <PersonColumn name="person"
+                      title="Individual"
+                      field="person"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      headerClass="individual-column"
+                      itemClass="individual-column" />
+
+        <TextColumn name="registeredBy"
+                    title="Registered By"
+                    field="registeredBy"
+                    :filter="textValueFilter"
+                    headerClass="individual-column"
+                    itemClass="individual-column" />
+
+        <Column v-if="hasPersonField(RegistrationPersonFieldType.Campus)"
+                name="campus"
+                title="Campus"
+                field="campus"
+                :filter="pickExistingValueFilter"
+                :filterValues="getCampusFilterValues"
+                :quickFilterValue="getCampusExportValue"
+                :exportValue="getCampusExportValue">
+            <template #format="{ row }">
+                <div>
+                    <div v-for="(campusName, index) in (row.campus as string[] | null) ?? []" :key="index">{{ campusName }}</div>
+                </div>
+            </template>
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Email)"
+                    name="email"
+                    title="Email"
+                    field="email"
+                    :filter="textValueFilter"
+                    width="300px" />
+
+        <DateColumn v-if="hasPersonField(RegistrationPersonFieldType.Birthdate)"
+                    name="birthdate"
+                    title="Birthdate"
+                    field="birthdate"
+                    :filter="dateValueFilter"
+                    :exportValue="getBirthdateExportValue">
+            <template #format="{ row }">
+                {{ getDateWithAgeText(row.birthdate, row.birthdateAge) }}
+            </template>
+        </DateColumn>
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.MiddleName)"
+                    name="middleName"
+                    title="Middle Name"
+                    field="middleName"
+                    :filter="textValueFilter" />
+
+        <DateColumn v-if="hasPersonField(RegistrationPersonFieldType.AnniversaryDate)"
+                    name="anniversaryDate"
+                    title="Anniversary Date"
+                    field="anniversaryDate"
+                    :filter="dateValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Grade)"
+                    name="grade"
+                    title="Grade"
+                    field="grade"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Gender)"
+                    name="gender"
+                    title="Gender"
+                    field="gender"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.MaritalStatus)"
+                    name="maritalStatus"
+                    title="Marital Status"
+                    field="maritalStatus"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.ConnectionStatus)"
+                    name="connectionStatus"
+                    title="Connection Status"
+                    field="connectionStatus"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.MobilePhone)"
+                    name="mobilePhone"
+                    :title="config.options?.mobilePhoneLabel ?? 'Mobile'"
+                    field="mobilePhone"
+                    :filter="textValueFilter"
+                    :quickFilterValue="getPhoneQuickFilterValue"
+                    width="150px" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.HomePhone)"
+                    name="homePhone"
+                    :title="config.options?.homePhoneLabel ?? 'Home'"
+                    field="homePhone"
+                    :filter="textValueFilter"
+                    :quickFilterValue="getPhoneQuickFilterValue"
+                    width="150px" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.WorkPhone)"
+                    name="workPhone"
+                    :title="config.options?.workPhoneLabel ?? 'Work'"
+                    field="workPhone"
+                    :filter="textValueFilter"
+                    :quickFilterValue="getPhoneQuickFilterValue"
+                    width="150px" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Address)"
+                    name="address"
+                    title="Address"
+                    field="address"
+                    :filter="textValueFilter"
+                    width="350px" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Race)"
+                    name="race"
+                    title="Race"
+                    field="race"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn v-if="hasPersonField(RegistrationPersonFieldType.Ethnicity)"
+                    name="ethnicity"
+                    title="Ethnicity"
+                    field="ethnicity"
+                    :filter="pickExistingValueFilter" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []"
+                          visiblePriority="xs" />
+
+        <DateTimeColumn name="createdDateTime"
+                        title="Added"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        width="200px" />
+
+        <ButtonColumn v-if="config.navigationUrls?.[NavigationUrlKey.PersonProfilePage]"
+                      name="profile"
+                      iconClass="ti ti-user"
+                      tooltip="View Profile"
+                      :excludeFromExport="true"
+                      visiblePriority="md"
+                      @click="onPersonClick" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       @close="isGridSettingsVisible = false" />
+</template>
+
+<style scoped>
+/* Keep the Individual and Registered By columns from shrinking below 250px while still letting them grow. */
+:deep(.individual-column) {
+    min-width: 250px;
+}
+</style>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, ButtonColumn, Column, DateColumn, DateTimeColumn, DeleteColumn, PersonColumn, SelectColumn, TextColumn, dateValueFilter, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { RegistrationInstanceWaitListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceWaitList/registrationInstanceWaitListOptionsBag";
+    import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+    import { ColumnDefinition, IGridState, MultiValueFilterItem } from "@Obsidian/Types/Controls/grid";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./RegistrationInstanceWaitList/types.partial";
+    import GridSettingsModal from "./RegistrationInstanceWaitList/gridSettingsModal.partial.obs";
+    import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+
+    const config = useConfigurationValues<ListBlockBox<RegistrationInstanceWaitListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const itemCount = ref(0);
+
+    const selectedKeys = ref<string[]>([]);
+    const isMovingToRegistrantList = ref(false);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(scopedKey(PreferenceKey.FilterDateRange)))
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateRange;
+    });
+
+    /** The custom wait list count badge text, e.g. "3 Individuals on Wait List". */
+    const waitListCountMessage = computed((): string => {
+        return `${asFormattedString(itemCount.value)} ${pluralize("Individual", itemCount.value)} on Wait List`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Builds a preference key scoped to the current registration template's
+     * Guid so that switching templates does not leak filter state.
+     */
+    function scopedKey(key: string): string {
+        if (config.options?.registrationTemplateGuid) {
+            return `${config.options.registrationTemplateGuid}-${key}`;
+        }
+
+        return key;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            itemCount.value = gridData.rows?.length ?? 0;
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Determines if the registration template shows the given person field
+     * on the grid.
+     */
+    function hasPersonField(fieldType: RegistrationPersonFieldType): boolean {
+        return config.options?.visiblePersonFieldTypes?.includes(fieldType) ?? false;
+    }
+
+    /**
+     * Gets the text used to quick search and export the Campus column. The
+     * column filter uses the per-campus values from getCampusFilterValues
+     * instead, because the pick-existing filter matches by exact equality.
+     */
+    function getCampusExportValue(row: Record<string, unknown>): string {
+        const campusNames = (row.campus as string[] | null) ?? [];
+
+        return campusNames.join(", ");
+    }
+
+    /**
+     * Gets the individual campus name values used by the Campus column filter.
+     * Each campus is returned as its own value so the pick-existing filter
+     * offers one option per campus and a single-campus pick matches people in
+     * multiple campuses.
+     */
+    function getCampusFilterValues(row: Record<string, unknown>): MultiValueFilterItem[] {
+        const campusNames = (row.campus as string[] | null) ?? [];
+
+        return campusNames.map(c => ({ value: c, rowData: { ...row, campus: c } }));
+    }
+
+    /**
+     * Gets the text used to filter and search the Individual column. The
+     * person cell holds a bag, so a scalar name is returned for the filter.
+     */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag | null;
+
+        return person ? `${person.nickName} ${person.lastName}` : "";
+    }
+
+    /**
+     * Gets the text used to quick search a phone column. Includes the
+     * digits-only form so searching by raw digits matches the formatted
+     * number.
+     */
+    function getPhoneQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinition): string {
+        const formatted = (row[column.field ?? ""] as string | null) ?? "";
+        const digits = formatted.replace(/\D/g, "");
+
+        return digits && digits !== formatted ? `${formatted} ${digits}` : formatted;
+    }
+
+    /**
+     * Formats a date cell as a short date with the server-computed age text
+     * appended, e.g. "1/2/1990 (35 yrs)".
+     */
+    function getDateWithAgeText(dateValue: unknown, ageValue: unknown): string {
+        const date = RockDateTime.parseISO(dateValue as string ?? "");
+        const dateText = date?.toASPString("d") ?? "";
+        const age = ageValue as string | null | undefined;
+
+        return age ? `${dateText} (${age})` : dateText;
+    }
+
+    /**
+     * Gets the text used when exporting the Birthdate column.
+     */
+    function getBirthdateExportValue(row: Record<string, unknown>): string {
+        return getDateWithAgeText(row.birthdate, row.birthdateAge);
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the grid's selected rows change. Tracks the selected keys so
+     * the "Move to Registrant List" action knows which registrants to move.
+     */
+    function onSelectedKeysChanged(state: IGridState): void {
+        selectedKeys.value = [...state.selectedKeys] as string[];
+    }
+
+    /**
+     * Called when the "Move to Registrant List" action is clicked. Creates an
+     * entity set from the selected registrants and navigates to the wait list
+     * confirmation page returned by the server.
+     */
+    async function onMoveToRegistrantListClick(): Promise<void> {
+        if (selectedKeys.value.length === 0) {
+            return;
+        }
+
+        isMovingToRegistrantList.value = true;
+
+        const result = await invokeBlockAction<string>("MoveToRegistrantList", {
+            keys: selectedKeys.value
+        });
+
+        if (result.isSuccess && result.data) {
+            // Leave the button in its loading state; the browser is navigating
+            // to the confirmation page, so it should not flip back to idle.
+            window.location.href = result.data;
+        }
+        else {
+            isMovingToRegistrantList.value = false;
+            await alert(result.errorMessage ?? "Unknown error while trying to move the selected individuals.");
+        }
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     */
+    function onSelectItem(key: string): void {
+        const registrationUrl = config.navigationUrls?.[NavigationUrlKey.RegistrationPage];
+
+        if (!registrationUrl) {
+            return;
+        }
+
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+
+        if (!row) {
+            return;
+        }
+
+        const registrationIdKey = row["registrationIdKey"] as string;
+        const registrantId = row["registrantId"];
+
+        let url = registrationUrl.replace("((Key))", registrationIdKey ?? "");
+
+        // Anchor to the selected registrant on the registration page.
+        if (registrantId != null) {
+            url += `#${registrantId}`;
+        }
+
+        window.location.href = url;
+    }
+
+    /**
+     * Called when the add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        const registrationUrl = config.navigationUrls?.[NavigationUrlKey.RegistrationPage];
+
+        if (!registrationUrl) {
+            return;
+        }
+
+        // A RegistrationId of 0 starts a new registration on this instance.
+        window.location.href = registrationUrl.replace("((Key))", "0");
+    }
+
+    /**
+     * Called when a row's view-profile button has been clicked. Navigates to
+     * the person profile page for the row's person.
+     */
+    function onPersonClick(key: string): void {
+        const profileUrl = config.navigationUrls?.[NavigationUrlKey.PersonProfilePage];
+
+        if (!profileUrl) {
+            return;
+        }
+
+        const personIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.["personIdKey"] as string;
+
+        if (personIdKey) {
+            window.location.href = profileUrl.replace("((Key))", personIdKey);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked. This happens only
+     * after the individual has confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                    itemCount.value = gridData.rows.length;
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the wait list individual.");
+        }
+    }
+
+    /**
+     * Called when the page is shown, including when it is restored from the
+     * browser's back/forward (bfcache) cache. A bfcache restore does not re-run
+     * block setup, so after moving individuals off the wait list and navigating
+     * back the grid would still show them. Re-fetch on a bfcache restore so the
+     * data is correct without a manual refresh.
+     */
+    function onPageShow(event: PageTransitionEvent): void {
+        if (event.persisted) {
+            gridDataSource.value = loadGridData();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(
+            scopedKey(PreferenceKey.FilterDateRange),
+            gridSettings.value.dateRange ? slidingDateRangeToString(gridSettings.value.dateRange) : "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        window.addEventListener("pageshow", onPageShow);
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("pageshow", onPageShow);
+    });
+
+    // #endregion Lifecycle Hooks
+
+    gridDataSource.value = loadGridData();
+</script>

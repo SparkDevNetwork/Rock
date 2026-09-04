@@ -14,7 +14,6 @@
                      :isSecurityHidden="true"
                      :editFooterActions="editFooterActions"
                      @cancelEdit="onCancelEdit"
-                     @delete="onDelete"
                      @edit="onEdit"
                      @save="onSave">
             <template v-if="!isNewTransaction" #headerActions>
@@ -22,7 +21,7 @@
                     Batch: #{{ headerBag?.batchId }}
                 </span>
                 <span class="label label-success">
-                    ${{ headerTotalAmount.toFixed(2) }}
+                    {{ toCurrencyOrNull(headerTotalAmount, options.currencyInfo) }}
                 </span>
                 <span class="label label-default">
                     <i class="ti ti-gift"></i>
@@ -37,8 +36,8 @@
             </template>
 
             <template #edit>
-                <RockForm ref="editForm" @submit="onFormValid">
-                    <EditPanel v-model="transactionEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+                <RockForm ref="editForm" :formResetKey="formResetKey" @submit="onFormValid">
+                    <EditPanel :key="editPanelKey" v-model="transactionEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
                 </RockForm>
             </template>
 
@@ -132,6 +131,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -177,6 +177,12 @@
     });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    // Bumped after "Save Then Add" to remount the edit panel so child controls (e.g. the person picker's search text) reset for the next entry.
+    const editPanelKey = ref(0);
+
+    // Bumped after "Save Then Add" to clear the form's submit count so the next entry's required fields don't show errors before the user interacts.
+    const formResetKey = ref("");
 
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
@@ -249,22 +255,7 @@
 
     /** Resolved options bag; falls back to safe defaults when config.options is absent. */
     const options = computed((): TransactionDetailOptionsBag => {
-        return config.options ?? {
-            transactionTypesGuid: "",
-            transactionSourceTypesGuid: "",
-            refundReasonTypesGuid: "",
-            currencyTypesGuid: "",
-            currencyCodesGuid: "",
-            creditCardTypesGuid: "",
-            assetTypes: "",
-            canEdit: false,
-            isReadOnly: !isEditable.value,
-            batchEditAllowed: false,
-            showForeignCurrencyFields: false,
-            transactionSourceRequired: false,
-            batchDetailPageUrl: "",
-            carryOverAccount: false,
-        };
+        return config.options ?? {} as TransactionDetailOptionsBag;
     });
 
     // #endregion Computed Values
@@ -311,28 +302,6 @@
         }
 
         return true;
-    }
-    /**
-     * Event handler for the Delete button being clicked. Sends the
-     * delete request to the server and then redirects to the target page.
-     *
-     * @returns false if it should stay on the page; or a string containing a redirect URL.
-     */
-    async function onDelete(): Promise<false | string> {
-        errorMessage.value = "";
-
-        const result = await invokeBlockAction<string>("Delete", {
-            key: transactionViewBag.value?.idKey
-        });
-
-        if (result.isSuccess && result.data) {
-            return result.data;
-        }
-        else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete transaction.";
-
-            return false;
-        }
     }
 
     /**
@@ -513,7 +482,13 @@
                 transactionDateTime: transactionEditBag.value?.bag.transactionDateTime,
                 transactionType: transactionEditBag.value?.bag.transactionType,
                 sourceType: transactionEditBag.value?.bag.sourceType,
-                paymentDetail: transactionEditBag.value?.bag.paymentDetail,
+                paymentDetail: transactionEditBag.value?.bag.paymentDetail
+                    ? {
+                        currencyType: transactionEditBag.value.bag.paymentDetail.currencyType,
+                        creditCardType: transactionEditBag.value.bag.paymentDetail.creditCardType,
+                        isCreditCard: transactionEditBag.value.bag.paymentDetail.isCreditCard
+                    }
+                    : undefined,
                 nonCashAssetType: transactionEditBag.value?.bag.nonCashAssetType,
                 transactionDetails: carryOverRow
                     ? { rows: [carryOverRow], rowsToDelete: [] }
@@ -532,6 +507,12 @@
                 ...transactionEditBag.value,
                 bag: { ...persistedDefaults }
             };
+
+            // Remount the edit panel so child controls reset (clears the lingering person-search text).
+            editPanelKey.value++;
+
+            // Clear the form's submit count so the fresh entry's required fields don't render as errored.
+            formResetKey.value = newGuid();
 
             await nextTick();
             if (blockElement.value) {

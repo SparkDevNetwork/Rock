@@ -21,7 +21,7 @@
                          @click="emit('changeState', ConnectionState.Inactive, connectionRequest)">
                         <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
                     </div>
-                    <div v-if="options?.isFutureFollowUpEnabled"
+                    <div v-if="connectionTypeOptions?.isFutureFollowUpEnabled"
                          class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                          @click="emit('changeState', ConnectionState.FutureFollowUp, connectionRequest)">
                         <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
@@ -36,7 +36,7 @@
                     <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
                 </div>
                 <template v-if="canEditConnectionRequests">
-                    <div v-if="options?.isRequestSecurityEnabled"
+                    <div v-if="!connectionRequestRow?.isRequestSecurityDisabled"
                          class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                          @click="emit('showSecurity', connectionRequestRow.idKey)">
                         <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
@@ -48,7 +48,7 @@
                 </template>
             </template>
             <template v-if="connectionState !== ConnectionState.Active" #subheader>
-                <div class="py-spacing-xs px-spacing-sm text-center text-semibold text-sm"
+                <div class="connection-request-card-subheader"
                      :class="stateColorClasses"
                      v-tooltip="stateTooltip">
                     <template v-if="connectionState === ConnectionState.FutureFollowUp">
@@ -60,7 +60,7 @@
                 </div>
             </template>
             <template #body>
-                <div class="details-container border-top">
+                <div class="details-container connection-request-card-body">
                     <dl>
                         <dt v-tooltip.overflow="connectionRequestRow.connectionOpportunity">Opportunity</dt>
                         <dd class="text-semibold"
@@ -103,7 +103,7 @@
                     </dl>
                 </div>
                 <div v-if="attributesToShow?.length && attributesToShow.length > 0"
-                     class="details-container bg-interface-softer border-top">
+                     class="details-container connection-request-card-body bg-interface-softer border-top">
                     <dl>
                         <template v-for="attrFieldValue in attributesToShow">
                             <dt>
@@ -126,18 +126,18 @@
                 </div>
             </template>
             <template #footer>
-                <div class="py-spacing-sm px-spacing-md border-top d-flex align-items-center justify-content-between">
+                <div class="connection-request-card-footer">
                     <HighlightLabel :labelType="getConnectorLabelType()"
                                     iconCssClass="ti ti-user-circle"
                                     v-tooltip="connectorTooltip">
                         {{ connectionRequestRow.connectorDetails?.text }}
                     </HighlightLabel>
-                    <div class="d-flex align-items-center gap-sm text-sm text-interface-medium">
-                        <div class="d-flex align-items-center gap-extra-tiny" v-tooltip="createdDateTooltip">
+                    <div class="connection-request-card-footer-info">
+                        <div class="connection-request-card-footer-info-item" v-tooltip="createdDateTooltip">
                             <i class="ti ti-calendar-plus"></i>
                             {{ getElapsedShortTime(connectionRequestRow.createdDateTime) }}
                         </div>
-                        <div class="d-flex align-items-center gap-extra-tiny" v-tooltip.html="activitiesTooltip">
+                        <div class="connection-request-card-footer-info-item" v-tooltip.html="activitiesTooltip">
                             <i class="ti ti-bolt"></i>
                             {{ connectionRequestRow.activityCount }}
                         </div>
@@ -147,58 +147,6 @@
         </PersonCard>
     </template>
 </template>
-
-<style scoped>
-.connection-request-card {
-    cursor: pointer;
-}
-
-/*
-    4/21/26 - KBH
-
-    Mirrors the old `opacity: 0.5` look using a semi-transparent rgba overlay
-    in an ::after pseudo-element. The overlay paints above the card's content
-    and washes it toward white, but the floating dropdown (z-index: 3 from
-    dropDownContent.obs) stacks above the overlay and stays at full contrast.
-    `pointer-events: none` lets clicks pass through to the card below.
-
-    Reason: `opacity` and `filter` on the card root both cascade into the
-    dropdown subtree and can't be overridden on descendants. An rgba overlay
-    avoids the cascade entirely.
-*/
-.connection-request-card.completed {
-    position: relative;
-}
-
-.connection-request-card.completed::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: color-mix(in srgb, var(--color-interface-softest) 50%, transparent);
-    border-radius: inherit;
-    pointer-events: none;
-}
-
-.connection-request-card.selected {
-    box-shadow: 0 0 0 1px var(--color-primary);
-}
-
-.text-emerald {
-    color: #10B981 !important;
-}
-
-.gap-sm {
-    gap: var(--spacing-small);
-}
-
-.gap-tiny {
-    gap: var(--spacing-tiny);
-}
-
-.gap-extra-tiny {
-    gap: 2px;
-}
-</style>
 
 <script setup lang="ts">
     import PersonCard from "@Obsidian/Controls/Internal/personCard.obs";
@@ -216,6 +164,7 @@
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
     import { vTooltip } from "@Obsidian/Directives/tooltip";
     import { ViewOptions } from "./types.partial";
+    import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
 
     type ConnectionRequestCardRow = {
         idKey?: string | null;
@@ -249,6 +198,7 @@
         reminderCount?: number | null;
         hasPlacementGroup?: boolean | null;
         hasRequiredGroupRequirements?: boolean | null;
+        isRequestSecurityDisabled?: boolean | null;
     };
 
     /**
@@ -287,6 +237,7 @@
             reminderCount: row.reminderCount as number | null | undefined,
             hasPlacementGroup: row.hasPlacementGroup as boolean | null | undefined,
             hasRequiredGroupRequirements: row.hasRequiredGroupRequirements as boolean | null | undefined,
+            isRequestSecurityDisabled: row.isRequestSecurityDisabled as boolean | null | undefined
         };
     }
 
@@ -298,6 +249,11 @@
 
         options: {
             type: Object as PropType<ConnectionsHubOptionsBag | null | undefined>,
+            default: {}
+        },
+
+        connectionTypeOptions: {
+            type: Object as PropType<ConnectionTypeOptionsBag | null | undefined>,
             default: {}
         },
 

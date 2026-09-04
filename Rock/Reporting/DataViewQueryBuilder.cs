@@ -237,7 +237,7 @@ namespace Rock.Reporting
                 Reason: TagWith() in certain situations is causing query to be null
                 (https://app.asana.com/0/474497188512037/1204855716691596/f)
              */
-            if ( returnType != null )
+            if ( returnType != null && !dataViewGetQueryArgs.IsQueryTaggingDisabled )
             {
                 var tagWithMethod = typeof( TagWithExtensions ).GetMethod( "TagWith" );
                 if ( tagWithMethod != null )

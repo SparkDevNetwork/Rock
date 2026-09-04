@@ -69,6 +69,8 @@
 @import 'components/navbar';                // Fully Format. There are Some hard coded value.
 @import 'components/colorpicker';
 @import 'components/responsive-utilities';
+@import 'components/responsive-embed';
+
 
 
 /* ======================= ROCK COMPONENTS ======================*/
@@ -83,6 +85,7 @@
 @import 'rock-components/grid-obsidian';            // Fully Format. There are Some hard coded value.
 @import 'rock-components/person-list';              // Fully Format. There are Some hard coded value.
 @import 'rock-components/photo-frame';              // Fully Format. There are Some hard coded value.
+@import 'rock-components/photo-lightbox';           // Fully Format.
 @import 'rock-components/picker-time';              // Fully Format. There are Some hard coded value.
 @import 'rock-components/pill-help';                // Fully Format.
 @import 'rock-components/rock-list';                // Fully Format. There are Some hard coded value.
@@ -164,6 +167,7 @@
 @import 'blocks/blocks-reporting';                  // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-finance';                    // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-communication';              // Fully Format. There are Some hard coded value.
+@import 'blocks/blocks-connections';
 @import 'blocks/blocks-security';                   // Fully Format.
 @import 'blocks/blocks-workflow';                   // Fully Format.
 @import 'blocks/blocks-cms';                        // Fully Format. There are Some hard coded value.
@@ -194,6 +198,13 @@
 
 /* ======================= ICON  ======================*/
 @import './icons/core-icon';                //Fully Format.
-@import './font-styling/font-styling-core'  //Fully Format.
+@import './font-styling/font-styling-core'; //Fully Format.
+
+/* ======================= PRINT  ======================*/
+// Must import last. Print rules reset .page-wrapper and #content-wrapper, and
+// media queries add no specificity -- loading before core/layout or the theme
+// stylesheets would let the screen rules win.
+@import 'core/print-extensions';
+
 
 

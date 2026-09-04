@@ -126,6 +126,26 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The format is five parts and Rock only parses the value when all five are
+        /// present, so a value built with the right pieces but the wrong number of
+        /// pipes reads as nothing at all rather than as an error. That, plus the fact
+        /// that which parts are used depends on the range type, is why this describes
+        /// both shapes explicitly instead of just naming the delimiter.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                ValueFormat = "Five parts separated by pipes, in the order RangeType|NumberOfTimeUnits|TimeUnit|StartDate|EndDate. All four pipes must be present even when the parts between them are empty, because Rock ignores a value that does not have exactly five parts. RangeType is one of Last, Current, DateRange, Previous, Next, or Upcoming. TimeUnit is one of Hour, Day, Week, Month, or Year. For a range relative to today, give the range type, the number, and the time unit, and leave both dates empty, as in Last|6|Month||. For an explicit range, use DateRange with the two dates and leave the number and time unit empty, as in DateRange|||2026-01-01|2026-12-31. Use ISO 8601 dates so the value does not depend on the server's culture."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

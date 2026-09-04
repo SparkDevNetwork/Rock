@@ -20,8 +20,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.AI;
 using Rock.AI.Automations;
-using Rock.AI.Classes.Moderations;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.AI;
 using Rock.Web.Cache;
@@ -91,8 +94,7 @@ namespace Rock.Model
                 {
                     using ( var aiAutomationRockContext = new RockContext() )
                     {
-                        var aiProviderService = new AIProviderService( aiAutomationRockContext );
-                        var aiConfig = aiProviderService.GetCompletionConfiguration( categoryId );
+                        var aiConfig = PrayerRequestService.GetAutomationConfiguration( categoryId, aiAutomationRockContext );
 
                         if ( aiConfig == null )
                         {
@@ -174,16 +176,16 @@ namespace Rock.Model
             /// Performs the text formatting completion and updates the PrayerRequest entity if necessary.
             /// </summary>
             /// <param name="prayerRequest">The <see cref="PrayerRequest"/> to format.</param>
-            /// <param name="prayerRequestService">The PrayerRequestService to use to call the AIAutomationFormatter completion.</param>
-            /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
+            /// <param name="prayerRequestService">The PrayerRequestService to use to call the formatter completion.</param>
+            /// <param name="automationConfig">The configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
-            private async Task<bool> ProcessTextFormatting( PrayerRequest prayerRequest, PrayerRequestService prayerRequestService, AIAutomation aiAutomationConfig )
+            private async Task<bool> ProcessTextFormatting( PrayerRequest prayerRequest, PrayerRequestService prayerRequestService, PrayerRequestAutomationConfiguration automationConfig )
             {
                 var isEntityModified = false;
 
                 // Get the AI Completion response from the AIProvider.
-                var formatterResponse = await prayerRequestService.GetAIAutomationFormatterResults( prayerRequest, aiAutomationConfig );
-                var hasModifiedText = !Entity.Text.Equals( formatterResponse.Content, StringComparison.OrdinalIgnoreCase );
+                var formatterResponse = await prayerRequestService.GetAutomationFormatterResultsAsync( prayerRequest, automationConfig );
+                var hasModifiedText = !Entity.Text.Equals( formatterResponse, StringComparison.OrdinalIgnoreCase );
 
                 // If the text was modified then capture the original text
                 // (if not already captured) before updating the PrayerRequest.Text.
@@ -194,7 +196,7 @@ namespace Rock.Model
                         prayerRequest.OriginalRequest = prayerRequest.Text;
                     }
 
-                    prayerRequest.Text = formatterResponse.Content;
+                    prayerRequest.Text = formatterResponse;
                     isEntityModified = true;
                 }
 
@@ -206,18 +208,18 @@ namespace Rock.Model
             /// </summary>
             /// <param name="prayerRequest">The <see cref="PrayerRequest"/> to analyze.</param>
             /// <param name="prayerRequestService">The PrayerRequestService to use to call the AIAutomationAnalyzer completion.</param>
-            /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
+            /// <param name="automationConfig">The AIAutomation configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
-            private async Task<bool> ProcessAnalysis( PrayerRequest prayerRequest, PrayerRequestService prayerRequestService, AIAutomation aiAutomationConfig )
+            private async Task<bool> ProcessAnalysis( PrayerRequest prayerRequest, PrayerRequestService prayerRequestService, PrayerRequestAutomationConfiguration automationConfig )
             {
                 var wasModified = false;
-                var analysisResponse = await prayerRequestService.GetAIAutomationAnalyzerResults( prayerRequest, aiAutomationConfig );
+                var analysisResponse = await prayerRequestService.GetAutomationAnalyzerResultsAsync( prayerRequest, automationConfig );
 
                 // If the configuration was asked to classify sentiment
                 // and there's a value in the response
                 // and that response id is one of those we provided.
                 // then update the Entity and the wasModified flag.
-                if ( aiAutomationConfig.ClassifySentiment && analysisResponse.SentimentId.HasValue )
+                if ( automationConfig.ClassifySentiment && analysisResponse.SentimentId.HasValue )
                 {
                     var sentiments = DefinedTypeCache.Get( SystemGuid.DefinedType.SENTIMENT_EMOTIONS );
 
@@ -232,9 +234,9 @@ namespace Rock.Model
                 // and there's a value in the response
                 // and that response id is one of those we provided.
                 // then update the Entity and the wasModified flag.
-                if ( aiAutomationConfig.AutoCategorize && analysisResponse.CategoryId.HasValue )
+                if ( automationConfig.AutoCategorize && analysisResponse.CategoryId.HasValue )
                 {
-                    if ( aiAutomationConfig.ChildCategories.Any( c => c.Id == analysisResponse.CategoryId ) )
+                    if ( automationConfig.ChildCategories.Any( c => c.Id == analysisResponse.CategoryId ) )
                     {
                         prayerRequest.CategoryId = analysisResponse.CategoryId;
                         wasModified = true;
@@ -245,7 +247,7 @@ namespace Rock.Model
                 // and the result is that the text is not appropriate for the public
                 // then update the Entity properties IsPublic and FlagCount and the wasModified flag.
                 var isInappropriate = analysisResponse.IsAppropriateForPublic.HasValue && analysisResponse.IsAppropriateForPublic.Value == false;
-                if ( aiAutomationConfig.CheckPublicAppropriateness && isInappropriate )
+                if ( automationConfig.CheckPublicAppropriateness && isInappropriate )
                 {
                     prayerRequest.IsPublic = false;
 
@@ -262,45 +264,44 @@ namespace Rock.Model
             /// Performs the moderation completion and updates the PrayerRequest entity if necessary.
             /// </summary>
             /// <param name="prayerRequest">The <see cref="PrayerRequest"/> to get moderations for.</param>
-            /// <param name="aiAutomationConfig">The AIAutomation configuration to use.</param>
+            /// <param name="automationConfig">The AIAutomation configuration to use.</param>
             /// <returns><c>true</c> if the PrayerRequest was modified; otherwise <c>false</c>.</returns>
-            private async Task<bool> ProcessModeration( PrayerRequest prayerRequest, AIAutomation aiAutomationConfig )
+            private async Task<bool> ProcessModeration( PrayerRequest prayerRequest, PrayerRequestAutomationConfiguration automationConfig )
             {
-                // Call the moderations endpoint for the AIProvider.
-                var moderations = await aiAutomationConfig.AIProviderComponent.GetModerations( aiAutomationConfig.AIProvider, new ModerationsRequest
+                var service = RockApp.Current.GetRequiredService<TextProcessingService>();
+                var request = new ModerationRequest
                 {
-                    // Use the original prayer request text for moderation.
-                    // OriginalRequest will be null if no text formatter completion was run.
-                    Input = Entity.OriginalRequest ?? Entity.Text,
-                    Model = "omni-moderation-latest"
-                } );
+                    Text = Entity.OriginalRequest ?? Entity.Text,
+                };
 
-                // If there are no response categories then something went wrong - don't make any changes.
-                if ( moderations?.ModerationsResponseCategories == null )
+                var response = await service.GetModerationAsync( request );
+
+                if ( !response.IsSuccessful )
                 {
                     return false;
                 }
 
-                var wasModified = prayerRequest.ModerationFlags != moderations.ModerationsResponseCategories.ModerationFlags;
+                var wasModified = prayerRequest.ModerationFlags != response.ModerationFlags;
 
                 // Set the bit mask of detected moderation flags.
-                prayerRequest.ModerationFlags = moderations.ModerationsResponseCategories.ModerationFlags;
+                prayerRequest.ModerationFlags = response.ModerationFlags;
 
                 // If there were any detected moderation flags and we have a moderation workflow
                 // then launch the workflow and return true to indicate the entity was modified.
-                var moderationWorkflow = aiAutomationConfig.ModerationAlertWorkflowType;
+                var moderationWorkflow = automationConfig.ModerationAlertWorkflowType;
                 var workflowTypeGuid = moderationWorkflow?.Guid ?? Guid.Empty;
+
                 if ( prayerRequest.ModerationFlags > 0 && workflowTypeGuid != null && !workflowTypeGuid.IsEmpty() )
                 {
                     var currentPersonAliasId = DbContext.GetCurrentPersonAliasId();
                     var workflowAttributes = new Dictionary<string, string>
                     {
-                        { "IsHate", moderations.ModerationsResponseCategories.IsHate.ToString() },
-                        { "IsSelfHarm", moderations.ModerationsResponseCategories.IsSelfHarm.ToString() },
-                        { "IsSexual", moderations.ModerationsResponseCategories.IsSexual.ToString() },
-                        { "IsSexualMinor", moderations.ModerationsResponseCategories.IsSexualMinor.ToString() },
-                        { "IsThreat", moderations.ModerationsResponseCategories.IsThreat.ToString() },
-                        { "IsViolent", moderations.ModerationsResponseCategories.IsViolent.ToString() },
+                        { "IsHate", response.IsHate.ToString() },
+                        { "IsSelfHarm", response.IsSelfHarm.ToString() },
+                        { "IsSexual", response.IsSexual.ToString() },
+                        { "IsSexualMinor", response.IsSexualMinor.ToString() },
+                        { "IsThreat", response.IsThreat.ToString() },
+                        { "IsViolent", response.IsViolent.ToString() },
                     };
 
                     prayerRequest.LaunchWorkflow( workflowTypeGuid, moderationWorkflow.Name, workflowAttributes, currentPersonAliasId );

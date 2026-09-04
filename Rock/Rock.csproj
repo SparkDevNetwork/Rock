@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <PackageId>RockRMS.Rock</PackageId>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <RockWebPath>..\RockWeb</RockWebPath>
     <CopyToRockWeb>True</CopyToRockWeb>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="1.4.0" />
+    <PackageReference Include="AngleSharp" Version="1.5.2" />
     <PackageReference Include="Antlr" Version="3.5.0.2" />
     <PackageReference Include="AWSSDK.Core" Version="4.0.3.3" />
     <PackageReference Include="AWSSDK.S3" Version="4.0.13.1" />
@@ -20,6 +21,7 @@
     <PackageReference Include="CacheManager.SystemRuntimeCaching" Version="1.2.0" />
     <PackageReference Include="CommonMark.NET" Version="0.15.1" />
     <PackageReference Include="CS-Script" Version="3.13.2" />
+    <PackageReference Include="DistributedLock.SqlServer" Version="1.0.7" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
     <PackageReference Include="dotless" Version="1.5.2" />
     <PackageReference Include="EF6.TagWith" Version="1.2.1" />
@@ -39,13 +41,14 @@
     <PackageReference Include="MassTransit.AzureServiceBus" Version="5.5.2" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.5" />
     <PackageReference Include="MaxMind.GeoIP2" Version="5.4.1" />
-    <PackageReference Include="MessagePack" Version="3.1.4" />
+    <PackageReference Include="MessagePack" Version="3.1.8" />
     <PackageReference Include="Microsoft.AspNet.SignalR" Version="2.4.3" />
     <PackageReference Include="Microsoft.AspNet.Web.Optimization" Version="1.1.3" />
     <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.2.9" />
     <PackageReference Include="Microsoft.Azure.SignalR.AspNet" Version="1.4.3" />
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.2.3" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
@@ -68,6 +71,7 @@
     <PackageReference Include="PuppeteerSharp" Version="20.2.4" />
     <PackageReference Include="QRCoder" Version="1.7.0" />
     <PackageReference Include="RestSharp" Version="105.2.3" />
+    <PackageReference Include="ReverseMarkdown" Version="6.1.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
     <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="4.0.0" />
@@ -78,6 +82,7 @@
     <PackageReference Include="System.ClientModel" Version="1.8.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="System.IO.Pipelines" Version="10.0.0" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.7.0" />
     <PackageReference Include="System.Memory.Data" Version="10.0.0" />
@@ -94,12 +99,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
-    <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj" />
+    <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
-    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
-    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
-    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
+    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj" />
   </ItemGroup>
 
@@ -180,6 +185,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>HotFixMigrationResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <!--
+      Crawler pattern list consumed by Rock.Net.CrawlerUserAgents. Vendored from
+      https://github.com/monperrus/crawler-user-agents (MIT) and refreshed as a
+      step in the release packaging process.
+    -->
+    <EmbeddedResource Include="Net\crawler-user-agents.json" />
   </ItemGroup>
 
   <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />

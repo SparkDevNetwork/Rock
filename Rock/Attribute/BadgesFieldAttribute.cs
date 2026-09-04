@@ -48,11 +48,23 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public BadgesFieldAttribute( string name = "Badges", string description = "", bool required = true, string defaultBadgeTypeGuids = "", string category = "",
             int order = 0, string key = null, string entityTypeGuid = SystemGuid.EntityType.PERSON )
-            : base( name, description, required, defaultBadgeTypeGuids, category, order, key, typeof( Rock.Field.Types.BadgesFieldType ).FullName )
+            : base( SystemGuid.FieldType.BADGES.AsGuid(), name, description, required, defaultBadgeTypeGuids, category, order, key )
         {
             EntityTypeGuid = entityTypeGuid;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BadgesFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public BadgesFieldAttribute( string name )
+            : base( SystemGuid.FieldType.BADGES.AsGuid(), name )
+        {
+            EntityTypeGuid = SystemGuid.EntityType.PERSON;
         }
 
         /// <summary>

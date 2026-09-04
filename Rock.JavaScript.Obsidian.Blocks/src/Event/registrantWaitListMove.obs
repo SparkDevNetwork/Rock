@@ -52,7 +52,7 @@
                                 </template>
                             </TransitionGroup>
                             <div v-if="recipients.length > maxVisible" class="text-center mt-2">
-                                <RockButton btnType="link" btnSize="sm" @click="isShowingAll = !isShowingAll">
+                                <RockButton btnType="link" btnSize="sm" @click="() => { isShowingAll = !isShowingAll }">
                                     {{ isShowingAll ? 'Show Less' : `Show All (${recipients.length})` }}
                                 </RockButton>
                             </div>
@@ -253,17 +253,15 @@
     const isMessageBodyChanged = ref(false);
     const showEmail = ref(false);
     const isSending = ref(false);
-    const isComplete = ref(false);
     const sendResultMessage = ref("");
     const emailErrors = ref(false);
     const isShowingAll = ref(false);
     const moveFailed = ref(!config.recipients || config.recipients.length === 0);
+    const recipients = ref<RegistrantWaitListMoveRecipientBag[]>([...(config.recipients ?? [])]);
 
     // #endregion
 
     // #region Computed Values
-
-    const resultIcon = computed(() => moveFailed.value ? "ti ti-x" : "ti ti-check");
 
     const selectedCount = computed(() => recipients.value.filter(r => r.isSelected).length);
 
@@ -275,10 +273,6 @@
     const visibleRecipients = computed(() =>
         isShowingAll.value ? recipients.value : recipients.value.slice(0, maxVisible)
     );
-
-    // #endregion
-
-    const recipients = ref<RegistrantWaitListMoveRecipientBag[]>([...(config.recipients ?? [])]);
 
     // #endregion
 
@@ -329,7 +323,6 @@
                 sendResultMessage.value = result.data as string ?? "Emails sent.";
                 emailErrors.value = (result.data as string ?? "").toLowerCase().includes("error");
                 showEmail.value = false;
-                isComplete.value = true;
                 window.scrollTo(0, 0);
             }
             else {

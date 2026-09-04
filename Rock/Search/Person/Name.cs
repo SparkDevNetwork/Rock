@@ -32,7 +32,11 @@ namespace Rock.Search.Person
     [Description("Person Name Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Name")]
-    [BooleanField("Allow Search by Only First Name", "By default, when searching with only one name (without a space or comma), only people with a matching Last Names will be included.  Select this option to also include people with a matching First Name", false, "", 4, "FirstNameSearch")]
+    [BooleanField("Allow Search by Only First Name",
+        Description = "By default, when searching with only one name (without a space or comma), only people with a matching Last Names will be included.  Select this option to also include people with a matching First Name",
+        DefaultBooleanValue = false,
+        Order = 4,
+        Key = "FirstNameSearch")]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEARCH_COMPONENT_PERSON_NAME )]
     public class Name : SearchComponent
     {

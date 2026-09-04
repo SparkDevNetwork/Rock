@@ -69,28 +69,35 @@ namespace Rock.Blocks.Reporting
         #region Fields
 
         /*
-           6/25/2024 - KA
+            8/18/2026 - CLAUDE
 
-           Ideally the colors should be identified by their css classes but the Chart.js
-           prefers the colors be either hex or string, and since the Chart.js data is generated
-           server-side replacing the css class with their hex components client-side will be difficult.           
+            These colors are used by the Line Chart, which is built through
+            ChartJsTimeSeriesDataFactory. That factory runs each color string through
+            RockColor (see ChartJsDataFactory.GetDatasetColorSettings()), which parses it as
+            an actual color and bakes the result to rgba(...) before the JSON ever reaches the
+            client. A CSS variable name (e.g. "--color-categorical-1") isn't a parseable color,
+            so RockColor silently falls back to black. Unlike the Bar Chart's colors (built
+            directly in this class, with no RockColor involved), these must stay literal hex
+            values that are kept in sync by hand with --color-categorical-1 through -8 in
+            _css-variable.scss.
 
-           #techdebt: Use hex from the Theme's AdditionalSettingsJson when they become available in a upcoming version of Rock.
+            Reason: Passing CSS variable names through this path rendered every line black.
+
+            #techdebt: Use hex from the Theme's AdditionalSettingsJson when they become available in a upcoming version of Rock.
         */
         /// <summary>
         /// The available colors for the charts
         /// </summary>
         private readonly List<string> _availableColors = new List<string>()
         {
-             "#0C4A6E",  // dataviz-info-900
-             "#075985",  // dataviz-info-800
-             "#0369A1",  // dataviz-info-700
-             "#0284C7",  // dataviz-info-600
-             "#0EA5E9",  // dataviz-info-500
-             "#38BDF8",  // dataviz-info-400
-             "#E0F2FE",  // dataviz-info-100
-             "#BAE6FD",  // dataviz-info-200
-             "#7DD3FC",  // dataviz-info-300
+             "#615FFF",  // --color-categorical-1
+             "#D946EF",  // --color-categorical-2
+             "#7CCF00",  // --color-categorical-3
+             "#FF2056",  // --color-categorical-4
+             "#FF6900",  // --color-categorical-5
+             "#00B8DB",  // --color-categorical-6
+             "#EAB308",  // --color-categorical-7
+             "#6A7282",  // --color-categorical-8
         };
         private List<ChartDatasetInfo> _givingHouseHoldsMetricValues;
         private List<ChartDatasetInfo> _tithingHouseHoldsMetricValues;
@@ -202,13 +209,15 @@ namespace Rock.Blocks.Reporting
                 seriesNameKeyValue.Add( dataSeriesDataset, seriesNameValue );
             }
 
+            var seriesIndex = 0;
             foreach ( var dataSeriesName in seriesNameKeyValue.Keys )
             {
                 var name = seriesNameKeyValue[dataSeriesName];
 
                 var campusId = dataPoints.Find( d => d.MetricValueCampusIds == dataSeriesName )?.CampusId ?? 0;
                 var campus = CampusCache.Get( campusId );
-                var color = GetFillColor( campus, ChartTypeKey.LineChart );
+                var color = GetFillColor( campus, ChartTypeKey.LineChart, seriesIndex );
+                seriesIndex++;
 
                 var dataset = new ChartJsTimeSeriesDataset
                 {
@@ -548,8 +557,14 @@ namespace Rock.Blocks.Reporting
         /// Gets the fill color of the charts.
         /// </summary>
         /// <param name="campus">The campus.</param>
+        /// <param name="chartType">The current chart type configuration.</param>
+        /// <param name="seriesIndex">
+        /// The 0-based position of this campus's series among the datasets being charted.
+        /// Only used for the Line Chart's per-campus color cycling; the campus's database Id
+        /// is an arbitrary value and not a reliable position to color by.
+        /// </param>
         /// <returns></returns>
-        private string GetFillColor( CampusCache campus, string chartType )
+        private string GetFillColor( CampusCache campus, string chartType, int seriesIndex = 0 )
         {
             var campusAge = GetCampusAge( campus );
 
@@ -563,35 +578,36 @@ namespace Rock.Blocks.Reporting
                 }
                 else
                 {
-                    return FillColorSource().Skip( campus?.Id ?? 0 ).FirstOrDefault();
+                    var index = seriesIndex % _availableColors.Count;
+                    return FillColorSource().Skip( index ).FirstOrDefault();
                 }
             }
             else
             {
                 if ( !campusAge.HasValue )
                 {
-                    return "#A3A3A3";
+                    return "--color-neutral-primary";
                 }
 
                 if ( campusAge >= 0 && campusAge <= 2 )
                 {
-                    return "#BAE6FD";
+                    return "--color-metric-3";
                 }
                 else if ( campusAge >= 3 && campusAge <= 6 )
                 {
-                    return "#38BDF8";
+                    return "--color-metric-5";
                 }
                 else if ( campusAge >= 7 && campusAge <= 11 )
                 {
-                    return "#0284C7";
+                    return "--color-metric-7";
                 }
                 else if ( campusAge >= 11 )
                 {
-                    return "#075985";
+                    return "--color-metric-9";
                 }
                 else
                 {
-                    return "A3A3A3";
+                    return "--color-neutral-primary";
                 }
             }
         }
@@ -691,11 +707,11 @@ namespace Rock.Blocks.Reporting
         {
             var legendLabelColorMap = new Dictionary<string, string>
             {
-                { "0-2 yrs", "#BAE6FD" },
-                { "3-6 yrs", "#38BDF8" },
-                { "7-11 yrs", "#0284C7" },
-                { "11+", "#075985" },
-                { "Unknown", "#A3A3A3" }
+                { "0-2 yrs", "--color-metric-3" },
+                { "3-6 yrs", "--color-metric-5" },
+                { "7-11 yrs", "--color-metric-7" },
+                { "11+", "--color-metric-9" },
+                { "Unknown", "--color-neutral-primary" }
             };
 
             return legendLabelColorMap;

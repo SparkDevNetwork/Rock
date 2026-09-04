@@ -69,10 +69,6 @@
                              label="AI Approval Guidelines"
                              :help="aiApprovalGuidelineHelpText"
                              textMode="multiline" />
-
-                    <AIProviderPicker
-                                      v-if="enabledAIApprovals"
-                                      v-model="aiProvider" label="AI Provider" help="The AI provider to use for the approval. If no provider is selected the default provider will be used." />
                 </template>
             </div>
 
@@ -141,7 +137,6 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
-    import AIProviderPicker from "@Obsidian/Controls/aiProviderPicker.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -187,7 +182,6 @@
     const isMentionEnabled = propertyRef(props.modelValue.bag?.isMentionEnabled ?? false, "IsMentionEnabled");
     const enabledAIApprovals = propertyRef(props.modelValue.bag?.enabledAIApprovals ?? false, "AdditionalSettingsJson");
     const aiApprovalGuidelines = propertyRef(props.modelValue.bag?.aiApprovalGuidelines ?? "", "AdditionalSettingsJson");
-    const aiProvider = propertyRef(props.modelValue.bag?.aiProvider ?? null, "AdditionalSettingsJson");
     const showEntityTypePicker = ref(props.modelValue.bag?.showEntityTypePicker);
     const showContentFormatDropdown = ref(props.modelValue.bag?.formatType !== NoteFormatType.Structured);
 
@@ -201,7 +195,7 @@
     // objects returned by propertyRef().
     const propRefs = [name, entityType, iconCssClass, color, userSelectable,
         allowsWatching, autoWatchAuthors, allowsReplies, maxReplyDepth, allowsAttachments,
-        binaryFileType, formatType, isMentionEnabled, enabledAIApprovals, aiApprovalGuidelines, aiProvider];
+        binaryFileType, formatType, isMentionEnabled, enabledAIApprovals, aiApprovalGuidelines];
 
     const formatTypeItems = enumToListItemBag(NoteFormatTypeDescription);
 
@@ -261,7 +255,6 @@
         updateRefValue(isMentionEnabled, props.modelValue.bag?.isMentionEnabled ?? false);
         updateRefValue(enabledAIApprovals, props.modelValue.bag?.enabledAIApprovals ?? false);
         updateRefValue(aiApprovalGuidelines, props.modelValue.bag?.aiApprovalGuidelines ?? "");
-        updateRefValue(aiProvider, props.modelValue.bag?.aiProvider ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -287,7 +280,6 @@
         setPropertiesBoxValue(newValue, "isMentionEnabled", isMentionEnabled.value ?? false);
         setPropertiesBoxValue(newValue, "enabledAIApprovals", enabledAIApprovals.value ?? false);
         setPropertiesBoxValue(newValue, "aiApprovalGuidelines", aiApprovalGuidelines.value);
-        setPropertiesBoxValue(newValue, "aiProvider", aiProvider.value ?? null);
 
         emit("update:modelValue", newValue);
     });

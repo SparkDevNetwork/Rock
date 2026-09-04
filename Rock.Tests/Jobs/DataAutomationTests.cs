@@ -49,7 +49,7 @@ namespace Rock.Tests.Jobs
         [TestMethod]
         public void GetPeopleWhoHaveSiteLogins_ReadsFromPersonSession_NotUserLogin()
         {
-            using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            using var scope = TestHelper.CreateScopedRockApp();
             var rockContext = scope.App.CreateRockContext();
 
             const int targetPersonId = 42;
@@ -103,7 +103,7 @@ namespace Rock.Tests.Jobs
         [TestMethod]
         public void GetPeopleWhoHaveSiteLogins_ReturnsEmpty_WhenDisabled()
         {
-            using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            using var scope = TestHelper.CreateScopedRockApp();
             var rockContext = scope.App.CreateRockContext();
 
             var result = InvokeGetPeopleWhoHaveSiteLogins( enabled: false, periodInDays: 30, rockContext: rockContext );
@@ -119,7 +119,7 @@ namespace Rock.Tests.Jobs
         [TestMethod]
         public void GetPeopleWhoHaveSiteLogins_ExcludesStalePersonSessionActivity()
         {
-            using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            using var scope = TestHelper.CreateScopedRockApp();
             var rockContext = scope.App.CreateRockContext();
 
             const int recentPersonId = 42;

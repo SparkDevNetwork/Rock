@@ -1,0 +1,282 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning" v-html="errorMessage" />
+
+    <Panel v-else
+           type="block"
+           worksurfaceMode
+           hasNoBodyPadding
+           :title="panelTitle"
+           :headerSecondaryActions="headerSecondaryActions">
+        <template #headerActions>
+            <HighlightLabel v-if="activeSession" labelType="success" iconCssClass="ti ti-circle-check">
+                {{ attendeeCountText }}
+            </HighlightLabel>
+        </template>
+
+        <template #default>
+            <StartSession v-if="isStartSessionScreenShown"
+                          v-model:submit="isStartSessionSubmitting"
+                          :isCampusPickerVisible="config.isCampusPickerVisible"
+                          :campusTypeFilter="config.campusTypeFilter"
+                          :campusStatusFilter="config.campusStatusFilter"
+                          :attendanceGroup="config.attendanceGroup"
+                          :groupItems="config.groupItems"
+                          @startEntry="onStartEntry" />
+
+            <div v-else class="rapid-attendance-entry-screen">
+                <SearchSidebar ref="searchSidebarRef"
+                               :selectedPersonGuid="selectedSearchResult?.personGuid ?? null"
+                               :addFamilyPageUrl="addFamilyPageUrl"
+                               :session="activeSession"
+                               @select="onSearchResultSelect"
+                               @clear="onSearchCleared" />
+
+                <MainEntry :selectedResult="selectedSearchResult"
+                           :session="activeSession"
+                           v-model:submit="isSaveSubmitting"
+                           @attendanceCountChanged="onAttendanceCountChanged"
+                           @saved="onSaved" />
+            </div>
+        </template>
+
+        <template #footerActions>
+            <RockButton v-if="activeSession"
+                        :btnType="BtnType.Link"
+                        :disabled="isSaveSubmitting"
+                        @click="onBackToSetupClick">
+                Back to Setup
+            </RockButton>
+        </template>
+
+        <template #footerSecondaryActions>
+            <RockButton v-if="isStartSessionScreenShown"
+                        :btnType="BtnType.Primary"
+                        :disabled="isStartSessionSubmitting"
+                        @click="onStartEntryClick">
+                Start Entry
+            </RockButton>
+
+            <RockButton v-else
+                        :btnType="BtnType.Primary"
+                        :disabled="!selectedSearchResult || isSaveSubmitting"
+                        @click="onSaveClick">
+                Save
+            </RockButton>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, ref, watch } from "vue";
+    import MainEntry from "./RapidAttendanceEntry/mainEntry.partial.obs";
+    import SearchSidebar from "./RapidAttendanceEntry/searchSidebar.partial.obs";
+    import StartSession from "./RapidAttendanceEntry/startSession.partial.obs";
+    import { NavigationUrlKey } from "./RapidAttendanceEntry/types.partial";
+    import { provideNavigationGuard, provideUpdateEditorIsDirty } from "./RapidAttendanceEntry/utils.partial";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { RapidAttendanceEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryInitializationBox";
+    import { RapidAttendanceEntrySearchResultBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySearchResultBag";
+    import { RapidAttendanceEntrySessionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySessionBag";
+
+    const config = useConfigurationValues<RapidAttendanceEntryInitializationBox>();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const errorMessage = ref(config.errorMessage ?? "");
+
+    const addFamilyPageUrl = config.navigationUrls?.[NavigationUrlKey.AddFamilyPage] || null;
+
+    const activeSession = ref<RapidAttendanceEntrySessionBag | null>(config.activeSession ?? null);
+
+    const isStartSessionSubmitting = ref(false);
+
+    const isSaveSubmitting = ref(false);
+
+    const selectedSearchResult = ref<RapidAttendanceEntrySearchResultBag | null>(null);
+
+    const attendanceCount = ref<number | null>(config.activeSession?.attendanceCount ?? null);
+
+    const searchSidebarRef = ref<{ refresh: () => void }>();
+
+    /** Whether the entry pane holds unsaved per-person input, mirrored up from MainEntry. */
+    const isEntryDirty = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Whether the attendance setup screen is shown instead of the entry
+     * screen. Attendance can be disabled entirely, in which case the entry
+     * screen runs without a session.
+     */
+    const isStartSessionScreenShown = computed((): boolean =>
+        config.isAttendanceEnabled && !activeSession.value
+    );
+
+    /**
+     * The panel title: "Entry Session" while configuring, with the active
+     * session's group, schedule, and date appended once entry begins.
+     */
+    const panelTitle = computed((): string => {
+        const session = activeSession.value;
+
+        if (!session) {
+            return "Entry Session";
+        }
+
+        const attendanceDate = RockDateTime.parseISO(session.attendanceDate ?? "")?.toLocaleString(DateTimeFormat.DateShort);
+        const parts = [session.groupName, session.scheduleName, attendanceDate].filter(p => !!p);
+
+        return `Entry Session - ${parts.join(" - ")}`;
+    });
+
+    /** The header badge text, like "12 Attendees". */
+    const attendeeCountText = computed((): string => {
+        const count = attendanceCount.value ?? 0;
+
+        return `${count} ${pluralize("Attendee", count)}`;
+    });
+
+    /** The header ellipsis menu actions. */
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        const attendanceListUrl = activeSession.value?.attendanceListUrl;
+
+        if (!attendanceListUrl) {
+            return [];
+        }
+
+        return [
+            {
+                title: "View Attendance List",
+                iconCssClass: "ti ti-table",
+                type: "default",
+                handler: () => {
+                    window.location.href = attendanceListUrl;
+                }
+            }
+        ];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Returns true when leaving the current entry is allowed: either nothing is
+     * unsaved, or the operator confirmed they want to discard it. Provided to
+     * descendant partials so the sidebar and Back to Setup share one check.
+     */
+    async function navigationGuard(): Promise<boolean> {
+        if (!isEntryDirty.value) {
+            return true;
+        }
+
+        return await confirm("Changes have been made that have not yet been saved. Do you want to leave without saving?");
+    }
+
+    /** Warns before the browser unloads the page while entries are unsaved. */
+    function onBeforeUnload(event: BeforeUnloadEvent): void {
+        event.preventDefault();
+        event.returnValue = "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Asks the start session form to validate and submit. */
+    function onStartEntryClick(): void {
+        isStartSessionSubmitting.value = true;
+    }
+
+    /** Switches to the entry screen under the validated session. */
+    function onStartEntry(session: RapidAttendanceEntrySessionBag): void {
+        activeSession.value = session;
+        attendanceCount.value = session.attendanceCount;
+        isStartSessionSubmitting.value = false;
+    }
+
+    /** Shows the selected individual's family in the main entry pane. */
+    function onSearchResultSelect(result: RapidAttendanceEntrySearchResultBag): void {
+        selectedSearchResult.value = result;
+    }
+
+    /** Resets the entry panel when the search is cleared. */
+    function onSearchCleared(): void {
+        selectedSearchResult.value = null;
+    }
+
+    /** Asks the main entry pane to save everything entered. */
+    function onSaveClick(): void {
+        isSaveSubmitting.value = true;
+    }
+
+    /** Keeps the header badge in step with the latest known count. */
+    function onAttendanceCountChanged(count: number | null): void {
+        attendanceCount.value = count;
+    }
+
+    /** Refreshes the search results after a save so the cards show the latest saved attendance. */
+    function onSaved(): void {
+        searchSidebarRef.value?.refresh();
+    }
+
+    /**
+     * Ends the session and returns to the prefilled setup screen, after guarding
+     * any unsaved entry. Clears the selected person so re-entering starts on an
+     * empty entry panel.
+     */
+    async function onBackToSetupClick(): Promise<void> {
+        if (!(await navigationGuard())) {
+            return;
+        }
+
+        activeSession.value = null;
+        selectedSearchResult.value = null;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Install the browser's unload warning only while there are unsaved entries.
+    watch(isEntryDirty, () => {
+        window.removeEventListener("beforeunload", onBeforeUnload);
+
+        if (isEntryDirty.value) {
+            window.addEventListener("beforeunload", onBeforeUnload);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("beforeunload", onBeforeUnload);
+    });
+
+    // #endregion Lifecycle Hooks
+
+    // Provide the navigation guard and the editor-isDirty updater for descendant
+    // partials: MainEntry reports its dirty state, and the search sidebar and
+    // Back to Setup await the guard before discarding unsaved entries.
+    provideNavigationGuard(() => navigationGuard());
+    provideUpdateEditorIsDirty((value) => {
+        isEntryDirty.value = value;
+    });
+</script>

@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Field.Types;
+using System;
 
 namespace Rock.Attribute
 {
@@ -22,6 +22,8 @@ namespace Rock.Attribute
     /// Attribute to specify AI Provider field.
     /// </summary>
     /// <seealso cref="Rock.Attribute.FieldAttribute" />
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public class AIProviderFieldAttribute : FieldAttribute
     {
         /// <summary>
@@ -34,10 +36,20 @@ namespace Rock.Attribute
         /// <param name="category">The category of the attribute.</param>
         /// <param name="order">The order of the attribute.</param>
         /// <param name="key">The key of the attribute.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public AIProviderFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) :
-            base( name, description, required, defaultValue, category, order, key, typeof( AIProviderFieldType ).FullName )
+            base( SystemGuid.FieldType.AI_PROVIDER.AsGuid(), name, description, required, defaultValue, category, order, key )
         {
+        }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AIProviderFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name of the attribute.</param>
+        public AIProviderFieldAttribute( string name )
+            : base( SystemGuid.FieldType.AI_PROVIDER.AsGuid(), name )
+        {
         }
     }
 }

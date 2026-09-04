@@ -59,5 +59,10 @@ namespace Rock.ViewModels.Blocks.Connection.ConnectionOpportunityNavigation
         /// </summary>
         public bool IsSnapshotViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.Snapshot );
 
+        /// <summary>
+        /// Gets or sets whether the Celebrations feature is enabled for this connection type.
+        /// </summary>
+        public bool IsCelebrationEnabled { get; set; }
+
     }
 }

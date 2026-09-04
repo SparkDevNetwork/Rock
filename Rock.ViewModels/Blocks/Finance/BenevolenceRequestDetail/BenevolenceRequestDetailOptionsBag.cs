@@ -32,6 +32,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
@@ -87,6 +88,11 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         public string EthnicityOptionAttribute { get; set; }
 
         /// <summary>
+        /// Gets or sets the record source that new individuals default to, resolved from the block setting.
+        /// </summary>
+        public ListItemBag DefaultRecordSource { get; set; }
+
+        /// <summary>
         /// Gets or sets the benevolence type.
         /// </summary>
         public List<BenevolenceTypeBag> BenevolenceRequestTypes { get; set; }
@@ -105,6 +111,12 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// Gets or sets the collection of result type values.
         /// </summary>
         public List<ListItemBag> ResultTypeValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute columns to render on the results grid. These describe the Benevolence Result
+        /// attributes marked "Show in Grid" that the current individual is allowed to view.
+        /// </summary>
+        public List<AttributeFieldDefinitionBag> ResultAttributeFields { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier for the binary file type associated with benevolence documents.

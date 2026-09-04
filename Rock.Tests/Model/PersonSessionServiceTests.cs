@@ -68,7 +68,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void GetImpersonatorSession_ReturnsPriorSession_ForValidImpersonationRestoreReference()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var impersonator = new PersonSession
@@ -113,7 +113,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void GetImpersonatorSession_ReturnsNull_ForUserTokenSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var session = new PersonSession
@@ -142,7 +142,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void GetImpersonatorSession_ReturnsNull_ForComponentSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var session = new PersonSession
@@ -169,7 +169,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void GetImpersonatorSession_ReturnsNull_WhenImpersonatorReferenceIsDangling()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var impersonationSession = new PersonSession
@@ -200,7 +200,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void GetImpersonatorSession_ReturnsNull_WhenSessionArgumentIsNull()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -221,7 +221,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartComponentSession_StampsStepUp_AndMfaWhenSupplied()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -246,7 +246,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartComponentSession_LeavesMfaRecencyNull_WhenNotSupplied()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -264,7 +264,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartComponentSession_HasNoImpersonationOrUserTokenSettings()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -286,7 +286,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartImpersonationSession_CopiesRecencyFromImpersonator()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -318,7 +318,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartImpersonationSession_LeavesRecencyNull_WhenImpersonatorHasNullRecency()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -348,7 +348,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartImpersonationSession_StampsAdminImpersonationSettings()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -385,7 +385,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartUserTokenSession_LeavesBothRecencyTimestampsNull()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -405,7 +405,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartUserTokenSession_StampsUserTokenSettings()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -435,7 +435,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void FindOrCreateApiKeySession_SecondCall_ReturnsExistingActiveSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var existing = new PersonSession
@@ -476,7 +476,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void FindOrCreateApiKeySession_OrphanedSession_IsNotResurrected()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         // Orphan: a former ApiKey session whose UserLogin was deleted. The
@@ -544,7 +544,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void FindOrCreateApiKeySession_ExpiredButActiveSession_IsNotReused()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         // Stale-but-IsActive row: ExpiresDateTime in the past, IsActive
@@ -604,7 +604,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void FindOrCreateDeviceComponentSession_ExistingActiveSession_IsReused()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var existing = new PersonSession
@@ -650,7 +650,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void FindOrCreateDeviceComponentSession_DifferentUserLoginOnRequest_MarksPriorInactive()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var priorSession = new PersonSession
@@ -705,7 +705,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void FindOrCreateDeviceComponentSession_SameUserLoginOnRequest_LeavesPriorActive()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var existing = new PersonSession
@@ -749,7 +749,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void FindOrCreateDeviceComponentSession_ThrowsWhenUserLoginHasNoEntityType()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -775,7 +775,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void GetCookieValue_DoesNotRequireHttpContext()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -819,7 +819,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void FindOrCreateDeviceComponentSession_ExpiredButActiveSession_IsNotReused()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         // Stale-but-IsActive row: ExpiresDateTime in the past, IsActive
@@ -877,7 +877,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void EndImpersonationAndRestore_ThrowsOnComponentSource()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -900,7 +900,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void EndImpersonationAndRestore_ThrowsOnUserTokenSource()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -925,7 +925,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void EndImpersonationAndRestore_ReturnsNullAndMarksInactive_WhenPersonSessionRestoreReferenceIsDangling()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var impersonationSession = new PersonSession
@@ -959,7 +959,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void EndImpersonationAndRestore_ReturnsNullAndMarksInactive_WhenInteractionSessionRestoreReferenceIsDangling()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var impersonator = new PersonSession
@@ -1010,7 +1010,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void StartImpersonationSession_RegeneratesBrowserSessionId()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1043,7 +1043,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void EndImpersonationAndRestore_RePointsBrowserSessionId_OnSuccessfulRestore()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var impersonator = new PersonSession
@@ -1108,7 +1108,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void EndImpersonationAndRestore_DoesNotTouchBrowserSessionId_OnDanglingRestore()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var impersonationSession = new PersonSession
@@ -1194,7 +1194,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ImpersonatePerson_ActiveAdminSession_CreatesImpersonationSession_NoPersonToken()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedAdminImpersonatorEnvironment(
@@ -1240,7 +1240,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ImpersonatePerson_StampsAdminImpersonationSettings_OnNewSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedAdminImpersonatorEnvironment(
@@ -1273,7 +1273,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ImpersonatePerson_NoActiveSession_ThrowsAndMutatesNothing()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var response = new TrackingResponseContext();
@@ -1298,7 +1298,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ImpersonatePerson_DoesNotMutatePersonTokenTimesUsed()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedAdminImpersonatorEnvironment(
@@ -1341,7 +1341,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void BuildImpersonationHistoryLogin_PopulatesExpectedFields()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         // Admin "Ted Decker" impersonating target person.
@@ -1455,7 +1455,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void GetCookieValue_TryDecodeCookie_RoundTripsPayload()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1495,7 +1495,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void TryDecodeCookie_ReturnsFalse_ForTamperedCookie()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1532,7 +1532,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void GetCookieValue_WireFormat_HasNoNewtonsoftArtifacts()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1576,7 +1576,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_AbsentCookie_ReturnsNullAndDoesNotMutateResponse()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1598,7 +1598,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_LegacyFormatCookie_ReturnsNullAndLeavesCookieAlone()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1624,7 +1624,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_InactiveSession_ReturnsNullAndExpiresCookie()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1658,7 +1658,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_ExpiredSession_ReturnsNullAndExpiresCookie()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1694,7 +1694,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_LockedOutUserLogin_SignsOutAndReturnsNull()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1743,7 +1743,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_UnconfirmedUserLogin_SignsOutAndReturnsNull()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1793,7 +1793,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_ConfirmedActiveUserLogin_ReturnsSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1841,7 +1841,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_SessionWithoutUserLogin_ResolvesNormally()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1883,7 +1883,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_YoungCookie_ReturnsSessionWithNoReissue()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1929,7 +1929,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_CookiePastHalfLife_TriggersReissueWithoutChangingIssuedDateTime()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -1996,7 +1996,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ResolveSessionForRequest_OlderPayloadVersion_TriggersReissue()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -2052,7 +2052,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SetAuthCookie_NonPersistentSession_HasNoExpiresAttribute()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -2086,7 +2086,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SetAuthCookie_PersistentSession_HasExpiresFromMinFormula()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -2127,7 +2127,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SetAuthCookie_HostOnlySession_WritesNoDomainBreadcrumb()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var service = new PersonSessionService( rockContext );
 
@@ -2167,7 +2167,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SetAuthCookie_SharedDomain_WritesDomainBreadcrumbAndScopesAuthCookie()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         // Seed the DOMAINS_SHARING_LOGINS defined type with "xyz.org" so
@@ -2216,7 +2216,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_Anonymous_ValidToken_CreatesUserTokenSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2244,7 +2244,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_Anonymous_InvalidToken_NoSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         // Encrypt a random token string that has no matching PersonToken row.
@@ -2269,7 +2269,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_UserTokenForSamePerson_SameToken_NoChange()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2315,7 +2315,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_UserTokenForDifferentPerson_MarksInactiveAndCreatesNew()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2360,7 +2360,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_FromImpersonationSession_AbandonsImpersonation()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2403,7 +2403,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_ComponentForSamePerson_NoSessionChange_TimesUsedIncrements()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2444,7 +2444,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_ComponentForDifferentPerson_MarksInactiveAndCreatesNew()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2483,7 +2483,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_ExpiredToken_MarksCurrentInactive_NoNewSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2526,7 +2526,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_OverUsageLimitToken_MarksCurrentInactive_NoNewSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2568,7 +2568,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_PageScopedToken_OnWrongPage_TreatedAsInvalid()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2599,7 +2599,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void ProcessImpersonationToken_PageScopedToken_OnNonPageContext_TreatedAsInvalid()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedSystemData( rockContext );
@@ -2632,7 +2632,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void RevalidateUserTokenSession_ComponentSession_ReturnsOk()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var currentSession = new PersonSession
@@ -2661,7 +2661,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void RevalidateUserTokenSession_TokenDeleted_MarksInactiveAndReturnsRevoked()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         // No PersonToken row in the database; the session's
@@ -2699,7 +2699,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void RevalidateUserTokenSession_PageScopeMismatch_ReturnsPageScopeMiss_SessionStaysActive()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         SeedPerson( rockContext, personId: 50, personAliasId: 100 );
 
@@ -2740,7 +2740,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void RevalidateUserTokenSession_PageScopedToken_NoCurrentPage_ReturnsOk()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         SeedPerson( rockContext, personId: 50, personAliasId: 100 );
 
@@ -2779,7 +2779,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void RevalidateUserTokenSession_TokenExpired_MarksInactiveAndReturnsRevoked()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         SeedPerson( rockContext, personId: 50, personAliasId: 100 );
 
@@ -2828,7 +2828,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SignOut_MarksSessionInactiveAndClearsCookieAndContext()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var session = new PersonSession
@@ -2869,7 +2869,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SignOut_WithDomainBreadcrumb_ClearsAuthCookieAndBreadcrumbAtRecordedDomain()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var session = new PersonSession
@@ -2924,7 +2924,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SignOut_WithNoPersonSession_ClearsAuthCookieWithoutInvalidatingSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var response = new TrackingResponseContext();
@@ -2948,7 +2948,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SignOut_ClearsUnsecuredPersonIdentifierCookie_WhenPresent()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var session = new PersonSession
@@ -2992,7 +2992,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void SignOut_AnonymousRequestWithUnsecuredCookie_StillClearsIt()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var response = new TrackingResponseContext();
@@ -3025,7 +3025,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void MarkExpiredSessionsInactive_MarksOnlyExpiredActiveSessions()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         var expiredGuid = Guid.NewGuid();
@@ -3084,7 +3084,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void MarkExpiredSessionsInactive_IgnoresAlreadyInactiveSessions()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         rockContext.Set<PersonSession>().Add( new PersonSession
@@ -3119,7 +3119,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void UpgradeLegacyTicket_CreatesLegacySession_ForValidNonImpersonationTicket()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
@@ -3151,7 +3151,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void UpgradeLegacyTicket_ResolvesExistingRow_OnRepeatedCall()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
@@ -3185,7 +3185,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void UpgradeLegacyTicket_ReturnsNullAndExpiresCookie_ForImpersonatedTicket()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
@@ -3219,7 +3219,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void UpgradeLegacyTicket_ReturnsNullAndExpiresCookie_ForNonPersistentTicket()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
@@ -3248,7 +3248,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void UpgradeLegacyTicket_ReturnsNullAndExpiresCookie_WhenUserLoginIsUnknown()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         // No UserLogin seeded; the ticket points at a deleted account.
@@ -3279,7 +3279,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void UpgradeLegacyTicket_LeavesRecencyNull_OnUpgradedSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
@@ -3312,7 +3312,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void UpgradeLegacyTicket_StampsIssuedDateTime_FromTicketIssueDate()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
@@ -3338,7 +3338,7 @@ public class PersonSessionServiceTests
     [TestMethod]
     public void UpgradeLegacyTicket_EmitsNewFormatCookie_OnSuccess()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );

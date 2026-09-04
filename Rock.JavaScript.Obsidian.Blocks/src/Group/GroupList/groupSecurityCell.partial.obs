@@ -1,0 +1,32 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button class="btn btn-security btn-sm"
+            title="Secure"
+            type="button"
+            @click.prevent="onClick">
+        <i class="ti ti-lock"></i>
+    </button>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { showSecurity } from "@Obsidian/Utility/dialogs";
+
+    const props = defineProps(standardCellProps);
+
+    function onClick(event: Event): void {
+        if (event.target instanceof HTMLElement) {
+            event.target.blur();
+        }
+
+        const groupIdKey = props.row["groupIdKey"] as string;
+        const name = (props.row["name"] as string) ?? "";
+
+        if (!groupIdKey) {
+            return;
+        }
+
+        showSecurity(EntityType.Group, groupIdKey, name);
+    }
+</script>

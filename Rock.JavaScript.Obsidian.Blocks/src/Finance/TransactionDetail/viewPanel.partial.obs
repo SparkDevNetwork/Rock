@@ -56,7 +56,7 @@
                         :disableCollapse="true">
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
 
                     <div v-if="modelValue?.sourceType?.text">
                         <label>Transaction Source</label>
@@ -156,7 +156,7 @@
                         <AttributeValuesContainer :modelValue="paymentDetailAttributeValues" :attributes="paymentDetailAttributes" :numberOfColumns="1" :showCategoryLabel="false" />
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <ContentStack v-if="allocationsGridData">
                         <div class="mb-4">
                             <h6>Transaction Allocations</h6>
@@ -175,17 +175,18 @@
                                 <Column name="processingFees"
                                         title="Processing Fees">
                                     <template #format="{ row }">
-                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.processingFees) }}</strong>
-                                        <template v-else>{{ toCurrencyOrNull(row.processingFees) }}</template>
+                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.processingFees, options.currencyInfo) }}</strong>
+                                        <template v-else>{{ toCurrencyOrNull(row.processingFees, options.currencyInfo) }}</template>
                                     </template>
                                 </Column>
                                 <Column name="amount"
                                         title="Amount">
                                     <template #format="{ row }">
-                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount) }}</strong>
-                                        <template v-else>{{ toCurrencyOrNull(row.amount) }}</template>
+                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</strong>
+                                        <template v-else>{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</template>
                                     </template>
                                 </Column>
+                                <AttributeColumns :attributes="allocationAttributeFields" :filter="undefined" />
                             </Grid>
                         </div>
                         <div v-if="modelValue?.refunds?.length && modelValue.refunds.length > 0" class="mb-4">
@@ -320,7 +321,7 @@ strong {
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import Grid, { Column } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column } from "@Obsidian/Controls/grid";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
@@ -335,6 +336,9 @@ strong {
         }
     });
 
+    /** Attribute column definitions for the allocations grid, sourced from the server response. */
+    const allocationAttributeFields = computed(() => props.modelValue?.transactionDetails?.attributeFields ?? []);
+
     /** Transforms transaction detail line items into the grid row format for the allocations table, with a totals row appended. */
     const allocationsGridData = computed(() => {
         const detailRows = props.modelValue?.transactionDetails?.rows ?? [];
@@ -347,7 +351,8 @@ strong {
             accountName: detail.account?.text ?? "",
             details: detail.summary ?? "",
             processingFees: detail.feeAmount ?? 0,
-            amount: detail.amount ?? 0
+            amount: detail.amount ?? 0,
+            ...detail.attributeDisplayValues
         }));
 
         return {
@@ -372,7 +377,7 @@ strong {
             dateTime: RockDateTime.parseISO(refund.date ?? "")?.toASPString("g") ?? "",
             transactionReference: refund.transactionCode,
             reason: refund.reason,
-            amount: `${toCurrencyOrNull(refund.amount)}`
+            amount: `${toCurrencyOrNull(refund.amount, props.options.currencyInfo)}`
         }));
 
         return { rows };
@@ -384,7 +389,7 @@ strong {
             idKey: transaction.idKey,
             dateTime: RockDateTime.parseISO(transaction.transactionDateTime ?? "")?.toASPString("G") ?? "",
             transactionReference: transaction.transactionReference,
-            amount: toCurrencyOrNull(transaction.amount)
+            amount: toCurrencyOrNull(transaction.amount, props.options.currencyInfo)
         }));
 
         return { rows };

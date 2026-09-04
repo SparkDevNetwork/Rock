@@ -16,7 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
+using Rock.Communication;
+using Rock.Data;
+using Rock.Enums.Lms;
+using Rock.Lava;
+using Rock.Logging;
 
 namespace Rock.Model
 {
@@ -101,5 +110,164 @@ namespace Rock.Model
                     enrollmentDate )
             };
         }
+
+        /// <summary>
+        /// Assigns a retake for the given <paramref name="completion"/>, returning the activity to a
+        /// not-yet-completed state for the student. The completion and any file the student uploaded
+        /// are deleted, and the participant's class completion is reset so it re-stamps when the
+        /// student genuinely finishes the retake. The caller is responsible for saving changes, which
+        /// drives the grade recomputation in the completion's save hook.
+        /// </summary>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> to reset for a retake.</param>
+        internal void AssignRetake( LearningClassActivityCompletion completion )
+        {
+            if ( completion == null )
+            {
+                return;
+            }
+
+            var rockContext = ( RockContext ) Context;
+
+            // Delete the uploaded file now rather than leaving it for the binary-file cleanup job.
+            if ( completion.BinaryFileId.HasValue )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                var binaryFile = binaryFileService.Get( completion.BinaryFileId.Value );
+
+                if ( binaryFile != null )
+                {
+                    binaryFileService.Delete( binaryFile );
+                }
+            }
+
+            var participant = completion.Student
+                ?? new LearningParticipantService( rockContext ).Get( completion.StudentId );
+
+            if ( participant != null )
+            {
+                // Clear the completion date so it re-stamps at the genuine post-retake completion
+                // instead of staying at the pre-retake timestamp, which is never otherwise updated.
+                participant.LearningCompletionDateTime = null;
+
+                // Reset to Incomplete so a pending retake can't read as a finished class, and so the
+                // save hook's grade recompute runs; it skips recomputation once a class is complete.
+                participant.LearningCompletionStatus = LearningCompletionStatus.Incomplete;
+            }
+
+            Delete( completion );
+        }
+
+        /// <summary>
+        /// Builds the "Retake Required" notification for the given completion as a ready-to-send
+        /// message, delivered via the student's communication preference (email or SMS).
+        /// </summary>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> a retake was assigned for.</param>
+        /// <returns>A prepared <see cref="RockMessage"/> to send, or <c>null</c> if one could not be built.</returns>
+        internal RockMessage PrepareRetakeRequiredNotification( LearningClassActivityCompletion completion )
+        {
+            if ( completion == null )
+            {
+                return null;
+            }
+
+            var rockContext = ( RockContext ) Context;
+
+            // Eager-load the graph this notification reads so it does not depend on lazy loading.
+            completion = Queryable()
+                .Include( c => c.LearningClassActivity.LearningActivity )
+                .Include( c => c.LearningClassActivity.LearningClass.LearningCourse )
+                .Include( c => c.LearningClassActivity.LearningClass.LearningSemester.LearningProgram )
+                .Include( c => c.Student.Person.PhoneNumbers )
+                .FirstOrDefault( c => c.Id == completion.Id )
+                ?? completion;
+
+            var activity = completion.LearningClassActivity;
+            var learningClass = activity?.LearningClass;
+            var person = completion.Student?.Person;
+
+            if ( activity == null || person == null )
+            {
+                return null;
+            }
+
+            var systemCommunication = new SystemCommunicationService( rockContext )
+                .Get( Rock.SystemGuid.SystemCommunication.LEARNING_ACTIVITY_RETAKE_REQUIRED.AsGuid() );
+
+            if ( systemCommunication == null )
+            {
+                return null;
+            }
+
+            var course = learningClass?.LearningCourse;
+            var program = learningClass?.LearningSemester?.LearningProgram;
+
+            var mergeFields = LavaHelper.GetCommonMergeFields( null, person );
+            mergeFields.AddOrReplace( "Person", person );
+            mergeFields.AddOrReplace( "Activity", new RetakeActivityInfo
+            {
+                ActivityName = activity.Name,
+                LearningClassActivityIdKey = activity.IdKey,
+                DueDate = completion.DueDate
+            } );
+            mergeFields.AddOrReplace( "Class", new RetakeClassInfo { ClassIdKey = learningClass?.IdKey } );
+            mergeFields.AddOrReplace( "Course", new RetakeCourseInfo { CourseIdKey = course?.IdKey } );
+            mergeFields.AddOrReplace( "Program", new RetakeProgramInfo { ProgramIdKey = program?.IdKey } );
+
+            var mediumType = Communication.DetermineMediumEntityTypeId(
+                ( int ) CommunicationType.Email,
+                ( int ) CommunicationType.SMS,
+                ( int ) CommunicationType.PushNotification,
+                systemCommunication,
+                person,
+                completion.Student.CommunicationPreference,
+                person.CommunicationPreference );
+
+            var logger = RockLogger.LoggerFactory.CreateLogger<CommunicationHelper>();
+            var createResult = mediumType == ( int ) CommunicationType.SMS
+                ? CommunicationHelper.CreateSmsMessage( person, mergeFields, systemCommunication, logger )
+                : CommunicationHelper.CreateEmailMessage( person, mergeFields, systemCommunication, logger );
+
+            return createResult.Message;
+        }
+
+        #region Lava Merge Objects
+
+        /// <summary>
+        /// The activity merge object for the "Retake Required" system communication.
+        /// </summary>
+        private class RetakeActivityInfo : LavaDataObject
+        {
+            public string ActivityName { get; set; }
+
+            public string LearningClassActivityIdKey { get; set; }
+
+            public DateTime? DueDate { get; set; }
+        }
+
+        /// <summary>
+        /// The class merge object for the "Retake Required" system communication.
+        /// </summary>
+        private class RetakeClassInfo : LavaDataObject
+        {
+            public string ClassIdKey { get; set; }
+        }
+
+        /// <summary>
+        /// The course merge object for the "Retake Required" system communication.
+        /// </summary>
+        private class RetakeCourseInfo : LavaDataObject
+        {
+            public string CourseIdKey { get; set; }
+        }
+
+        /// <summary>
+        /// The program merge object for the "Retake Required" system communication.
+        /// </summary>
+        private class RetakeProgramInfo : LavaDataObject
+        {
+            public string ProgramIdKey { get; set; }
+        }
+
+        #endregion
     }
 }

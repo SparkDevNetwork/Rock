@@ -1,0 +1,355 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Alert"
+          title="Giving Alerts"
+          exportTitle="Giving Alerts"
+          :entityTypeGuid="EntityType.FinancialTransactionAlert"
+          :customActions="customActions"
+          stickyHeader
+          gridSettings
+          :showMergeTemplate="false"
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick">
+
+        <Column name="alertCategory"
+                title=""
+                field="alertCategory"
+                width="64px"
+                :filter="pickExistingValueFilter"
+                :filterValue="getAlertCategoryName"
+                :quickFilterValue="getAlertCategoryName"
+                :exportValue="getAlertCategoryName"
+                itemClass="text-center">
+            <template #format="{ row }">
+                <span :class="`badge badge-circle badge-${getAlertCategoryColor(row.alertCategory)}`"
+                      :ref="(el) => addTooltip(el as Element)"
+                      data-toggle="tooltip"
+                      :title="getAlertCategoryName(row)">
+                    <span class="sr-only">{{ getAlertCategoryName(row) }}</span>
+                </span>
+            </template>
+        </Column>
+
+        <DateColumn name="alertDateTime"
+                    title="Alert Date"
+                    field="alertDateTime"
+                    :filter="dateValueFilter"
+                    width="130px" />
+
+        <Column name="person"
+                title="Name"
+                field="person"
+                :filter="pickExistingValueFilter"
+                :filterValue="getPersonNameFilterValue"
+                :quickFilterValue="getPersonNameFilterValue"
+                :exportValue="getPersonNameFilterValue"
+                :sortValue="getPersonNameFilterValue"
+                :hideOnScreen="config.options?.isPersonContext === true">
+            <template #format="{ row }">
+                <a v-if="getPersonContributionsUrl(row)"
+                   :href="getPersonContributionsUrl(row)"
+                   @click.stop>
+                    <strong>{{ getPersonNameFilterValue(row) }}</strong>
+                </a>
+                <strong v-else>{{ getPersonNameFilterValue(row) }}</strong>
+            </template>
+        </Column>
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter"
+                    :hideOnScreen="config.options?.isCampusContext === true || config.options?.hasMultipleCampuses !== true" />
+
+        <TextColumn name="alertName"
+                    title="Alert Name"
+                    field="alertName"
+                    :filter="textValueFilter" />
+
+        <Column name="amount"
+                title="Gift Amount"
+                field="amount"
+                :filter="numberValueFilter"
+                headerClass="title-right"
+                itemClass="justify-content-end text-right"
+                width="150px">
+            <template #format="{ row }">
+                <a v-if="getTransactionUrl(row)"
+                   :href="getTransactionUrl(row)"
+                   @click="(e) => e.stopPropagation()">
+                    {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
+                </a>
+                <span v-else>{{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}</span>
+            </template>
+        </Column>
+
+        <Column name="amountMedianDifference"
+                title="Amount ± Median"
+                field="amountMedianDifference"
+                :filter="numberValueFilter"
+                headerClass="title-right"
+                itemClass="justify-content-end text-right"
+                width="200px">
+            <template #format="{ row }">
+                <template v-if="row.amountMedianDifference != null">
+                    <span v-if="row.isAmountAlert" :class="`label label-${getAlertCategoryColor(row.alertCategory)}`">
+                        {{ toCurrencyOrNull(row.amountMedianDifference, config.options?.currencyInfo) }}
+                    </span>
+                    <span v-else>{{ toCurrencyOrNull(row.amountMedianDifference, config.options?.currencyInfo) }}</span>
+                </template>
+            </template>
+        </Column>
+
+        <Column name="frequencyDifferenceFromMean"
+                title="Days ± Mean"
+                field="frequencyDifferenceFromMean"
+                :filter="numberValueFilter"
+                headerClass="title-right"
+                itemClass="justify-content-end text-right"
+                width="150px">
+            <template #format="{ row }">
+                <template v-if="row.frequencyDifferenceFromMean != null">
+                    <span v-if="row.isFrequencyAlert" :class="`label label-${getAlertCategoryColor(row.alertCategory)}`">
+                        {{ row.frequencyDifferenceFromMean }}
+                    </span>
+                    <span v-else>{{ row.frequencyDifferenceFromMean }}</span>
+                </template>
+            </template>
+        </Column>
+
+        <Column name="amtMeasures"
+                title="Amt Measures"
+                sortField="amountCurrentMedian"
+                headerClass="title-right"
+                itemClass="justify-content-end text-right"
+                width="200px"
+                :excludeFromExport="true">
+            <template #format="{ row }">
+                {{ toCurrencyOrNull(row.amountCurrentMedian, config.options?.currencyInfo) }}<bdi v-if="row.amountCurrentIqr != null" class="small text-muted ml-1">{{ formatMeasure(row.amountCurrentIqr) }} IQR</bdi>
+            </template>
+        </Column>
+
+        <Column name="freqMeasures"
+                title="Freq Measures"
+                sortField="frequencyCurrentMean"
+                headerClass="title-right"
+                itemClass="justify-content-end text-right"
+                width="150px"
+                :excludeFromExport="true">
+            <template #format="{ row }">
+                {{ formatMeasure(row.frequencyCurrentMean) }}<span v-if="row.frequencyCurrentStandardDeviation != null" class="small text-muted ml-1">{{ formatMeasure(row.frequencyCurrentStandardDeviation) }}d σ</span>
+            </template>
+        </Column>
+
+        <CurrencyColumn name="amountCurrentMedian"
+                        title="Amount Median"
+                        field="amountCurrentMedian"
+                        :hideOnScreen="true" />
+
+        <NumberColumn name="amountCurrentIqr"
+                      title="Amount IQR"
+                      field="amountCurrentIqr"
+                      :hideOnScreen="true" />
+
+        <NumberColumn name="frequencyCurrentMean"
+                      title="Frequency Mean"
+                      field="frequencyCurrentMean"
+                      :hideOnScreen="true" />
+
+        <NumberColumn name="frequencyCurrentStandardDeviation"
+                      title="Frequency Std Dev"
+                      field="frequencyCurrentStandardDeviation"
+                      :hideOnScreen="true" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :alertTypeItems="config.options?.alertTypeItems ?? []"
+                       :showDateRange="config.options?.isDateRangeContext !== true"
+                       :showAlertTypeFilters="config.options?.isAlertTypeContext !== true"
+                       :showPerson="config.options?.isPersonContext !== true"
+                       :showCampus="config.options?.isCampusContext !== true" />
+</template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { Column, CurrencyColumn, DateColumn, NumberColumn, TextColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GivingAutomationAlertsOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationAlerts/givingAutomationAlertsOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { AlertType, AlertTypeDescription } from "@Obsidian/Enums/Finance/alertType";
+    import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./GivingAutomationAlerts/types.partial";
+    import GridSettingsModal from "./GivingAutomationAlerts/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<GivingAutomationAlertsOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    const isGridSettingsVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? null,
+        alertCategories: safeParseJson<string[]>(preferences.getValue(PreferenceKey.FilterAlertCategory)) ?? [],
+        person: safeParseJson<ListItemBag>(preferences.getValue(PreferenceKey.FilterPerson)) ?? undefined,
+        transactionAmount: {
+            lower: toNumberOrNull(preferences.getValue(PreferenceKey.FilterTransactionAmountLower)),
+            upper: toNumberOrNull(preferences.getValue(PreferenceKey.FilterTransactionAmountUpper))
+        },
+        campus: safeParseJson<ListItemBag>(preferences.getValue(PreferenceKey.FilterCampus)) ?? undefined,
+        alertTypes: safeParseJson<string[]>(preferences.getValue(PreferenceKey.FilterAlertTypes)) ?? []
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** `true` if any grid settings filter is active. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateRange
+            || gridSettings.value.alertCategories.length > 0
+            || !!gridSettings.value.person?.value
+            || gridSettings.value.transactionAmount?.lower != null
+            || gridSettings.value.transactionAmount?.upper != null
+            || !!gridSettings.value.campus?.value
+            || gridSettings.value.alertTypes.length > 0;
+    });
+
+    /** The custom actions supported by this grid. */
+    const customActions = computed((): GridAction[] => {
+        const actions: GridAction[] = [];
+
+        if (config.navigationUrls?.[NavigationUrlKey.ConfigurationPage]) {
+            actions.push({
+                title: "Configure Alerts",
+                iconCssClass: "ti ti-settings",
+                handler: onConfigurationClick
+            });
+        }
+
+        return actions;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Initializes a Bootstrap tooltip on the given element. */
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
+        }
+    }
+
+    /** Gets the CSS contextual color suffix for the alert's category. */
+    function getAlertCategoryColor(alertCategory: unknown): string {
+        return alertCategory === AlertType.Gratitude ? "success" : "warning";
+    }
+
+    /** Gets the display name of the alert's category (used for the badge tooltip, filtering, and export). */
+    function getAlertCategoryName(row: Record<string, unknown>): string {
+        const alertCategory = row.alertCategory as number;
+        return AlertTypeDescription[alertCategory] ?? "";
+    }
+
+    /** Gets the searchable/exportable text for the person column. */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row.person as PersonFieldBag | null;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /** Gets the URL to the person's contributions page for the row, or an empty string when unavailable. */
+    function getPersonContributionsUrl(row: Record<string, unknown>): string {
+        const person = row.person as PersonFieldBag | null;
+        return person?.idKey ? `/Person/${person.idKey}/Contributions` : "";
+    }
+
+    /** Gets the URL to the transaction detail page for the row, or an empty string when unavailable. */
+    function getTransactionUrl(row: Record<string, unknown>): string {
+        const url = config.navigationUrls?.[NavigationUrlKey.TransactionDetailPage];
+        const transactionIdKey = row.transactionIdKey as string | null;
+
+        if (!url || !transactionIdKey) {
+            return "";
+        }
+
+        return url.replace("((Key))", transactionIdKey);
+    }
+
+    /** Formats a measure to a single decimal place, or an empty string when the value is null (not measured). */
+    function formatMeasure(value: unknown): string {
+        return value == null ? "" : Number(value).toFixed(1);
+    }
+
+    /** Loads the grid data from the server. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Called when the grid settings icon is clicked; displays the block filters. */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    /** Called when the configuration custom action is clicked; navigates to the configuration page. */
+    function onConfigurationClick(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ConfigurationPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.ConfigurationPage];
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ? slidingDateRangeToString(gridSettings.value.dateRange) : "");
+        preferences.setValue(PreferenceKey.FilterAlertCategory, JSON.stringify(gridSettings.value.alertCategories ?? []));
+        preferences.setValue(PreferenceKey.FilterPerson, gridSettings.value.person ? JSON.stringify(gridSettings.value.person) : "");
+        preferences.setValue(PreferenceKey.FilterTransactionAmountLower, gridSettings.value.transactionAmount?.lower?.toString() ?? "");
+        preferences.setValue(PreferenceKey.FilterTransactionAmountUpper, gridSettings.value.transactionAmount?.upper?.toString() ?? "");
+        preferences.setValue(PreferenceKey.FilterCampus, gridSettings.value.campus ? JSON.stringify(gridSettings.value.campus) : "");
+        preferences.setValue(PreferenceKey.FilterAlertTypes, JSON.stringify(gridSettings.value.alertTypes ?? []));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    gridDataSource.value = loadGridData();
+</script>

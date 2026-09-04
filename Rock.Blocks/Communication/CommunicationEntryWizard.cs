@@ -213,7 +213,8 @@ namespace Rock.Blocks.Communication
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "26917C58-C8A2-4BF5-98CB-378A02761CD7" )]
-    [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0" )]
     public class CommunicationEntryWizard : RockBlockType
     {
         #region Attribute Keys
@@ -272,9 +273,7 @@ namespace Rock.Blocks.Communication
 
         private static class PageParameterKey
         {
-            // "Communication" allows Communication Id, Guid, or IdKey values,
-            // while the older "CommunicationId" only supports Id.
-            public const string Communication = "Communication";
+            // Allows Communication Id, Guid, or IdKey values.
             public const string CommunicationId = "CommunicationId";
 
             // "Person" allows Person Id, Guid, or IdKey values,
@@ -321,31 +320,14 @@ namespace Rock.Blocks.Communication
 
         private Guid PersonalizationSegmentCategoryGuid => GetAttributeValue( AttributeKey.PersonalizationSegmentCategory ).AsGuid();
 
-        private string SimpleCommunicationPageUrl => this.GetLinkedPageUrl( AttributeKey.SimpleCommunicationPage, PageParameterKey.Communication, "((Key))" );
+        private string SimpleCommunicationPageUrl => this.GetLinkedPageUrl( AttributeKey.SimpleCommunicationPage, PageParameterKey.CommunicationId, "((Key))" );
 
         private int MinimumShortLinkTokenLength => this.GetAttributeValue( AttributeKey.MinimumShortLinkTokenLength ).AsInteger();
 
         /// <summary>
-        /// Gets the Communication entity key passed to the "Communication" or "CommunicationId" page parameter.
+        /// Gets the Communication entity key passed to the "CommunicationId" page parameter.
         /// </summary>
-        private string CommunicationOrCommunicationIdPageParameter
-        {
-            get
-            {
-                var communicationPageParameter = PageParameter( PageParameterKey.Communication );
-
-                if ( communicationPageParameter.IsNotNullOrWhiteSpace() )
-                {
-                    return communicationPageParameter;
-                }
-                else
-                {
-                    // CommunicationId can support Id, Guid, or IdKey values in order to maintain backward compatibility
-                    // with existing links, but return it as a string so it can be used as an entity key.
-                    return PageParameter( PageParameterKey.CommunicationId );
-                }
-            }
-        }
+        private string CommunicationIdPageParameter => PageParameter( PageParameterKey.CommunicationId );
 
         /// <summary>
         /// Gets the CommunicationTemplate entity key passed to the "CommunicationTemplate" or "TemplateGuid" page parameter.
@@ -442,6 +424,7 @@ namespace Rock.Blocks.Communication
                 box.IsUsingRockMobilePushTransport = GetIsUsingRockMobilePushTransport( mediumBags );
                 box.MaxSmsImageWidth = this.MaxSmsImageWidth;
                 box.Mediums = mediumBags;
+                box.StandaloneMediums = GetStandalonePickerMediumBags( currentPerson );
                 box.MergeFields = GetCommunicationMergeFields( communication );
                 box.MinimumShortLinkTokenLength = this.MinimumShortLinkTokenLength;
                 box.NavigationUrls = GetBoxNavigationUrls();
@@ -1323,7 +1306,7 @@ namespace Rock.Blocks.Communication
             // and the template supports the Email Wizard
             if ( communicationTemplateInfo?.CommunicationTemplate != null
                 && communicationTemplateInfo.CommunicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson )
-                && communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard() )
+                && GetSupportsEmailWizard( communicationTemplateInfo.CommunicationTemplate ) )
             {
                 shouldApplyTemplateToCommunication = hasTemplateToApply;
                 return GetCommunicationTemplateDetailBag( communicationTemplateInfo );
@@ -1352,7 +1335,7 @@ namespace Rock.Blocks.Communication
             return new CommunicationEntryWizardCommunicationTemplateDetailBag
             {
                 Guid = communicationTemplateInfo.CommunicationTemplate.Guid,
-                IsWizardSupported = communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard(),
+                IsWizardSupported = GetSupportsEmailWizard( communicationTemplateInfo.CommunicationTemplate ),
                 Name = communicationTemplateInfo.CommunicationTemplate.Name,
                 ImageFile = communicationTemplateInfo.ImageFile,
                 Category = communicationTemplateInfo.Category,
@@ -1471,7 +1454,7 @@ namespace Rock.Blocks.Communication
         private Model.Communication LoadCommunicationFromPageParameter( RockContext rockContext )
         {
             // Check page parameter for existing communication.
-            var communicationKey = this.CommunicationOrCommunicationIdPageParameter;
+            var communicationKey = this.CommunicationIdPageParameter;
 
             if ( communicationKey.IsNotNullOrWhiteSpace() )
             {
@@ -1514,12 +1497,15 @@ namespace Rock.Blocks.Communication
                 }
                 else
                 {
-                    var individualRecipientPersonAliasIds = new CommunicationRecipientService( rockContext )
-                        .Queryable()
-                        .AsNoTracking()
-                        .Where( r => r.CommunicationId == c.Id && r.PersonAliasId.HasValue )
-                        .Select( a => a.PersonAliasId.Value )
-                        .ToList();
+                    // A new communication (Id 0) cannot have recipient records yet, so skip the query.
+                    var individualRecipientPersonAliasIds = c.Id > 0
+                        ? new CommunicationRecipientService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( r => r.CommunicationId == c.Id && r.PersonAliasId.HasValue )
+                            .Select( a => a.PersonAliasId.Value )
+                            .ToList()
+                        : new List<int>();
 
                     if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
                     {
@@ -1563,10 +1549,14 @@ namespace Rock.Blocks.Communication
                 if ( c.Status == CommunicationStatus.Transient )
                 {
                     var bulkEmailThreshold = GetBulkEmailThreshold();
-                    var recipientCount = new CommunicationRecipientService( rockContext )
-                        .Queryable()
-                        .Where( cr => cr.CommunicationId == c.Id )
-                        .Count();
+
+                    // A new communication (Id 0) cannot have recipient records yet, so skip the query.
+                    var recipientCount = c.Id > 0
+                        ? new CommunicationRecipientService( rockContext )
+                            .Queryable()
+                            .Where( cr => cr.CommunicationId == c.Id )
+                            .Count()
+                        : 0;
 
                     var isBulkCommunicationForced = bulkEmailThreshold.HasValue && recipientCount > bulkEmailThreshold.Value;
 
@@ -1804,22 +1794,46 @@ namespace Rock.Blocks.Communication
                 templateQuery = queryFilter( templateQuery );
             }
 
-            var communicationQuery = new CommunicationService( rockContext ).Queryable().AsNoTracking();
-            var communicationTemplateInfoList = templateQuery
-                .GroupJoin(
-                    communicationQuery,
-                    communicationTemplate => communicationTemplate.Id,
-                    communication => communication.CommunicationTemplateId,
-                    ( communicationTemplate, communications ) => new CommunicationEntryWizardTemplateInfo
-                    {
-                        CommunicationTemplate = communicationTemplate,
-                        CommunicationCount = communications.Count(),
-                        Category = !communicationTemplate.CategoryId.HasValue ? null : new ListItemBag { Value = communicationTemplate.Category.Guid.ToString(), Text = communicationTemplate.Category.Name },
-                        ImageFile = !communicationTemplate.ImageFileId.HasValue ? null : new ListItemBag { Value = communicationTemplate.ImageFile.Guid.ToString(), Text = communicationTemplate.ImageFile.FileName },
-                        PushImageBinaryFileGuid = communicationTemplate.PushImageBinaryFile.Guid,
-                        SmsFromSystemPhoneNumberGuid = communicationTemplate.SmsFromSystemPhoneNumber.Guid
-                    }
-                ).ToList();
+            /*
+                06/10/26 - JMH
+
+                The Category, ImageFile, and PushImageBinaryFile navigations are eagerly loaded here
+                because materializing the templates through a projection would drop the eager loading
+                and leave the navigations unloaded. The per-template IsAuthorized check below reads
+                the Category navigation (via CommunicationTemplate.ParentAuthorityPre), which would
+                then lazy-load one Category per template on every page load.
+
+                Reason: Avoid per-template lazy-load queries during the authorization check.
+            */
+            var communicationTemplates = templateQuery
+                .Include( a => a.Category )
+                .Include( a => a.ImageFile )
+                .Include( a => a.PushImageBinaryFile )
+                .ToList();
+
+            // Get the usage count for every template with a single grouped query.
+            var communicationTemplateIds = communicationTemplates.Select( a => a.Id ).ToList();
+            var communicationCountByTemplateId = new CommunicationService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( c => c.CommunicationTemplateId.HasValue && communicationTemplateIds.Contains( c.CommunicationTemplateId.Value ) )
+                .GroupBy( c => c.CommunicationTemplateId.Value )
+                .Select( g => new { CommunicationTemplateId = g.Key, CommunicationCount = g.Count() } )
+                .ToDictionary( a => a.CommunicationTemplateId, a => a.CommunicationCount );
+
+            var communicationTemplateInfoList = communicationTemplates
+                .Select( communicationTemplate => new CommunicationEntryWizardTemplateInfo
+                {
+                    CommunicationTemplate = communicationTemplate,
+                    CommunicationCount = communicationCountByTemplateId.GetValueOrDefault( communicationTemplate.Id, 0 ),
+                    Category = communicationTemplate.Category == null ? null : new ListItemBag { Value = communicationTemplate.Category.Guid.ToString(), Text = communicationTemplate.Category.Name },
+                    ImageFile = communicationTemplate.ImageFile == null ? null : new ListItemBag { Value = communicationTemplate.ImageFile.Guid.ToString(), Text = communicationTemplate.ImageFile.FileName },
+                    PushImageBinaryFileGuid = communicationTemplate.PushImageBinaryFile?.Guid,
+                    SmsFromSystemPhoneNumberGuid = communicationTemplate.SmsFromSystemPhoneNumberId.HasValue
+                        ? SystemPhoneNumberCache.GetGuid( communicationTemplate.SmsFromSystemPhoneNumberId.Value )
+                        : null
+                } )
+                .ToList();
 
             // Get templates that the currently logged in person is authorized to view.
             communicationTemplateInfoList = communicationTemplateInfoList
@@ -1871,7 +1885,7 @@ namespace Rock.Blocks.Communication
             return new CommunicationEntryWizardCommunicationTemplateListItemBag
             {
                 CategoryGuid = communicationTemplateInfo.Category?.Value.AsGuidOrNull(),
-                IsEmailSupported = communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard(),
+                IsEmailSupported = GetSupportsEmailWizard( communicationTemplateInfo.CommunicationTemplate ),
                 IsSmsSupported = communicationTemplateInfo.CommunicationTemplate.HasSMSTemplate()
                     || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid()
                     || communicationTemplateInfo.CommunicationTemplate.Guid == "6280214C-404E-4F4E-BC33-7A5D4CDF8DBC".AsGuid(), // TODO Replace with SystemGuid once preview status is removed.
@@ -1884,6 +1898,29 @@ namespace Rock.Blocks.Communication
                 IsStarter = communicationTemplateInfo.CommunicationTemplate.IsStarter,
                 CommunicationCount = communicationTemplateInfo.CommunicationCount,
             };
+        }
+
+        /// <summary>
+        /// Determines whether a communication template supports the email wizard, caching the result per person and template version.
+        /// </summary>
+        /// <param name="communicationTemplate">The communication template to check.</param>
+        /// <returns><see langword="true"/> if the template supports the email wizard; otherwise, <see langword="false"/>.</returns>
+        private bool GetSupportsEmailWizard( CommunicationTemplate communicationTemplate )
+        {
+            /*
+                06/10/26 - JMH
+
+                SupportsEmailWizard() resolves the Lava in the template's full message HTML and parses
+                the result just to detect a dropzone element. Calling it for every template on every
+                page load is expensive, and any database-querying Lava inside a template runs once per
+                template per request. The result only changes when the template is modified, so it is
+                cached per person (the Lava can reference the current person) and per template version.
+
+                Reason: Avoid re-rendering every template's Lava on every page load.
+            */
+            var cacheKey = $"{nameof( CommunicationEntryWizard )}:SupportsEmailWizard:{GetCurrentPerson()?.Id ?? 0}:{communicationTemplate.Id}:{communicationTemplate.ModifiedDateTime?.Ticks ?? 0}";
+
+            return ( bool ) RockCache.GetOrAddExisting( cacheKey, null, () => communicationTemplate.SupportsEmailWizard(), TimeSpan.FromMinutes( 10 ) );
         }
 
         /// <summary>
@@ -2355,8 +2392,14 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Retrieves the allowed communication types based on block configuration and preferences.
         /// </summary>
+        /// <param name="expandRecipientPreference">
+        /// When <c>true</c> (the default), selecting "Recipient Preference" also includes Email and SMS,
+        /// because recipient-preference delivery resolves to those mediums. When <c>false</c> (used to
+        /// build the standalone picker options), the result contains only the types explicitly enabled
+        /// in the block setting, so the picker reflects exactly what the admin chose.
+        /// </param>
         /// <returns>A list of <see cref="CommunicationType"/> values representing the allowed communication types.</returns>
-        private List<CommunicationType> GetAllowedCommunicationTypes()
+        private List<CommunicationType> GetAllowedCommunicationTypes( bool expandRecipientPreference = true )
         {
             /*
                 JME 8/20/2021
@@ -2377,7 +2420,7 @@ namespace Rock.Blocks.Communication
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
 
             var result = new List<CommunicationType>();
-            if ( communicationTypes.Contains( "Recipient Preference" ) )
+            if ( expandRecipientPreference && communicationTypes.Contains( "Recipient Preference" ) )
             {
                 result.Add( CommunicationType.RecipientPreference );
 
@@ -2406,6 +2449,11 @@ namespace Rock.Blocks.Communication
                 if ( communicationTypes.Contains( "Push" ) )
                 {
                     result.Add( CommunicationType.PushNotification );
+                }
+
+                if ( communicationTypes.Contains( "Recipient Preference" ) )
+                {
+                    result.Add( CommunicationType.RecipientPreference );
                 }
             }
             else
@@ -2542,6 +2590,69 @@ namespace Rock.Blocks.Communication
 
             // Only add recipient preference if at least two options exists.
             if ( isRecipientPreferenceEnabled && mediums.Count >= 2 )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    // If this hard-coded value is changed, then the Obsidian client code should be updated too.
+                    Value = "Recipient Preference",
+                    Text = "Recipient Preference"
+                } );
+            }
+
+            return mediums;
+        }
+
+        /// <summary>
+        /// Retrieves the standalone medium options the sender may directly choose, honoring exactly the
+        /// communication types enabled in the block setting (without expanding Recipient Preference into
+        /// Email and SMS). This drives the medium picker, and differs from <see cref="GetCommunicationMediumBags"/>,
+        /// which returns the full set of mediums Recipient Preference composes and delivers.
+        /// </summary>
+        /// <param name="currentPerson">The currently logged-in person for authorization checks.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects representing the selectable standalone mediums.</returns>
+        private List<ListItemBag> GetStandalonePickerMediumBags( Person currentPerson )
+        {
+            var mediums = new List<ListItemBag>();
+
+            // Honor exactly what the admin enabled, so do not expand Recipient Preference into Email/SMS here.
+            var allowedCommunicationTypes = GetAllowedCommunicationTypes( expandRecipientPreference: false );
+
+            var hasEmailTransport = MediumContainer.HasActiveAndAuthorizedEmailTransport( currentPerson );
+            var hasSmsTransport = MediumContainer.HasActiveAndAuthorizedSmsTransport( currentPerson );
+            var hasPushTransport = MediumContainer.HasActiveAndAuthorizedPushTransport( currentPerson );
+
+            if ( hasEmailTransport && allowedCommunicationTypes.Contains( CommunicationType.Email ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL,
+                    Text = "Email"
+                } );
+            }
+
+            if ( hasSmsTransport && allowedCommunicationTypes.Contains( CommunicationType.SMS ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS,
+                    Text = "SMS"
+                } );
+            }
+
+            if ( hasPushTransport && allowedCommunicationTypes.Contains( CommunicationType.PushNotification ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION,
+                    Text = "Push"
+                } );
+            }
+
+            // Recipient Preference resolves to a recipient's Email or SMS, so offer it whenever it is
+            // enabled and at least one of those transports is active, regardless of whether Email or SMS
+            // are also enabled as standalone options. This lets a "Recipient Preference only" setting
+            // still present the Recipient Preference option.
+            if ( allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference ) && ( hasEmailTransport || hasSmsTransport ) )
             {
                 mediums.Add( new ListItemBag
                 {

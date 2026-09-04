@@ -67,7 +67,7 @@
                                           help="Determines the type of group. This value cannot be changed after the group is created."
                                           :items="allowedGroupTypeItems"
                                           rules="required"
-                                          :showBlankItem="true" />
+                                          :showBlankItem="allowedGroupTypeItems.length !== 1" />
 
                             <NotificationBox v-if="allowedGroupTypeWarning" ref="emptyGroupTypeWarningElement" alertType="warning">
                                 {{ allowedGroupTypeWarning }}
@@ -334,8 +334,18 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="groupTypeOptions.isOverallScheduleStackVisible || groupTypeOptions.isSchedulingEnabled"
+        <ContentSection v-if="isMeetingAndSchedulingSectionVisible"
                         title="Meeting &amp; Scheduling Details" icon="ti ti-calendar-month">
+
+            <div v-if="groupTypeOptions.isMeetingStyleEnabled" class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="meetingStyleValue"
+                                  label="Meeting Style"
+                                  help="How this group meets: in person, online, or a combination of the two."
+                                  :items="meetingStyleItems"
+                                  showBlankItem />
+                </div>
+            </div>
 
             <ContentStack v-if="groupTypeOptions.isOverallScheduleStackVisible"
                           title="Overall Group Schedule"
@@ -530,17 +540,6 @@
     </ContentSectionContainer>
 </template>
 
-<style scoped>
-.static-compact :deep(.form-group.static-control .form-control-static) {
-    padding: 0;
-    min-height: 0;
-}
-
-.relationship-matrix > :nth-child(n+7) {
-    margin-top: 0.75rem;
-}
-</style>
-
 <script setup lang="ts">
     import { combineFlagValues, extractFlagValues, formatPercent, formatTimeValue, inheritOverrideToRadioValue, intToPercent, nullableInt, parseTimeString, percentToInt, radioValueToInheritOverride, scrollNotificationIntoView, useInvokeGroupDetailBlockAction } from "./utils.partial";
     import { ScheduleCoordinatorNotificationType, ScheduleCoordinatorNotificationTypeDescription } from "@Obsidian/Enums/Group/scheduleCoordinatorNotificationType";
@@ -557,6 +556,8 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { ParentGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/parentGroupBag";
     import { ScheduleType, ScheduleTypeDescription } from "@Obsidian/Enums/Group/scheduleType";
+    import { MeetingStyle, MeetingStyleDescription } from "@Obsidian/Enums/Group/meetingStyle";
+    import { GroupLocationPickerMode } from "@Obsidian/Enums/Group/groupLocationPickerMode";
     import { GroupSyncBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupSyncBag";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
@@ -706,6 +707,7 @@
     const inactiveReasonNote = propertyRef(props.modelValue.bag?.inactiveReasonNote ?? "", "InactiveReasonNote");
     const inactivateChildGroups = propertyRef(props.modelValue.bag?.inactivateChildGroups ?? false, "InactivateChildGroups");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const meetingStyle = propertyRef(props.modelValue.bag?.meetingStyle ?? null, "MeetingStyle");
     const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
     const photoBinaryFile = propertyRef<ListItemBag | null>(props.modelValue.bag?.photoBinaryFile ?? null, "PhotoBinaryFile");
     const groupTypeId = propertyRef<number | null>(props.modelValue.bag?.groupTypeId ?? null, "GroupTypeId");
@@ -755,7 +757,7 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [
-        name, isActive, inactiveReasonValueId, inactiveReasonNote, inactivateChildGroups, description, isPublic, photoBinaryFile,
+        name, isActive, inactiveReasonValueId, inactiveReasonNote, inactivateChildGroups, description, meetingStyle, isPublic, photoBinaryFile,
         groupTypeId, parentGroup, campus, statusValueId, groupAdministrator, groupCapacity, requiredSignatureDocumentTemplateId,
         recordSourceValue, isSecurityRole, elevatedSecurityLevel, overrideRelationshipStrength, relationshipStrengthOverride, relationshipGrowthEnabledOverride,
         leaderToLeaderRelationshipMultiplierOverride, leaderToNonLeaderRelationshipMultiplierOverride,
@@ -825,6 +827,24 @@
             || isTrailblazerMode                                                           // Require Signed Document (trailblazerField)
             || (options.isGroupSpecificRecordSourceVisible === true && isTrailblazerMode)  // Member Record Source
             || props.isCurrentPersonGroupAdministrator === true;                           // Enable as Security Role
+    });
+
+    /**
+     * Whether the Meeting & Scheduling section has any visible child. The
+     * section wraps three independently-gated children, so the whole section is
+     * hidden when none of them would render. Mirrors the per-child conditions in
+     * the template — keep this in sync with those gates. Notably, the Locations
+     * panel is driven by LocationSelectionMode alone, independent of scheduling,
+     * matching the WebForms "Meeting Details" panel.
+     */
+    const isMeetingAndSchedulingSectionVisible = computed((): boolean => {
+        const options = props.groupTypeOptions;
+
+        return options.isOverallScheduleStackVisible === true                  // Overall Group Schedule stack
+            || options.isMeetingStyleEnabled === true                          // Meeting Style dropdown
+            || options.locationSelectionMode !== GroupLocationPickerMode.None  // Locations panel
+            || options.isSchedulingEnabled === true                            // Member Scheduling & Check-in stack
+            || options.isCheckInRequirementsVisible === true;                  // Member Scheduling & Check-in stack
     });
 
     /**
@@ -1076,6 +1096,23 @@
     const scheduleConfirmationLogicItems = computed((): ListItemBag[] => enumToListItemBag(ScheduleConfirmationLogicDescription));
 
     /**
+     * String-typed proxy of `meetingStyle` for the Meeting Style dropdown.
+     */
+    const meetingStyleValue = computed<string>({
+        get(): string {
+            return meetingStyle.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            meetingStyle.value = (newValue ? parseInt(newValue, 10) : null) as MeetingStyle | null;
+        }
+    });
+
+    /**
+     * Meeting Style options for the dropdown.
+     */
+    const meetingStyleItems = computed((): ListItemBag[] => enumToListItemBag(MeetingStyleDescription));
+
+    /**
      * Multi-select string-array proxy of the `scheduleCoordinatorNotificationTypes`
      * bitmask for the Coordinator Notifications checkbox list.
      */
@@ -1223,6 +1260,22 @@
             || bag?.nonLeaderToNonLeaderRelationshipMultiplierOverride != null;
     }
 
+    /**
+     * True when the parent picker still holds the parent the server put on the edit
+     * bag (a ParentGroupBag, which carries isActive) rather than one the user picked.
+     * The bag already supplied the derived data, so the watchers can skip their round trips.
+     */
+    function isParentGroupFromBag(parentGroupKey: string): boolean {
+        const bagParentGroup = props.modelValue.bag?.parentGroup;
+
+        if (!bagParentGroup || bagParentGroup.value !== parentGroupKey) {
+            return false;
+        }
+
+        // A picker selection is a plain ListItemBag and has no isActive value.
+        return typeof bagParentGroup.isActive === "boolean";
+    }
+
     // #endregion
 
     // #region Watchers
@@ -1237,6 +1290,7 @@
         updateRefValue(inactiveReasonNote, props.modelValue.bag?.inactiveReasonNote ?? "");
         updateRefValue(inactivateChildGroups, props.modelValue.bag?.inactivateChildGroups ?? false);
         updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(meetingStyle, props.modelValue.bag?.meetingStyle ?? null);
         updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
         updateRefValue(photoBinaryFile, props.modelValue.bag?.photoBinaryFile ?? null);
         updateRefValue(groupTypeId, props.modelValue.bag?.groupTypeId ?? null);
@@ -1301,9 +1355,14 @@
         setPropertiesBoxValue(newValue, "inactiveReasonNote", inactiveReasonNote.value);
         setPropertiesBoxValue(newValue, "inactivateChildGroups", inactivateChildGroups.value);
         setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "meetingStyle", meetingStyle.value);
         setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
         setPropertiesBoxValue(newValue, "photoBinaryFile", photoBinaryFile.value);
         setPropertiesBoxValue(newValue, "groupTypeId", groupTypeId.value);
+        // The picker emits a plain ListItemBag, so writing it here strips isActive
+        // from the bag. isParentGroupFromBag() relies on that to tell a user selection
+        // apart from the one the server sent; preserving isActive would make it skip
+        // refreshes it needs to perform.
         setPropertiesBoxValue(newValue, "parentGroup", parentGroup.value as ParentGroupBag | null);
         setPropertiesBoxValue(newValue, "campus", campus.value);
         setPropertiesBoxValue(newValue, "statusValueId", statusValueId.value);
@@ -1366,6 +1425,13 @@
             return;
         }
 
+        // Also fires when the edit bag loads, since the modelValue watcher assigns
+        // parentGroup from it. The bag already supplied isActive, so the round trip
+        // would only re-fetch the same value on every edit load.
+        if (isParentGroupFromBag(newKey)) {
+            return;
+        }
+
         const result = await blockAction.getParentGroupInfo(newKey);
 
         if (version !== parentGroupInfoRequestVersion) {
@@ -1384,6 +1450,12 @@
     let allowedGroupTypesRequestVersion = 0;
     watch(() => parentGroup.value?.value, async (newKey) => {
         if (!isAddMode.value) {
+            return;
+        }
+
+        // The block options were already filtered by a server-sourced parent
+        // (ParentGroupId on the Add URL), so only re-filter for a picker change.
+        if (newKey && isParentGroupFromBag(newKey)) {
             return;
         }
 

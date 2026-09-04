@@ -20,8 +20,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Integration.TestData.Core;
 using Rock.Tests.Integration.TestData.Crm;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared.Constants;
-using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.Filters
 {

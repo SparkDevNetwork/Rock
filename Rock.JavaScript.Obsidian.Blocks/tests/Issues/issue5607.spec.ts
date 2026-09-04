@@ -30,8 +30,11 @@ describe("Issue 5607", () => {
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
 
-        const postSpy = jest.spyOn(http, "post");
-        postSpy.mockImplementation(url => {
+        // The address control obtains its HTTP functions via useHttp(), which
+        // returns an object whose "post" is bound to the module-local function.
+        // Spying on the exported "post" therefore does not intercept that call,
+        // so we mock useHttp() itself to supply the intercepting post.
+        const postSpy = jest.fn((url: string) => {
             if (url === "/api/v2/Controls/AddressControlGetConfiguration") {
                 return Promise.resolve({
                     isSuccess: true,
@@ -45,8 +48,13 @@ describe("Issue 5607", () => {
             throw new Error("Unknown API call detected.");
         });
 
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
+        jest.spyOn(http, "useHttp").mockReturnValue({
+            doApiCall: http.doApiCall,
+            doStreamingApiCall: http.doStreamingApiCall,
+            get: http.get,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            post: postSpy as any
+        });
 
         const instance = mountBlock(RegistrationEntry,
             getConfigurationValues(),
@@ -429,7 +437,7 @@ const configurationValues: RegistrationEntryInitializationBox = {
 const addressControlConfiguration = {
     "showCountrySelection": true,
     "defaultCountry": "CA",
-    "defaultState": "AB",
+    "defaultState": "ZR",
     "countries": [
         {
             "value": "",

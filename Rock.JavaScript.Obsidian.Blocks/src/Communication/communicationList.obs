@@ -160,9 +160,7 @@
                       visiblePriority="xl"
                       :hideAvatar="true"
                       :showAsLink="true"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getSentByPersonTextValue"
-                      :quickFilterValue="getSentByPersonTextValue" />
+                      :filter="pickExistingValueFilter" />
 
         <DeleteColumn v-if="config.isDeleteEnabled"
                       visiblePriority="xl"
@@ -178,19 +176,6 @@
                        :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
-<style scoped>
-.communication-list-grid-header-button-filters {
-    background-color: var(--color-interface-softer);
-}
-
-.communication-list-grid-cell-recipients {
-    font-size: var(--font-size-small);
-}
-
-.communication-list-grid-cell-label {
-    display: block;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";
@@ -202,7 +187,7 @@
     import Grid, { Column, DeleteColumn, LabelColumn, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
+    import { InferredCommunicationStatus, InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
     import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
@@ -558,22 +543,25 @@
     }
 
     /**
-     * Gets the text value for the "Sent By" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getSentByPersonTextValue(row: Record<string, unknown>): string {
-        const person = (row as Row).sentByPerson;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
-
-    /**
      * `true` if delete is disabled for this row.
      *
      * @param row The row whose delete disabled status to get.
      */
     function getIsDeleteDisabled(row: Record<string, unknown>): boolean {
         return (row as Row).isDeleteDisabled;
+    }
+
+    /**
+     * `true` if the communication is still editable, meaning it has not yet
+     * been approved or sent.
+     *
+     * @param status The inferred status of the communication.
+     */
+    function isEditable(status: InferredCommunicationStatus): boolean {
+        return status === InferredCommunicationStatus.Transient
+            || status === InferredCommunicationStatus.Draft
+            || status === InferredCommunicationStatus.PendingApproval
+            || status === InferredCommunicationStatus.Denied;
     }
 
     // #endregion Functions
@@ -652,7 +640,12 @@
      */
     function onSelectItem(key: string): void {
         const row = findRow(key);
-        if (row?.isLegacyCommunication) {
+
+        // Legacy-qualified communications can only be edited in the legacy
+        // wizard, so send them there while still editable. Once approved or
+        // sent they are view-only, so fall through to the Obsidian detail page
+        // and its friendly route.
+        if (row && row.isLegacyCommunication && isEditable(row.inferredStatus)) {
             if (config.navigationUrls?.[NavigationUrlKey.LegacyDetailPage]) {
                 window.location.href = config.navigationUrls[NavigationUrlKey.LegacyDetailPage].replace("((Key))", key);
                 return;

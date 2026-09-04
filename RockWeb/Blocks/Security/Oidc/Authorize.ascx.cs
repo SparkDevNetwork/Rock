@@ -413,7 +413,7 @@ namespace RockWeb.Blocks.Security.Oidc
             var authClient = GetAuthClient();
             IDictionary<string, string> clientAllowedClaims = null;
 
-            IEnumerable<string> clientAllowedScopes = null;
+            List<string> clientAllowedScopes = null;
             using ( var rockContext = new RockContext() )
             {
                 clientAllowedScopes = RockIdentityHelper.NarrowRequestedScopesToApprovedScopes( rockContext, authClient, requestedScopes ).ToList();
@@ -424,6 +424,26 @@ namespace RockWeb.Blocks.Security.Oidc
             {
                 // TODO: Error
                 return;
+            }
+
+            // The "openid" scope not a traditional scope. It is used by the
+            // OpenID Connect provider to indicate that the client is
+            // requesting an id_token. Therefore it is safe to add it to the
+            // list of allowed scopes if it was requested without checking if
+            // the client is allowed to request it via the
+            // NarrowRequestedScopesToApprovedScopes() method.
+            if ( requestedScopes.Contains( "openid" ) )
+            {
+                clientAllowedScopes.Add( "openid" );
+            }
+
+            // This is a hack since we don't store the grant_types during DCR
+            // to know if the client supports refresh tokens. So we'll just
+            // assume that if the client is asking for the mcp:invoke scope,
+            // then they support refresh tokens.
+            if ( clientAllowedScopes.Contains( "mcp:invoke" ) && !clientAllowedScopes.Contains( "offline_access" ) )
+            {
+                clientAllowedScopes.Add( "offline_access" );
             }
 
             // Create a new ClaimsIdentity containing the claims that

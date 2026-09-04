@@ -647,6 +647,7 @@ namespace Rock.Web.UI.Controls
     {
         private ValidationSummary _vsValidation;
         private DateTimePicker _dpStartDateTime;
+        private NumberBox _tbDurationDays;
         private NumberBox _tbDurationHours;
         private NumberBox _tbDurationMinutes;
         private HiddenField _hfCalendarEventDTStamp;
@@ -721,6 +722,7 @@ END:VCALENDAR
             _hfCalendarEventDTStamp = new HiddenField();
             _hfCalendarEventUid = new HiddenField();
 
+            _tbDurationDays = new NumberBox();
             _tbDurationHours = new NumberBox();
             _tbDurationMinutes = new NumberBox();
 
@@ -903,17 +905,18 @@ END:VCALENDAR
             calendarEvent.Uid = _hfCalendarEventUid.Value;
             calendarEvent.DtStart.HasTime = true;
 
+            int durationDays = TextBoxToPositiveInteger( _tbDurationDays, 0 );
             int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 0 );
             int durationMins = TextBoxToPositiveInteger( _tbDurationMinutes, 0 );
 
-            if ( ( durationHours == 0 && durationMins == 0 ) || this.ShowDuration == false )
+            if ( ( durationDays == 0 && durationHours == 0 && durationMins == 0 ) || this.ShowDuration == false )
             {
                 // make a one second duration since a zero duration won't be included in occurrences
                 calendarEvent.Duration = new TimeSpan( 0, 0, 1 );
             }
             else
             {
-                calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
+                calendarEvent.Duration = new TimeSpan( durationDays, durationHours, durationMins, 0 );
             }
 
 
@@ -1180,13 +1183,14 @@ END:VCALENDAR
                 if ( calendarEvent.DtStart != null )
                 {
                     _dpStartDateTime.SelectedDateTime = calendarEvent.DtStart.Value;
-                    int hours = ( calendarEvent.Duration.Days * 24 ) + calendarEvent.Duration.Hours;
-                    _tbDurationHours.Text = hours.ToString();
+                    _tbDurationDays.Text = calendarEvent.Duration.Days.ToString();
+                    _tbDurationHours.Text = calendarEvent.Duration.Hours.ToString();
                     _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
                 }
                 else
                 {
                     _dpStartDateTime.SelectedDateTime = null;
+                    _tbDurationDays.Text = string.Empty;
                     _tbDurationHours.Text = string.Empty;
                     _tbDurationMinutes.Text = string.Empty;
                 }
@@ -1397,6 +1401,13 @@ END:VCALENDAR
             _dpStartDateTime.Required = false;
             _dpStartDateTime.ValidationGroup = validationGroup;
 
+            _tbDurationDays.ClientIDMode = ClientIDMode.Static;
+            _tbDurationDays.ID = "tbDurationDays_" + this.ClientID;
+            _tbDurationDays.CssClass = "input-width-md";
+            _tbDurationDays.AppendText = "days";
+            _tbDurationDays.MinimumValue = "0";
+            _tbDurationDays.ValidationGroup = validationGroup;
+
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours_" + this.ClientID;
             _tbDurationHours.CssClass = "input-width-md";
@@ -1589,6 +1600,7 @@ END:VCALENDAR
 
             Controls.Add( _vsValidation );
             Controls.Add( _dpStartDateTime );
+            Controls.Add( _tbDurationDays );
             Controls.Add( _tbDurationHours );
             Controls.Add( _tbDurationMinutes );
             Controls.Add( _radOneTime );
@@ -1678,6 +1690,8 @@ END:VCALENDAR
                 writer.Write( "<label class='control-label'>Duration</label>" );
                 writer.AddAttribute( "class", "form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbDurationDays.RenderControl( writer );
+
                 _tbDurationHours.RenderControl( writer );
 
                 _tbDurationMinutes.RenderControl( writer );

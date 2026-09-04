@@ -64,6 +64,11 @@
                             <Rock:NotificationBox ID="nbDecline" runat="server" NotificationBoxType="Warning" />
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Rock:NotificationBox ID="nbDeclineAttributesNotSaved" runat="server" NotificationBoxType="Info" Visible="false" />
+                        </div>
+                    </div>
                     <asp:Panel ID="pnlDeclineReasons" runat="server" Visible="false">
                         <div class="row">
                             <div class="col-sm-12">

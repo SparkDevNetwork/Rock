@@ -4,13 +4,14 @@ description: >-
   Converts a Rock RMS WebForms block (.ascx/.ascx.cs) to Obsidian (Vue 3 + C# RockBlockType).
   Triggers on: "convert block", "migrate block to obsidian", "obsidian conversion", or a
   WebForms block path like "RockWeb/Blocks/Core/Foo.ascx.cs" with conversion intent.
-  Also handles attached Figma design URLs (translation + redesign) and net-new feature
-  scope ("add inline comments", "also support drag-to-reorder", etc.) when the user
-  describes them alongside the conversion target.
-  Produces a `/working/{block}/` research workspace, classifies the block as Detail/List/Custom,
-  generates the C# block + bags + .d.ts placeholders + Vue SFC + partials, chops the WebForms
-  files, and offers to archive the research as a frozen spec once `/review-conversion` passes.
+  Classifies blocks as Detail, List, or Custom; generates C# block, bags, .d.ts placeholders,
+  Vue SFC, partials; chops WebForms files; creates a feature branch.
   Do NOT use for non-block tasks, creating new blocks from scratch, or general Rock RMS questions.
+argument-hint: "Category/BlockName (e.g. Core/ExceptionDetail or Security/ForgotUserName)"
+compatibility: Requires Claude Code CLI with Node.js for script execution (generate-guids.js, validate-conversion.js).
+metadata:
+  version: "1.12"
+  author: "Maxwell Eley"
 ---
 
 **CRITICAL: Enter plan mode immediately.** Do all research first, ask clarifying questions, write a plan, and get user approval before writing any files.
@@ -21,85 +22,47 @@ Quality is more important than speed. Read the full WebForms block carefully bef
 
 The block to convert is: **$ARGUMENTS**
 
-If `$ARGUMENTS` contains a Figma URL, treat it as the redesign source for this conversion (see Phase 1A.0). If it contains phrasing about new functionality, treat that as new-feature scope.
-
 ---
 
 ## Conversion Philosophy
 
-**You are not a 1:1 translator.** The WebForms block is a _requirements reference_, not a code template. Your job is to produce an idiomatic Obsidian block that delivers the same _behavior_, not to replicate the same _implementation_.
+**You are not a 1:1 translator.** The WebForms block is a _requirements reference_, not a code template. Your job is to produce an idiomatic Obsidian block that delivers the same _behavior_ — not to replicate the same _implementation_.
 
-**When WebForms and correctness conflict, correctness wins.** If the WebForms code has bugs, N+1 queries, missing null checks, service calls where cache exists, or patterns that don't apply to Obsidian, fix them. Do not carry forward problems just because "the original did it this way."
+**When WebForms and correctness conflict, correctness wins.** If the WebForms code has bugs, N+1 queries, missing null checks, service calls where cache exists, or patterns that don't apply to Obsidian — fix them. Do not carry forward problems just because "the original did it this way."
 
-The full catalog of patterns to preserve, patterns to improve, and forbidden carry-forwards lives in `references/common-patterns.md` (loaded after Phase 1A classification). Do not duplicate that content here.
+What to preserve from WebForms:
+- **User-facing behavior** — what the block does, what the user sees, how they interact
+- **Business rules** — authorization checks, validation logic, data transformations
+- **Configuration** — block settings, attribute keys, linked pages
 
----
+What to improve during conversion:
+- **Page parameter resolution** — WebForms reads page-parameter entities by integer Id (`PageParameter( ... ).AsInteger()` → `.Get( id )`). Obsidian's standard is IdKey. Resolve the raw string key with the IdKey-aware overload (`Get( key, !PageCache.Layout.Site.DisablePredictableIds )`) so Id, IdKey, and Guid all work. This is a **required** improvement — see `references/common-patterns.md` § "Page Parameter Resolution".
+- **Performance** — fix N+1 queries, use cache instead of service for read-only lookups, pre-fetch data before loops
+- **Null safety** — use `?.`, `??`, and early returns instead of deep null-check nesting
+- **Modern C#** — string interpolation, pattern matching, null-conditional operators, collection expressions where appropriate
+- **Dead code** — do not carry forward commented-out code, unused variables, or WebForms-only plumbing (`ViewState`, `PostBack` checks, `UpdatePanel` logic)
+- **Obsidian controls** — use standard Obsidian controls (`TextBox`, `DropDownList`, `DatePicker`, etc.) instead of hand-rolling HTML that the WebForms block may have used
+- **Rock utilities** — use `RockDateTime`, `ListItemBag`, cache classes, and other Rock helpers instead of raw .NET equivalents
 
-## The /working/ Workspace
-
-Research depth is the value of v2. Every research artifact lives under `/working/{block-name-kebab}/` at the repo root. The folder is created in Phase 1A and persists through implementation, review, and optional archival to `/specs/completed/{Domain}/`. (Whether `/working/` is gitignored is up to the project; the skill does not assume either way.)
-
-The artifacts are produced once and consumed three times:
-
-1. **Plan composition** (Phase 3): the model authoring plan.md cites them.
-2. **Checkpoint verification** (during implementation): each checkpoint reads the relevant subset to verify the code matches the analysis.
-3. **Post-conversion audit** (after `/review-conversion`, and any time later): truth-of-record about what was found, what was decided, and what was deferred.
-
-The full artifact list:
-
-```
-/working/{block-name-kebab}/
-├── parity-map.md                ← functional parity table (7 traces; 8 if new features)
-├── state-machine.md             ← UI states + transitions
-├── logic-graph.md               ← call graph, conditional branches, data flow
-├── data-model.md                ← entities, FKs, queries, sibling-block scan
-├── completeness-analysis.md     ← second-sweep findings, hidden behavior
-├── improvement-analysis.md      ← inefficiencies, suboptimal patterns, redesigns
-├── redundancy-report.md         ← duplicate / dead / hand-rolled-where-utility-exists
-├── edge-cases.md                ← null cases, error paths, what could break
-├── obsidian-pattern-analysis.md ← idiomatic shape; alternatives + rationale
-├── clarifying-questions.md      ← Phase 2 Q&A audit trail
-├── test-scenarios.md            ← behaviors that must verify post-conversion
-├── figma-design.md              ← only if a Figma URL was attached (translation + redesign)
-├── new-features.md              ← only if scope includes net-new functionality
-├── figma/                       ← screenshots referenced by figma-design.md (not embedded)
-└── plan.md                      ← THE distilled implementation guide
-```
-
-**Adaptive depth.** Not every conversion produces every artifact. Templates are skeletons, not contracts. Use guidance language. Default to producing the artifact; collapse to a stub ("Not applicable for this block, see parity-map.md") when the block is genuinely simple along that dimension. See `references/working/*-template.md` for what each artifact covers.
+**Do not mention WebForms in code comments.** The converted file should read as if written from scratch — phrases like "matches WebForms", "mirrors the WebForms behavior", or references to original methods (`btnSave_Click`, `ShowReadonlyDetails`, `NavigateToParentPage`, etc.) are forbidden. Only reference WebForms when a future reader genuinely needs that context (documented surprising divergence, carried-over bug-fix rationale). See `references/common-patterns.md` § "Comments in Converted Code".
 
 ---
 
 ## Reference Routing Table
 
-Load reference files progressively, only when needed for the current phase.
+Load reference files progressively — only when needed for the current phase.
 
 | Reference File | Load When |
 |---|---|
-| `references/phase-1a-protocol.md` | Entering Phase 1A (always) |
-| `references/common-patterns.md` | After Phase 1A classification (always) |
+| `references/common-patterns.md` | After Phase 1 classification (always) |
 | `references/detail-block-patterns.md` | Block classified as **Detail** |
 | `references/list-block-patterns.md` | Block classified as **List** |
 | `references/custom-block-patterns.md` | Block classified as **Custom** |
-| `references/working/parity-map-template.md` | Phase 1A.8 (always) |
-| `references/working/figma-design-template.md` | Phase 1A.9 (only if a Figma URL was captured in 1A.0) |
-| `references/working/new-features-template.md` | Phase 1A.10 (only if scope includes new features) |
-| `references/phase-1b-protocol.md` | Entering Phase 1B |
-| `references/working/{state-machine,logic-graph,data-model,completeness-analysis,improvement-analysis,redundancy-report,edge-cases,obsidian-pattern-analysis,test-scenarios}-template.md` | Phase 1B; each subagent reads only its own template |
-| `references/improvement-checklist.md` | Phase 1B Improvement Analyst subagent |
-| `references/phase-2-protocol.md` | Entering Phase 2 |
-| `references/working/clarifying-questions-template.md` | Phase 2 (always, even when Phase 1B was skipped) |
-| `references/plan-template.md` | Phase 3 |
-| `references/checkpoint-protocol.md` | Phase 4, at the first checkpoint |
-| `references/implementation-details.md` | Phase 4 Step 2 |
-| `references/conversion-spec-format.md` | Phase 5 archival (only if user picks "archive now") |
+| `references/implementation-details.md` | Implementation (after plan approval) |
 | `references/troubleshooting.md` | When errors occur, patterns seem unsupported, or build fails |
-| `references/examples.md` | Index of per-type examples; load when unsure about output format for any phase |
-| `references/examples/{detail,list,custom,detail-with-figma}-example.md` | Per-type example; load only the file matching this conversion's classification (and Figma scope) |
+| `references/examples.md` | If unsure about output format for any phase |
 
-`review-conversion`'s `references/review-checklist.md` is **referenced** by checkpoint-protocol.md and improvement-checklist.md, not duplicated. Load it at the same checkpoint protocol moment.
-
-Do not read all reference files upfront. Read them as each phase requires.
+**Do NOT read all reference files upfront.** Read them as each phase requires.
 
 ---
 
@@ -107,111 +70,234 @@ Do not read all reference files upfront. Read them as each phase requires.
 
 | Script | When to use |
 |---|---|
-| `scripts/generate-guids.js` | Implementation, before writing the C# block file |
-| `scripts/validate-conversion.js` | Implementation, quality gate |
+| `scripts/generate-guids.js` | Implementation — before writing the C# block file |
+| `scripts/validate-conversion.js` | Implementation — quality gate |
 
 ---
 
-## Phase 1A: Parity Map (always, sequential)
+## Phase 1 — Research (read-only)
 
-Foundation phase. Detects scope (translation, redesign, new features), classifies the block, scans for unsupported patterns and performance issues, and produces `parity-map.md` (plus `figma-design.md` and `new-features.md` when applicable).
+1. **Resolve the block path:**
+   - If a full path was given (e.g., `Core/ExceptionDetail`): read `RockWeb/Blocks/$ARGUMENTS.ascx.cs`
+   - If only a block name was given: use `Glob` to search `RockWeb/Blocks/**/$ARGUMENTS.ascx.cs`
+   - **If no match is found:** read `references/troubleshooting.md` for resolution steps. Do not guess.
 
-Read `references/phase-1a-protocol.md` for sub-steps 1A.0-1A.10, the quality gate, and the presentation format.
+2. **Read the `.ascx.cs` and `.ascx` files fully.**
 
-After Phase 1A completes, decide whether to fan out to Phase 1B per the trigger in `references/phase-1b-protocol.md` § Trigger.
+3. **Scan for unsupported patterns** — check for these before proceeding:
+   - `System.Web.HttpContext` (not just `System.Web` in using statements)
+   - `ScriptManager.RegisterStartupScript`
+   - `UpdatePanel` with complex partial postback logic
+   - `ViewState` for non-trivial state management
+   - Nested `UserControl` references (`.ascx` includes)
+   - `Session[` access
+
+   If found, note them — they'll be called out in Phase 2.
+
+4. **Scan for performance issues** — identify these even if the WebForms code had them. The Obsidian conversion must fix them:
+   - **N+1 queries:** Service `.Get()` or `.Queryable()` calls inside `foreach`/`for` loops
+   - **Lazy-load traps:** Navigation property access (e.g., `item.PersonAlias.Person.FullName`) inside loops without `.Include()` or pre-fetching
+   - **Repeated instantiation:** `new XService( rockContext )` created per iteration instead of once before the loop
+   - **Cache misuse:** Service queries for data available via cache classes (`DefinedTypeCache`, `CampusCache`, `GroupTypeCache`, etc.)
+
+   **Fix strategy:** Pre-fetch all needed data into a dictionary or list before the loop. Use `.Include()` for required navigation properties. Use cache classes for read-only lookups. These fixes are **required** — do not carry N+1 patterns forward from WebForms.
+
+5. **Scan for page parameter resolution** — find every entity or cache lookup driven by a page parameter (`PageParameter( PageParameterKey.X )`). WebForms almost always fetches these by integer Id (`.AsInteger()` → `.Get( id )`). Obsidian's standard is IdKey, so each one **must** be converted to the IdKey-aware overload that accepts Id, IdKey, or Guid:
+
+   ```csharp
+   var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+   // or, for a cache class:
+   var site = SiteCache.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+   ```
+
+   This is a **required** fix — do not carry forward `.AsInteger()` + `.Get( int )`. The only exception is a parameter that is genuinely a number (page index, count, year), which is not an entity lookup. See `references/common-patterns.md` § "Page Parameter Resolution".
+
+6. **Classify the block type:**
+
+   | Signs in the WebForms block | Type |
+   |---|---|
+   | Renders a `GridView` or `<Rock:Grid>`, queries a collection, has add/delete buttons, links to a detail page or inline modal | **List** |
+   | Displays one entity with view + edit modes, Save/Cancel/Delete buttons, possibly breadcrumbs | **Detail** |
+   | None of the above — dashboard, widget, context setter, Lava block, utility | **Custom** |
+
+   For detail blocks, assume `IBreadCrumbBlock` is needed — implement it unless the WebForms block clearly did not use breadcrumbs or is a non-navigated block.
+
+7. **Load references:**
+   - Read `references/common-patterns.md` (always)
+   - Read the type-specific reference file based on classification
+
+8. **Identify the matching canonical reference block** from the "Canonical Reference Blocks" table in `common-patterns.md`. You will read the specific canonical block files later when implementing — not now.
+
+### Phase 1 Quality Gate
+
+Before presenting results, verify:
+- [ ] Block files found and fully read
+- [ ] Unsupported patterns identified (or confirmed none)
+- [ ] Performance issues scanned (N+1, cache misuse, lazy-load traps)
+- [ ] Page parameter entity/cache lookups identified and flagged for IdKey conversion (or confirmed none)
+- [ ] Classification justified with specific evidence from the code
+- [ ] Base class selected with reasoning (use the "Base Class Selection" table in `common-patterns.md`)
+- [ ] `common-patterns.md` and type-specific reference loaded
+
+Present Phase 1 results in this format:
+- **Block:** [name] — [line count] lines (.ascx.cs)
+- **Classification:** Detail | List | Custom — [one-line justification from code evidence]
+- **Base class:** [selected class] — [reason from Base Class Selection table]
+- **Unsupported patterns:** [list with line numbers, or "None found"]
+- **Performance issues:** [list N+1 patterns, cache misuse, lazy-load traps with line numbers, or "None found"]
+- **Page parameter lookups:** [list each `PageParameter(...)` entity/cache fetch with line numbers and the IdKey-aware resolution to use, or "None found"]
+- **Canonical reference:** [block name from table]
+
+Wait for user input before continuing.
 
 ---
 
-## Phase 1B: Parallel Research Fan-Out (adaptive)
+## Phase 2 — Propose design and ask clarifying questions
 
-Conditional phase. Fires for large blocks, blocks with multiple modes / many entities, blocks with redesign or new-feature scope, or on explicit "deep research" request. Spawns up to 8 subagents in parallel, each producing one structured artifact.
+### Unsupported pattern callouts
 
-Read `references/phase-1b-protocol.md` for the trigger thresholds, subagent table (with always-run vs. skip-when classification), per-subagent briefing requirements, reconciliation step, and quality gate.
+If Phase 1 found unsupported patterns, present them first:
+> **Patterns requiring special attention:**
+> - `[pattern]` — found at line X. Proposed replacement: [approach]
+
+If the block relies heavily on `System.Web` throughout, flag that it may need redesign rather than line-by-line conversion.
+
+### Performance fix proposals
+
+If Phase 1 identified performance issues (N+1 queries, cache misuse, lazy-load traps), present the fix strategy for each:
+> **Performance fixes:**
+> - N+1 at line X: [pre-fetch into dictionary / use `.Include()` / batch query]
+> - Cache misuse at line Y: [replace `XService` with `XCache.Get()`]
+
+These fixes are **required** — do not carry performance issues forward from WebForms even if "it worked before."
+
+### Design proposal
+
+Present:
+- Block type and base class with reasoning
+- Overall architecture (files to create, partials needed)
+- Key behaviors being carried forward from WebForms
+
+### Clarifying questions
+
+**You must ask questions — do not silently assume.** The user would rather answer a quick question than debug a wrong assumption after implementation.
+
+**Two categories of questions:**
+
+#### Always ask (unless the answer is 100% unambiguous from the code)
+
+These decisions have high cost if wrong. Ask even if you have a reasonable guess — state your guess and ask the user to confirm or correct.
+
+| Topic | Why it matters |
+|---|---|
+| **Which fields to show on the view panel** (detail blocks) | WebForms often dumps everything; Obsidian should be curated. Propose a list and ask. |
+| **Grid columns and ordering** (list blocks) | Column selection directly affects UX. Propose what WebForms had and ask if any should be dropped/added/reordered. |
+| **Filter approach** (list blocks) | Column-only vs. server-side filters is an architectural decision. State your recommendation and confirm. |
+| **Entity attributes** (detail blocks) | If the entity has `LoadAttributes()` in WebForms, confirm whether attributes should be on view, edit, or both. |
+| **Behaviors that look buggy or intentional** | If WebForms code does something odd (e.g., filtering by hardcoded ID, unusual sort, hidden field), ask whether it's intentional or a bug to fix. |
+
+#### Infer from the code (don't ask)
+
+These have clear answers in the WebForms source. Asking about them wastes time.
+
+| Topic | How to infer |
+|---|---|
+| Base class selection | Determined by block classification — use the table |
+| Navigation / linked pages | Copy from WebForms `AttributeKey` and `GetAttributeValue` calls |
+| Security model (block vs entity) | Match what WebForms does — `IsUserAuthorized` = block-level, `entity.IsAuthorized` = entity-level |
+| Breadcrumb implementation | If WebForms has `IBreadCrumbBlock` or sets breadcrumb text, include it |
+| IsSystem guard | If entity has `IsSystem` property, include the guard |
+| ContentSection layout | Use the WebForms panel/section structure as a guide; only ask if it's genuinely unclear how to group fields |
+
+#### Format
+
+Present questions as numbered items with your proposed answer in brackets. This lets the user quickly confirm or override:
+
+> 1. **View panel fields** — I'd show Name, Description, IsActive, and Campus. The WebForms block also shows InternalCode and CreatedDate — include those? **[Proposed: exclude both]**
+> 2. **Grid filters** — The WebForms block has 3 server-side filters (Status, Campus, Date Range) that reduce the DB query. Keep all three as server-side? **[Proposed: yes, keep server-side]**
+> 3. **Line 142 oddity** — The WebForms block filters by `CategoryId == 5` (hardcoded). Intentional or bug? **[Proposed: replace with block setting]**
+
+**Wait for the user to answer before continuing.**
 
 ---
 
-## Phase 2: Propose design and ask clarifying questions
+## Phase 3 — Write and approve the plan
 
-Bridges research and the plan. Surfaces unsupported pattern callouts, required performance fixes, and a curated set of clarifying questions whose answers feed Phase 3.
+**The plan is the single source of truth for implementation.** After approval, you will exit plan mode and follow the plan — SKILL.md will not be re-read. Everything the agent needs must be in the plan itself.
 
-Read `references/phase-2-protocol.md` for the design proposal structure, the always-ask question topics (with Figma + new-feature additions), the infer-don't-ask list, and the response format.
+### Plan structure
 
-Wait for the user to answer all questions before continuing to Phase 3.
+Write a plan with these sections, adapting the template below to the specific block. Replace all `[placeholders]` with concrete values.
 
----
+**Section 1 — Design** (from Phases 1-2):
+- Block type, base class, and reasoning
+- All files to create (full paths) and files to delete
+- Key design decisions and how clarifying questions were resolved
+- Unsupported pattern replacements (if any)
 
-## Phase 3: Write and approve the plan
-
-**The plan is the bridge from research to code.** It cites /working/ artifacts as sources rather than repeating them. Plan length scales with the block; the constraint is no-duplication-with-/working/, not a target line count.
-
-Read `references/plan-template.md`. Write `/working/{block-name-kebab}/plan.md` using the §1-§6 structure documented there:
+**Section 2 — Implementation** (the agent's step-by-step execution guide):
 
 ```
-§1 Block summary                    (1-2 paragraphs)
-§2 Key design decisions             (with citations into /working/clarifying-questions.md and /working/obsidian-pattern-analysis.md)
-§3 Files to create / files to delete  (paths)
-§4 Implementation steps             (the 10-step structure)
-§5 Checkpoints                      (each cites which /working/ artifacts to verify against)
-§6 Open issues / blockers
+## Implementation
+
+### Step 1: Create feature branch
+git branch -a | grep "feature-v" | head -5
+# Extract version number (e.g., feature-v19-claude-foo → 19)
+git checkout -b feature-v[version]-claude-[blocknamelower]
+git branch --show-current
+# STOP if output is develop, main, or master. Fix before proceeding.
+
+### Step 2: Load references
+Read these files before writing any code:
+- `references/implementation-details.md` — bag rules, type mapping table, file checklist
+- Canonical reference block files: [list the specific C# and .obs files from Phase 1]
+
+### Step 3: Create bags
+Path: `Rock.ViewModels/Blocks/[Category]/[BlockName]/`
+Files: [list each bag file with its full path]
+
+### Step 4: Create .d.ts placeholders
+Path: `Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/[Category]/[BlockName]/`
+One per bag. Follow the type mapping table from implementation-details.md.
+
+### Step 5: Generate GUIDs
+Run: `node .claude/skills/convert-block/scripts/generate-guids.js`
+Use the output VERBATIM for EntityTypeGuid and BlockTypeGuid.
+Do NOT fabricate GUIDs. Both values must be uppercase.
+
+### Step 6: Create C# block
+Path: `Rock.Blocks/[Category]/[BlockName].cs`
+Use the canonical reference block as the structural template.
+
+### Step 7: Create Obsidian .obs component
+Path: `Rock.JavaScript.Obsidian.Blocks/src/[Category]/[blockName].obs`
+Use the canonical reference block's .obs file for layout and structure.
+
+### Step 8: Create partials
+[List each partial file with its full path — e.g., viewPanel.partial.obs, editPanel.partial.obs, types.partial.ts]
+
+### Step 9: Chop WebForms
+Delete:
+- `RockWeb/Blocks/[Category]/[BlockName].ascx`
+- `RockWeb/Blocks/[Category]/[BlockName].ascx.cs`
+
+### Step 10: Validate
+Run: `node .claude/skills/convert-block/scripts/validate-conversion.js [Category] [BlockName] [detail|list|custom]`
+Fix ALL failures before continuing.
+If build errors or unexpected patterns occur, read `references/troubleshooting.md`.
+
+### Next steps (after validation passes)
+- Inform the user to run **Rock.CodeGeneration** (WPF app at `Rock.CodeGeneration/`) to regenerate .d.ts files from C# ViewModels
+- Remind: when writing the migration to register this block, use `AddOrUpdateEntityBlockType()` — **never** `UpdateBlockTypeByGuid()` for Obsidian blocks (see `.claude/rules/data-model.md` § Block Type Methods)
 ```
-
-While writing the plan, add a **per-trace architectural summary** to `parity-map.md` directly under its header, above the trace tables. One bullet per trace (1 through 7, plus 8 if new features are in scope), each capturing how that trace's rows collapse into Obsidian patterns at the architectural level — not row by row. Example: "Trace 1 (Methods M1-M47): `OnInit`/`OnLoad` collapse into `GetObsidianBlockInitialization` + `GetEntityBagForView`/`GetEntityBagForEdit`. `lbSave_Click` → `Save` block-action with the post-save chain preserved (slugs, tags, personalization, intents, occurrence join). Child/parent grid handlers → grid emits + matching block actions."
-
-The row-by-row "Obsidian Equivalent (planned)" column stays empty here. `/review-conversion` fills it in post-implementation while walking the actual code, which produces a more honest mapping than a Phase-3 prediction.
 
 ### Phase 3 Quality Gate
 
 Before presenting the plan, verify:
 - [ ] Every file has a full, concrete path (no unresolved placeholders)
-- [ ] All user answers from Phase 2 are recorded in `clarifying-questions.md` and reflected in the plan
+- [ ] All user answers from Phase 2 are incorporated
 - [ ] Unsupported patterns have documented replacements
-- [ ] Implementation §4 includes all 10 steps with block-specific values filled in
-- [ ] Canonical reference file paths are listed explicitly
-- [ ] §5 checkpoints are present (count per `references/checkpoint-protocol.md` "When checkpoints fire") and each cites the /working/ artifacts to read
-- [ ] `parity-map.md` has a per-trace architectural summary (1 bullet per trace) directly under its header. Row-level "Obsidian Equivalent (planned)" cells stay empty for `/review-conversion` to fill post-implementation.
+- [ ] Implementation section includes all 10 steps with block-specific values filled in
+- [ ] Canonical reference file paths are listed explicitly in Step 2
 
-**CRITICAL: Do not write a single block file until the user explicitly approves this plan.**
-
----
-
-## Phase 4: Implementation (after plan approval)
-
-Exit plan mode. Follow plan.md §4 step by step. The 10-step structure is defined in `references/plan-template.md` §4 and instantiated for this block in plan.md §4. Do not improvise; execute the steps as written.
-
-After each implementation step that triggers a checkpoint per plan.md §5, **pause and run the checkpoint protocol** documented in `references/checkpoint-protocol.md`. The protocol covers checkpoint count by block size, what each reads, the PASS/DRIFT FOUND/ESCALATE verdict format, the four cross-cutting checks (view/edit bag split, cross-block ID format, read-source for cross-language types, deduplication sweep), the compile-and-typecheck gate (a hard prerequisite for PASS — see § 4.5), and the framework-edit gate.
-
-**A checkpoint cannot return PASS while compile or type errors exist.** Lint passing is not enough; ESLint allows whole categories of failures (control-prop type widening, picker `modelValue` shape mismatches, `Guid?`/`null` coercions) that only the compiler catches. Run the gate commands listed in `references/checkpoint-protocol.md § 4.5` before scoring the verdict — the C# build for any C# changes, `vue-tsc` for any `.obs`/`.ts` changes, plus the framework-control type-check whenever a file in `Rock.JavaScript.Obsidian/Framework/` was edited.
-
-### After Step 10 (validation passes)
-
-In order:
-
-1. **Run Rock.CodeGeneration** (WPF app at `Rock.CodeGeneration/`) to regenerate `.d.ts` files from C# ViewModels. The conversion is not done until this is run and the auto-generated `.d.ts` matches the bags 1:1.
-2. **No migration is needed for the chop.** `BlockTypeService.StagePossibleMigrateWebFormsToObsidianBlock` rewrites the existing WebForms `BlockType` row at Rock startup whenever it finds the new entity-based class carries the WebForms block's GUID on its `[BlockTypeGuid]` attribute. Confirm the C# class's attribute matches the WebForms `[BlockTypeGuid]` per `references/common-patterns.md` § GUID Assignment Rules; do not write `AddOrUpdateEntityBlockType` or any other registration migration.
-3. **Run `/review-conversion`** to verify functional parity. v2 of that skill verifies code against every applicable /working/ artifact, fills the parity-map.md verdict columns, appends `## Verification (review-conversion, ...)` sections to the other artifacts (improvement-analysis.md, redundancy-report.md, etc.), and writes a `review-findings.md` summary alongside them. Wait for the report's verdict to be PASS (or PASS WITH NOTES with no material findings) before moving on.
-4. **If `improvement-analysis.md` flagged inline styles** or hard-coded design tokens, run `/css-cleanup` next.
-5. **Phase 5 archival** (below) becomes available once `/review-conversion` passes.
-
----
-
-## Phase 5: Post-conversion archival
-
-After `/review-conversion` returns PASS, offer to archive the /working/ folder as a frozen spec.
-
-Read `references/conversion-spec-format.md` for the compaction format and conventions.
-
-Offer:
-> The /working/{block-name-kebab}/ folder captures the full research. Want me to archive it as a frozen spec under /specs/completed/{Domain}/?
-> 1. Yes, archive now
-> 2. Not yet, wait until the PR merges
-> 3. No, leave it at /working/ (or delete)
-
-If the user picks **Yes**, follow `references/conversion-spec-format.md` for the spec.md body shape, the move, and the INDEX.md update.
-
-If the user picks **Not yet** or **No**: leave /working/ in place. The user can manually archive later.
-
----
-
-## Examples
-
-See `references/examples.md` (the index) and the per-type example files under `references/examples/`. Load only the file matching this conversion's classification (and Figma scope, if present).
+**CRITICAL: Do not write a single file until the user explicitly approves this plan.**

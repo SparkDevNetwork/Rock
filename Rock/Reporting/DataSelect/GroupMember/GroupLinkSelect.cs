@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataSelect.GroupMember
@@ -35,7 +36,8 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [Description( "Show Group Name" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Name" )]
-    [BooleanField( "Show As Link", "", true )]
+    [BooleanField( "Show As Link",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "9CF6163A-6E6A-47F3-B9E3-4558E75B1B9F" )]
     public class GroupLinkSelect : DataSelectComponent
     {
@@ -129,6 +131,12 @@ namespace Rock.Reporting.DataSelect.GroupMember
             result.HtmlEncode = false;
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new HtmlObsidianGridField();
         }
 
         /// <summary>

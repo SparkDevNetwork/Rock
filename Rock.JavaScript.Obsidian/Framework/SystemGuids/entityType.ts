@@ -345,6 +345,10 @@ export const EntityType = {
     FinancialTransactionImage: "78DCA7EE-C5FE-49AE-9995-0E254CC8E2A2",
     /** The EntityType Guid for Rock.Model.FinancialTransactionRefund  */
     FinancialTransactionRefund: "7616E2AF-CEF2-44A5-B27F-3E70EC8B70FA",
+    /** The EntityType Guid for Rock.Model.FlexibleDocument */
+    FlexibleDocument: "962D0C52-FA32-4863-977F-D6A4B2DF0C09",
+    /** The EntityType Guid for Rock.Model.FlexibleDocumentModel */
+    FlexibleDocumentModel: "28A1D38E-333C-46C5-A896-7500DFFEAB74",
     /** The EntityType Guid for Rock.Model.Following  */
     Following: "D9AD7A30-92F2-467B-A3F9-37CA246F90BD",
     /** The EntityType Guid for Rock.Model.FollowingEventNotification  */
@@ -357,6 +361,8 @@ export const EntityType = {
     FollowingSuggested: "EC14B80A-3776-4134-884D-031A89C0EF03",
     /** The EntityType Guid for Rock.Model.FollowingSuggestionType  */
     FollowingSuggestionType: "CC7DF118-86A1-4F90-82D8-0DAE9CD37343",
+    /** The EntityType Guid for Rock.Model.ForgeContent */
+    ForgeContent: "38F182A7-9FE4-4D7B-B483-59F615BDE41C",
     /** The guid for the Rock.Model.Group entity. */
     Group: "9BBFDA11-0D22-40D5-902F-60ADFBC88987",
     /** The EntityType Guid for Rock.Model.GroupDemographicType  */
@@ -517,11 +523,11 @@ export const EntityType = {
     MobileCommunicationCommunicationviewBlockType: "4AF5FCEF-CBF6-486B-A04D-920E31356B7F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest. */
     MobileConnectionAddConnectionRequest: "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F",
-    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList". */
     MobileConnectionConnectionOpportunityListBlockType: "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A",
-    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail. */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail". */
     MobileConnectionConnectionRequestDetailBlockType: "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF",
-    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList. */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList". */
     MobileConnectionConnectionRequestListBlockType: "E1C52624-898F-46EF-98B0-3C06B6D81654",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList. */
     MobileConnectionConnectionTypeListBlockType: "F30667AC-5FAA-429C-AD7F-D4B7C0C5C293",
@@ -721,7 +727,7 @@ export const EntityType = {
     PluginMigration: "F239557E-C7A8-4D1F-82CC-55CDD0ACA3C8",
     /** The EntityType Guid for Rock.Model.PrayerRequest  */
     PrayerRequest: "F13C8FD2-7702-4C79-A6A9-86440DD5DE13",
-    /** The protect my ministry provider */
+    /** The protect my ministry provider. */
     ProtectMyMinistryProvider: "C16856F4-3C6B-4AFB-A0B8-88A303508206",
     /** The guid for the Rock.Model.Registration entity */
     Registration: "D2F294C6-E161-4A56-85C7-CD74D535F61A",
@@ -801,6 +807,8 @@ export const EntityType = {
     SmsAction: "1F5E26BE-0ED4-4250-8FFC-1DED5E9EACF0",
     /** The SMS Conversation Action */
     SmsActionConversation: "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB",
+    /** The SMS Create Connection Request Action */
+    SmsActionCreateConnectionRequest: "4E8B12C7-A93F-4D85-B621-6A7F398C2E1D",
     /** The EntityType Guid for Rock.Model.SmsPipeline  */
     SmsPipeline: "64DA3A06-FD39-4E5B-8126-38404FB0092A",
     /** The EntityType Guid for Rock.Model.Snippet */

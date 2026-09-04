@@ -1,7 +1,10 @@
 ---
 title: Event Domain Overview
-last_updated: 2026-05-01
+last_updated: 2026-07-28
+related_specs:
+  - specs/completed/event/260727-event-item-detail-polish-personalization.md
 related_files:
+  - Rock.Blocks/Event/EventItemDetail.cs
   - Rock/Model/Event/EventCalendar/EventCalendar.cs
   - Rock/Model/Event/EventItem/EventItem.cs
   - Rock/Model/Event/EventItemOccurrence/EventItemOccurrence.cs
@@ -72,6 +75,8 @@ flowchart LR
 **Date Range filter on the Group Attendance List was end-date-exclusive.** `3b6ddea7ba` (Fixes #6749) fixed occurrences on the selected end date being missed.
 
 **Campus delete used to cascade through events.** Commit `9d30769249` (Fixes #6563) fixed Attendance, Prayer Request, and Registration records being deleted when their Campus was deleted. They are now safely detached. Older Rock instances may have orphaned data from this class of incident.
+
+**Event items can target personalization segments and request filters.** The Event Item Detail admin block ([Rock.Blocks/Event/EventItemDetail.cs](../../Rock.Blocks/Event/EventItemDetail.cs)) lets an administrator tag an `EventItem` with Personalization Audience Segments and Request Filters. These persist in the generic `PersonalizedEntity` table (keyed by EntityType + EntityId).
 
 **Interactive Experience is its own thing.** Different lifecycle (start/stop/end), different data shape (`InteractiveExperienceOccurrence`, `InteractiveExperienceAnswer`), different UI (Live Experience block). Do not assume the registration model maps to it.
 
@@ -184,8 +189,12 @@ Rejected (since `9d30769249`). The blast radius is too wide and the legitimate u
 
 ## Recent Impactful Changes
 
+- **2026-07-28** ([commit `322e2faeb7`](https://github.com/SparkDevNetwork/Rock/commit/322e2faeb7)). Event Item Detail block refreshed to the section/stack layout and gained personalization Audience Segment and Request Filter assignment (stored in `PersonalizedEntity`); the Approved status became a permission-gated button group.
 - **2026-03-25** ([commit `3b6ddea7ba`](https://github.com/SparkDevNetwork/Rock/commit/3b6ddea7ba)). Group Attendance List Date Range filter now correctly includes occurrences on the selected end date (Fixes #6749).
 - **2026-03-20** ([commit `de5a49c33e`](https://github.com/SparkDevNetwork/Rock/commit/de5a49c33e)). Internal Event Registration blocks now match Signature Documents by registrant rather than by person; data migration backfilled missing values (Fixes #6737).
 - **2026-03-05** ([commit `8cb0f95aba`](https://github.com/SparkDevNetwork/Rock/commit/8cb0f95aba)). Added "Prevent Duplicate Registrants" template setting to block the same Person registering twice for the same instance.
 - **2026-03-02** ([commit `b15a1d0946`](https://github.com/SparkDevNetwork/Rock/commit/b15a1d0946)). Added Registrant eligibility rules to the Registration Template, prevent incorrect family member registrations.
-- **2026-01-26** ([commit `134ce18e4c`](https://github.com/SparkDevNetwork/Rock/commit/134ce18e4c)). Fixed an issue allowing Event Registration completion without filling all required fields (Fixes #5091).
+
+## Related Specs
+
+- [Event Item Detail Polish + Personalization](../../specs/completed/event/260727-event-item-detail-polish-personalization.md) — 2026-07-27 (Jason Hendee)

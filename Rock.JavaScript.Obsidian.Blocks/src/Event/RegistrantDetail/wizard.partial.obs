@@ -1,0 +1,37 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="wizard">
+        <div v-for="(item, index) in items"
+             :key="index"
+             class="wizard-item"
+             :class="index === items.length - 1 ? 'active' : 'complete'">
+
+            <a v-if="item.url && index < items.length - 1" :href="item.url">
+                <div class="wizard-item-icon">
+                    <i :class="item.iconCssClass"></i>
+                </div>
+                <div class="wizard-item-label">{{ item.label }}</div>
+            </a>
+
+            <template v-else>
+                <div class="wizard-item-icon">
+                    <i :class="item.iconCssClass"></i>
+                </div>
+                <div class="wizard-item-label">{{ item.label }}</div>
+            </template>
+
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { RegistrantWizardItem } from "./types.partial";
+
+    defineProps({
+        items: {
+            type: Array as PropType<RegistrantWizardItem[]>,
+            required: true
+        }
+    });
+</script>

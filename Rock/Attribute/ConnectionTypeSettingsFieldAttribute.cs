@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,8 +35,19 @@ namespace Rock.Attribute
         /// <param name="category">The attribute category used to group fields in the editor.</param>
         /// <param name="order">The display order within its category.</param>
         /// <param name="key">The attribute key. Defaults to the name with whitespace removed.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public ConnectionTypeSettingsFieldAttribute( string name = "Connection Type Settings", string description = "", bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ConnectionTypeSettingsFieldType ).FullName )
+            : base( SystemGuid.FieldType.CONNECTION_TYPE_SETTINGS.AsGuid(), name, description, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionTypeSettingsFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The display name for the attribute.</param>
+        public ConnectionTypeSettingsFieldAttribute( string name )
+            : base( SystemGuid.FieldType.CONNECTION_TYPE_SETTINGS.AsGuid(), name )
         {
         }
     }

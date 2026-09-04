@@ -25,7 +25,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.RegistrationInstanceLinkageList;
 using Rock.Web.Cache;
@@ -167,7 +166,16 @@ namespace Rock.Blocks.Event
         /// <returns>A boolean value that indicates if the add and delete buttons should be enabled.</returns>
         private bool GetIsAddDeleteEnabled()
         {
-            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            /*
+                6/10/26 - MSE
+
+                This block intentionally has no EDIT security gate. The legacy WebForms
+                block always showed the add and delete actions to anyone who could view
+                the page.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6865
+            */
+            return true;
         }
 
         /// <summary>
@@ -265,7 +273,10 @@ namespace Rock.Blocks.Event
                 {
                     var qryParams = new Dictionary<string, string>
                     {
-                        { PageParameterKey.ContentItemId, contentItem.Id.ToString() }
+                        { PageParameterKey.ContentItemId, contentItem.IdKey },
+                        // Open the content item in edit mode, matching the WebForms
+                        // behavior for items selected from an event linkage.
+                        { "autoEdit", "true" }
                     };
 
                     var contentItemUrl = this.GetLinkedPageUrl( AttributeKey.ContentItemDetailPage, qryParams );
@@ -301,8 +312,8 @@ namespace Rock.Blocks.Event
                     {
                         var qryParams = new Dictionary<string, string>
                         {
-                            { PageParameterKey.EventCalendarId, calendarItem.EventCalendarId.ToString() },
-                            { PageParameterKey.EventItemId, calendarItem.EventItem.Id.ToString() }
+                            { PageParameterKey.EventCalendarId, calendarItem.EventCalendar.IdKey },
+                            { PageParameterKey.EventItemId, calendarItem.EventItem.IdKey }
                         };
 
                         var calendarEventUrl = this.GetLinkedPageUrl( AttributeKey.CalendarItemDetailPage, qryParams );
@@ -384,11 +395,6 @@ namespace Rock.Blocks.Event
             if ( entity == null )
             {
                 return ActionBadRequest( $"{EventItemOccurrenceGroupMap.FriendlyTypeName} not found." );
-            }
-
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete {EventItemOccurrenceGroupMap.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

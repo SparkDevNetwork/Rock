@@ -1,0 +1,122 @@
+// PRINT EXTENSIONS
+// Rock-authored print overrides. Kept separate from core/_print.scss so that
+// file remains recognizable as upstream Bootstrap/h5bp boilerplate and stays
+// easy to diff on a framework upgrade.
+
+// =============================================================
+// Table of Content
+//  + App Shell
+//  + Chrome
+//  + Links
+// =============================================================
+
+/*
+    7/30/26 - CLAUDE
+
+    The internal themes render inside a viewport-height shell (.page-wrapper,
+    see core/_layout.scss) whose content area is a scroll container. In print
+    that clamps the document to one page and clips the rest, since browsers do
+    not paginate scroll containers. Unwound here rather than on screen, where
+    the height still anchors .full-work-surface and fixed positioning.
+
+    Reason: Restore normal document flow at print time so pages paginate fully.
+*/
+@media print {
+
+    // ======================== APP SHELL ========================
+
+    // No !important needed. Nothing in either theme targets .page-wrapper, so
+    // the only rule to beat is core/_layout.scss, which this file is imported
+    // after -- an equal-specificity tie that source order already wins. The
+    // padding-top there sits in a min-width query, but media queries add no
+    // specificity, so that is a source-order win too.
+    .page-wrapper {
+        display: block;
+        height: auto;
+        min-height: 0;
+        padding-top: 0;
+    }
+
+    /*
+        7/30/26 - CLAUDE
+
+        The !important here is load-bearing, not defensive. Every theme.css
+        starts by @import-ing core.css, so these core rules are evaluated first
+        and lose the specificity tie to the theme's own #content-wrapper rule,
+        which sets all three of these properties. Remove it and the overrides
+        go silently inert.
+
+        Reason: Core print rules cannot outrank theme rules on cascade order.
+    */
+    #content-wrapper {
+        display: block !important;
+        overflow: visible !important;
+        // Themes offset the content area by the collapsed sidebar width. With
+        // the sidebar hidden below, that offset would leave a dead gutter.
+        margin-left: 0 !important;
+    }
+
+    // ======================== END APP SHELL ========================
+
+    // ======================== CHROME ========================
+
+    /*
+        7/30/26 - CLAUDE
+
+        Not purely navigation -- the page title and breadcrumbs are nested
+        inside it (see each theme's Site.Master), so it cannot be hidden
+        wholesale. It is only returned to normal flow: the themes set
+        position: relative below their medium breakpoint, which the print page
+        box (~740px) falls under. display is restated because Bootstrap's print
+        rules hide .navbar, which this element also carries.
+
+        Reason: Keep the page title and breadcrumbs in print output.
+    */
+    .rock-top-header {
+        display: flex !important;
+        position: static !important;
+        height: auto !important;
+    }
+
+    // Interactive affordances carry no meaning on paper. .smartsearch would
+    // otherwise print as an empty box at the top of every document.
+    .navbar-toggle,
+    .navbar-brand-corner,
+    .navbar-zone-login,
+    .smartsearch {
+        display: none !important;
+    }
+
+    // The side nav is already hidden unless toggled open; this covers the case
+    // where it was left open. Hiding #cms-admin-footer matches the existing
+    // RockManager and Stark print stylesheets.
+    .navbar-static-side,
+    #cms-admin-footer {
+        display: none !important;
+    }
+
+    // ======================== END CHROME ========================
+
+    // ======================== LINKS ========================
+
+    /*
+        7/30/26 - CLAUDE
+
+        core/_print.scss carries the h5bp convention of appending every href
+        after its link text, turning breadcrumbs into "Home (/Admin) > Settings
+        (/admin/settings)". Rock's URLs are internal, so they are noise on
+        paper. The RockManager theme already suppresses this.
+
+        No !important needed. Neither theme declares a[href], so the only rule
+        to beat is the one in core/_print.scss -- equal specificity, and this
+        file is imported after it.
+
+        Reason: Internal hrefs are not useful in print output.
+    */
+    a[href]::after,
+    abbr[title]::after {
+        content: "";
+    }
+
+    // ======================== END LINKS ========================
+}

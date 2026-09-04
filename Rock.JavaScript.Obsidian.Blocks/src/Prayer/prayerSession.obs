@@ -1,0 +1,266 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="prayer-session">
+        <ChooseCategoriesPanel v-if="step === 'ChooseCategories'"
+                               :welcomeIntroductionText="config.options?.welcomeIntroductionText ?? ''"
+                               :categories="welcomeCategories"
+                               :selectedCategoryValues="welcomeSelectedCategoryValues"
+                               :selectedCampus="welcomeSelectedCampus"
+                               :isCampusPickerVisible="config.options?.isCampusPickerVisible ?? false"
+                               :showNoRequestsForSelection="showNoRequestsForSelection"
+                               :isBusy="isStarting"
+                               @start="onStart" />
+
+        <NotificationBox v-else-if="step === 'NoRequests'" alertType="info" heading="No Prayers">
+            There are no active prayer requests at this time.
+        </NotificationBox>
+
+        <PrayerPanel v-else-if="step === 'Prayer' && currentRequest"
+                     :prayerRequest="currentRequest"
+                     :currentNumber="currentNumber"
+                     :totalCount="totalCount"
+                     :isBackVisible="isBackVisible"
+                     :isFlaggingEnabled="config.options?.isCommunityFlaggingEnabled ?? false"
+                     :canAddComments="config.options?.canAddComments ?? false"
+                     :personAvatarUrl="config.options?.personAvatarUrl ?? ''"
+                     :isBusy="isNavigating"
+                     @next="onNext"
+                     @back="onBack"
+                     @stop="onStop"
+                     @flag="onFlag" />
+
+        <FinishedPanel v-else-if="step === 'Finished'" :isBusy="isRestarting" @startAgain="onStartAgain" />
+    </div>
+</template>
+
+<style scoped>
+.prayer-session :deep(.panel-note) {
+    border: 0;
+    box-shadow: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import ChooseCategoriesPanel from "./PrayerSession/chooseCategoriesPanel.partial.obs";
+    import PrayerPanel from "./PrayerSession/prayerPanel.partial.obs";
+    import FinishedPanel from "./PrayerSession/finishedPanel.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PrayerSessionBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerSession/prayerSessionBag";
+    import { PrayerSessionOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerSession/prayerSessionOptionsBag";
+    import { PrayerSessionStartRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerSession/prayerSessionStartRequestBag";
+    import { PrayerSessionStartResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerSession/prayerSessionStartResponseBag";
+    import { PrayerSessionRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerSession/prayerSessionRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // #region Types
+
+    type Step = "ChooseCategories" | "NoRequests" | "Prayer" | "Finished";
+
+    // #endregion Types
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<PrayerSessionBag, PrayerSessionOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const step = ref<Step>(config.bag?.hasActiveCategories ? "ChooseCategories" : "NoRequests");
+    const prayerRequestKeys = ref<string[]>([]);
+    const currentIndex = ref(0);
+    const currentRequest = ref<PrayerSessionRequestBag | null>(null);
+    const isStarting = ref(false);
+    const isNavigating = ref(false);
+    const isRestarting = ref(false);
+    const showNoRequestsForSelection = ref(false);
+
+    // The welcome-step data is held as reactive state (seeded from the initial
+    // block config) so "Start Again" can refresh it from the server.
+    const welcomeCategories = ref<ListItemBag[]>(config.bag?.categories ?? []);
+    const welcomeSelectedCategoryValues = ref<string[]>(config.bag?.selectedCategoryValues ?? []);
+    const welcomeSelectedCampus = ref<ListItemBag | null>(config.bag?.selectedCampus ?? null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const totalCount = computed((): number => prayerRequestKeys.value.length);
+    const currentNumber = computed((): number => currentIndex.value + 1);
+    const isBackVisible = computed((): boolean => currentIndex.value > 0);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Starts a prayer session for the selected categories and campus.
+     */
+    async function onStart(request: PrayerSessionStartRequestBag): Promise<void> {
+        if (isStarting.value) {
+            return;
+        }
+
+        isStarting.value = true;
+        showNoRequestsForSelection.value = false;
+
+        try {
+            const result = await invokeBlockAction<PrayerSessionStartResponseBag>("StartSession", { request });
+
+            if (!result.isSuccess) {
+                await alert(result.errorMessage ?? "Unable to start the prayer session.");
+                return;
+            }
+
+            const keys = result.data?.prayerRequestKeys ?? [];
+
+            if (keys.length === 0) {
+                showNoRequestsForSelection.value = true;
+                return;
+            }
+
+            prayerRequestKeys.value = keys;
+            await showRequestAt(0);
+        }
+        finally {
+            isStarting.value = false;
+        }
+    }
+
+    /**
+     * Advances to the next available request, or finishes the session at the end.
+     */
+    async function onNext(): Promise<void> {
+        await showRequestAt(currentIndex.value + 1, 1);
+    }
+
+    /**
+     * Returns to the previous available request.
+     */
+    async function onBack(): Promise<void> {
+        await showRequestAt(currentIndex.value - 1, -1);
+    }
+
+    /**
+     * Ends the session early.
+     */
+    function onStop(): void {
+        step.value = "Finished";
+    }
+
+    /**
+     * Flags the current request and then advances to the next one.
+     */
+    async function onFlag(): Promise<void> {
+        const key = currentRequest.value?.idKey;
+
+        if (!key || isNavigating.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction("FlagPrayerRequest", { idKey: key });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to flag the prayer request.");
+            return;
+        }
+
+        await onNext();
+    }
+
+    /**
+     * Refreshes the welcome data and returns to the welcome step to begin a new
+     * session, so the category list, counts, and saved selections are up to date.
+     */
+    async function onStartAgain(): Promise<void> {
+        if (isRestarting.value) {
+            return;
+        }
+
+        isRestarting.value = true;
+
+        try {
+            const result = await invokeBlockAction<PrayerSessionBag>("GetWelcomeData");
+
+            let hasActiveCategories = welcomeCategories.value.length > 0;
+
+            if (result.isSuccess && result.data) {
+                welcomeCategories.value = result.data.categories ?? [];
+                welcomeSelectedCategoryValues.value = result.data.selectedCategoryValues ?? [];
+                welcomeSelectedCampus.value = result.data.selectedCampus ?? null;
+                hasActiveCategories = result.data.hasActiveCategories;
+            }
+
+            prayerRequestKeys.value = [];
+            currentIndex.value = 0;
+            currentRequest.value = null;
+            showNoRequestsForSelection.value = false;
+            step.value = hasActiveCategories ? "ChooseCategories" : "NoRequests";
+        }
+        finally {
+            isRestarting.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Loads and displays the first available request at or beyond the given index,
+     * moving in the given direction and recording a prayer for it. Requests that are
+     * no longer available are skipped; running out going forward finishes the
+     * session, while running out going back leaves the current request in place.
+     */
+    async function showRequestAt(index: number, direction: 1 | -1 = 1): Promise<void> {
+        if (isNavigating.value) {
+            return;
+        }
+
+        isNavigating.value = true;
+
+        try {
+            let i = index;
+
+            while (i >= 0 && i < prayerRequestKeys.value.length) {
+                const key = prayerRequestKeys.value[i];
+                const result = await invokeBlockAction<PrayerSessionRequestBag>("GetPrayerRequest", { idKey: key });
+
+                if (result.isSuccess && result.data) {
+                    currentRequest.value = result.data;
+                    currentIndex.value = i;
+                    step.value = "Prayer";
+                    return;
+                }
+
+                // A 400/404 means the request is no longer available, so skip past it
+                // in the direction of travel. Any other status is an unexpected error;
+                // surface it and stop rather than silently skipping a valid request.
+                if (result.statusCode !== 400 && result.statusCode !== 404) {
+                    await alert(result.errorMessage ?? "Unable to load the prayer request.");
+                    return;
+                }
+
+                i += direction;
+            }
+
+            // No available request remained in this direction. Going forward the
+            // session is complete; going back, stay on the current request.
+            if (direction === 1) {
+                step.value = "Finished";
+            }
+        }
+        finally {
+            isNavigating.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #endregion Lifecycle Hooks
+</script>

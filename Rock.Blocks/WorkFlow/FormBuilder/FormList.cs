@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -98,6 +98,8 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
 
             box.NavigationUrls = GetBoxNavigationUrls();
 
+            box.Categories = GetCategoryList();
+
             return box;
         }
 
@@ -111,15 +113,30 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             var workflowTypeService = new WorkflowTypeService( RockContext );
             var workflowService = new WorkflowService( RockContext );
 
+            // Eager-load the creator alias and person so reading CreatedByPersonName below resolves
+            // from the loaded graph instead of lazy-loading the alias and person once per form.
             var workflowTypeQuery = workflowTypeService
                 .Queryable()
                 .AsNoTracking()
+                .Include( wt => wt.CreatedByPersonAlias.Person )
                 .Where( wt => wt.IsFormBuilder );
 
             var workflowTypes = workflowTypeQuery
                 .ToList()
                 .Where( wt => wt.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .ToList();
+
+            // Submission counts for every form-builder type in one grouped query. Joining to
+            // WorkflowType scopes the count without a Contains() over the form Ids, so the cost
+            // does not grow with the number of forms. Counts for types the person cannot view are
+            // included but never read.
+            var submissionCounts = workflowService
+                .Queryable()
+                .AsNoTracking()
+                .Where( w => w.WorkflowType.IsFormBuilder )
+                .GroupBy( w => w.WorkflowTypeId )
+                .Select( g => new { WorkflowTypeId = g.Key, Count = g.Count() } )
+                .ToDictionary( g => g.WorkflowTypeId, g => g.Count );
 
             foreach ( var wt in workflowTypes )
             {
@@ -160,11 +177,12 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                     canEdit = category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
                 }
 
-                var submissionCount = workflowService.Queryable().Count( w => w.WorkflowTypeId == wt.Id );
+                submissionCounts.TryGetValue( wt.Id, out var submissionCount );
 
                 var form = new FormListItemBag
                 {
                     Id = wt.Id,
+                    IdKey = wt.IdKey,
                     Name = wt.Name,
                     Description = wt.Description,
                     Guid = wt.Guid,
@@ -186,6 +204,33 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             }
 
             return formsByCategoryGuid;
+        }
+
+        /// <summary>
+        /// Gets the workflow form categories with their integer Id, Guid, and name so the block
+        /// can translate the selected category's Id from the page parameter to the Guid its forms
+        /// are keyed by.
+        /// </summary>
+        /// <returns>Every category defined for the WorkflowType entity type.</returns>
+        private List<FormListCategoryBag> GetCategoryList()
+        {
+            var workflowTypeEntityTypeId = EntityTypeCache.Get( typeof( WorkflowType ) )?.Id;
+            if ( !workflowTypeEntityTypeId.HasValue )
+            {
+                return new List<FormListCategoryBag>();
+            }
+
+            return new CategoryService( RockContext ).Queryable().AsNoTracking()
+                .Where( c => c.EntityTypeId == workflowTypeEntityTypeId.Value )
+                .ToList()
+                .Select( c => new FormListCategoryBag
+                {
+                    Id = c.Id,
+                    IdKey = c.IdKey,
+                    Guid = c.Guid,
+                    Name = c.Name
+                } )
+                .ToList();
         }
 
         /// <summary>
@@ -396,7 +441,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             workflowActionType.Order = 0;
             rockContext.SaveChanges();
 
-            return ActionOk( workflowType.Id.ToString() );
+            return ActionOk( workflowType.IdKey );
         }
 
         /// <summary>
@@ -467,10 +512,31 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         }
 
         /// <summary>
+        /// Resolves a category key from a deep-link page parameter to its integer Id.
+        /// </summary>
+        /// <param name="key">The category Id, IdKey, or Guid as it appeared in the page parameter.</param>
+        /// <returns>The matching category's integer Id as a string, or null when the key does not resolve.</returns>
+        [BlockAction]
+        public BlockActionResult ResolveCategoryKey( string key )
+        {
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return ActionOk( (string) null );
+            }
+
+            // An integer Id is accepted only when the site keeps predictable Ids, matching the
+            // Category Tree View block so a WebForms-style Id deep-link resolves the same way.
+            var allowIntegerId = !PageCache.Layout.Site.DisablePredictableIds;
+            var category = CategoryCache.Get( key, allowIntegerId );
+
+            return ActionOk( category?.Id.ToString() );
+        }
+
+        /// <summary>
         /// Adds a new category or edits an existing one.
         /// </summary>
         /// <param name="bag">The bag containing the category details.</param>
-        /// <returns>A result indicating success or failure.</returns>
+        /// <returns>An OK result carrying the saved category's integer Id, or a forbidden/bad-request result.</returns>
         [BlockAction]
         public BlockActionResult AddOrEditCategory( UpdateFormCategoryBag bag )
         {
@@ -503,6 +569,34 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 category.EntityTypeId = entityTypeId.Value;
                 category.IsSystem = false;
                 category.Order = 0;
+
+                /*
+                    7/31/2026 - MSE
+
+                    The parent category may only be assigned when adding a new category. The edit
+                    panel has no parent category field, so honoring the bag's parent during an edit
+                    allowed a stale client flag to re-parent an existing category to itself (or to
+                    silently clear its parent), corrupting the category hierarchy and breaking the
+                    security inheritance chain.
+
+                    The parent is assigned via the navigation property (not just the Id) so the
+                    IsAuthorized( EDIT ) check below evaluates the security inherited from the
+                    parent category for this new, not-yet-saved category.
+
+                    Reason: https://github.com/SparkDevNetwork/Rock/issues/6949
+                */
+                if ( bag.ParentCategoryGuid.HasValue )
+                {
+                    var parentCategory = categoryService.Get( bag.ParentCategoryGuid.Value );
+                    if ( parentCategory == null )
+                    {
+                        return ActionBadRequest( "Invalid parent category." );
+                    }
+
+                    category.ParentCategory = parentCategory;
+                    category.ParentCategoryId = parentCategory.Id;
+                }
+
                 categoryService.Add( category );
             }
 
@@ -517,22 +611,16 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             category.IconCssClass = bag.IconCssClass;
             category.HighlightColor = bag.HighlightColor;
 
-            if ( bag.ParentCategoryGuid.HasValue )
+            // IsValid guards against invalid data the block action cannot otherwise detect,
+            // such as a recursive parent category hierarchy.
+            if ( !category.IsValid )
             {
-                var parentCategory = CategoryCache.Get( bag.ParentCategoryGuid.Value );
-                if ( parentCategory != null )
-                {
-                    category.ParentCategoryId = parentCategory.Id;
-                }
-            }
-            else
-            {
-                category.ParentCategoryId = null;
+                return ActionBadRequest( category.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) );
             }
 
             RockContext.SaveChanges();
 
-            return ActionOk();
+            return ActionOk( category.Id );
         }
 
         /// <summary>

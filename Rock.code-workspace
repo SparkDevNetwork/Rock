@@ -227,8 +227,8 @@
                     },
 					"background": {
                         "activeOnStart": true,
-						"beginsPattern": "^rollup v",
-						"endsPattern": "waiting for changes\\.\\.\\.$"
+						"beginsPattern": "Starting build\\.",
+						"endsPattern": "Waiting for changes\\.$"
 					}
 				}
 			},
@@ -252,8 +252,8 @@
                     },
 					"background": {
                         "activeOnStart": true,
-						"beginsPattern": "^rollup v",
-						"endsPattern": "waiting for changes\\.\\.\\.$"
+						"beginsPattern": "Starting build\\.",
+						"endsPattern": "Waiting for changes\\.$"
 					}
 				}
 			},
@@ -277,8 +277,8 @@
                     },
 					"background": {
                         "activeOnStart": true,
-						"beginsPattern": "^rollup v",
-						"endsPattern": "waiting for changes\\.\\.\\.$"
+						"beginsPattern": "Starting build\\.",
+						"endsPattern": "Waiting for changes\\.$"
 					}
 				}
 			},

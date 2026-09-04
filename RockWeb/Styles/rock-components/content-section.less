@@ -11,12 +11,13 @@
 // ======================== BASE STYLE ========================
 
 .contentsection {
-    border-radius: var(--rounded-large);
-    height: auto;
-    width: 100%;
-    background-color: var(--color-interface-softer);
-    padding-left: 0;
-    padding-right: 0;
+  border-radius: var(--rounded-large);
+  height: auto;
+  width: 100%;
+  background-color: var(--color-interface-softer);
+  box-shadow: var(--box-shadow);
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* HEADER */
@@ -81,6 +82,7 @@
 .contentsection-header-title {
     color: var(--color-interface-strong);
     margin: 0;
+    font-size: var(--font-size-h5);
 }
 
 .contentsection-header-description {
@@ -123,6 +125,15 @@
 .contentsection .content-stack + .content-stack {
     border-top: 1px var(--color-interface-soft) solid;
     padding-top: var(--spacing-large);
+}
+
+// Make the body flush vertically, no padding. See PersonalizationSegmentDetail for example.
+.contentsection.body-flush-vertical {
+
+    .contentsection-body {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
 }
 
 /* OVERFLOW BODY */
@@ -249,8 +260,9 @@
 // ======================== LIGHT SECTION ========================
 
 .contentsection-light {
-    background-color: var(--color-interface-softest);
-    border: 1px var(--color-interface-soft) solid;
+  background-color: var(--color-interface-softest);
+  border: 1px var(--color-interface-soft) solid;
+  box-shadow: none;
 }
 
 .contentsection-light > .contentsection-header {
@@ -398,3 +410,22 @@
 }
 
 // ======================== END MOBILE ADJUSTMENTS =======================
+
+// ======================== PRINT ========================
+
+/*
+    7/30/26 - CLAUDE
+
+    The nav has nothing to act on once printed. It was already absent by
+    accident, since the print page box (~740px) falls under the mobile
+    breakpoint above. Mirrors the styles-v2 copy of this component; keep in sync.
+
+    Reason: Hide the section nav when printing, deliberately.
+*/
+@media print {
+    .contentsection-nav {
+        display: none;
+    }
+}
+
+// ======================== END PRINT ========================

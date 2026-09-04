@@ -49,6 +49,14 @@ namespace Rock.ViewModels.Rest.Controls
         public List<Guid> IncludeCategoryGuids { get; set; }
 
         /// <summary>
+        /// When <c>true</c>, restrict the results to schedules that are
+        /// eligible for check-in (schedules whose
+        /// <c>CheckInStartOffsetMinutes</c> is set). Useful for pickers that
+        /// only want to surface check-in-configured schedules.
+        /// </summary>
+        public bool IncludeCheckInSchedulesOnly { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the security grant token to use when performing
         /// authorization checks.
         /// </summary>

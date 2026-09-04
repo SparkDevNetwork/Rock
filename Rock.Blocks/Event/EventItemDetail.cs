@@ -107,7 +107,13 @@ namespace Rock.Blocks.Event
 
             var options = new EventItemDetailOptionsBag()
             {
-                Audiences = audiences
+                Audiences = audiences,
+                SegmentOptions = PersonalizationSegmentCache.All()
+                    .OrderBy( s => s.Name )
+                    .ToListItemBagList(),
+                RequestFilterOptions = RequestFilterCache.All()
+                    .OrderBy( f => f.Name )
+                    .ToListItemBagList()
             };
 
             return options;
@@ -260,7 +266,7 @@ namespace Rock.Blocks.Event
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = GetEntityBagForView( entity );
+                    box.Entity = GetEntityBagForView( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -287,8 +293,9 @@ namespace Rock.Blocks.Event
         /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>A <see cref="EventItemBag"/> that represents the entity.</returns>
-        private EventItemBag GetCommonEntityBag( EventItem entity )
+        private EventItemBag GetCommonEntityBag( EventItem entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -304,6 +311,7 @@ namespace Rock.Blocks.Event
                 DetailsUrl = entity.DetailsUrl,
                 IsActive = entity.IsActive,
                 IsApproved = entity.IsApproved,
+                IsApprovalConfigurable = IsAuthorizedToApprove( rockContext ),
                 Name = entity.Name,
                 Photo = entity.Photo.ToListItemBag(),
                 Summary = entity.Summary,
@@ -320,18 +328,56 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Preloads the personalization segment and request filter Guids for an existing item.
+        /// </summary>
+        /// <param name="entity">The event item.</param>
+        /// <param name="bag">The bag to populate.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void LoadPersonalizationSelections( EventItem entity, EventItemBag bag, RockContext rockContext )
+        {
+            if ( entity.Id == 0 )
+            {
+                bag.SelectedSegmentGuids = new List<Guid>();
+                bag.SelectedRequestFilterGuids = new List<Guid>();
+
+                return;
+            }
+
+            var entityTypeId = entity.TypeId;
+
+            bag.SelectedSegmentGuids = new PersonalizationSegmentService( rockContext )
+                .GetPersonalizedEntitySegmentQuery( entityTypeId, entity.Id )
+                .Select( pe => pe.PersonalizationEntityId )
+                .ToList()
+                .Select( id => PersonalizationSegmentCache.Get( id )?.Guid )
+                .Where( guid => guid.HasValue )
+                .Select( guid => guid.Value )
+                .ToList();
+
+            bag.SelectedRequestFilterGuids = new RequestFilterService( rockContext )
+                .GetPersonalizedEntityRequestFilterQuery( entityTypeId, entity.Id )
+                .Select( pe => pe.PersonalizationEntityId )
+                .ToList()
+                .Select( id => RequestFilterCache.Get( id )?.Guid )
+                .Where( guid => guid.HasValue )
+                .Select( guid => guid.Value )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the bag for viewing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>A <see cref="EventItemBag"/> that represents the entity.</returns>
-        private EventItemBag GetEntityBagForView( EventItem entity )
+        private EventItemBag GetEntityBagForView( EventItem entity, RockContext rockContext )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetCommonEntityBag( entity, rockContext );
 
             if ( entity.PhotoId.HasValue )
             {
@@ -360,7 +406,9 @@ namespace Rock.Blocks.Event
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetCommonEntityBag( entity, rockContext );
+
+            LoadPersonalizationSelections( entity, bag, rockContext );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
@@ -555,6 +603,25 @@ namespace Rock.Blocks.Event
 
             securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
 
+            /*
+                6/16/2026 - MSE
+
+                The Event Calendar Item attributes are edited from this block as well, so
+                their field type rules must also be added to the grant. Without them, inline
+                controls such as the Defined Value editor (used when an attribute allows
+                adding new values) are denied with an HTTP 401 when calling their REST endpoints.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6881
+            */
+            if ( entity?.EventCalendarItems != null )
+            {
+                foreach ( var eventCalendarItem in entity.EventCalendarItems )
+                {
+                    eventCalendarItem.LoadAttributes();
+                    securityGrant.AddRulesForAttributes( eventCalendarItem, RequestContext.CurrentPerson );
+                }
+            }
+
             return securityGrant.ToToken();
         }
 
@@ -639,7 +706,7 @@ namespace Rock.Blocks.Event
                         calendar.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() );
                 }
 
-                if (  BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || calendar.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+                if ( BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || calendar.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
                 {
                     bag.AvailableCalendars.Add( new ListItemBag() { Text = calendar.Name, Value = calendar.Guid.ToString() } );
                 }
@@ -741,7 +808,7 @@ namespace Rock.Blocks.Event
                     {
                         EventCalendarGuid = eventCalendarItem.EventCalendar?.Guid ?? eventCalendarService.Get( eventCalendarItem.EventCalendarId ).Guid,
                         EventCalendarName = eventCalendarItem.EventCalendar?.Name ?? eventCalendarService.Get( eventCalendarItem.EventCalendarId ).Name,
-                        Attributes = eventCalendarItem.GetPublicAttributesForView( GetCurrentPerson(), true ),
+                        Attributes = eventCalendarItem.GetPublicAttributesForEdit( GetCurrentPerson(), enforceSecurity: true ),
                         AttributeValues = eventCalendarItem.GetPublicAttributeValuesForEdit( GetCurrentPerson(), enforceSecurity: true )
                     };
 
@@ -877,6 +944,41 @@ namespace Rock.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Reconciles the event item's personalization segment and request filter associations
+        /// from the selected Guids in the box. Associations are stored in the generic
+        /// PersonalizedEntity table, so this must run after the entity has a valid Id.
+        /// </summary>
+        /// <param name="entity">The event item.</param>
+        /// <param name="box">The box containing the selected personalization Guids.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void ApplyPersonalization( EventItem entity, DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, RockContext rockContext )
+        {
+            var entityTypeId = entity.TypeId;
+
+            box.IfValidProperty( nameof( box.Entity.SelectedSegmentGuids ), () =>
+            {
+                var segmentIds = ( box.Entity.SelectedSegmentGuids ?? new List<Guid>() )
+                    .Select( guid => PersonalizationSegmentCache.Get( guid )?.Id )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToList();
+
+                new PersonalizationSegmentService( rockContext ).UpdatePersonalizedEntityForSegments( entityTypeId, entity.Id, segmentIds );
+            } );
+
+            box.IfValidProperty( nameof( box.Entity.SelectedRequestFilterGuids ), () =>
+            {
+                var requestFilterIds = ( box.Entity.SelectedRequestFilterGuids ?? new List<Guid>() )
+                    .Select( guid => RequestFilterCache.Get( guid )?.Id )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToList();
+
+                new RequestFilterService( rockContext ).UpdatePersonalizedEntityForRequestFilters( entityTypeId, entity.Id, requestFilterIds );
+            } );
+        }
+
         #endregion
 
         #region Block Actions
@@ -938,8 +1040,26 @@ namespace Rock.Blocks.Event
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
 
+                    /*
+                        8/6/26 - NA
+
+                        This block previously called entity.SaveAttributeValues( rockContext )
+                        here, but that call was removed as part of the fix for issue #6962.
+                        The original WebForms EventItemDetail block did not call it either;
+                        it was added by mistake when the block was rewritten in Obsidian.
+
+                        EventItem implements IHasInheritedAttributes and its Attributes
+                        collection includes EventCalendarItem-scoped attributes, so
+                        Helper.SaveAttributeValues wrote those inherited values back with
+                        EntityId = EventItem.Id instead of the EventCalendarItem.Id, which
+                        corrupted attribute values on unrelated events and caused the Index
+                        Content Collections job to fail with a duplicate key error. Calendar-
+                        item attribute values are persisted correctly by the per-
+                        EventCalendarItem loop below and must not be persisted here.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6962
+                    */
                     foreach ( EventCalendarItem eventCalendarItem in entity.EventCalendarItems )
                     {
                         var eventCalendarAttribute = box.Entity.EventCalendarItemAttributes.Find( a => a.EventCalendarGuid == eventCalendarItem.EventCalendar?.Guid );
@@ -955,6 +1075,10 @@ namespace Rock.Blocks.Event
                     var eventAttributes = box.Entity.EventOccurenceAttributes.ConvertAll( e => e.Attribute );
                     SaveAttributes( new EventItemOccurrence().TypeId, "EventItemId", entity.Id.ToString(), eventAttributes, rockContext );
                 } );
+
+                // Personalization writes are managed by their own SaveChanges/BulkDelete, so
+                // they run after the transaction once the entity has a valid Id.
+                ApplyPersonalization( entity, box, rockContext );
 
                 // Update the content collection index.
                 new ProcessContentCollectionDocument.Message
@@ -1030,7 +1154,7 @@ namespace Rock.Blocks.Event
 
                 var refreshedBox = new DetailBlockBox<EventItemBag, EventItemDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity , rockContext )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();

@@ -136,6 +136,16 @@ namespace RockWeb.Blocks.Connection
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
             public const string ConnectionRequestActivityId = "ConnectionRequestActivityId";
             public const string PostBackAction = "PostBackAction";
+
+            /// <summary>
+            /// The Connections Hub's name for <see cref="ConnectionRequestId"/>.
+            /// </summary>
+            public const string Request = "Request";
+
+            /// <summary>
+            /// The Connections Hub's name for <see cref="ConnectionOpportunityId"/>.
+            /// </summary>
+            public const string ConnectionOpportunity = "ConnectionOpportunity";
         }
 
         public static class PostbackActionKey
@@ -339,13 +349,9 @@ namespace RockWeb.Blocks.Connection
             nbRequirementsErrors.Visible = false;
             nbNoParameterMessage.Visible = false;
 
-            var connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
-            if ( connectionRequestId == 0 )
-            {
-                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
-            }
+            var connectionRequestId = GetConnectionRequestIdPageParameter();
 
-            if ( connectionRequestId == 0 && PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() == null )
+            if ( connectionRequestId == 0 && GetConnectionOpportunityIdPageParameter() == null )
             {
                 nbNoParameterMessage.Visible = true;
                 pnlContents.Visible = false;
@@ -357,7 +363,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( connectionRequestId, PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
+                ShowDetail( connectionRequestId, GetConnectionOpportunityIdPageParameter() );
             }
             else if ( IsEditAllowed.HasValue && IsEditAllowed.Value )
             {
@@ -423,7 +429,10 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( PageParameter( PageParameterKey.ConnectionOpportunityId ).AsInteger() );
+                var connectionOpportunityId = GetConnectionOpportunityIdPageParameter();
+                var connectionOpportunity = connectionOpportunityId.HasValue
+                    ? new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityId.Value )
+                    : null;
                 if ( connectionOpportunity != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( string.Format( "New {0} Connection Request", connectionOpportunity.Name ), pageReference ) );
@@ -510,12 +519,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
-            if ( connectionRequestId == 0 )
-            {
-                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
-            }
-            ShowDetail( connectionRequestId, PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
+            ShowDetail( GetConnectionRequestIdPageParameter(), GetConnectionOpportunityIdPageParameter() );
         }
 
         /// <summary>
@@ -1411,8 +1415,8 @@ namespace RockWeb.Blocks.Connection
 
             var pageParams = new Dictionary<string, string>
             {
-                { PageParameterKey.ConnectionRequestId, PageParameter(PageParameterKey.ConnectionRequestId) },
-                { PageParameterKey.ConnectionOpportunityId, PageParameter(PageParameterKey.ConnectionOpportunityId) }
+                { PageParameterKey.ConnectionRequestId, GetConnectionRequestPageParameterValue() },
+                { PageParameterKey.ConnectionOpportunityId, GetConnectionOpportunityPageParameterValue() }
             };
 
             NavigateToCurrentPage( pageParams );
@@ -1566,8 +1570,8 @@ namespace RockWeb.Blocks.Connection
                         {
                             var pageParams = new Dictionary<string, string>
                             {
-                                { PageParameterKey.ConnectionRequestId, PageParameter(PageParameterKey.ConnectionRequestId) },
-                                { PageParameterKey.ConnectionOpportunityId, PageParameter(PageParameterKey.ConnectionOpportunityId) }
+                                { PageParameterKey.ConnectionRequestId, GetConnectionRequestPageParameterValue() },
+                                { PageParameterKey.ConnectionOpportunityId, GetConnectionOpportunityPageParameterValue() }
                             };
 
                             NavigateToCurrentPage( pageParams );
@@ -1745,8 +1749,8 @@ namespace RockWeb.Blocks.Connection
         private void DeleteActivity( int activityId )
         {
             var postBackParams = new Dictionary<string, string> {
-                { PageParameterKey.ConnectionRequestId, PageParameter(PageParameterKey.ConnectionRequestId) },
-                { PageParameterKey.ConnectionOpportunityId, PageParameter(PageParameterKey.ConnectionOpportunityId) },
+                { PageParameterKey.ConnectionRequestId, GetConnectionRequestPageParameterValue() },
+                { PageParameterKey.ConnectionOpportunityId, GetConnectionOpportunityPageParameterValue() },
                 { PageParameterKey.ConnectionRequestActivityId, activityId.ToString() },
                 { PageParameterKey.PostBackAction, PostbackActionKey.DeleteActivity }
             };
@@ -1806,12 +1810,61 @@ namespace RockWeb.Blocks.Connection
                 return connectionRequestId;
             }
 
-            connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
+            return GetConnectionRequestIdPageParameter();
+        }
+
+        /// <summary>
+        /// Gets the connection request identifier from the page parameter,
+        /// which may be provided as an integer Id or an IdKey.
+        /// </summary>
+        /// <returns>The connection request identifier, or 0 when the parameter is missing or invalid.</returns>
+        private int GetConnectionRequestIdPageParameter()
+        {
+            var connectionRequestParameter = GetConnectionRequestPageParameterValue();
+            var connectionRequestId = connectionRequestParameter.AsInteger();
             if ( connectionRequestId == 0 )
             {
-                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
+                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( connectionRequestParameter ).ToIntSafe();
             }
+
             return connectionRequestId;
+        }
+
+        /// <summary>
+        /// Gets the raw connection request page parameter, accepting the Connections Hub's name so
+        /// a link built for the Hub still resolves here.
+        /// </summary>
+        /// <returns>The parameter value, or an empty string when neither name was supplied.</returns>
+        private string GetConnectionRequestPageParameterValue()
+        {
+            var value = PageParameter( PageParameterKey.Request );
+
+            return value.IsNotNullOrWhiteSpace() ? value : PageParameter( PageParameterKey.ConnectionRequestId );
+        }
+
+        /// <summary>
+        /// Gets the connection opportunity identifier from the page parameter,
+        /// which may be provided as an integer Id or an IdKey.
+        /// </summary>
+        /// <returns>The connection opportunity identifier, or null when the parameter is missing or invalid.</returns>
+        private int? GetConnectionOpportunityIdPageParameter()
+        {
+            var connectionOpportunityParameter = GetConnectionOpportunityPageParameterValue();
+
+            return connectionOpportunityParameter.AsIntegerOrNull()
+                ?? Rock.Utility.IdHasher.Instance.GetId( connectionOpportunityParameter );
+        }
+
+        /// <summary>
+        /// Gets the raw connection opportunity page parameter, accepting the Connections Hub's name
+        /// so a link built for the Hub still resolves here.
+        /// </summary>
+        /// <returns>The parameter value, or an empty string when neither name was supplied.</returns>
+        private string GetConnectionOpportunityPageParameterValue()
+        {
+            var value = PageParameter( PageParameterKey.ConnectionOpportunity );
+
+            return value.IsNotNullOrWhiteSpace() ? value : PageParameter( PageParameterKey.ConnectionOpportunityId );
         }
 
         /// <summary>
@@ -3484,11 +3537,11 @@ namespace RockWeb.Blocks.Connection
         {
             ConnectionRequest connectionRequest = null;
             rockContext = rockContext ?? new RockContext();
-            var connectionRequestId = PageParameter( "ConnectionRequestId" ).AsIntegerOrNull();
+            var connectionRequestId = GetConnectionRequestIdPageParameter();
 
-            if ( connectionRequestId.HasValue )
+            if ( connectionRequestId > 0 )
             {
-                connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId.Value );
+                connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId );
             }
 
             return connectionRequest;

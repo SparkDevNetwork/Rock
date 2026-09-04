@@ -27,7 +27,7 @@ namespace Rock.Tests.Web.UI.Controls
                 [key] = "Value"
             } );
 
-            Assert.That.AreEqual( expectedValue, control.Value );
+            Assert.AreEqual( expectedValue, control.Value );
         }
 
         [TestMethod]
@@ -46,7 +46,7 @@ namespace Rock.Tests.Web.UI.Controls
                 ["Key"] = value
             } );
 
-            Assert.That.AreEqual( expectedValue, control.Value );
+            Assert.AreEqual( expectedValue, control.Value );
         }
 
         [TestMethod]
@@ -66,7 +66,7 @@ namespace Rock.Tests.Web.UI.Controls
                 [key2] = value2
             } );
 
-            Assert.That.AreEqual( expectedValue, control.Value );
+            Assert.AreEqual( expectedValue, control.Value );
         }
 
         [TestMethod]
@@ -79,7 +79,7 @@ namespace Rock.Tests.Web.UI.Controls
 
             control.SetValue( null );
 
-            Assert.That.IsEmpty( control.Value );
+            Assert.IsEmpty( control.Value );
         }
 
         [TestMethod]
@@ -92,7 +92,7 @@ namespace Rock.Tests.Web.UI.Controls
 
             control.SetValue( new Dictionary<string, string>() );
 
-            Assert.That.IsEmpty( control.Value );
+            Assert.IsEmpty( control.Value );
         }
 
         [TestMethod]
@@ -109,7 +109,7 @@ namespace Rock.Tests.Web.UI.Controls
                 Value = value
             };
 
-            Assert.That.AreEqual( expectedValue, control.GetValueAsDictionary().First().Key );
+            Assert.AreEqual( expectedValue, control.GetValueAsDictionary().First().Key );
         }
 
         [TestMethod]
@@ -126,7 +126,7 @@ namespace Rock.Tests.Web.UI.Controls
                 Value = value
             };
 
-            Assert.That.AreEqual( expectedValue, control.GetValueAsDictionary().First().Value );
+            Assert.AreEqual( expectedValue, control.GetValueAsDictionary().First().Value );
         }
 
         [TestMethod]

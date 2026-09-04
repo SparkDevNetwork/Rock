@@ -49,7 +49,7 @@ namespace Rock.Blocks.Workflow
     /// </summary>
 
     [DisplayName( "Workflow Entry" )]
-    [Category( "Worfklow" )]
+    [Category( "Workflow" )]
     [Description( "Used to enter information for a workflow that has interactive elements." )]
     [IconCssClass( "ti ti-settings-cog" )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
@@ -272,7 +272,6 @@ namespace Rock.Blocks.Workflow
 
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
-            public const string InteractionStartDateTime = "InteractionStartDateTime";
 
             // NOTE that the actual parameter for CampusId and CampusGuid is just 'Campus', but making them different internally to make it clearer
             public const string CampusId = "Campus";
@@ -618,6 +617,7 @@ namespace Rock.Blocks.Workflow
             // Set initial values from the page parameters.
             foreach ( var pageParameter in RequestContext.PageParameters )
             {
+                ValidateAttributeValue( workflow, pageParameter.Key, pageParameter.Value );
                 workflow.SetAttributeValue( pageParameter.Key, pageParameter.Value );
             }
 
@@ -626,7 +626,48 @@ namespace Rock.Blocks.Workflow
             {
                 foreach ( var field in fields )
                 {
+                    ValidateAttributeValue( workflow, field.Key, field.Value );
                     workflow.SetAttributeValue( field.Key, field.Value );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates the value of an attribute against the rules defined for the
+        /// field type of the attribute.
+        /// </summary>
+        /// <param name="entity">The entity to retrieve the attribute field definition from.</param>
+        /// <param name="key">The key of the attribute</param>
+        /// <param name="value">The value to validate</param>
+        private static void ValidateAttributeValue( IHasAttributes entity, string key, string value )
+        {
+            if ( !entity.Attributes.TryGetValue( key, out var attribute ) )
+            {
+                return;
+            }
+
+            var field = attribute.FieldType.Field;
+            var rules = field.GetValidationRules( attribute.ConfigurationValues );
+
+            try
+            {
+                StringValueValidator.Validate( value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+            }
+            catch ( PropertyValidationException ex )
+            {
+                if ( DbContext.EnableStringValidation )
+                {
+                    throw new AttributeValueValidationException( attribute, entity.Id, ex.Reason, null );
+                }
+                else
+                {
+                    // Captures the full current call stack, all callers
+                    // included so that we get more information about
+                    // where this happened in the log.
+                    var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                    var ex2 = new AttributeValueValidationException( attribute, entity.Id, ex.Reason, stack );
+
+                    ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
                 }
             }
         }
@@ -675,6 +716,13 @@ namespace Rock.Blocks.Workflow
             IEntity entity = null;
             var processedMultipleInteractiveActions = false;
 
+            // Skip re-processing a completed workflow; doing so would overwrite
+            // CompletedDateTime on the workflow and its activities (Issue #6897).
+            if ( workflow.CompletedDateTime.HasValue )
+            {
+                return GetEndOfWorkflowBag( workflow, null, null, null, true );
+            }
+
             if ( workflow.Id == 0 )
             {
                 entity = GetInitialWorkflowEntity();
@@ -692,7 +740,7 @@ namespace Rock.Blocks.Workflow
                         WriteInteraction( false, workflow, null, RockDateTime.Now );
                     }
 
-                    return GetEndOfWorkflowBag( workflow, actionTypeGuid, actionResult, errorMessage );
+                    return GetEndOfWorkflowBag( workflow, actionTypeGuid, actionResult, errorMessage, true );
                 }
 
                 /*
@@ -710,7 +758,7 @@ namespace Rock.Blocks.Workflow
                 {
                     if ( actionResult != null && actionResult.IsSuccess )
                     {
-                        return GetEndOfWorkflowBag( workflow, lastActionTypeGuid, actionResult, null );
+                        return GetEndOfWorkflowBag( workflow, lastActionTypeGuid, actionResult, null, false );
                     }
 
                     return CreateErrorMessage( workflow, workflow.WorkflowTypeCache, "Invalid action", "We detected an invalid action state that prevents further processing." );
@@ -869,8 +917,9 @@ namespace Rock.Blocks.Workflow
         /// <param name="lastActionTypeGuid">The unique identifier of the last interactive action type that was executed.</param>
         /// <param name="lastActionResult">The result object of the last interactive action that was executed.</param>
         /// <param name="errorMessage">The error message that might have been generated during processing.</param>
+        /// <param name="hasNoRemainingActions">Determines if there is truly nothing left for the individual to do. This is <c>false</c> when a result is being displayed but the workflow still has an interactive action waiting, such as a form "Update" button that has no target activity.</param>
         /// <returns>The data that describes the workflow UI to display.</returns>
-        private InteractiveActionBag GetEndOfWorkflowBag( Model.Workflow workflow, Guid? lastActionTypeGuid, InteractiveActionResult lastActionResult, InteractiveMessageBag errorMessage )
+        private InteractiveActionBag GetEndOfWorkflowBag( Model.Workflow workflow, Guid? lastActionTypeGuid, InteractiveActionResult lastActionResult, InteractiveMessageBag errorMessage, bool hasNoRemainingActions )
         {
             // If the block is specifically configured to show the summary
             // view after the workflow has finished processing then ignore
@@ -900,6 +949,26 @@ namespace Rock.Blocks.Workflow
             // to display its data on the page.
             if ( lastActionResult != null )
             {
+                /*
+                    8/13/26 - PS
+
+                    The mobile-only Completion Action setting is only applied by
+                    GetCompletionMessage(), which this early return skips. An
+                    interactive entry form almost always supplies its own response
+                    message, so "Show Completion Xaml" and "Redirect to Page" were
+                    silently ignored once the unified Web + Mobile block replaced
+                    the dedicated mobile block. The legacy GetNextForm() path
+                    already routes the form's message through GetCompletionMessage(),
+                    so match it here.
+
+                    Reason: Completion Action was ignored on the mobile Workflow
+                    Entry block.
+                */
+                if ( hasNoRemainingActions && errorMessage == null && IsMobileCompletionMessageUsed( lastActionResult.ActionData ) )
+                {
+                    lastActionResult.ActionData.Message = GetCompletionMessage( workflow, lastActionResult.ActionData.Message?.Content );
+                }
+
                 return CreateInteractiveActionBag( workflow, lastActionTypeGuid, lastActionResult );
             }
 
@@ -949,6 +1018,38 @@ namespace Rock.Blocks.Workflow
             }
 
             return workflow.GetNextInteractiveAction( RequestContext.CurrentPerson, actionId, BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) );
+        }
+
+        /// <summary>
+        /// Determines if the mobile only Completion Action block setting should
+        /// replace the message that was supplied by the last interactive action.
+        /// </summary>
+        /// <param name="actionData">The data returned by the last interactive action.</param>
+        /// <returns><c>true</c> if the block's completion message should be used instead; otherwise <c>false</c>.</returns>
+        private bool IsMobileCompletionMessageUsed( InteractiveActionDataBag actionData )
+        {
+            // Completion Action is a mobile only setting and will always
+            // evaluate to 0 on web, but guard on the site type anyway so the
+            // intent is explicit.
+            if ( PageCache?.Layout?.Site?.SiteType != SiteType.Mobile )
+            {
+                return false;
+            }
+
+            var completionAction = GetAttributeValue( AttributeKey.CompletionAction ).AsInteger();
+
+            // 1 is Show Completion Xaml and 2 is Redirect to Page. Any other
+            // value means the message from the workflow should be displayed.
+            if ( completionAction != 1 && completionAction != 2 )
+            {
+                return false;
+            }
+
+            // Only a plain displayable message may be replaced. Component
+            // payloads and exceptions must be passed through untouched.
+            return actionData != null
+                && actionData.ComponentUrl.IsNullOrWhiteSpace()
+                && actionData.Exception == null;
         }
 
         /// <summary>
@@ -1499,7 +1600,7 @@ namespace Rock.Blocks.Workflow
                         string formattedValue = null;
 
                         // get formatted value 
-                        if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                        if ( attribute.FieldType.Guid == SystemGuid.FieldType.IMAGE.AsGuid() )
                         {
                             formattedValue = field.FormatValueAsHtml( null, attribute.EntityTypeId, activity.Id, value, attribute.QualifierValues, true );
                         }

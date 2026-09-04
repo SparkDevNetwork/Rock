@@ -77,8 +77,22 @@ namespace Rock.Model
         ///
         /// <summary>
         /// Specifies the number of prefix characters of the Exception Message property that are examined when grouping similar exceptions.
+        /// This is the number of <see cref="ExceptionLog.Description"/> characters that are hashed into <see cref="ExceptionLog.ExceptionGroupHash"/>.
         /// </summary>
-        public static readonly int DescriptionGroupingPrefixLength = 95;
+        /*
+            8/26/26 - MSE
+
+            This was 95 for years without a documented reason ( 4db90eb ), and on real data 95 characters were often nothing but
+            boilerplate wrapper text, which merged genuinely different errors into one row. 255 is also the length of the
+            description the Exception List block now displays, so the block now groups by exactly what it shows.
+
+            Changing this value alone does NOT change how exceptions are grouped: the grouping is performed by the
+            ExceptionGroupHash computed column, whose definition (LEFT( [Description], 255 )) lives in the
+            AddExceptionLogExceptionGroupHash migration. Keep the two in sync.
+
+            Reason: Group by the same 255 characters that are displayed, instead of an arbitrary 95.
+        */
+        public static readonly int DescriptionGroupingPrefixLength = 255;
 
         /// <summary>
         /// Filter a query for exceptions at the innermost or lowest level of the exception hierarchy.
@@ -105,6 +119,10 @@ namespace Rock.Model
         /// <summary>
         /// Filter a query for exceptions having a description matching the specified prefix.
         /// </summary>
+        /// <remarks>
+        /// This filter is not covered by an index. Prefer <see cref="FilterByExceptionGroupHash(IQueryable{ExceptionLog}, byte[])"/>
+        /// when filtering to the exceptions that the Exception List block groups together.
+        /// </remarks>
         /// <param name="query">The query.</param>
         /// <param name="descriptionPrefix">The description prefix.</param>
         /// <returns></returns>
@@ -120,7 +138,45 @@ namespace Rock.Model
             return query;
         }
 
+        /// <summary>
+        /// Filter a query for exceptions belonging to the specified exception group, that is, having the same
+        /// <see cref="ExceptionLog.ExceptionGroupHash"/>.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="exceptionGroupHash">The <see cref="ExceptionLog.ExceptionGroupHash"/> of the group.</param>
+        /// <returns>The filtered query.</returns>
+        internal IQueryable<ExceptionLog> FilterByExceptionGroupHash( IQueryable<ExceptionLog> query, byte[] exceptionGroupHash )
+        {
+            return query.Where( e => e.ExceptionGroupHash == exceptionGroupHash );
+        }
+
         #endregion Filters
+
+        #region Formatting
+
+        /// <summary>
+        /// Gets the description to display for an exception group: the leading
+        /// <see cref="DescriptionGroupingPrefixLength"/> characters of the description, with an ellipsis appended
+        /// when the description was cut, so it reads like the truncated descriptions on the Exception Occurrences
+        /// grid.
+        /// </summary>
+        /// <param name="descriptionPrefix">
+        /// The leading characters of the group's <see cref="ExceptionLog.Description"/>. This is expected to have
+        /// been read with at most <see cref="DescriptionGroupingPrefixLength"/> characters, which is what allows
+        /// reaching that length to be read as "there was more".
+        /// </param>
+        /// <returns>The description to display.</returns>
+        internal static string GetDisplayDescription( string descriptionPrefix )
+        {
+            if ( descriptionPrefix != null && descriptionPrefix.Length >= DescriptionGroupingPrefixLength )
+            {
+                return descriptionPrefix + "...";
+            }
+
+            return descriptionPrefix;
+        }
+
+        #endregion Formatting
 
         #region Operations
 

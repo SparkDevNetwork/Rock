@@ -54,7 +54,7 @@ namespace Rock.Blocks.Lms
         "Show Location Column",
         Key = AttributeKey.ShowLocationColumn,
         Description = "Determines if the Location column should be visible.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = false,
         Order = 1 )]
@@ -63,7 +63,7 @@ namespace Rock.Blocks.Lms
         "Show Schedule Column",
         Key = AttributeKey.ShowScheduleColumn,
         Description = "Determines if the Schedule column should be visible.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = false,
         Order = 2 )]
@@ -72,7 +72,7 @@ namespace Rock.Blocks.Lms
         "Show Semester Column",
         Key = AttributeKey.ShowSemesterColumn,
         Description = "Determines if the Semester column should be visible when the configuration is 'Academic Calendar'.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = false,
         Order = 3 )]

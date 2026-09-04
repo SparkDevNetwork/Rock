@@ -33,8 +33,15 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Last Visit on Site" )]
 
-    [SiteField( "Site", "Site to filter for.", true, "3", "", 1 )]
-    [LinkedPage( "Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2 )]
+    [SiteField( "Site",
+        Description = "Site to filter for.",
+        IsRequired = true,
+        DefaultValue = "3",
+        Order = 1 )]
+    [LinkedPage( "Page View Details",
+        Description = "Page to show the details of the page views. If blank no link is created.",
+        IsRequired = false,
+        Order = 2 )]
     [Rock.SystemGuid.EntityTypeGuid( "A8619A37-5DB6-4CD1-AC5A-B2FD9AC80F67")]
     public class LastVisitOnSite : BadgeComponent
     {

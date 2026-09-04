@@ -163,6 +163,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Retrieves the credit card brand name associated with a given credit card type.
+        /// </summary>
+        /// <param name="creditCardTypeValueId">The defined value ID representing the credit card type.</param>
+        /// <returns>
+        /// A string representing the credit card brand (for example, "Visa"), or null if none is available.
+        /// </returns>
+        /// <remarks>
+        /// This method returns null if <paramref name="creditCardTypeValueId"/> is null or invalid. It uses
+        /// the <see cref="Rock.Web.Cache.DefinedValueCache"/> to look up the brand for the credit card type.
+        /// </remarks>
+        internal static string GetCreditCardBrandByTypeId( int? creditCardTypeValueId )
+        {
+            if ( !creditCardTypeValueId.HasValue )
+            {
+                return null;
+            }
+
+            // The defined value's Value is the brand name (for example, "Visa").
+            return Rock.Web.Cache.DefinedValueCache.Get( creditCardTypeValueId.Value )?.Value;
+        }
+
+        /// <summary>
         /// Gets the description for the account, including masked account number and expiration date if available.
         /// </summary>
         /// <returns>

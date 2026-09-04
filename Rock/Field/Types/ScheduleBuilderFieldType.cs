@@ -224,20 +224,27 @@ namespace Rock.Field.Types
             using ( var rockContext = new RockContext() )
             {
                 var scheduleService = new ScheduleService( rockContext );
-                Schedule schedule = null;
 
+                // If the caller already has a schedule and the content is unchanged,
+                // reuse it. Otherwise always create a new schedule so that (a) the
+                // attribute value changes and Rock properly refreshes the persisted
+                // values / entity references, and (b) we do not silently mutate a
+                // schedule that may be shared with other attributes or entities.
                 if ( scheduleGuid.HasValue )
                 {
-                    schedule = scheduleService.Get( scheduleGuid.Value );
+                    var existingSchedule = scheduleService.Get( scheduleGuid.Value );
+                    if ( existingSchedule != null && existingSchedule.iCalendarContent == iCalendarContent )
+                    {
+                        return existingSchedule.Guid.ToString();
+                    }
                 }
 
-                if ( schedule == null )
+                var schedule = new Schedule
                 {
-                    schedule = new Schedule();
-                    scheduleService.Add( schedule );
-                }
+                    iCalendarContent = iCalendarContent
+                };
 
-                schedule.iCalendarContent = iCalendarContent;
+                scheduleService.Add( schedule );
                 rockContext.SaveChanges();
 
                 return schedule.Guid.ToString();
@@ -268,6 +275,24 @@ namespace Rock.Field.Types
             /// Gets or sets the iCalendar content being edited.
             /// </summary>
             public string ICalendarContent { get; set; }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The name suggests a schedule definition, but the value is a Schedule guid resolved through ScheduleService.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the Schedule table, not its id or idKey and not an iCalendar string. Only one value is stored, so a comma separated list is not valid here. Despite the name, this stores a reference to a saved schedule rather than the schedule definition it lets a person build.",
+                Instructions = "To find the correct value, read the schedules and take the guid of the one you want."
+            };
         }
 
         #endregion

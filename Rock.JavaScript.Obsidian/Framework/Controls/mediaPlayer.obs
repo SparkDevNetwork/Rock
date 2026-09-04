@@ -157,6 +157,15 @@
             default: .9
         },
 
+        /**
+         * The message shown when the individual has not watched enough of the video to satisfy
+         * the required watch percentage. If left blank a generic default message is used.
+         */
+        requiredErrorMessage: {
+            type: String,
+            default: ""
+        },
+
         /** The number of seconds to seek forward/backward when the fast-forward or rewind buttons are pressed */
         seekTime: {
             type: Number,
@@ -201,6 +210,17 @@
             default: () => "mp" + newGuid()
         },
 
+        /**
+         * When enabled, the watched percentage from the person's existing watch
+         * map (the resume history) is emitted as soon as it is loaded, before
+         * any playback occurs. This lets a parent reflect previously watched
+         * progress immediately. Left disabled by default so existing consumers
+         * keep their original behavior of only reporting progress during playback.
+         */
+        emitInitialWatchedPercentage: {
+            type: Boolean
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -229,7 +249,7 @@
                     return true;
                 }
 
-                return "You did not watch enough of the video in order for it to be considered complete.";
+                return props.requiredErrorMessage || "You did not watch enough of the video in order for it to be considered complete.";
             });
             return rules;
         }
@@ -283,8 +303,8 @@
         const options: MediaPlayerGetPlayerOptionsOptionsBag = {
             playerOptions: basePlayerOptions.value,
             mediaElementGuid: props.mediaElementGuid || emptyGuid,
-            autoResumeInDays: props.autoResumeInDays,
-            combinePlayStatisticsInDays: props.combinePlayStatisticsInDays
+            autoResumeInDays: props.autoResumeInDays ?? 0,
+            combinePlayStatisticsInDays: props.combinePlayStatisticsInDays ?? 0
         };
 
         const response = await http.post<MediaPlayerOptionsBag>("/api/v2/Controls/MediaPlayerGetPlayerOptions", undefined, options);
@@ -294,6 +314,15 @@
         }
         else {
             playerOptions.value = basePlayerOptions.value;
+        }
+
+        // Seed the watched percentage from the person's existing watch history
+        // (calculated on the server) so a parent (such as the LMS Video Watch
+        // activity) reflects previously watched progress on load, without
+        // requiring the video to be played again. The player will continue to
+        // update this value during playback.
+        if (props.emitInitialWatchedPercentage && playerOptions.value?.watchedPercentage != null) {
+            watchedPercentage.value = playerOptions.value.watchedPercentage;
         }
     }
 

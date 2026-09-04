@@ -75,6 +75,23 @@ namespace Rock.Field.Types
             return entity?.Name ?? string.Empty;
         }
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. These are rows in a table that a caller can look up, and
+            // reading them here would cost a query for every attribute described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the AchievementType table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. Only active achievement types can be chosen.",
+                Instructions = "To find the correct value, read the achievement types and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         /// <summary>
         /// Returns a dictionary of the items available for selection.
         /// </summary>

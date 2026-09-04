@@ -355,7 +355,8 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-medium);
+    /* Reserve the back button's 40px width as horizontal padding on both sides so the centered title stays centered and never slides under the absolutely positioned back button when it is long. */
+    padding: var(--spacing-medium) 40px;
     font-size: 18px;
     font-weight: 600;
     color: var(--color-interface-stronger);
@@ -366,7 +367,10 @@
 .sidebar-header .title {
     display: flex;
     align-items: center;
+    min-width: 0;
     padding: 0;
+    text-align: center;
+    overflow-wrap: break-word;
 }
 
 .sidebar-header .icon {
@@ -381,18 +385,6 @@
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-}
-
-.sidebar-body::after {
-    content: "";
-    position: sticky;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 12px;
-    margin-top: auto;
-    pointer-events: none;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.08), transparent);
 }
 
 .sidebar-panels {

@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.CheckIn.AttendanceList;
 using Rock.ViewModels.Utility;
@@ -92,14 +93,14 @@ namespace Rock.Blocks.CheckIn
             var attendanceService = new AttendanceService( rockContext );
             IEnumerable<Attendance> attendance = new List<Attendance>();
 
-            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-            var scheduleId = PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
-            var locationId = PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
+            var groupId = new GroupService( rockContext ).GetSelect( PageParameter( PageParameterKey.GroupId ), g => (int?)g.Id, !PageCache.Layout.Site.DisablePredictableIds );
+            var scheduleId = new ScheduleService( rockContext ).GetSelect( PageParameter( PageParameterKey.ScheduleId ), s => (int?)s.Id, !PageCache.Layout.Site.DisablePredictableIds );
+            var groupLocationId = new GroupLocationService( rockContext ).GetSelect( PageParameter( PageParameterKey.LocationId ), l => (int?)l.Id, !PageCache.Layout.Site.DisablePredictableIds );
             var attendanceDate = PageParameter( PageParameterKey.AttendanceDate ).AsDateTime();
 
-            if ( groupId.HasValue && scheduleId.HasValue && locationId.HasValue && attendanceDate.HasValue )
+            if ( groupId.HasValue && scheduleId.HasValue && groupLocationId.HasValue && attendanceDate.HasValue )
             {
-                var groupLocation = new GroupLocationService( rockContext ).Get( locationId.Value );
+                var groupLocation = new GroupLocationService( rockContext ).Get( groupLocationId.Value );
 
                 //
                 // Check for existing attendance records.

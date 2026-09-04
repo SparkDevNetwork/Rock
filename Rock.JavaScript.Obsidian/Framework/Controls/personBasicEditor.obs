@@ -11,6 +11,7 @@
                                    v-model="mobilePhone"
                                    :label="fullPrefix + 'Mobile Phone'"
                                    formGroupClasses="field-mobilephone"
+                                   :hideSms="!showSmsOptIn"
                                    :rules="requireMobilePhone ? 'required' : ''" />
         </div>
         <div :class="{ 'col-sm-4': !showInOneColumn }">
@@ -158,7 +159,6 @@
      * Separate each Bag property into a separate writeable computed so they can be
      * transformed to match the exact types that each form control expects.
      */
-    console.log(props.modelValue);
     const personTitle = ref(props.modelValue.personTitle);
     const firstName = ref(props.modelValue.firstName ?? "");
     const lastName = ref(props.modelValue.lastName ?? "");

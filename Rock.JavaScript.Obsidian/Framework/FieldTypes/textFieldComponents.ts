@@ -41,6 +41,9 @@ export const enum ConfigurationKey {
 
     /** Contains "True" if the text field should allow HTML content. */
     AllowHtml = "allowhtml",
+
+    /** Contains "True" if the text field should allow Lava content. */
+    AllowLava = "allowlava",
 }
 
 export const EditComponent = defineComponent({
@@ -150,6 +153,7 @@ export const ConfigurationComponent = defineComponent({
         const showCountdown = ref(false);
         const firstNameField = ref(false);
         const allowHtml = ref(false);
+        const allowLava = ref(false);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -169,13 +173,15 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationKey.ShowCountdown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
             newValue[ConfigurationKey.IsFirstName] = asTrueFalseOrNull(firstNameField.value) ?? "False";
             newValue[ConfigurationKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
+            newValue[ConfigurationKey.AllowLava] = asTrueFalseOrNull(allowLava.value) ?? "False";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationKey.IsPassword] !== (props.modelValue[ConfigurationKey.IsPassword] ?? "False")
                 || newValue[ConfigurationKey.MaxCharacters] !== (props.modelValue[ConfigurationKey.MaxCharacters] ?? "")
                 || newValue[ConfigurationKey.ShowCountdown] !== (props.modelValue[ConfigurationKey.ShowCountdown] ?? "False")
                 || newValue[ConfigurationKey.IsFirstName] !== (props.modelValue[ConfigurationKey.IsFirstName] ?? "False")
-                || newValue[ConfigurationKey.AllowHtml] !== (props.modelValue[ConfigurationKey.AllowHtml] ?? "False");
+                || newValue[ConfigurationKey.AllowHtml] !== (props.modelValue[ConfigurationKey.AllowHtml] ?? "False")
+				|| newValue[ConfigurationKey.AllowLava] !== (props.modelValue[ConfigurationKey.AllowLava] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -207,6 +213,7 @@ export const ConfigurationComponent = defineComponent({
             showCountdown.value = asBoolean(props.modelValue[ConfigurationKey.ShowCountdown]);
             firstNameField.value = asBoolean(props.modelValue[ConfigurationKey.IsFirstName]);
             allowHtml.value = asBoolean(props.modelValue[ConfigurationKey.AllowHtml]);
+			allowLava.value = asBoolean(props.modelValue[ConfigurationKey.AllowLava]);
         }, {
             immediate: true
         });
@@ -227,6 +234,7 @@ export const ConfigurationComponent = defineComponent({
         watch(showCountdown, () => maybeUpdateConfiguration(ConfigurationKey.ShowCountdown, asTrueFalseOrNull(showCountdown.value) ?? "False"));
         watch(firstNameField, () => maybeUpdateConfiguration(ConfigurationKey.IsFirstName, asTrueFalseOrNull(firstNameField.value) ?? "False"));
         watch(allowHtml, () => maybeUpdateConfiguration(ConfigurationKey.AllowHtml, asTrueFalseOrNull(allowHtml.value) ?? "False"));
+        watch(allowLava, () => maybeUpdateConfiguration(ConfigurationKey.AllowLava, asTrueFalseOrNull(allowLava.value) ?? "False"));
 
         return {
             maxCharacters,
@@ -234,6 +242,7 @@ export const ConfigurationComponent = defineComponent({
             showCountdown,
             firstNameField,
             allowHtml,
+            allowLava,
         };
     },
 
@@ -243,7 +252,8 @@ export const ConfigurationComponent = defineComponent({
     <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text." />
     <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)." />
     <CheckBox v-model="firstNameField" label="FirstName Field" help="When set, edit field will be validated as a first name." />
-    <CheckBox v-model="allowHtml" label="Allow HTML" help="Controls whether server should prevent HTML from being entered in this field or not" />
+    <CheckBox v-model="allowHtml" label="Allow HTML" help="Controls whether server should allow HTML in this field or not. This can often be a security risk so use with caution." />
+    <CheckBox v-model="allowLava" label="Allow Lava" help="Controls whether server should allow Lava in this field or not. This can often be a security risk so use with caution." />
 </div>
 `
 });

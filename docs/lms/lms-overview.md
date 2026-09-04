@@ -1,6 +1,8 @@
 ---
 title: LMS Domain Overview
-last_updated: 2026-05-01
+last_updated: 2026-06-26
+related_specs:
+  - specs/completed/lms/260623-lms-assessment-retakes.md
 related_files:
   - Rock/Lms/LearningActivityComponent.cs
   - Rock/Lms/LearningActivityContainer.cs
@@ -67,6 +69,8 @@ Activities are typed by component:
 **Late detection uses submission time, not grade time.** Pre-fix `ef0c011535`, an activity submitted before the due date but graded after was incorrectly marked late. The fix uses submission timestamp; older completion data may have wrong late flags.
 
 **File uploads persist until graded.** Pre-fix `1c410e56e9`, files were deleted after two days regardless of grading status. The fix keeps files until grading completes.
+
+**Scored activities can require retakes.** A per-activity Retake Threshold resets a failing submission to a fresh attempt: automatically for auto-graded activities (with an in-workspace warning) or by the facilitator for manually graded ones (with a "Retake Required" email). A class is not recorded complete while any activity is still ungraded. See [grading-systems.md](grading-systems.md).
 
 **Communication Preference shows only when communications are configured.** `383989e398` (Fixes #6567) hid the option for courses without configured communications. Custom course configuration UIs should follow the same pattern.
 
@@ -189,8 +193,12 @@ Key entities (model file paths follow the standard convention):
 
 ## Recent Impactful Changes
 
+- **2026-06-25** ([commit `7c0fac73aa`](https://github.com/SparkDevNetwork/Rock/commit/7c0fac73aa)). Configurable per-activity assessment retakes: a submission scoring below the activity's Retake Threshold is reset for a retake, automatically for auto-graded activities or by the facilitator for manually graded ones.
 - **2026-03-12** ([commit `3354bf6c2a`](https://github.com/SparkDevNetwork/Rock/commit/3354bf6c2a)). Smart Scroll setting added to Public Learning Class Workspace; auto-scrolls the selected Activity content into view. Default-on, configurable per block.
 - **2026-03-05** ([commit `ef0c011535`](https://github.com/SparkDevNetwork/Rock/commit/ef0c011535)). Activities submitted before due date are no longer marked late if graded after; completion uses submission time (Fixes #6710).
 - **2025-11-07** ([commit `383989e398`](https://github.com/SparkDevNetwork/Rock/commit/383989e398)). "Communication Preference" option appears only when at least one class activity is configured to send communication (Fixes #6567).
 - **2025-09-18** ([commit `b853227029`](https://github.com/SparkDevNetwork/Rock/commit/b853227029)). Public LMS blocks (programs, courses, classes) now enforce per-entity security.
-- **2025-07-09** ([commit `0a2660ba94`](https://github.com/SparkDevNetwork/Rock/commit/0a2660ba94)). New Content Article Learning Activity type, plus SMS notifications for new learning activities.
+
+## Related Specs
+
+- [LMS Assessment Retakes](../../specs/completed/lms/260623-lms-assessment-retakes.md) (2026-06-23, Jason Hendee)

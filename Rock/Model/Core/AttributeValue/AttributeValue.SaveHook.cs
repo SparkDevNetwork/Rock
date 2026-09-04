@@ -61,8 +61,9 @@ namespace Rock.Model
                     // The Label field type is a list of existing labels so should not be included, but the image field type uploads a new file so we do want it included.
                     // Don't use BinaryFileFieldType as that type of attribute's file can be used by more than one attribute
                     var field = attributeCache.FieldType.Field;
+                    var fieldGuid = attributeCache.FieldType.Guid;
 
-                    if ( valueWasModified && field != null && field.GetType().Assembly.FullName.StartsWith( "Rock" ) )
+                    if ( valueWasModified && field != null )
                     {
                         var rules = field.GetValidationRules( attributeCache.ConfigurationValues );
 
@@ -78,26 +79,36 @@ namespace Rock.Model
                             }
                             else
                             {
-                                // captures the full current call stack, all callers included
+                                // Captures the full current call stack, all callers
+                                // included so that we get more information about
+                                // where this happened in the log.
                                 var stack = new System.Diagnostics.StackTrace( true ).ToString();
                                 var ex2 = new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, stack );
 
-                                ExceptionLogService.LogException( ex2 );
+                                ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
                             }
                         }
                     }
 
+                    // If this is a BinaryFile backed field type, run special
+                    // processing to handle marking the BinaryFile as not
+                    // temporary. We intentionally do not check
+                    // BinaryFileFieldType nor LabelFieldType because those
+                    // operate as pickers to an existing file rather than being the
+                    // source of the file itself.
                     if ( field != null && (
-                        field is Field.Types.FileFieldType ||
-                        field is Field.Types.ImageFieldType ||
-                        field is Field.Types.BackgroundCheckFieldType ) )
+                        fieldGuid == SystemGuid.FieldType.FILE.AsGuid() ||
+                        fieldGuid == SystemGuid.FieldType.AUDIO_FILE.AsGuid() ||
+                        fieldGuid == SystemGuid.FieldType.VIDEO_FILE.AsGuid() ||
+                        fieldGuid == SystemGuid.FieldType.IMAGE.AsGuid() ||
+                        fieldGuid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid() ) )
                     {
                         PreSaveBinaryFile( rockContext );
                     }
 
                     // Check to see if this attribute value is for a StructureContentEditorFieldType.
                     // If so then we need to detect any changes in the content blocks.
-                    if ( field is Field.Types.StructureContentEditorFieldType )
+                    if ( fieldGuid == SystemGuid.FieldType.STRUCTURE_CONTENT_EDITOR.AsGuid() )
                     {
                         PreSaveStructuredContent( rockContext );
                     }
@@ -170,7 +181,22 @@ namespace Rock.Model
                     }
                 }
 
-                PostSaveDeleteUnreferencedBinaryFile();
+                // If this is a BinaryFile backed field type, run special
+                // processing to handle deleting the BinaryFile if this is
+                // the last attribute value referencing it. We intentionally do
+                // not check BinaryFileFieldType nor LabelFieldType because those
+                // operate as pickers to an existing file rather than being the
+                // source of the file itself.
+                var fieldType = AttributeCache.Get( Entity.AttributeId )?.FieldType;
+                if ( fieldType != null && (
+                    fieldType.Guid == SystemGuid.FieldType.FILE.AsGuid() ||
+                    fieldType.Guid == SystemGuid.FieldType.AUDIO_FILE.AsGuid() ||
+                    fieldType.Guid == SystemGuid.FieldType.VIDEO_FILE.AsGuid() ||
+                    fieldType.Guid == SystemGuid.FieldType.IMAGE.AsGuid() ||
+                    fieldType.Guid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid() ) )
+                {
+                    PostSaveDeleteUnreferencedBinaryFile( fieldType.Guid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid() );
+                }
 
                 // Previously we were doing this here:
                 //     UPDATE [AttributeValue] SET ValueAsDateTime = ...
@@ -213,7 +239,8 @@ namespace Rock.Model
             /// </summary>
             /// <remarks>This helps prevent orphaned binary files and ensures that unused files are
             /// removed from storage.</remarks>
-            private void PostSaveDeleteUnreferencedBinaryFile()
+            /// <param name="useContainsSearch">If true, the deletion task will use a contains search for the Guid rather than an equals search.</param>
+            private void PostSaveDeleteUnreferencedBinaryFile( bool useContainsSearch )
             {
                 Guid? newBinaryFileGuid = null;
                 Guid? oldBinaryFileGuid = null;
@@ -240,7 +267,8 @@ namespace Rock.Model
                     {
                         var deleteBinaryFileAttributeMsg = new DeleteBinaryFileAttribute.Message()
                         {
-                            BinaryFileGuid = oldBinaryFileGuid.Value
+                            BinaryFileGuid = oldBinaryFileGuid.Value,
+                            UseContainsSearch = useContainsSearch,
                         };
 
                         deleteBinaryFileAttributeMsg.Send();
@@ -250,7 +278,7 @@ namespace Rock.Model
 
             /// <summary>
             /// Processes the PreSave event when this value is for
-            /// <see cref="Field.Types.StructureContentEditorFieldType"/>. Detect any
+            /// <c>Field.Types.StructureContentEditorFieldType</c>. Detect any
             /// changes to the internal content and apply them to the database as well.
             /// </summary>
             /// <param name="rockContext">The rock context.</param>

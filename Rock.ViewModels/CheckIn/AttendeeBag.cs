@@ -69,5 +69,22 @@ namespace Rock.ViewModels.CheckIn
         /// Gets all possible schedules that are available to this attendee.
         /// </summary>
         public List<ScheduleOpportunityBag> PossibleSchedules { get; set; }
+
+        /// <summary>
+        /// <para>
+        /// All potential schedules that are valid for this attendee. A
+        /// schedule is considered a potential if at least one group was valid
+        /// for the attendee. The group may no longer exist in the
+        /// opportunities if no locations were available, but the schedule was
+        /// still considered a potential match.
+        /// </para>
+        /// <para>
+        /// The primary use of potential schedules is to determine if the skip
+        /// screen should be shown during family check-in when multiple schedules
+        /// are selected and one or more attendees have no way they could have
+        /// checked into one of the schedules.
+        /// </para>
+        /// </summary>
+        public List<string> PotentialScheduleIds { get; set; }
     }
 }

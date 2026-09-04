@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
@@ -119,6 +120,15 @@ namespace Rock.Reporting.DataSelect
             result.LavaKey = entityType.Name;
             result.LavaTemplate = selection;
             return result;
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new LavaObsidianGridField
+            {
+                LavaTemplate = selection,
+            };
         }
 
         #endregion

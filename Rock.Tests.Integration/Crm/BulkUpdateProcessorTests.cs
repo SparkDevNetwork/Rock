@@ -1962,7 +1962,7 @@ namespace Rock.Tests.Integration.Crm
                 .Take( personCount )
                 .ToList();
 
-            Assert.IsTrue( personIds.Count > 1, "Test precondition: the sample data set must contain multiple people." );
+            Assert.IsGreaterThan( 1, personIds.Count, "Test precondition: the sample data set must contain multiple people." );
 
             var bag = new BulkUpdateBag
             {

@@ -31,6 +31,22 @@ namespace Rock.Lms
     [RockInternal( "17.0" )]
     public abstract class LearningActivityComponent : Component
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys for values a component places in the dictionary returned by <see cref="GetActivityConfiguration"/>.
+        /// </summary>
+        protected static class BaseConfigurationKey
+        {
+            /// <summary>
+            /// Set by a component to advertise that it supports assigning retakes. The activity
+            /// editor shows the Retake Threshold field only for components that advertise support.
+            /// </summary>
+            public const string SupportsRetake = "supportsRetake";
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>

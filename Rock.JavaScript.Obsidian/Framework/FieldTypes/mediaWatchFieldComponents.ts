@@ -49,8 +49,8 @@ export const EditComponent = defineComponent({
             }
 
             const config = {
-                requiredPercentage: toNumberOrNull(props.configurationValues[ConfigurationKey.CompletionPercentage]),
-                resumeInDays: toNumberOrNull(props.configurationValues[ConfigurationKey.AutoResumeInDays]),
+                requiredPercentage: (toNumberOrNull(props.configurationValues[ConfigurationKey.CompletionPercentage]) ?? 0) / 100,
+                resumeInDays: toNumberOrNull(props.configurationValues[ConfigurationKey.AutoResumeInDays]) ?? 0,
                 maxWidth: props.configurationValues[ConfigurationKey.MaxWidth],
                 validationMessage: props.configurationValues[ConfigurationKey.ValidationMessage],
                 mediaGuid: mediaElement?.value ?? emptyGuid,

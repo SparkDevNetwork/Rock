@@ -187,8 +187,8 @@ namespace Rock.Field.Types
                 return publicValue;
             }
 
-            // All providers except PMM must include EntityTypeId
-            return entityType.Guid == SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid()
+            // All providers except the legacy PMM v1 (removed in Rock v20) must include EntityTypeId.
+            return entityType.Guid == SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid()
                 ? valueSplit[2]
                 : $"{entityType.Id},{valueSplit[2]}";
         }
@@ -305,15 +305,43 @@ namespace Rock.Field.Types
             var internalValue = new PublicValueItem();
 
             // If the value is a single guid, the privateValue is just the BinaryFileGuid and
-            // the provider is the PMM legacy provider.
+            // the provider is the legacy PMM v1 provider.
             if ( Guid.TryParse( privateValue, out Guid binaryFileGuid ) )
             {
-                var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() );
+                internalValue.IsLegacyProtectMyMinistry = true;
                 internalValue.BinaryFileGuid = binaryFileGuid;
-                internalValue.ProviderEntityTypeGuid = entityType.Guid;
-                internalValue.ProviderEntityTypeId = entityType.Id;
-                internalValue.ProviderName = entityType.FriendlyName;
                 internalValue.FileName = GetFileName( binaryFileGuid );
+
+                /*
+                    7/13/26 - NA
+
+                    PMM (v1) was removed in Rock v20 and its EntityType row is deleted
+                    by the sunset migration. Populate ProviderEntityTypeGuid from the
+                    hard-coded legacy Guid constant so the resulting URL still carries a
+                    non-empty EntityTypeGuid parameter to GetBackgroundCheck.ashx (which
+                    recognizes the legacy PMM Guid and streams the BinaryFile directly).
+
+                    The Id and FriendlyName are only available while the EntityType row
+                    still exists; when it is gone we substitute a friendly literal so the
+                    UI has something to render.
+
+                    Reason: Historical AttributeValue rows written before the v20
+                    removal store just the BinaryFileGuid and no comma-delimited
+                    provider prefix, so we still need to parse them without crashing
+                    AND still round-trip enough provider info to view the file.
+                */
+                internalValue.ProviderEntityTypeGuid = Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid();
+
+                var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid() );
+                if ( entityType != null )
+                {
+                    internalValue.ProviderEntityTypeId = entityType.Id;
+                    internalValue.ProviderName = entityType.FriendlyName;
+                }
+                else
+                {
+                    internalValue.ProviderName = "Protect My Ministry (Legacy)";
+                }
 
                 return internalValue;
             }
@@ -423,6 +451,28 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Adds what this field type expects to the shared description of a
+        /// binary file reference. The guid alone does not say which files make sense
+        /// here, and the wrong kind of file saves without complaint.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var hints = base.GetFieldHints( privateConfigurationValues );
+
+            if ( hints != null )
+            {
+                hints.ValueFormat += " The file is a background check document, which is normally written by the background check provider rather than chosen by hand.";
+            }
+
+            return hints;
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -485,10 +535,10 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    // Only the legacy PMM provider can store only the Guid,
-                    // everything else must store the <provider EntityTypeId>,<Binary File Guid|RecordKey>
+                    // Only the legacy PMM v1 provider (removed in Rock v20) stored just the Guid;
+                    // everything else must store the <provider EntityTypeId>,<Binary File Guid|RecordKey>.
                     Guid? entityTypeGuid = backgroundCheckDocument.ProviderEntityTypeGuid;
-                    if ( entityTypeGuid.HasValue && entityTypeGuid.Value == Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() )
+                    if ( entityTypeGuid.HasValue && entityTypeGuid.Value == Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid() )
                     {
                         return binaryFileGuidString;
                     }
@@ -528,7 +578,7 @@ namespace Rock.Field.Types
                 return;
             }
 
-            // Legacy PMM Background Check Documents are stored with only the Guid.
+            // Legacy PMM v1 Background Check Documents (pre-Rock v20) are stored with only the Guid.
             Guid? binaryFileGuid = value.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
@@ -543,7 +593,7 @@ namespace Rock.Field.Types
                 }
 
                 backgroundCheckDocument.BinaryFileId = binaryFileId;
-                backgroundCheckDocument.ProviderEntityTypeGuid = Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid();
+                backgroundCheckDocument.ProviderEntityTypeGuid = Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid();
                 return;
             }
 

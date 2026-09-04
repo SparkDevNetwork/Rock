@@ -191,14 +191,35 @@ namespace Rock.Model
 
                     if ( numericLength > 0 )
                     {
-                        int codeLen = alphaNumericLength + alphaLength + numericLength;
-
-                        if ( lastCode.IsNullOrWhiteSpace() )
+                        if ( isRandomized )
                         {
-                            lastCode = _todaysUsedCodes.Where( c => c.Length == codeLen ).OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
+                            numericCode = GetRandomNumericCodeAsString( numericLength );
                         }
+                        else
+                        {
+                            int codeLen = alphaNumericLength + alphaLength + numericLength;
 
-                        numericCode = GetNextNumericCodeAsString( alphaNumericLength, alphaLength, numericLength, isRandomized, lastCode );
+                            /*
+                                8/23/26 - CLAUDE
+
+                                Seed the sequential generator with the highest numeric suffix
+                                issued so far. This scan (and sort) of today's codes is only
+                                meaningful for sequential generation, so it lives in this branch
+                                rather than running for randomized codes that never use it -
+                                it grew O(n^2) as codes were issued and previously dominated
+                                high-volume check-in code generation. On retries lastCode already
+                                holds the rejected code, so only compute the high-water mark on
+                                the first attempt.
+
+                                Reason: Avoid an O(n^2) scan that randomized generation never uses.
+                            */
+                            if ( lastCode.IsNullOrWhiteSpace() )
+                            {
+                                lastCode = _todaysUsedCodes.Where( c => c.Length == codeLen ).OrderBy( c => c.Substring( alphaNumericLength + alphaLength ) ).LastOrDefault();
+                            }
+
+                            numericCode = GetSequentialNumericCodeAsString( alphaNumericLength + alphaLength, numericLength, lastCode );
+                        }
                     }
 
                     code = alphaNumericCode + alphaCode + numericCode;
@@ -254,75 +275,109 @@ namespace Rock.Model
         /// <param name="isRandomized">if set to <c>true</c> [is randomized].</param>
         /// <param name="lastCode">The last code.</param>
         /// <returns></returns>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use GetRandomNumericCodeAsString or GetSequentialNumericCodeAsString instead." )]
         public static string GetNextNumericCodeAsString( int alphaNumericLength, int alphaLength, int numericLength, bool isRandomized, string lastCode )
         {
-            // Find a good unique numeric code for today
-            string numericCode = string.Empty;
+            /*
+                8/23/26 - CLAUDE
+
+                This method fused two unrelated algorithms behind the isRandomized flag,
+                so randomized callers still had to compute and pass a lastCode value that
+                the randomized path never reads. It has been split into
+                GetRandomNumericCodeAsString and GetSequentialNumericCodeAsString so each
+                path is self-contained and callers only do the work their path requires.
+                This shim is retained for backward compatibility.
+
+                Reason: Split a behavior-selecting flag into two focused methods.
+            */
+            return isRandomized
+                ? GetRandomNumericCodeAsString( numericLength )
+                : GetSequentialNumericCodeAsString( alphaNumericLength + alphaLength, numericLength, lastCode );
+        }
+
+        /// <summary>
+        /// Gets a random numeric code of the requested length, retrying until it
+        /// produces one that does not contain any <see cref="NoGood"/> sequence.
+        /// </summary>
+        /// <param name="numericLength">The number of digits the numeric code should contain.</param>
+        /// <returns>A <see cref="System.String"/> containing a random numeric code.</returns>
+        /// <exception cref="TimeoutException">A valid code could not be generated within the maximum number of attempts.</exception>
+        internal static string GetRandomNumericCodeAsString( int numericLength )
+        {
+            var numericCode = GenerateRandomNumericCode( numericLength );
             int attempts = 0;
 
-            if ( isRandomized )
+            // Leaving the noGood check here because it is possible that this method used outside of GetNew().
+            /*
+                 4/4/2022 - NA
+
+                 Formerly, the numeric portion of the code was ALSO being checked to verify it was not
+                 *contained* within any of the _todaysUsedCodes. Not only was that was not intuitive, it
+                 lead to situations where use of only 1 or 2 numeric codes would immediately run out of
+                 codes since the comparison would ignore the other parts of the full code (i.e., any
+                 alphanumeric or alpha prefixed characters which otherwise would make the new code unique).
+
+                 Therefore this is being changed to only verify that the numeric code is not in the NoGood
+                 list.
+
+                 Reason: Nothing less than a "4" could be practically used -- even if using a alphanumeric or alpha
+                         prefix.
+            */
+            while ( NoGood.Any( s => numericCode.Contains( s ) ) )
             {
+                attempts++;
+
+                // We're only going to attempt this a million times...
+                if ( attempts > _maxAttempts )
+                {
+                    throw new TimeoutException( timeoutExceptionMessage );
+                }
+
                 numericCode = GenerateRandomNumericCode( numericLength );
-
-                // Leaving the noGood check here because it is possible that this method used outside of GetNew().
-                /*
-                     4/4/2022 - NA
-
-                     Formerly, the numeric portion of the code was ALSO being checked to verify it was not
-                     *contained* within any of the _todaysUsedCodes. Not only was that was not intuitive, it
-                     lead to situations where use of only 1 or 2 numeric codes would immediately run out of 
-                     codes since the comparison would ignore the other parts of the full code (i.e., any
-                     alphanumeric or alpha prefixed characters which otherwise would make the new code unique).
-
-                     Therefore this is being changed to only verify that the numeric code is not in the NoGood
-                     list.
-
-                     Reason: Nothing less than a "4" could be practically used -- even if using a alphanumeric or alpha
-                             prefix.
-                */
-                while ( NoGood.Any( s => numericCode.Contains( s ) ) )
-                {
-                    attempts++;
-
-                    // We're only going to attempt this a million times...
-                    if ( attempts > _maxAttempts )
-                    {
-                        throw new TimeoutException( timeoutExceptionMessage );
-                    }
-
-                    numericCode = GenerateRandomNumericCode( numericLength );
-                }
             }
-            else
+
+            return numericCode;
+        }
+
+        /// <summary>
+        /// Gets the next sequential numeric code as a string by incrementing the numeric
+        /// portion of <paramref name="lastCode"/>, skipping any candidate that contains a
+        /// <see cref="NoGood"/> sequence.
+        /// </summary>
+        /// <param name="prefixLength">The combined length of any alphanumeric and alpha characters that precede the numeric portion of the code.</param>
+        /// <param name="numericLength">The number of digits the numeric portion should contain.</param>
+        /// <param name="lastCode">The most recently issued code to increment from. When <c>null</c> or empty, generation starts at the first code.</param>
+        /// <returns>A <see cref="System.String"/> containing the next sequential numeric code.</returns>
+        /// <exception cref="TimeoutException">A valid code could not be generated within the maximum number of attempts.</exception>
+        internal static string GetSequentialNumericCodeAsString( int prefixLength, int numericLength, string lastCode )
+        {
+            if ( string.IsNullOrEmpty( lastCode ) )
             {
-                if ( !string.IsNullOrEmpty( lastCode ) )
+                return 1.ToString( "D" + numericLength );
+            }
+
+            var maxCode = lastCode.Substring( prefixLength );
+            int nextCode = maxCode.AsInteger() + 1;
+            var numericCode = nextCode.ToString( "D" + numericLength );
+            if ( numericCode.Length > numericLength )
+            {
+                throw new Exception( $"Error generating numeric check-in code {numericCode}. The number of digits exceeds the configured length of {numericLength}. Check the check-in system 'Security Code Length to adjust this." );
+            }
+
+            int attempts = 0;
+            while ( NoGood.Any( s => numericCode.Contains( s ) ) )
+            {
+                attempts++;
+
+                // We're only going to attempt this a million times...
+                if ( attempts > _maxAttempts )
                 {
-                    var maxCode = lastCode.Substring( alphaNumericLength + alphaLength );
-                    int nextCode = maxCode.AsInteger() + 1;
-                    numericCode = nextCode.ToString( "D" + numericLength );
-                    if ( numericCode.Length > numericLength )
-                    {
-                        throw new Exception( $"Error generating numeric check-in code {numericCode}. The number of digits exceeds the configured length of {numericLength}. Check the check-in system 'Security Code Length to adjust this." );
-                    }
-
-                    while ( NoGood.Any( s => numericCode.Contains( s ) ) )
-                    {
-                        attempts++;
-
-                        // We're only going to attempt this a million times...
-                        if ( attempts > _maxAttempts )
-                        {
-                            throw new TimeoutException( timeoutExceptionMessage );
-                        }
-
-                        nextCode++;
-                        numericCode = nextCode.ToString( "D" + numericLength );
-                    }
+                    throw new TimeoutException( timeoutExceptionMessage );
                 }
-                else
-                {
-                    numericCode = 1.ToString( "D" + numericLength );
-                }
+
+                nextCode++;
+                numericCode = nextCode.ToString( "D" + numericLength );
             }
 
             return numericCode;

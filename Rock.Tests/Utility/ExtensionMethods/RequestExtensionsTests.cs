@@ -27,7 +27,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
             var request = new Request( "https://www.rocksolidchurchdemo.com/page/12" );
             var actualUri = request.UrlProxySafe();
 
-            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+            Assert.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualUri = request.UrlProxySafe();
 
-            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+            Assert.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualUri = request.UrlProxySafe();
 
-            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+            Assert.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualUri = request.UrlProxySafe();
 
-            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+            Assert.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualUri = request.UrlProxySafe();
 
-            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+            Assert.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualUri = request.UrlProxySafe();
 
-            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+            Assert.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualUri = request.UrlProxySafe();
 
-            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+            Assert.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualUri = request.UrlProxySafe();
 
-            Assert.That.AreEqual( expectedUrl, actualUri.ToString() );
+            Assert.AreEqual( expectedUrl, actualUri.ToString() );
         }
 
         private class Request : IRequest

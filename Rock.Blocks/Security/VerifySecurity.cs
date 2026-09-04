@@ -96,7 +96,7 @@ namespace Rock.Blocks.Security
                 .WithBlock( this )
                 .AddTextField( "action", r => r.Action )
                 .AddTextField( "sourceType", r => r.SourceType )
-                .AddField( "sourceId", r => r.SourceId )
+                .AddTextField( "sourceId", r => r.SourceId?.ToString() )
                 .AddTextField( "sourceName", r => r.SourceName )
                 .AddTextField( "role", r => r.Role )
                 .AddTextField( "access", r => r.Access )

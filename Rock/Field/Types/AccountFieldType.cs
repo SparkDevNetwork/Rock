@@ -212,6 +212,38 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Singular where the neighbouring Accounts field type is plural, and the two
+        /// are easy to confuse because the names differ by one letter. A comma
+        /// separated list stored here does not parse as a guid at all, so it falls
+        /// through and is displayed back as the raw text rather than reporting a
+        /// problem.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. Accounts are rows a caller can look up, and a chart of
+            // accounts is a tree that can run long, so listing it here would repeat a
+            // large payload on every attribute described.
+            var valueFormat = "The guid of a single row in the FinancialAccount table, not its id or idKey and not its name or public name. Only one value is stored, so a comma separated list is not valid here; use the Accounts field type where several are needed.";
+
+            if ( privateConfigurationValues.GetValueOrNull( DISPLAY_ACTIVE_ONLY ).AsBoolean() )
+            {
+                valueFormat += " This field is limited to active accounts, so an inactive one cannot be chosen.";
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = valueFormat,
+                Instructions = "To find the correct value, read the financial accounts and take the guid of the one you want. Accounts are arranged as a tree, but the value is the guid of the one account itself and never a path through its parents."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

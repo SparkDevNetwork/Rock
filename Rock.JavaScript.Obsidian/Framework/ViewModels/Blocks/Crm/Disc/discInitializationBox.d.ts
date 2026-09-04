@@ -27,6 +27,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Contains all the initial configuration data required to render the Disc block. */
 export type DiscInitializationBox = {
+    /**
+     * Gets or sets the identifier of the assessment record the results should be saved to.
+     * A value of zero indicates that a new assessment should be created when the test is completed.
+     */
+    assessmentId: number;
+
     /** Gets or sets whether the individual can retake the test. */
     canRetakeTest: boolean;
 
@@ -68,6 +74,13 @@ export type DiscInitializationBox = {
 
     /** Gets or sets a value indicating whether the assessment is for the person currently viewing the assessment. */
     isAsessmentForCurrentPerson: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the individual is retaking a previously
+     * completed assessment. When true a new assessment is created instead of
+     * updating the existing one, mirroring the legacy "Retake Test" behavior.
+     */
+    isRetake: boolean;
 
     /** Gets or sets the date the assessment was last saved. */
     lastSavedDate?: string | null;

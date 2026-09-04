@@ -1,0 +1,45 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isVisible" class="hide-scroll">
+        <div class="dropdown dropdown-family styled-scroll">
+            <a href="#" class="profile-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img :src="personPhotoUrl" class="avatar mr-2 flex-shrink-0" alt="" />
+                <span class="d-none d-sm-inline text-nowrap font-weight-semibold">{{ personFullName }}<i class="ti ti-chevron-down ml-2"></i></span>
+            </a>
+
+            <ul class="dropdown-menu">
+                <li v-for="(member, index) in groupMembers" :key="index">
+                    <a :href="member.personProfileUrl ?? '#'">
+                        <img :src="member.photoUrl ?? ''" alt="" class="avatar mr-2">
+                        <span class="name">
+                            {{ member.fullName }}
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupMemberNavigationBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMemberNavigation/groupMemberNavigationBag";
+    import { GroupMemberNavigationOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GroupMemberNavigation/groupMemberNavigationOptionsBag";
+
+    const config = useConfigurationValues<CustomBlockBox<GroupMemberNavigationBag, GroupMemberNavigationOptionsBag>>();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const personFullName = config.bag?.personFullName ?? "";
+    const personPhotoUrl = config.bag?.personPhotoUrl ?? "";
+    const groupMembers = config.bag?.groupMembers ?? [];
+    const isVisible = groupMembers.length > 0;
+
+    // #endregion Values
+</script>

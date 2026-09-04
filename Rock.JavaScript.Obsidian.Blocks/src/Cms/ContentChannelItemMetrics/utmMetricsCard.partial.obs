@@ -1,0 +1,128 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RankedListBarChart v-if="isLoading || hasDimensions"
+                        :title="cardTitle"
+                        :items="activeItems">
+        <template v-if="isDimensionPickerShown" #headerActions>
+            <div class="utm-dimension-picker">
+                <DropDownList v-model="selectedDimensionValue"
+                              :items="dimensionOptions"
+                              :showBlankItem="false" />
+            </div>
+        </template>
+
+        <template v-if="isLoading" #empty>
+            <div class="skeleton utm-skeleton"></div>
+        </template>
+    </RankedListBarChart>
+</template>
+
+<style scoped>
+/* The inner Ant Select sizes to its content, so pin its width here; otherwise the picker grows
+   and shrinks with the selected dimension's label. :deep pierces into the DropDownList control. */
+.utm-dimension-picker :deep(.ant-select) {
+    min-width: 160px;
+}
+
+/* No label on the picker, so drop the control's default bottom spacing. */
+.utm-dimension-picker {
+    margin-bottom: 0;
+}
+
+/* Loading placeholder sized to the ranked list it stands in for. The base .skeleton class supplies
+   the shimmer animation. */
+.utm-skeleton {
+    height: 220px;
+    border-radius: var(--rounded-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import RankedListBarChart from "@Obsidian/Controls/rankedListBarChart.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { UtmDimension, UtmDimensionDescription } from "@Obsidian/Enums/Cms/utmDimension";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MetricSliceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/metricSliceBag";
+    import { UtmDimensionMetricsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemMetrics/utmDimensionMetricsBag";
+
+    // #region Types
+
+    const props = defineProps<{
+        /** The per-dimension UTM breakdowns for every selected dimension, in canonical order. */
+        breakdowns: UtmDimensionMetricsBag[];
+
+        /** True while the metrics are loading, so the card shows a skeleton instead of its body. */
+        isLoading?: boolean;
+    }>();
+
+    // #endregion Types
+
+    // #region Values
+
+    // The dimension currently shown, held as its enum value in string form for the dropdown.
+    const selectedDimensionValue = ref<string>("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The card renders whenever there are dimensions to show; an empty dimension shows the
+    // "Nothing To Show" state rather than hiding the card. Only guards against the pre-load
+    // state where no dimensions have arrived yet.
+    const hasDimensions = computed<boolean>(() => {
+        return props.breakdowns.length > 0;
+    });
+
+    // The dropdown only makes sense when there is more than one dimension to switch between.
+    const isDimensionPickerShown = computed<boolean>(() => {
+        return props.breakdowns.length > 1;
+    });
+
+    const dimensionOptions = computed<ListItemBag[]>(() => {
+        return props.breakdowns.map(b => ({
+            value: String(b.dimension),
+            text: UtmDimensionDescription[b.dimension] ?? ""
+        }));
+    });
+
+    // Source is the preferred default; otherwise fall back to the first dimension sent.
+    const defaultDimensionValue = computed<string>(() => {
+        if (props.breakdowns.some(b => b.dimension === UtmDimension.Source)) {
+            return String(UtmDimension.Source);
+        }
+
+        return props.breakdowns.length > 0 ? String(props.breakdowns[0].dimension) : "";
+    });
+
+    const activeItems = computed<MetricSliceBag[]>(() => {
+        const active = props.breakdowns.find(b => String(b.dimension) === selectedDimensionValue.value);
+        return active?.items ?? [];
+    });
+
+    const cardTitle = computed<string>(() => {
+        // Guard the empty selection explicitly: Number("") is 0, which is a valid dimension (Source),
+        // so relying on the lookup alone would mislabel the card before a dimension is selected.
+        if (!selectedDimensionValue.value) {
+            return "Top UTM";
+        }
+
+        return `Top UTM ${UtmDimensionDescription[Number(selectedDimensionValue.value)] ?? ""}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    // Whenever the data changes (for example a new date range), keep the current selection if it still
+    // has an option, otherwise reset to the default so the card never points at a missing dimension.
+    watch(() => props.breakdowns, () => {
+        const availableValues = props.breakdowns.map(b => String(b.dimension));
+
+        if (!availableValues.includes(selectedDimensionValue.value)) {
+            selectedDimensionValue.value = defaultDimensionValue.value;
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>

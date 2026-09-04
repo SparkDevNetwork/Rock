@@ -38,8 +38,20 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CommunicationTemplateFieldAttribute( string name, string description = "", bool required = true, string defaultTemplateGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultTemplateGuid, category, order, key, typeof( Rock.Field.Types.CommunicationTemplateFieldType ).FullName )
+            : base( SystemGuid.FieldType.COMMUNICATION_TEMPLATE.AsGuid(), name, description, required, defaultTemplateGuid, category, order, key )
+        {
+            IncludeInactive = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationTemplateFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CommunicationTemplateFieldAttribute( string name )
+            : base( SystemGuid.FieldType.COMMUNICATION_TEMPLATE.AsGuid(), name )
         {
             IncludeInactive = false;
         }

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -35,8 +34,14 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Personal Device" )]
 
-    [LinkedPage( "Personal Devices Detail", "Page to show the details of the personal devices added.", false, order: 1 )]
-    [BooleanField( "Hide If None", "Should the badge be hidden if there are no devices registered to this person?", true, order: 2 )]
+    [LinkedPage( "Personal Devices Detail",
+        Description = "Page to show the details of the personal devices added.",
+        IsRequired = false,
+        Order = 1 )]
+    [BooleanField( "Hide If None",
+        Description = "Should the badge be hidden if there are no devices registered to this person?",
+        DefaultBooleanValue = true,
+        Order = 2 )]
     [Rock.SystemGuid.EntityTypeGuid( "C92E1D6C-EE4B-4BD6-B5C6-9E6071243341")]
     public class PersonalDevice : BadgeComponent
     {

@@ -81,6 +81,8 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.Subject,
         Description = "The subject that should be used when sending email. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 5 )]
 
     [CodeEditorField( "Body",

@@ -195,11 +195,20 @@
                     </div>
                 </ContentStack>
             </ContentSection>
+            <ContentSection v-if="hasAttributes"
+                            title="Site Attributes"
+                            icon="ti ti-binary-tree-2"
+                            :order="3">
+                <ContentStack title="Attribute Values"
+                              description="Set the values for the custom attributes configured for this site.">
+                    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                </ContentStack>
+            </ContentSection>
             <ContentSection v-if="store.state.trailblazerMode"
                             title="Page Attributes"
-                            icon="ti ti-binary-tree-2"
+                            icon="ti ti-file"
                             isCollapsed
-                            :order="3">
+                            :order="4">
                 <ContentStack title="Attribute List"
                               description="Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes."
                               headerLocation="top">
@@ -229,7 +238,7 @@
                             title="Advanced Settings"
                             icon="ti ti-adjustments-cog"
                             isCollapsed
-                            :order="4">
+                            :order="5">
                 <ContentStack title="Traffic"
                               description="Configure how visitors are redirected and how their activity is logged.">
 
@@ -298,7 +307,6 @@
                 </ContentStack>
             </ContentSection>
         </ContentSectionContainer>
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
@@ -437,6 +445,11 @@
 
     const gridData: GridDataBag = reactive<GridDataBag>({
         rows: siteAttributes.value.map(x => convertToRowItem(x))
+    });
+
+    /** True if this site has any attributes of its own to display. */
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
     });
 
     const mobilePageComputed = computed({
@@ -581,9 +594,9 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== siteAttribute.value?.key);
         }
         else {
-            if (siteAttribute.value?.key && !reservedKeyNames.value.some(k => k === siteAttribute.value?.key)) {
-                reservedKeyNames.value.push(siteAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = siteAttributes.value.map(k => k.key!);
         }
     });
 

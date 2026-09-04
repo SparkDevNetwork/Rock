@@ -20,6 +20,7 @@ import { FieldTypeBase } from "./fieldType";
 import { Guid } from "@Obsidian/Types";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export const enum ConfigurationKey {
     ConfigurationJSON = "ConfigurationJSON"
@@ -60,5 +61,52 @@ export class ConditionalScaleFieldType extends FieldTypeBase {
 
     public override getSupportedComparisonTypes(): ComparisonType {
         return numericComparisonTypes;
+    }
+
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
+        const scaleLabelHtml = this.getScaleLabelHtml(value, configurationValues);
+
+        if (scaleLabelHtml !== null) {
+            return isEscaped ? escapeHtml(scaleLabelHtml) : scaleLabelHtml;
+        }
+
+        return super.getHtmlValue(value, configurationValues, isEscaped);
+    }
+
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
+        const scaleLabelHtml = this.getScaleLabelHtml(value, configurationValues);
+
+        if (scaleLabelHtml !== null) {
+            return isEscaped ? escapeHtml(scaleLabelHtml) : scaleLabelHtml;
+        }
+
+        return super.getCondensedHtmlValue(value, configurationValues, isEscaped);
+    }
+
+    /**
+     * Builds the colored scale label markup for a value, matching the value's
+     * label against the configured ranges to find its color. This mirrors the
+     * server's GetHtmlValue so the value renders as the same badge it does in
+     * WebForms. Returns null when there is no value or no matching colored
+     * range, so the caller can fall back to the default (plain text) rendering.
+     */
+    private getScaleLabelHtml(value: string, configurationValues: Record<string, string>): string | null {
+        if (!value) {
+            return null;
+        }
+
+        try {
+            const ranges = JSON.parse(configurationValues[ConfigurationKey.ConfigurationJSON] ?? "[]") as ClientValue[];
+            const matchingRange = ranges.find(range => range.label === value);
+
+            if (matchingRange?.color) {
+                return `<span class="label scale-label" style="background-color:${matchingRange.color}">${escapeHtml(value)}</span>`;
+            }
+        }
+        catch {
+            // Malformed configuration - fall back to the default rendering.
+        }
+
+        return null;
     }
 }

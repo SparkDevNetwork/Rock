@@ -32,7 +32,10 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Family Weeks Attended In Duration" )]
 
-    [IntegerField( "Duration", "The number of weeks to use for the duration (default 16.)", false, 16 )]
+    [IntegerField( "Duration",
+        Description = "The number of weeks to use for the duration (default 16.)",
+        IsRequired = false,
+        DefaultIntegerValue = 16 )]
     [Rock.SystemGuid.EntityTypeGuid( "537D05E5-5F89-421C-9F3D-04ADDEEC7C10")]
     public class FamilyWeeksAttendedInDuration : BadgeComponent
     {

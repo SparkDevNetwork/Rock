@@ -34,6 +34,15 @@ namespace Rock.Lava.Blocks
 
         string _markup = string.Empty;
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// The content of a javascript block is JavaScript source, not Lava. It must not be
+        /// parsed with {% liquid %} body semantics when nested inside a {% lava %} tag —
+        /// otherwise JS keywords like <c>for</c> or <c>if</c> at the start of a line would
+        /// be misread as Lava tags.
+        /// </remarks>
+        public override bool IsContentLavaCode => false;
+
         /// <summary>
         /// Initializes the specified tag name.
         /// </summary>

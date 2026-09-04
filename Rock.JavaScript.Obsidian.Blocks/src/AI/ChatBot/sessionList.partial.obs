@@ -5,14 +5,18 @@
              class="session"
              :class="{ 'active': session.idKey === sessionIdKey }"
              @click="onSelectSession(session.idKey!)">
-            <div class="session-name">{{ session.name || "Unnamed Session" }}</div>
-            <div v-if="sessions.length > 1"
-                 class="session-delete"
-                 @click.stop="onDeleteSession(session)">
-                <i class="ti ti-x"></i>
-            </div>
-            <div class="session-date">
-                {{ RockDateTime.parseISO(session.lastMessageDateTime!)?.localDateTime.toASPString("g") }}
+            <div class="session-item">
+                <div class="session-title">
+                    <div class="session-name">{{ session.name || "Unnamed Session" }}</div>
+                    <RockButton v-if="sessions.length > 1"
+                                class="btn btn-xs btn-square btn-danger session-delete"
+                                @click.stop="onDeleteSession(session)">
+                        <i class="ti ti-x"></i>
+                    </RockButton>
+                </div>
+                <div class="session-date">
+                        {{ RockDateTime.parseISO(session.lastMessageDateTime!)?.localDateTime.toASPString("g") }}
+                    </div>
             </div>
         </div>
     </div>
@@ -22,6 +26,7 @@
     import { PropType } from "vue";
     import { ChatSessionBag } from "./types";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     defineProps({
         sessions: {

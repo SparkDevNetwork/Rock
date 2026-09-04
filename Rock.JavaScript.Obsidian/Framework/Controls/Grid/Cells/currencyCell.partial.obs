@@ -6,6 +6,7 @@
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
     import { computed } from "vue";
 
     const props = defineProps(standardCellProps);
@@ -22,6 +23,8 @@
             return "";
         }
 
-        return toCurrencyOrNull(value) ?? "";
+        const currencyInfo = (props.column.props.currencyInfo as CurrencyInfoBag | null) ?? null;
+
+        return toCurrencyOrNull(value, currencyInfo) ?? "";
     });
 </script>

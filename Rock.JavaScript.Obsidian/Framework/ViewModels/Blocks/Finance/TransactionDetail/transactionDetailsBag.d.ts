@@ -23,6 +23,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { TransactionLineItemBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/transactionLineItemBag";
+import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /**
@@ -31,6 +32,13 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
  * during save operations.
  */
 export type TransactionDetailsBag = {
+    /**
+     * Gets or sets the attribute field definitions for the allocations grid.
+     * Each entry describes one attribute column: its field key (attr_{attributeKey}),
+     * display title, and field type, matching the format used by Rock.ViewModels.Core.Grid.GridDefinitionBag.AttributeFields.
+     */
+    attributeFields?: AttributeFieldDefinitionBag[] | null;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 

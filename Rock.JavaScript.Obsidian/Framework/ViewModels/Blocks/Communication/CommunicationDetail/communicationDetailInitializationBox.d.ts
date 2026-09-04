@@ -56,6 +56,9 @@ export type CommunicationDetailInitializationBox = {
     /** Gets or sets the recipient grid configuration options for this communication. */
     recipientGridOptions?: CommunicationRecipientGridOptionsBag | null;
 
+    /** Gets or sets the URL to redirect to on load when the current page cannot edit the communication; empty when it can. */
+    redirectUrl?: string | null;
+
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 };

@@ -1,0 +1,58 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="groupfinder-what-filter">
+        <TextBox v-if="config.isLiveSearchEnabled"
+                 v-model="searchTerm"
+                 label="Group Name"
+                 placeholder="Search by name..." />
+
+        <div v-for="filter in config.featuredAttributeFilters ?? []"
+             :key="filter.attributeKey ?? ''"
+             class="form-group">
+            <RockLabel>{{ filter.label }}</RockLabel>
+            <div class="control-wrapper">
+                <ToggleChipList :items="filter.options ?? []"
+                                :modelValue="selectedItemsFor(filter)"
+                                @update:modelValue="items => setSelectedItems(filter, items)" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import ToggleChipList from "./toggleChipList.partial.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useGroupFinderFilters } from "./filterState.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GroupFinderAttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderAttributeFilterBag";
+
+    // #region Values
+
+    const { config, featuredAttributeSelections, searchTerm } = useGroupFinderFilters();
+
+    // #endregion Values
+
+    // #region Functions
+
+    // The filter state stores each attribute's selected values as a string array, so map that to the
+    // ListItemBag array the chip list binds to.
+    function selectedItemsFor(filter: GroupFinderAttributeFilterBag): ListItemBag[] {
+        const selectedValues = featuredAttributeSelections.value[filter.attributeKey ?? ""] ?? [];
+        return (filter.options ?? []).filter(option => selectedValues.includes(option.value ?? ""));
+    }
+
+    // Map the chip list's emitted items back to the attribute's stored string-array selection.
+    function setSelectedItems(filter: GroupFinderAttributeFilterBag, items: ListItemBag[]): void {
+        const key = filter.attributeKey;
+        if (!key) {
+            return;
+        }
+        featuredAttributeSelections.value = {
+            ...featuredAttributeSelections.value,
+            [key]: items.map(item => item.value ?? "")
+        };
+    }
+
+    // #endregion Functions
+</script>

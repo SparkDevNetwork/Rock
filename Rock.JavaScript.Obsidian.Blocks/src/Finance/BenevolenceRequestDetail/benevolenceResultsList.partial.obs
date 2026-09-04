@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="addResultError || deleteResultError" alertType="danger">
-        <strong><i class="ti ti-exclamation-circle"></i> Result {{ addResultError ? 'Addition' : 'Deletion' }} Error </strong>
-        <span>{{ addResultError ? addResultError : deleteResultError }}</span>
+    <NotificationBox v-if="saveResultError || deleteResultError" alertType="danger">
+        <strong><i class="ti ti-exclamation-circle"></i> Result {{ saveResultError ? 'Save' : 'Deletion' }} Error </strong>
+        <span>{{ saveResultError ? saveResultError : deleteResultError }}</span>
     </NotificationBox>
     <div>
         <Grid
@@ -32,6 +32,11 @@
                         field="resultSummary"
                         visiblePriority="xs"
                         width="60%" />
+
+            <AttributeColumns :attributes="options.resultAttributeFields ?? []"
+                              visiblePriority="md" />
+
+            <EditColumn @click="onEditResult" />
 
             <DeleteColumn @click="onResultDelete" />
         </Grid>
@@ -70,17 +75,23 @@
                          textMode="multiline" />
             </div>
         </div>
+
+        <AttributeValuesContainer v-model="resultAttributeValues"
+                                  :attributes="resultAttributes"
+                                  isEditMode
+                                  :numberOfColumns="2" />
     </Modal>
 </template>
 
 <script setup lang="ts">
     import { ref, PropType, watch, computed } from "vue";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import Grid, { TextColumn, CurrencyColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, CurrencyColumn, DeleteColumn, EditColumn } from "@Obsidian/Controls/grid";
     import { BenevolenceRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestDetailOptionsBag";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -88,6 +99,7 @@
     import { BenevolenceRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestBag";
     import { BenevolenceResultBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceResultBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -114,14 +126,20 @@
 
     const isResultModalOpen = ref(false);
     const isSaving = ref(false);
+    const isLoadingResult = ref(false);
 
-    const addResultError = ref("");
+    const saveResultError = ref("");
     const deleteResultError = ref("");
 
     const resultType = ref("");
     const resultTypeListBags = ref<ListItemBag[]>(props.options.resultTypeValues ?? []);
     const resultAmount = ref("");
     const resultDetails = ref("");
+    const resultAttributes = ref<Record<string, PublicAttributeBag>>({});
+    const resultAttributeValues = ref<Record<string, string>>({});
+
+    /** The key of the result being edited, or an empty string when adding a new result. */
+    const editingResultIdKey = ref("");
 
     const requestResults = propertyRef<BenevolenceResultBag[]>([...props.modelValue.results ?? []], "requestResults");
 
@@ -134,6 +152,7 @@
     /** Keep gridData in sync with requestResults */
     const gridData = computed((): GridDataBag => {
         const results: (Record<string, unknown> & { isSystem: boolean })[] = (requestResults.value ?? []).map(result => ({
+            ...result.attributeDisplayValues,
             idKey: result.idKey,
             resultTypeValueId: props.options.resultTypeValues?.find(type => type.value === result.resultTypeValueId.toString())?.text,
             amount: (result.amount !== null && result.amount !== undefined && !isNaN(result.amount)) ? result.amount : "",
@@ -158,6 +177,9 @@
         resultAmount.value = "";
         resultDetails.value = "";
         resultType.value = "";
+        resultAttributes.value = {};
+        resultAttributeValues.value = {};
+        editingResultIdKey.value = "";
         isSaving.value = false;
     }
 
@@ -189,7 +211,49 @@
     /**
      * Handler for Add Result button click event.
      */
-    function onAddResult(): void {
+    async function onAddResult(): Promise<void> {
+        if (isLoadingResult.value) {
+            return;
+        }
+
+        isLoadingResult.value = true;
+        saveResultError.value = "";
+
+        // The result's attributes and their default values are only known to the server.
+        const result = await invokeBlockAction<BenevolenceResultBag>(
+            "GetNewBenevolenceRequestResult",
+            { benevolenceRequestIdKey: props.modelValue.idKey }
+        );
+
+        isLoadingResult.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            saveResultError.value = result.errorMessage ?? "An unknown error occurred while trying to add a new result.";
+            return;
+        }
+
+        resultAttributes.value = result.data.attributes ?? {};
+        resultAttributeValues.value = result.data.attributeValues ?? {};
+        isResultModalOpen.value = true;
+    }
+
+    /**
+     * Handler for the grid's edit button click event.
+     * @param key The unique identifier of the result to edit.
+     */
+    function onEditResult(key: string): void {
+        const result = requestResults.value.find(result => result.idKey === key);
+
+        if (!result) {
+            return;
+        }
+
+        editingResultIdKey.value = key;
+        resultType.value = result.resultTypeValueId.toString();
+        resultAmount.value = result.amount?.toString() ?? "";
+        resultDetails.value = result.resultSummary ?? "";
+        resultAttributes.value = result.attributes ?? {};
+        resultAttributeValues.value = { ...result.attributeValues ?? {} };
         isResultModalOpen.value = true;
     }
 
@@ -201,7 +265,7 @@
     }
 
     /**
-     * Handler for Add Result Modal save event.
+     * Handler for the Result Modal save event.
      */
     async function onSaveResult(): Promise<void> {
         if (isSaving.value) {
@@ -210,28 +274,33 @@
 
         isSaving.value = true;
 
-        const newIdKey = crypto.randomUUID();
+        const isEditing = !!editingResultIdKey.value;
 
-        const newBag: BenevolenceResultBag = {
-            idKey: newIdKey,
+        const resultBag: BenevolenceResultBag = {
+            idKey: editingResultIdKey.value,
             resultTypeValueId: parseInt(resultType.value),
             amount: parseFloat(resultAmount.value),
             resultSummary: resultDetails.value,
+            attributeValues: resultAttributeValues.value
         };
 
         const result = await invokeBlockAction<BenevolenceResultBag>(
-            "AddBenevolenceRequestResult",
-            { benevolenceRequestIdKey: props.modelValue.idKey, benevolenceResultBag: newBag }
+            "SaveBenevolenceRequestResult",
+            { benevolenceRequestIdKey: props.modelValue.idKey, benevolenceResultBag: resultBag }
         );
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                newBag.idKey = result.data.idKey;
-                requestResults.value.push(newBag);
+                if (isEditing) {
+                    requestResults.value = requestResults.value.map(existing => existing.idKey === editingResultIdKey.value ? result.data as BenevolenceResultBag : existing);
+                }
+                else {
+                    requestResults.value.push(result.data);
+                }
             }
         }
         else {
-            addResultError.value = result.errorMessage ?? "Unknown error while trying to save benevolence request.";
+            saveResultError.value = result.errorMessage ?? "Unknown error while trying to save benevolence request.";
         }
 
         closeAndClearResult();

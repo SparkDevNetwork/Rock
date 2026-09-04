@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="d-flex gap-xs align-items-start justify-content-between">
-        <div class="d-flex flex-column w-100">
-            <div class="d-flex gap-xs flex-wrap w-100" ref="actionItemsContainer">
+    <div class="action-items">
+        <div class="action-items-primary">
+            <div class="action-items-row" ref="actionItemsContainer">
                 <RockButton v-for="actionItem in rowActions"
                             :btnSize="BtnSize.Small"
                             @click="onActionClick(actionItem)">
@@ -11,7 +11,7 @@
             </div>
             <TransitionVerticalCollapse>
                 <div v-show="areActionItemsExpanded">
-                    <div class="d-flex gap-xs flex-wrap w-100 mt-spacing-xs">
+                    <div class="action-items-row action-items-row--expanded">
                         <RockButton v-for="actionItem in hiddenActions"
                                     :btnSize="BtnSize.Small"
                                     @click="onActionClick(actionItem)">
@@ -21,7 +21,7 @@
                 </div>
             </TransitionVerticalCollapse>
         </div>
-        <div v-if="hiddenActions.length > 0" class="d-flex align-items-center gap-xs">
+        <div v-if="hiddenActions.length > 0" class="action-items-toggle">
             <div v-if="!areActionItemsExpanded" class="text-interface-medium">+{{ hiddenActions.length }}</div>
             <RockButton @click="toggleActionItems">
                 <i v-if="areActionItemsExpanded" class="ti ti-chevrons-up"></i>
@@ -30,12 +30,6 @@
         </div>
     </div>
 </template>
-
-<style scoped>
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
-</style>
 
 <script setup lang="ts">
     import { ref, PropType, watch, computed, onBeforeUnmount, onMounted, nextTick } from "vue";

@@ -29,48 +29,6 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void FinancialTransactionDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                FinancialTransaction financialTransaction = new FinancialTransaction();
-                financialTransaction.TransactionDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, financialTransaction.TransactionDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void FinancialTransactionDateKeyWorksWithNullValue()
-        {
-            var financialTransaction = new Rock.Model.FinancialTransaction();
-            financialTransaction.TransactionDateTime = null;
-            Assert.IsNull( financialTransaction.TransactionDateKey );
-        }
-
-        [TestMethod]
-        public void SettledDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                FinancialTransaction financialTransaction = new FinancialTransaction();
-                financialTransaction.SettledDate = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, financialTransaction.SettledDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void SettledDateKeyWorksWithNullValue()
-        {
-            var financialTransaction = new Rock.Model.FinancialTransaction();
-            financialTransaction.SettledDate = null;
-            Assert.IsNull( financialTransaction.SettledDateKey );
-        }
-
-        [TestMethod]
         public void FinancialTransactionDateKeySavesCorrectly()
         {
             var rockContext = new RockContext();

@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Newtonsoft.Json;
 
 using Rock.AI.Classes.TextCompletions;
@@ -24,6 +26,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
     /// <summary>
     /// The Choice data for the Response object for a completion.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAITextCompletionsResponseChoice
     {
         #region Properties

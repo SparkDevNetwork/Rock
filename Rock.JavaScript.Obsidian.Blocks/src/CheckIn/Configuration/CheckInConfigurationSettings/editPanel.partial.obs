@@ -9,7 +9,9 @@
                     </div>
 
                     <div class="col-md-6">
-                        <IconPicker v-model="iconCssClass" label="Icon" />
+                        <IconPicker v-model="iconCssClass"
+                                    label="Icon"
+                                    help="The icon class to use when displaying check-in of this check-in type." />
                     </div>
                 </div>
 
@@ -43,7 +45,7 @@
 
                     <InlineCheckBox v-model="useSameOptions"
                                     label="Reuse Selections for Additional Service Times"
-                                    help="When a family member is checking in to multiple services, reuse their first service's selections (area, group, location) for each additional service." />
+                                    help="When a family member is checking into multiple services, reuse their first service's selections (area, group, location) for each additional service." />
 
                     <InlineCheckBox v-model="preventDuplicateCheckin"
                                     label="Prevent Duplicate Check-in"
@@ -82,7 +84,7 @@
 
                 <InlineCheckBox v-model="displayLocationCount"
                                 label="Display Location Occupancy Count"
-                                help="Should the room location selection buttons include a count of how many people are currently checked in to that location?"
+                                help="Should the room location selection buttons include a count of how many people are currently checked into that location?"
                                 trailblazerField />
 
                 <DropDownList v-model="achievementTypes"
@@ -188,7 +190,7 @@
 
                 <InlineCheckBox v-model="useSameCodeForFamily"
                                 label="Use Same Code for Family"
-                                help="Use the same security code for everyone being checked in together. Only applies when checking in multiple people at the same time, such as during family check-in." />
+                                help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
             </ContentStack>
         </ContentSection>
 
@@ -401,7 +403,7 @@
                           description="Configure requirements like age, grade, or ability level, enable proximity check-in, and filter who can check in.">
                 <RadioButtonList v-model="abilityLevelDetermination"
                                  label="Ability Level Determination"
-                                 help="Determines how check-in should gather the individual's current ability level.<ul><li>'Ask' means that the individual will be asked as a part of each check-in.</li><li>'Don't Ask' will trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.</li><li>'Don't Ask If There Is No Ability Level' will only ask if the individual does <b>not</b> already have an ability level. This will allow a person's ability level to be updated during the check-in process but not initially set.</li><li>'Don't Ask If There Is An Ability Level' will only ask if the individual <b>does</b> already have an ability level (this is only supported in next-gen check-in).</li></ul>"
+                                 help="Determines how check-in should gather the individual's current ability level.<ul><li>'Ask' means that the individual will be asked as a part of each check-in.</li><li>'Do Not Ask' will trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.</li><li>'Do Not Ask If There Is No Ability Level' will only ask if the individual <strong>does</strong> already have an ability level. This will allow a person's ability level to be updated during the check-in process but not initially set.</li><li>'Do Not Ask If There Is An Ability Level' will only ask if the individual does <strong>not</strong> already have an ability level (this is only supported in next-gen check-in).</li></ul>"
                                  :items="abilityLevelDeterminationItems"
                                  trailblazerField />
 
@@ -582,7 +584,7 @@
     import { AdultsOrChildrenSelectionMode, AdultsOrChildrenSelectionModeDescription } from "@Obsidian/Enums/CheckIn/adultsOrChildrenSelectionMode";
     import { AgeRestrictionMode } from "@Obsidian/Enums/CheckIn/ageRestrictionMode";
     import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
-    import { AutoSelectMode, AutoSelectModeDescription } from "@Obsidian/Enums/CheckIn/autoSelectMode";
+    import { AutoSelectMode } from "@Obsidian/Enums/CheckIn/autoSelectMode";
     import { AgeRestrictionModeDescription } from "@Obsidian/Enums/CheckIn/ageRestrictionMode";
     import { GradeAndAgeMatchingMode, GradeAndAgeMatchingModeDescription } from "@Obsidian/Enums/CheckIn/gradeAndAgeMatchingMode";
     import { PhoneSearchMode, PhoneSearchModeDescription } from "@Obsidian/Enums/CheckIn/phoneSearchMode";
@@ -640,8 +642,17 @@
     /** The selectable check-in type options. */
     const checkInTypeItems = enumToListItemBag(CheckInTypeDescription);
 
+    /**
+     * Auto-select option labels, overriding the generated enum description so
+     * the combined option reads "People & Their Area/Group/Location".
+     */
+    const autoSelectModeLabels: Record<number, string> = {
+        [AutoSelectMode.PeopleOnly]: "People Only",
+        [AutoSelectMode.PeopleAndAreaGroupLocation]: "People & Their Area/Group/Location"
+    };
+
     /** The selectable auto-select options. */
-    const autoSelectOptionsItems = enumToListItemBag(AutoSelectModeDescription);
+    const autoSelectOptionsItems = enumToListItemBag(autoSelectModeLabels);
 
     /** The selectable phone-number comparison method options. */
     const phoneSearchTypeItems = enumToListItemBag(PhoneSearchModeDescription);

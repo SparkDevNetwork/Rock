@@ -26,22 +26,53 @@
                   @submit="onFormSubmitted">
             <div class="row">
                 <div class="col-xs-12">
-                    <RecipientPicker v-if="!config.communication || !internalCommunicationListGroupGuid"
-                                     v-model="internalRecipients"
-                                     v-model:disabled="internalDisabled"
-                                     :isAddHidden="config.mode !== Mode.Full"
-                                     :isForBulkCommunication="isBulkCommunication"
-                                     label="Recipients"
-                                     mediumType="push"
-                                     :minimumRecipientCount="minimumRecipientCount" />
-                    <template v-else>
+                    <template v-if="showLockedListSummary">
                         <RockLabel>Recipients</RockLabel>
-                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${recipients.length} individuals)`">
+                        <StaticFormControl :modelValue="`Communication List: ${config.communication?.communicationListName} (${recipients.length} individuals)`">
                             <template #default="{ value }">
-                                {{ value }} <RockButton btnType="link" btnSize="sm" :disabled="disabled" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
+                                {{ value }} <RockButton v-if="config.mode === Mode.Full" btnType="link" btnSize="sm" :disabled="disabled" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
                             </template>
                         </StaticFormControl>
                     </template>
+                    <template v-else>
+                        <TransitionVerticalCollapse>
+                            <div v-if="showListSelector" class="row">
+                                <div class="col-sm-6">
+                                    <div class="d-flex">
+                                        <div class="flex-fill">
+                                            <DropDownList v-model="selectedCommunicationListValue"
+                                                          :disabled="disabled"
+                                                          :items="communicationListItems"
+                                                          label="Communication List"
+                                                          help="Choose a list of people to send your communication to. These lists are defined in Settings/Communication Settings." />
+                                        </div>
+                                        <div v-if="isCommunicationListMode" class="form-group ml-2">
+                                            <RockLabel>&nbsp;</RockLabel>
+                                            <div class="control-wrapper">
+                                                <RockButton btnSize="sm" :disabled="disabled" @click="onViewListClicked"><i class="ti ti-eye"></i> View List</RockButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </TransitionVerticalCollapse>
+                        <TransitionVerticalCollapse>
+                            <RecipientPicker v-if="showManualPicker"
+                                             v-model="internalRecipients"
+                                             v-model:disabled="internalDisabled"
+                                             :isAddHidden="config.mode !== Mode.Full"
+                                             :isForBulkCommunication="isBulkCommunication"
+                                             label="Recipients"
+                                             mediumType="push"
+                                             :minimumRecipientCount="minimumRecipientCount" />
+                        </TransitionVerticalCollapse>
+                    </template>
+
+                    <RecipientModal v-model="isListPreviewShown"
+                                    :recipients="communicationListRecipients"
+                                    :isForBulkCommunication="isBulkCommunication"
+                                    isAddHidden
+                                    disabled />
                 </div>
             </div>
 
@@ -159,6 +190,8 @@
     import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
     import Delay from "./delay.partial.obs";
     import RecipientPicker from "./recipientPicker.partial.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import RecipientModal from "./recipientModal.partial.obs";
     import ScheduleSend from "./scheduleSend.partial.obs";
     import { getAlertType, removeQueryParams, scrollToTopOfWindow, useBreakpointHelper, useTemplate } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -224,6 +257,11 @@
             required: true
         },
 
+        communicationListRecipients: {
+            type: Array as PropType<CommunicationEntryRecipientBag[]>,
+            required: false,
+            default: () => []
+        },
         communicationListGroupGuid: {
             type: String as PropType<Guid | null | undefined>,
             required: true
@@ -291,6 +329,9 @@
     const mobilePageQueryStringItems = ref<KeyValueItem[] | undefined>(recordAsKeyValueItems(template.value?.pushData?.mobilePageQueryString ?? undefined));
     const pushOpenMessageJson = ref<string>(template.value?.pushOpenMessageJson ?? "");
 
+    const manualRecipientListValue = "manual";
+    const isListPreviewShown = ref<boolean>(false);
+
     //#endregion
 
     //#region Computed Values
@@ -344,6 +385,37 @@
                     value: OpenAction.LinkToUrl
                 }
             ];
+        }
+    });
+
+    // Recipient editing is governed by the block Mode (Simple locks, Full edits), mirroring the
+    // wizard. A communication launched with individual recipients also locks its source to manual,
+    // but only while those recipients remain; clearing them all releases the list selector.
+    const hasCommunicationList = computed<boolean>(() => !!config.communication?.communicationListGroupGuid);
+
+    const isLaunchedWithIndividualRecipients = computed<boolean>(() => (config.communication?.recipients?.length ?? 0) > 0 && !hasCommunicationList.value);
+
+    const isManualRecipientSourceLocked = computed<boolean>(() => isLaunchedWithIndividualRecipients.value && internalRecipients.value.length > 0);
+
+    const showListSelector = computed<boolean>(() => config.mode === Mode.Full && config.isCommunicationListSelectionEnabled === true && !isManualRecipientSourceLocked.value);
+
+    const showLockedListSummary = computed<boolean>(() => hasCommunicationList.value && !showListSelector.value);
+
+    const isCommunicationListMode = computed<boolean>(() => !!internalCommunicationListGroupGuid.value);
+
+    const showManualPicker = computed<boolean>(() => !showListSelector.value || !isCommunicationListMode.value);
+
+    const communicationListItems = computed<ListItemBag[]>(() => [
+        { value: manualRecipientListValue, text: "Manual Recipient List" },
+        ...(config.communicationListGroups ?? [])
+    ]);
+
+    const selectedCommunicationListValue = computed<string>({
+        get(): string {
+            return internalCommunicationListGroupGuid.value ?? manualRecipientListValue;
+        },
+        set(value: string): void {
+            onCommunicationListSelected(value);
         }
     });
 
@@ -665,6 +737,24 @@
         // We already have the communication list recipients in memory.
         // Just remove the unique identifier link and trigger a UI update.
         internalCommunicationListGroupGuid.value = null;
+    }
+
+    /** Updates the recipient source when the communication list dropdown changes. */
+    function onCommunicationListSelected(value: string): void {
+        if (value === manualRecipientListValue) {
+            internalCommunicationListGroupGuid.value = null;
+        }
+        else {
+            internalCommunicationListGroupGuid.value = toGuidOrNull(value);
+            // Switching to a list takes over recipient selection, so any
+            // manually entered recipients are cleared.
+            internalRecipients.value = [];
+        }
+    }
+
+    /** Opens the recipient preview modal for the selected list. */
+    function onViewListClicked(): void {
+        isListPreviewShown.value = true;
     }
 
     /**

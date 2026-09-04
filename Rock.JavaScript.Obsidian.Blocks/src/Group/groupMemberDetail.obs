@@ -1,0 +1,1175 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
+
+    <RockForm v-else v-model:submit="submitForm" @submit="onSave">
+        <Panel type="block"
+               :title="panelTitle"
+               :titleIconCssClass="options.groupIconCssClass || 'ti ti-user'"
+               :headerSecondaryActions="headerSecondaryActions">
+
+            <template #headerActions>
+                <HighlightLabel v-if="options.isArchived" labelType="danger">Archived</HighlightLabel>
+                <HighlightLabel v-if="options.addedDateText" labelType="default">{{ options.addedDateText }}</HighlightLabel>
+                <button v-if="options.isCommunicationButtonShown"
+                        type="button"
+                        class="btn btn-panel-action"
+                        title="Quick Communication"
+                        @click="onShowCommunicationModal">
+                    <i class="ti ti-message-circle"></i>
+                </button>
+                <button v-if="options.isMoveButtonShown"
+                        type="button"
+                        class="btn btn-panel-action"
+                        title="Move to another group"
+                        @click="onShowMoveModal">
+                    <i class="ti ti-external-link"></i>
+                </button>
+            </template>
+
+            <NotificationBox v-if="formErrors.length" ref="formErrorNotificationBox" alertType="validation">
+                Please correct the following:
+                <ul>
+                    <li v-for="formError in formErrors" :key="formError" v-html="formError"></li>
+                </ul>
+            </NotificationBox>
+            <NotificationBox v-if="options.editModeMessage" alertType="info" v-html="options.editModeMessage" />
+
+            <NotificationBox v-if="communicationSuccessMessage" alertType="success" dismissible @dismiss="communicationSuccessMessage = ''">
+                {{ communicationSuccessMessage }}
+            </NotificationBox>
+
+            <ContentSectionContainer :sidebar="false">
+                <ContentSection disableCollapse
+                                light>
+                    <div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <PersonPicker v-if="!isExistingMember"
+                                              v-model="person"
+                                              label="Person"
+                                              rules="required"
+                                              :disabled="isFormDisabled" />
+                                <StaticFormControl v-else label="Person" :modelValue="personName">
+                                    <div class="d-flex align-items-center">
+                                        <PersonAvatar :personIdKey="options.personIdKey ?? ''"
+                                                      :photoUrl="options.personPhotoUrl ?? ''"
+                                                      marginRight="sm"
+                                                      enableHoverInfo />
+                                        <span>{{ personName }}</span>
+                                    </div>
+
+                                    <div v-if="linkedRegistrations.length > 0" class="mt-3">
+                                        <RockLabel>Registrations</RockLabel>
+                                        <div v-for="registration in linkedRegistrations" :key="registration.value ?? ''">
+                                            <a :href="registration.value ?? ''">{{ registration.text }}</a>
+                                        </div>
+                                    </div>
+                                </StaticFormControl>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <DropDownList v-model="roleId"
+                                              label="Role"
+                                              :help="options.roleLockedMessage || 'The role this person holds within the group.'"
+                                              :items="options.roleItems ?? []"
+                                              :showBlankItem="false"
+                                              rules="required"
+                                              :disabled="isFormDisabled || isRefreshingRequirements || options.isRoleLockedBySync" />
+                            </div>
+                        </div>
+
+                        <template v-if="options.hasGroupRequirements && !options.areRequirementsHidden">
+                            <div class="mb-3">
+                                <RockButton :btnSize="BtnSize.Small" :disabled="isRefreshingRequirements" @click="onRefreshRequirements">
+                                    <i class="ti ti-refresh" :class="{ 'ti-spin': isRefreshingRequirements }"></i> Refresh Requirements
+                                </RockButton>
+                                <Transition name="fade">
+                                    <span v-if="isRefreshSuccessShown" class="text-success ml-2">
+                                        <i class="ti ti-circle-check"></i> Successfully Refreshed
+                                    </span>
+                                </Transition>
+                            </div>
+
+                            <NotificationBox v-if="options.requirementCalculationErrors"
+                                             alertType="danger">
+                                An error occurred in one or more of the requirement calculations.
+                                <template #details>
+                                    <span style="white-space: pre-line;">{{ options.requirementCalculationErrors }}</span>
+                                </template>
+                            </NotificationBox>
+
+                            <div v-if="requirementAlerts.length" class="row d-flex flex-wrap">
+                                <div v-for="requirementAlert in requirementAlerts"
+                                     :key="requirementAlert.groupRequirementGuid"
+                                     class="col-md-4 mb-3 pr-0">
+                                    <div class="alert h-100 mb-0 d-flex" :class="getRequirementAlertClass(requirementAlert)">
+                                        <span v-if="requirementAlert.typeIconCssClass" class="flex-shrink-0 mr-2">
+                                            <i :class="requirementAlert.typeIconCssClass"></i>
+                                        </span>
+                                        <div class="flex-fill d-flex flex-column">
+                                            <div>
+                                                <strong>{{ requirementAlert.title }}</strong>
+                                                <span v-if="requirementAlert.dueDateText && !isRequirementResolved(requirementAlert)" class="small ml-2">{{ requirementAlert.dueDateText }}</span>
+                                                <i v-if="requirementAlert.overriddenText"
+                                                   class="ti ti-user-check ml-1"
+                                                   :title="requirementAlert.overriddenText"></i>
+                                            </div>
+                                            <div>{{ getRequirementStatusText(requirementAlert) }}</div>
+                                            <div v-if="requirementAlert.summary" class="mt-3">{{ requirementAlert.summary }}</div>
+                                            <div v-if="isRequirementInteractionShown(requirementAlert)" class="d-flex flex-wrap gap-3 mt-auto pt-3">
+                                                <InlineCheckBox v-if="isEditable && isManualCheckboxShown(requirementAlert)"
+                                                                :label="requirementAlert.manualCheckboxLabel ?? ''"
+                                                                :modelValue="isManualChecked(requirementAlert)"
+                                                                @update:modelValue="onToggleManualRequirement(requirementAlert, $event)" />
+                                                <InlineCheckBox v-if="isEditable && requirementAlert.canOverride"
+                                                                label="Mark as Met"
+                                                                :modelValue="isOverrideChecked(requirementAlert)"
+                                                                @update:modelValue="onToggleOverrideRequirement(requirementAlert, $event)" />
+                                                <template v-if="areWorkflowLinksShown(requirementAlert)">
+                                                    <a v-if="requirementAlert.doesNotMeetWorkflowLinkText" href="#" :class="{ disabled: isLaunchingWorkflow(requirementAlert, false) }" :aria-disabled="isLaunchingWorkflow(requirementAlert, false)" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, false)">
+                                                        <i class="ti" :class="isLaunchingWorkflow(requirementAlert, false) ? 'ti-refresh ti-spin' : 'ti-player-play'"></i> {{ requirementAlert.doesNotMeetWorkflowLinkText }}
+                                                    </a>
+                                                    <a v-if="requirementAlert.warningWorkflowLinkText" href="#" :class="{ disabled: isLaunchingWorkflow(requirementAlert, true) }" :aria-disabled="isLaunchingWorkflow(requirementAlert, true)" @click.prevent="onLaunchRequirementWorkflow(requirementAlert, true)">
+                                                        <i class="ti" :class="isLaunchingWorkflow(requirementAlert, true) ? 'ti-refresh ti-spin' : 'ti-player-play'"></i> {{ requirementAlert.warningWorkflowLinkText }}
+                                                    </a>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <RadioButtonList v-model="memberStatus"
+                                                 :label="`${options.groupMemberTerm || 'Member'} Status`"
+                                                 help="Whether this member is pending, active, or inactive in the group."
+                                                 :items="options.statusItems ?? []"
+                                                 :disabled="isFormDisabled" />
+                            </div>
+                        </div>
+
+                        <TextBox v-model="note"
+                                 label="Note"
+                                 help="Internal notes about this member's involvement in the group."
+                                 textMode="multiline"
+                                 :rows="4"
+                                 :disabled="isFormDisabled" />
+                    </div>
+                </ContentSection>
+
+                <ContentSection v-if="isAttributesSectionShown" title="Attributes" icon="ti ti-list-details">
+                    <ContentStack v-if="hasEditableAttributes || hasViewableAttributes"
+                                  title="Group Member Attributes"
+                                  description="Additional information tracked for this member within the group.">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <AttributeValuesContainer v-if="hasEditableAttributes"
+                                                          v-model="attributeValues"
+                                                          :attributes="attributes"
+                                                          isEditMode
+                                                          :numberOfColumns="1" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <AttributeValuesContainer v-if="hasViewableAttributes"
+                                                          :modelValue="options.viewableAttributeValues ?? {}"
+                                                          :attributes="options.viewableAttributes ?? {}"
+                                                          :showCategoryLabel="false"
+                                                          :numberOfColumns="1" />
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack v-if="hasEditableAssignmentAttributes || hasViewableAssignmentAttributes"
+                                  title="Group Member Assignment Attributes"
+                                  description="Additional information tracked for this member's assignment.">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <AttributeValuesContainer v-if="hasEditableAssignmentAttributes"
+                                                          v-model="assignmentAttributeValues"
+                                                          :attributes="options.assignmentAttributes ?? {}"
+                                                          isEditMode
+                                                          :numberOfColumns="1" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <AttributeValuesContainer v-if="hasViewableAssignmentAttributes"
+                                                          :modelValue="options.viewableAssignmentAttributeValues ?? {}"
+                                                          :attributes="options.viewableAssignmentAttributes ?? {}"
+                                                          :showCategoryLabel="false"
+                                                          :numberOfColumns="1" />
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection v-if="options.isSchedulingEnabled" title="Scheduling" icon="ti ti-calendar" isCollapsed>
+                    <ContentStack title="Schedule Settings"
+                                  description="Configure this member's serving schedule.">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <DropDownList v-model="scheduleTemplateId"
+                                              label="Schedule Template"
+                                              help="The recurring schedule template this member follows for serving."
+                                              :items="options.scheduleTemplateItems ?? []"
+                                              :disabled="isFormDisabled" />
+
+                                <DatePicker v-model="scheduleStartDate"
+                                            label="Schedule Start Date"
+                                            help="The date this member's schedule template takes effect."
+                                            :rules="scheduleTemplateId ? 'required' : ''"
+                                            :disabled="isFormDisabled" />
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Assignment Preferences"
+                                  description="Set the times and locations this member prefers to be scheduled for.">
+                        <Grid light
+                              keyField="guid"
+                              :data="assignmentGridData"
+                              itemTerm="Assignment Preference"
+                              :onAddItem="isEditable ? onAddAssignment : undefined">
+                            <TextColumn name="schedule" title="Schedule" field="schedule" />
+                            <TextColumn name="location" title="Location" field="location" />
+                            <EditColumn v-if="isEditable" @click="onEditAssignment" />
+                            <DeleteColumn v-if="isEditable" disableConfirmation @click="onDeleteAssignment" />
+                        </Grid>
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection title="Communication" icon="ti ti-message" isCollapsed>
+                    <ContentStack title="Preferences"
+                                  description="Set how this member prefers to be contacted.">
+                        <RadioButtonList v-model="communicationPreference"
+                                         label="Communication Preference"
+                                         help="How this member prefers to be contacted about group communications."
+                                         :items="options.communicationPreferenceItems ?? []"
+                                         :disabled="isFormDisabled" />
+                    </ContentStack>
+
+                    <ContentStack v-if="options.isNotifiedShown || options.isSchedulingEnabled"
+                                  title="Notifications & Reminders"
+                                  description="Set when group leaders are notified and how far in advance reminder emails go out.">
+                        <InlineCheckBox v-if="options.isNotifiedShown"
+                                        v-model="isNotified"
+                                        label="Group Leaders Notified"
+                                        help="Whether the group's leaders have already been notified about this member. Leave unchecked to let the notification job announce them."
+                                        :disabled="isFormDisabled" />
+
+                        <div v-if="options.isSchedulingEnabled" class="row">
+                            <div class="col-md-4">
+                                <NumberBox v-model="scheduleReminderEmailOffsetDays"
+                                           label="Email Reminder Lead Time"
+                                           help="Days before a scheduled occurrence to send this member's reminder. Leave blank to use the group's default."
+                                           :disabled="isFormDisabled">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">Days</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection v-if="!!options.signatureDocument || options.areChatPreferencesShown" title="Administration" icon="ti ti-file-settings" isCollapsed>
+                    <ContentStack v-if="options.signatureDocument"
+                                  title="Required Signed Documents"
+                                  description="Store basic information required for this group member.">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <FileUploader v-model="signedDocument"
+                                              :label="options.signatureDocument.templateName ?? 'Signed Document'"
+                                              :binaryFileTypeGuid="options.signatureDocument.binaryFileTypeGuid ?? ''"
+                                              :disabled="isFormDisabled" />
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack v-if="options.areChatPreferencesShown"
+                                  title="Chat Settings"
+                                  description="Control this member's chat access.">
+                        <InlineCheckBox v-model="isChatMuted"
+                                        label="Chat Muted"
+                                        help="Whether chat notifications are muted for this person in this group."
+                                        :disabled="isFormDisabled" />
+                        <InlineCheckBox v-model="isChatBanned"
+                                        label="Chat Banned"
+                                        help="Whether this person is banned from the group's chat channel."
+                                        :disabled="isFormDisabled" />
+                    </ContentStack>
+                </ContentSection>
+            </ContentSectionContainer>
+
+            <template #footerActions>
+                <RockButton v-if="isEditable" :btnType="BtnType.Primary" :disabled="isSaving || isPersonDataLoading" @click="onStartSubmitForm">Save</RockButton>
+                <RockButton v-if="options.isSaveThenAddShown" :btnType="BtnType.Link" :disabled="isSaving || isPersonDataLoading" @click="onSaveThenAdd">Save Then Add</RockButton>
+                <RockButton :btnType="BtnType.Link" @click="onCancel">Cancel</RockButton>
+            </template>
+        </Panel>
+    </RockForm>
+
+    <Modal v-model="isAuditModalShown" title="Audit Details">
+        <AuditDetail :entityTypeGuid="EntityType.GroupMember" :entityKey="groupMemberIdKey" />
+    </Modal>
+
+    <AssignmentPreferenceModal v-model="isAssignmentModalShown"
+                               :groupMemberIdKey="groupMemberIdKey"
+                               :assignment="editingAssignment"
+                               :usedScheduleIds="usedScheduleIds"
+                               @save="onSaveAssignment" />
+    <RestoreArchivedModal v-model="isRestoreModalShown"
+                          :message="restorePromptMessage"
+                          @restore="onRestoreArchivedMember"
+                          @decline="onDeclineRestore" />
+    <MoveGroupMemberModal v-model="isMoveModalShown"
+                          :groupMemberIdKey="groupMemberIdKey" />
+    <QuickCommunicationModal v-model="isCommunicationModalShown"
+                             :groupMemberIdKey="groupMemberIdKey"
+                             @sent="onCommunicationSent" />
+</template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+a.disabled {
+    pointer-events: none;
+    opacity: 0.65;
+    cursor: default;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import Grid, { TextColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import AssignmentPreferenceModal from "./GroupMemberDetail/assignmentPreferenceModal.partial.obs";
+    import RestoreArchivedModal from "./GroupMemberDetail/restoreArchivedModal.partial.obs";
+    import MoveGroupMemberModal from "./GroupMemberDetail/moveGroupMemberModal.partial.obs";
+    import QuickCommunicationModal from "./GroupMemberDetail/quickCommunicationModal.partial.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { GroupMemberStatus } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { alert as showAlert } from "@Obsidian/Utility/dialogs";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberBag";
+    import { GroupMemberDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberDetailOptionsBag";
+    import { GroupMemberRequirementAlertBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupMemberRequirementAlertBag";
+    import { RefreshRequirementsResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/refreshRequirementsResponseBag";
+    import { LaunchRequirementWorkflowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/launchRequirementWorkflowResponseBag";
+    import { SaveGroupMemberResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/saveGroupMemberResponseBag";
+    import { GroupScheduleAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberDetail/groupScheduleAssignmentBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    // #region Types
+
+    const enum NavigationUrlKey {
+        ParentPage = "ParentPage"
+    }
+
+    // #endregion Types
+
+    const config = useConfigurationValues<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    // #region Values
+
+    const blockError = ref(config.errorMessage ?? "");
+
+    /** Form-level errors from block actions, shown together in the validation summary box. */
+    const formErrors = ref<string[]>([]);
+
+    // The top-of-block error summary, scrolled into view when an action fails (it only exists while formErrors is set).
+    const formErrorNotificationBox = ref<InstanceType<typeof NotificationBox> | null>(null);
+    const submitForm = ref(false);
+
+    const options = ref(config.options ?? ({} as GroupMemberDetailOptionsBag));
+
+    const isAuditModalShown = ref(false);
+    const isAssignmentModalShown = ref(false);
+    const isRestoreModalShown = ref(false);
+    const isMoveModalShown = ref(false);
+    const isCommunicationModalShown = ref(false);
+
+    const isEditable = ref(config.isEditable === true);
+
+    /** The saved member's IdKey. Empty while adding, and set once the sign-up flow swaps in an existing member. */
+    const groupMemberIdKey = ref(config.entity?.idKey ?? "");
+
+    const isRefreshSuccessShown = ref(false);
+    const isRefreshingRequirements = ref(false);
+
+    /** The key of the requirement workflow link currently launching, so that link stays disabled until the action returns. */
+    const launchingWorkflowKey = ref<string | null>(null);
+
+    /** Hides the "Successfully Refreshed" message a few seconds after it appears. */
+    let refreshSuccessTimer: ReturnType<typeof setTimeout> | undefined;
+
+    /** True while the data for a newly selected person is loading, locking the form until it lands. */
+    const isPersonDataLoading = ref(false);
+
+    const isSaving = ref(false);
+
+    /** True when the pending save should reload the page in add mode. */
+    const isSaveThenAdd = ref(false);
+
+    // Restore prompt state from the last Save response.
+    const restorePromptMessage = ref("");
+    const archivedGroupMemberIdKey = ref("");
+
+    /** Suppresses the person and role watchers while a whole detail box is being applied. */
+    let isApplyingDetailBox = false;
+
+    // Member details section.
+    const person = ref<ListItemBag | undefined>(config.entity?.person ?? undefined);
+    const roleId = ref(config.entity?.groupRoleId?.toString() ?? "");
+    const memberStatus = ref(config.entity?.groupMemberStatus?.toString() ?? "");
+    const note = ref(config.entity?.note ?? "");
+
+    // Attributes section. The entity bag carries the editable set; the
+    // view-only set rides in the options bag since it never posts back.
+    const attributes = ref(config.entity?.attributes ?? {});
+    const attributeValues = ref(config.entity?.attributeValues ?? {});
+
+    /** Sign-up assignment attribute values; the definitions ride in the options bag. */
+    const assignmentAttributeValues = ref(config.entity?.assignmentAttributeValues ?? {});
+
+    // Scheduling section. Assignment rows are edited client-side and
+    // reconciled against GroupMemberAssignment records on save.
+    const scheduleTemplateId = ref(config.entity?.scheduleTemplateId?.toString() ?? "");
+    const scheduleStartDate = ref(config.entity?.scheduleStartDate ?? "");
+    const scheduleAssignments = ref<GroupScheduleAssignmentBag[]>(config.entity?.scheduleAssignments ?? []);
+
+    /** The assignment row being edited in the Assignment Preference modal, or null while adding. */
+    const editingAssignment = ref<GroupScheduleAssignmentBag | null>(null);
+
+    // Communication section.
+    const communicationPreference = ref(config.entity?.communicationPreference?.toString() ?? "");
+    const isNotified = ref(config.entity?.isNotified === true);
+    const scheduleReminderEmailOffsetDays = ref<number | null>(config.entity?.scheduleReminderEmailOffsetDays ?? null);
+
+    /** The panel-level green alert after a quick communication sends. */
+    const communicationSuccessMessage = ref("");
+
+    // Administration section.
+    const signedDocument = ref<ListItemBag | undefined>(config.entity?.signedDocument ?? undefined);
+    const isChatMuted = ref(config.entity?.isChatMuted === true);
+    const isChatBanned = ref(config.entity?.isChatBanned === true);
+
+    // Requirement resolution checkboxes, held client-side and written with the member on save.
+    // A resolution already stored in the database presents as met with no checkbox, so these
+    // only ever hold unsaved toggles.
+    const checkedManualRequirementGuids = ref<string[]>([]);
+    const checkedOverrideRequirementGuids = ref<string[]>([]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The person's name once the member exists, or the add-mode title built from the group type's terms. */
+    const panelTitle = computed((): string => {
+        return isExistingMember.value
+            ? personName.value
+            : `Add ${options.value.groupTerm || "Group"} ${options.value.groupMemberTerm || "Member"}`;
+    });
+
+    /** The header ellipsis menu; Audit Details only applies once the record exists. */
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        if (!isExistingMember.value) {
+            return [];
+        }
+
+        return [{
+            type: "default",
+            title: "Audit Details",
+            handler: () => {
+                isAuditModalShown.value = true;
+            }
+        }];
+    });
+
+    /** True once the member record exists; the person can no longer change. */
+    const isExistingMember = computed((): boolean => {
+        return !!groupMemberIdKey.value;
+    });
+
+    const personName = computed((): string => {
+        return person.value?.text ?? "";
+    });
+
+    const linkedRegistrations = computed((): ListItemBag[] => {
+        return options.value.linkedRegistrations ?? [];
+    });
+
+    const requirementAlerts = computed((): GroupMemberRequirementAlertBag[] => {
+        return options.value.requirementAlerts ?? [];
+    });
+
+    /** True when the form inputs are disabled, from read-only rights or a person data load in flight. */
+    const isFormDisabled = computed((): boolean => {
+        return !isEditable.value || isPersonDataLoading.value;
+    });
+
+    const hasEditableAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    const hasViewableAttributes = computed((): boolean => {
+        return Object.keys(options.value.viewableAttributes ?? {}).length > 0;
+    });
+
+    const hasEditableAssignmentAttributes = computed((): boolean => {
+        return Object.keys(options.value.assignmentAttributes ?? {}).length > 0;
+    });
+
+    /** The assignment sets are only populated in sign-up mode, which also gates that stack to the mode. */
+    const hasViewableAssignmentAttributes = computed((): boolean => {
+        return Object.keys(options.value.viewableAssignmentAttributes ?? {}).length > 0;
+    });
+
+    /** The assignment rows sorted like the WebForms grid: schedule order, then next start. */
+    const assignmentGridData = computed((): GridDataBag => ({
+        rows: [...scheduleAssignments.value]
+            .sort((a, b) => (a.scheduleOrder - b.scheduleOrder)
+                || (a.scheduleNextStartDateTime ?? "").localeCompare(b.scheduleNextStartDateTime ?? "")
+                || (a.formattedScheduleName ?? "").localeCompare(b.formattedScheduleName ?? "")
+                || (a.scheduleId - b.scheduleId)
+                || (a.locationName ?? "").localeCompare(b.locationName ?? ""))
+            .map(a => ({
+                guid: a.guid,
+                schedule: a.formattedScheduleName,
+                location: a.locationName
+            }))
+    }));
+
+    /** Schedule ids already assigned, so the modal offers each schedule once. */
+    const usedScheduleIds = computed((): number[] => {
+        return scheduleAssignments.value.map(a => a.scheduleId);
+    });
+
+    /** True when any attribute stack has attributes to show. */
+    const isAttributesSectionShown = computed((): boolean => {
+        return hasEditableAttributes.value
+            || hasViewableAttributes.value
+            || hasEditableAssignmentAttributes.value
+            || hasViewableAssignmentAttributes.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Starts the RockForm submit so validation runs before onSave.
+     */
+    function onStartSubmitForm(): void {
+        isSaveThenAdd.value = false;
+        submitForm.value = true;
+    }
+
+    /**
+     * Starts the RockForm submit for a save that reloads in add mode.
+     */
+    function onSaveThenAdd(): void {
+        isSaveThenAdd.value = true;
+        submitForm.value = true;
+    }
+
+    /**
+     * Saves the group member once the RockForm validation passes.
+     */
+    async function onSave(): Promise<void> {
+        await saveGroupMember(false);
+    }
+
+    /**
+     * Restores the archived member the Save response found, then reloads
+     * the block on the restored record.
+     */
+    async function onRestoreArchivedMember(): Promise<void> {
+        const result = await invokeBlockAction<string>("RestoreArchivedGroupMember", {
+            archivedGroupMemberIdKey: archivedGroupMemberIdKey.value
+        });
+
+        if (!result.isSuccess || !result.data) {
+            setFormError(result.errorMessage ?? "Unable to restore the archived group member.");
+            return;
+        }
+
+        window.location.href = makeUrlRedirectSafe(result.data);
+    }
+
+    /**
+     * Saves as a new record after the user declined restoring the archived
+     * member.
+     */
+    async function onDeclineRestore(): Promise<void> {
+        await saveGroupMember(true);
+    }
+
+    /**
+     * Cancels editing and navigates back to the parent page or returnUrl.
+     */
+    function onCancel(): void {
+        window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ParentPage] ?? "/");
+    }
+
+    /**
+     * Recalculates the group requirements and refreshes the inline alerts.
+     */
+    async function onRefreshRequirements(): Promise<void> {
+        isRefreshSuccessShown.value = false;
+
+        if (refreshSuccessTimer) {
+            clearTimeout(refreshSuccessTimer);
+        }
+
+        if (await refreshRequirements()) {
+            isRefreshSuccessShown.value = true;
+            refreshSuccessTimer = setTimeout(() => {
+                isRefreshSuccessShown.value = false;
+            }, 3000);
+        }
+    }
+
+    /**
+     * Toggles the manual mark-as-met checkbox for a requirement.
+     */
+    function onToggleManualRequirement(requirementAlert: GroupMemberRequirementAlertBag, isChecked: boolean): void {
+        toggleRequirementGuid(checkedManualRequirementGuids.value, requirementAlert.groupRequirementGuid, isChecked);
+    }
+
+    /**
+     * Toggles the override checkbox for a requirement.
+     */
+    function onToggleOverrideRequirement(requirementAlert: GroupMemberRequirementAlertBag, isChecked: boolean): void {
+        toggleRequirementGuid(checkedOverrideRequirementGuids.value, requirementAlert.groupRequirementGuid, isChecked);
+    }
+
+    /**
+     * Opens the quick communication modal from the panel header.
+     */
+    function onShowCommunicationModal(): void {
+        communicationSuccessMessage.value = "";
+        isCommunicationModalShown.value = true;
+    }
+
+    /**
+     * Shows the panel-level success alert after the modal sends.
+     */
+    function onCommunicationSent(isSms: boolean): void {
+        communicationSuccessMessage.value = isSms
+            ? "SMS communication was successfully sent."
+            : "Email communication was successfully sent.";
+    }
+
+    /**
+     * Opens the Move Group Member modal from the panel header.
+     */
+    function onShowMoveModal(): void {
+        isMoveModalShown.value = true;
+    }
+
+    /**
+     * Opens the Assignment Preference modal to add a new row.
+     */
+    function onAddAssignment(): void {
+        editingAssignment.value = null;
+        isAssignmentModalShown.value = true;
+    }
+
+    /**
+     * Opens the Assignment Preference modal on the clicked row.
+     */
+    function onEditAssignment(key: string): void {
+        editingAssignment.value = scheduleAssignments.value.find(a => a.guid === key) ?? null;
+        isAssignmentModalShown.value = true;
+    }
+
+    /**
+     * Removes the clicked row. Nothing is deleted until save.
+     */
+    function onDeleteAssignment(key: string): void {
+        scheduleAssignments.value = scheduleAssignments.value.filter(a => a.guid !== key);
+    }
+
+    /**
+     * Applies the modal's saved row back into the assignment list.
+     */
+    function onSaveAssignment(assignment: GroupScheduleAssignmentBag): void {
+        const index = scheduleAssignments.value.findIndex(a => a.guid === assignment.guid);
+
+        if (index >= 0) {
+            scheduleAssignments.value.splice(index, 1, assignment);
+        }
+        else {
+            scheduleAssignments.value.push(assignment);
+        }
+    }
+
+    /**
+     * Launches the requirement's does-not-meet or warning workflow, or
+     * navigates to one already started.
+     */
+    async function onLaunchRequirementWorkflow(requirementAlert: GroupMemberRequirementAlertBag, isWarningWorkflow: boolean): Promise<void> {
+        // Ignore repeat clicks while a launch is already in flight.
+        if (launchingWorkflowKey.value !== null) {
+            return;
+        }
+
+        formErrors.value = [];
+        launchingWorkflowKey.value = getWorkflowLinkKey(requirementAlert, isWarningWorkflow);
+
+        try {
+            const result = await invokeBlockAction<LaunchRequirementWorkflowResponseBag>("LaunchRequirementWorkflow", {
+                groupMemberIdKey: groupMemberIdKey.value,
+                groupRequirementGuid: requirementAlert.groupRequirementGuid,
+                isWarningWorkflow
+            });
+
+            if (!result.isSuccess || !result.data) {
+                setFormError(result.errorMessage ?? "Unable to start the workflow.");
+                return;
+            }
+
+            if (result.data.message) {
+                await showAlert(result.data.message);
+            }
+
+            if (result.data.workflowEntryUrl) {
+                window.open(makeUrlRedirectSafe(result.data.workflowEntryUrl), "_blank");
+            }
+        }
+        finally {
+            launchingWorkflowKey.value = null;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Shows a server error in the form-level validation summary, splitting a
+     * combined message into individual items and scrolling it into view.
+     */
+    function setFormError(message: string): void {
+        formErrors.value = message.split(/<br\s*\/?>/i)
+            .map(e => e.trim())
+            .filter(e => !!e);
+
+        // Bring the error summary into view; the user may have scrolled down to the Save button.
+        nextTick(() => {
+            formErrorNotificationBox.value?.$el?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    }
+
+    /**
+     * Gets the alert style for a requirement alert. A checked resolution
+     * presents as met regardless of the calculated state.
+     */
+    function getRequirementAlertClass(alert: GroupMemberRequirementAlertBag): string {
+        if (isRequirementResolved(alert)) {
+            return "alert-success";
+        }
+
+        switch (alert.meetsGroupRequirement) {
+            case MeetsGroupRequirement.Meets:
+                return "alert-success";
+
+            case MeetsGroupRequirement.MeetsWithWarning:
+                return "alert-warning";
+
+            default:
+                return "alert-danger";
+        }
+    }
+
+    /**
+     * Gets the status line for a requirement alert, honoring the checked
+     * resolution state.
+     */
+    function getRequirementStatusText(alert: GroupMemberRequirementAlertBag): string {
+        return isRequirementResolved(alert)
+            ? alert.metStatusText ?? ""
+            : alert.statusText ?? "";
+    }
+
+    /**
+     * Gets whether either resolution checkbox is checked for the alert.
+     */
+    function isRequirementResolved(alert: GroupMemberRequirementAlertBag): boolean {
+        return isManualChecked(alert) || isOverrideChecked(alert);
+    }
+
+    /**
+     * Gets whether the manual mark-as-met checkbox is checked.
+     */
+    function isManualChecked(alert: GroupMemberRequirementAlertBag): boolean {
+        return checkedManualRequirementGuids.value.includes(alert.groupRequirementGuid);
+    }
+
+    /**
+     * Gets whether the override checkbox is checked.
+     */
+    function isOverrideChecked(alert: GroupMemberRequirementAlertBag): boolean {
+        return checkedOverrideRequirementGuids.value.includes(alert.groupRequirementGuid);
+    }
+
+    /**
+     * Adds or removes a requirement guid from a checked-guid list.
+     */
+    function toggleRequirementGuid(checkedGuids: string[], requirementGuid: string, isChecked: boolean): void {
+        const index = checkedGuids.indexOf(requirementGuid);
+
+        if (isChecked && index < 0) {
+            checkedGuids.push(requirementGuid);
+        }
+        else if (!isChecked && index >= 0) {
+            checkedGuids.splice(index, 1);
+        }
+    }
+
+    /**
+     * Invokes the Save block action with the current field values and
+     * handles navigation, validation errors, and the restore prompt.
+     */
+    async function saveGroupMember(isRestoreDeclined: boolean): Promise<void> {
+        formErrors.value = [];
+        isSaving.value = true;
+
+        try {
+            const box: ValidPropertiesBox<GroupMemberBag> = {
+                bag: { idKey: groupMemberIdKey.value } as GroupMemberBag
+            };
+
+            setPropertiesBoxValue(box, "person", person.value ?? null);
+            setPropertiesBoxValue(box, "groupRoleId", toNumberOrNull(roleId.value));
+            setPropertiesBoxValue(box, "groupMemberStatus", (toNumberOrNull(memberStatus.value) ?? GroupMemberStatus.Active) as GroupMemberStatus);
+            setPropertiesBoxValue(box, "note", note.value);
+            setPropertiesBoxValue(box, "attributeValues", attributeValues.value);
+            setPropertiesBoxValue(box, "assignmentAttributeValues", assignmentAttributeValues.value);
+            setPropertiesBoxValue(box, "scheduleTemplateId", toNumberOrNull(scheduleTemplateId.value));
+            setPropertiesBoxValue(box, "scheduleStartDate", scheduleStartDate.value || null);
+            setPropertiesBoxValue(box, "scheduleAssignments", scheduleAssignments.value);
+            setPropertiesBoxValue(box, "communicationPreference", (toNumberOrNull(communicationPreference.value) ?? 0) as CommunicationType);
+            setPropertiesBoxValue(box, "isNotified", isNotified.value);
+            setPropertiesBoxValue(box, "scheduleReminderEmailOffsetDays", scheduleReminderEmailOffsetDays.value);
+            setPropertiesBoxValue(box, "signedDocument", signedDocument.value ?? null);
+            setPropertiesBoxValue(box, "isChatMuted", isChatMuted.value);
+            setPropertiesBoxValue(box, "isChatBanned", isChatBanned.value);
+            setPropertiesBoxValue(box, "manuallyMetRequirementGuids", checkedManualRequirementGuids.value);
+            setPropertiesBoxValue(box, "overriddenRequirementGuids", checkedOverrideRequirementGuids.value);
+
+            const result = await invokeBlockAction<SaveGroupMemberResponseBag>("Save", {
+                box,
+                isSaveThenAdd: isSaveThenAdd.value,
+                isRestoreDeclined
+            });
+
+            if (!result.isSuccess || !result.data) {
+                setFormError(result.errorMessage ?? "Unable to save the group member.");
+                return;
+            }
+
+            if (result.data.isRestorePromptShown) {
+                restorePromptMessage.value = result.data.restorePromptMessage ?? "";
+                archivedGroupMemberIdKey.value = result.data.archivedGroupMemberIdKey ?? "";
+                isRestoreModalShown.value = true;
+                return;
+            }
+
+            if (result.data.navigationUrl) {
+                window.location.href = makeUrlRedirectSafe(result.data.navigationUrl);
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Gets whether the requirement alert's interaction row is shown. The
+     * resolution checkboxes need edit rights, since they write on save, but
+     * the workflow links launch server-side with view rights, as in WebForms.
+     */
+    function isRequirementInteractionShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+        return areResolutionCheckboxesShown(requirementAlert)
+            || areWorkflowLinksShown(requirementAlert);
+    }
+
+    /**
+     * Gets whether either resolution checkbox is shown for the alert.
+     */
+    function areResolutionCheckboxesShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+        return isEditable.value
+            && (isManualCheckboxShown(requirementAlert) || requirementAlert.canOverride);
+    }
+
+    /**
+     * Gets whether the manual mark-as-met checkbox is shown for the alert.
+     */
+    function isManualCheckboxShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+        return requirementAlert.isManualRequirement
+            && requirementAlert.meetsGroupRequirement !== MeetsGroupRequirement.Meets;
+    }
+
+    /**
+     * Builds a stable key for a requirement's workflow link, distinguishing
+     * the does-not-meet link from the warning link on the same requirement.
+     */
+    function getWorkflowLinkKey(requirementAlert: GroupMemberRequirementAlertBag, isWarningWorkflow: boolean): string {
+        return `${requirementAlert.groupRequirementGuid}:${isWarningWorkflow}`;
+    }
+
+    /** Gets whether the requirement's workflow link is currently launching. */
+    function isLaunchingWorkflow(requirementAlert: GroupMemberRequirementAlertBag, isWarningWorkflow: boolean): boolean {
+        return launchingWorkflowKey.value === getWorkflowLinkKey(requirementAlert, isWarningWorkflow);
+    }
+
+    /**
+     * Gets whether the alert's workflow links are shown. Launching writes a
+     * workflow immediately, so a saved, unchanged member is required, and a
+     * checked resolution supersedes the unmet state the links describe.
+     */
+    function areWorkflowLinksShown(requirementAlert: GroupMemberRequirementAlertBag): boolean {
+        return isExistingMember.value
+            && !options.value.isRequirementInteractionDisabled
+            && !isRequirementResolved(requirementAlert)
+            && (!!requirementAlert.doesNotMeetWorkflowLinkText || !!requirementAlert.warningWorkflowLinkText);
+    }
+
+    /**
+     * Applies a recalculated requirement state to the options.
+     * Fresh alerts supersede any unsaved checkbox toggles, so those reset.
+     */
+    function applyRequirementState(state: RefreshRequirementsResponseBag): void {
+        options.value.requirementAlerts = state.requirementAlerts ?? [];
+        options.value.requirementCalculationErrors = state.calculationErrors;
+        options.value.isRequirementInteractionDisabled = state.isRequirementInteractionDisabled;
+        clearRequirementResolutions();
+    }
+
+    /**
+     * Clears the requirement state, so nothing calculated for a previous
+     * person or role is left on screen.
+     */
+    function clearRequirementState(): void {
+        options.value.requirementAlerts = [];
+        options.value.requirementCalculationErrors = null;
+        options.value.isRequirementInteractionDisabled = true;
+        clearRequirementResolutions();
+    }
+
+    /**
+     * Drops the unsaved resolution checkbox toggles.
+     */
+    function clearRequirementResolutions(): void {
+        checkedManualRequirementGuids.value = [];
+        checkedOverrideRequirementGuids.value = [];
+    }
+
+    /**
+     * Recalculates the requirement alerts and the archived-record state for
+     * the selected person and role. The WebForms block recalculated
+     * requirements on every person change, role change, and Refresh
+     * Requirements click; the archived check rides along because it keys off
+     * the same person and role pairing.
+     *
+     * @returns The refreshed state, or null when nothing could be calculated.
+     */
+    async function refreshRequirements(): Promise<RefreshRequirementsResponseBag | null> {
+        // Without a person and role there is nothing to calculate against, so anything
+        // left over describes the previous selection and has to go.
+        if (!person.value?.value || !roleId.value) {
+            clearRequirementState();
+
+            return null;
+        }
+
+        isRefreshingRequirements.value = true;
+
+        try {
+            const result = await invokeBlockAction<RefreshRequirementsResponseBag>("RefreshRequirements", {
+                groupMemberIdKey: groupMemberIdKey.value,
+                personAliasGuid: person.value.value,
+                selectedRoleId: Number(roleId.value)
+            });
+
+            if (!result.isSuccess || !result.data) {
+                setFormError(result.errorMessage ?? "Unable to refresh the group requirements.");
+                return null;
+            }
+
+            applyRequirementState(result.data);
+
+            return result.data;
+        }
+        finally {
+            isRefreshingRequirements.value = false;
+        }
+    }
+
+    /**
+     * Loads the member the selected person already has in this group so the
+     * form becomes an edit of that record. Sign-up mode only, matching the
+     * WebForms TryLoadExistingSignUpGroupMember behavior.
+     */
+    async function tryLoadExistingSignUpGroupMember(): Promise<boolean> {
+        if (!options.value.isSignUpMode || !person.value?.value) {
+            return false;
+        }
+
+        const result = await invokeBlockAction<DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>>("GetExistingSignUpGroupMember", {
+            personAliasGuid: person.value.value
+        });
+
+        if (!result.isSuccess || !result.data?.entity) {
+            return false;
+        }
+
+        applyDetailBox(result.data);
+
+        return true;
+    }
+
+    /**
+     * Re-seeds the form from a detail box returned by a block action.
+     */
+    function applyDetailBox(box: DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>): void {
+        isApplyingDetailBox = true;
+
+        options.value = box.options ?? ({} as GroupMemberDetailOptionsBag);
+        isEditable.value = box.isEditable === true;
+        groupMemberIdKey.value = box.entity?.idKey ?? "";
+        clearRequirementResolutions();
+
+        person.value = box.entity?.person ?? undefined;
+        roleId.value = box.entity?.groupRoleId?.toString() ?? "";
+        memberStatus.value = box.entity?.groupMemberStatus?.toString() ?? "";
+        note.value = box.entity?.note ?? "";
+        attributes.value = box.entity?.attributes ?? {};
+        attributeValues.value = box.entity?.attributeValues ?? {};
+        assignmentAttributeValues.value = box.entity?.assignmentAttributeValues ?? {};
+        scheduleTemplateId.value = box.entity?.scheduleTemplateId?.toString() ?? "";
+        scheduleStartDate.value = box.entity?.scheduleStartDate ?? "";
+        scheduleAssignments.value = box.entity?.scheduleAssignments ?? [];
+        communicationPreference.value = box.entity?.communicationPreference?.toString() ?? "";
+        isNotified.value = box.entity?.isNotified === true;
+        scheduleReminderEmailOffsetDays.value = box.entity?.scheduleReminderEmailOffsetDays ?? null;
+        signedDocument.value = box.entity?.signedDocument ?? undefined;
+        isChatMuted.value = box.entity?.isChatMuted === true;
+        isChatBanned.value = box.entity?.isChatBanned === true;
+
+        // Watchers flush on the next tick, so the guard has to outlive this call to suppress them.
+        nextTick(() => {
+            isApplyingDetailBox = false;
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    /*
+        8/27/26 - CLAUDE
+
+        These watch the person's guid rather than the ListItemBag itself. Applying a detail box
+        assigns a fresh bag object parsed from the response, which is never reference-equal to the
+        current one, so watching the object would retrigger this watcher and load the same member
+        again, and again. Watching the primitive means an equal guid does not retrigger.
+
+        Reason: Watching the bag object caused an unbounded reload loop in sign-up mode.
+    */
+    watch(() => person.value?.value, async () => {
+        if (isApplyingDetailBox) {
+            return;
+        }
+
+        isRefreshSuccessShown.value = false;
+        isPersonDataLoading.value = true;
+
+        try {
+            // The swap brings its own requirement state, so only recalculate when no member was loaded.
+            if (await tryLoadExistingSignUpGroupMember()) {
+                return;
+            }
+
+            // The signed document belongs to the person, so the uploader follows the selection.
+            const state = await refreshRequirements();
+            signedDocument.value = state?.signedDocument ?? undefined;
+        }
+        finally {
+            isPersonDataLoading.value = false;
+        }
+    });
+
+    watch(roleId, async () => {
+        if (isApplyingDetailBox) {
+            return;
+        }
+
+        isRefreshSuccessShown.value = false;
+
+        const state = await refreshRequirements();
+
+        // A person picked before any role skipped the prefill, so fill the still-empty uploader now.
+        if (!isExistingMember.value && !signedDocument.value) {
+            signedDocument.value = state?.signedDocument ?? undefined;
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    // #endregion Lifecycle Hooks
+</script>

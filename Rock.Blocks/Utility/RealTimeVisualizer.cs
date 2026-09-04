@@ -111,7 +111,7 @@ namespace Rock.Blocks.Utility
         /// <value>
         /// The lava template to use when displaying messages.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         #endregion
 

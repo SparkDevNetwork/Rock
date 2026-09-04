@@ -42,7 +42,9 @@ namespace Rock.Workflow.Action
         Order = 0,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [TextField( "Organization Tag",
-        Description = "The organization tag to add the person to. If the tag does not exists it will be created. <span class='tip tip-lava'></span>" )]
+        Description = "The organization tag to add the person to. If the tag does not exists it will be created. <span class='tip tip-lava'></span>",
+        AllowHtml = true,
+        AllowLava = true )]
     [Rock.SystemGuid.EntityTypeGuid( "AD415046-96F9-47C8-8E27-3CD97F572994")]
     public class PersonTagAdd : ActionComponent
     {

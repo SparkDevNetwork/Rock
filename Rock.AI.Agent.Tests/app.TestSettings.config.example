@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<appSettings>
+    <add key="RockIntelligenceApiKey" value="" />
+    <add key="SkipIntegration" value="False" />
+</appSettings>
+

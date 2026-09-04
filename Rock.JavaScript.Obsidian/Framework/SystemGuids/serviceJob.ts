@@ -209,6 +209,10 @@ export const ServiceJob = {
     DataMigrations190ChopServiceMetricEntryFinal: "DD75B103-88B3-4551-B38F-E688422E2DC5",
     /** The Job to run Post v19.0 Data Migrations to swap Block. */
     DataMigrations190SwapObsidianBlocks: "C05C0C81-12B2-4C35-9405-C3CE09E3CE75",
+    /** The job to run Post v20.0 Data Migrations to add an Exception Log index to improve performance of the Exception List block. */
+    DataMigrations200AddExceptionListIndex: "A0824D0E-0E7C-4448-85FA-7C36C4AF29E6",
+    /** The job to run Post v20.0 Data Migrations to remove Anonymous Visitor PersonAlias records that were created for bot traffic whose page view interaction was subsequently discarded as a crawler. */
+    DataMigrations200RemoveOrphanedAnonymousVisitorAliases: "900876CC-F6E1-4FBE-A7BB-F8DF5124BA43",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
@@ -218,8 +222,6 @@ export const ServiceJob = {
     DataMigrationsSwapNotesBlock: "8390C1AC-88D6-474A-AC05-8FFBD358F75D",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
-    /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */
-    GivingAnalytics: "B6DE0544-8C91-444E-B911-453D4CE71515",
     /** The Rock.Jobs.GivingAutomation job. */
     GivingAutomation: "B6DE0544-8C91-444E-B911-453D4CE71515",
     /** Gets the Job Pulse guid */
@@ -236,11 +238,6 @@ export const ServiceJob = {
     ProcessElevatedSecurity: "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
     /** The Rock.Jobs.ProcessReminders job. */
     ProcessReminders: "3F697C80-4C33-4552-9038-D3470445EA40",
-    /**
-     * The Job to Rebuild a Sequence. This job has been deleted and replaced with
-     * Rock.Transactions.StreakTypeRebuildTransaction
-     */
-    RebuildStreak: "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A",
     /** The rock cleanup Job. Rock.Jobs.RockCleanup */
     RockCleanup: "1A8238B1-038A-4295-9FDE-C6D93002A5D7",
     /** The Job to send an email digest with an attendance summary of all child groups to regional group leaders */

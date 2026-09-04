@@ -45,13 +45,12 @@ namespace Rock.Web.UI.Controls
             IncludeInactive = includeInactive;
         }
 
-        #region Utilities        
+        #region Utilities
         /// <summary>
         /// BackgroundCheck Types
         /// </summary>
         private enum BackgroundCheckTypes
         {
-            ProtectMyMinistry,
             Checkr,
             Other
         }
@@ -65,16 +64,9 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
 
             Guid? cpGuid = _componentPicker.SelectedValue.AsGuidOrNull();
-            if ( cpGuid.HasValue )
+            if ( cpGuid.HasValue && cpGuid.Value == Rock.SystemGuid.EntityType.CHECKR_PROVIDER.AsGuid() )
             {
-                if ( cpGuid.Value == Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() )
-                {
-                    return BackgroundCheckTypes.ProtectMyMinistry;
-                }
-                else if ( cpGuid.Value == Rock.SystemGuid.EntityType.CHECKR_PROVIDER.AsGuid() )
-                {
-                    return BackgroundCheckTypes.Checkr;
-                }
+                return BackgroundCheckTypes.Checkr;
             }
 
             return BackgroundCheckTypes.Other;
@@ -156,15 +148,26 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                ListItem li;
-                // If have an Provider EntityType Guid use it, otherwise we assume it's the legacy PMM...
+                ListItem li = null;
+
+                /*
+                    7/13/26 - NA
+
+                    Legacy PMM (v1) documents were stored with only a BinaryFile Guid
+                    and no ProviderEntityTypeGuid. Previously we defaulted the picker
+                    to PMM in that case, but the PMM component was removed in Rock v20
+                    so there is no matching picker item to select. When
+                    ProviderEntityTypeGuid is null we now leave the picker on its
+                    default; the file uploader still renders and the file can be
+                    viewed or replaced.
+
+                    Reason: Historical background check documents pre-date the
+                    "{EntityTypeId},{key|guid}" storage format and must still render
+                    cleanly in the person profile.
+                */
                 if ( ProviderEntityTypeGuid.HasValue )
                 {
                     li = _componentPicker.Items.FindByValue( ProviderEntityTypeGuid.ToString().ToUpper() );
-                }
-                else
-                {
-                    li = _componentPicker.Items.FindByValue( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.ToUpper() );
                 }
 
                 if ( li != null )

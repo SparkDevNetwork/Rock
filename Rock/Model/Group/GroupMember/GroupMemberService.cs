@@ -1144,6 +1144,9 @@ namespace Rock.Model
 
             public DateTimeOffset? DateTimeAdded { get; }
 
+            /// <inheritdoc cref="GroupMember.IsArchived"/>
+            public bool IsArchived { get; }
+
             public GroupMemberUpdatedState( GroupMember groupMember, EntityContextState state )
             {
                 if ( groupMember == null )
@@ -1158,6 +1161,7 @@ namespace Rock.Model
                 GroupId = groupMember.GroupId;
                 GroupRoleId = groupMember.GroupRoleId;
                 DateTimeAdded = groupMember.DateTimeAdded?.ToRockDateTimeOffset();
+                IsArchived = groupMember.IsArchived;
             }
         }
 
@@ -1330,6 +1334,7 @@ namespace Rock.Model
 						GroupMemberGuid = item.Guid,
 						GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
                         DateTimeAdded = item.DateTimeAdded,
+                        IsArchived = item.IsArchived,
                         Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
 						{   
 							PersonIdKey = person.IdKey,

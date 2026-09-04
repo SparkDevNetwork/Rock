@@ -32,8 +32,12 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public AssessmentTypesFieldAttribute( string name )
-            : base( name, description: "", required: true, defaultValue: "", category: "", order: 0, key: null, fieldTypeClass: typeof( Rock.Field.Types.AssessmentTypesFieldType ).FullName )
+            : base( SystemGuid.FieldType.ASSESSMENT_TYPE.AsGuid(), name )
         {
+            Category = string.Empty;
+            DefaultValue = string.Empty;
+            Description = string.Empty;
+            IsRequired = true;
             IncludeInactive = false;
         }
 

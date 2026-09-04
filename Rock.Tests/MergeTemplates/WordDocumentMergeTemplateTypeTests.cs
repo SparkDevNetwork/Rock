@@ -76,7 +76,7 @@ namespace Rock.Tests.MergeTemplates
   </w:p>
 </w:ftr>";
 
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var memoryStream = new System.IO.MemoryStream();
 

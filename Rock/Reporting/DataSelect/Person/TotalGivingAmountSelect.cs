@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -412,6 +413,62 @@ namespace Rock.Reporting.DataSelect.Person
             };
 
             return callbackField;
+        }
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            ComparisonType comparisonType;
+            decimal totalAmountCutoff;
+
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length < 2 )
+            {
+                comparisonType = ComparisonType.GreaterThanOrEqualTo;
+                totalAmountCutoff = 0.00M;
+            }
+            else
+            {
+                comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
+                totalAmountCutoff = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
+            }
+
+            return new TotalGivingField
+            {
+                ComparisonType = comparisonType,
+                Cutoff = totalAmountCutoff,
+                SkipComparison = ( comparisonType == ComparisonType.GreaterThanOrEqualTo && totalAmountCutoff == 0.00M )
+            };
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that conditionally hides the total giving
+        /// amount when the row's value does not meet the comparison threshold,
+        /// matching WebForms callback behavior.
+        /// </summary>
+        private class TotalGivingField : CurrencyObsidianGridField
+        {
+            public ComparisonType ComparisonType { get; set; }
+
+            public decimal Cutoff { get; set; }
+
+            public bool SkipComparison { get; set; }
+
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                decimal? totalGiving = rawValue as decimal?;
+                if ( !totalGiving.HasValue || totalGiving.Value == 0.00M )
+                {
+                    return null;
+                }
+
+                if ( SkipComparison || ComparisonHelper.CompareNumericValues( ComparisonType, totalGiving, Cutoff ) )
+                {
+                    return totalGiving;
+                }
+
+                return null;
+            }
         }
 
         /// <summary>

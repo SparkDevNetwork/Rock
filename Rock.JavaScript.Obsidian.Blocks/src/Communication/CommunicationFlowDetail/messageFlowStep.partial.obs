@@ -484,7 +484,14 @@
                 typeName = "message from this and any future instances";
             }
 
-            additionalMessage = "The details and design will be lost.";
+            if (communcation.hasPerformanceData) {
+                // The message has already been sent, so deleting it will discard its performance data.
+                deleteWarning = "Warning: this message has already been sent to recipients.";
+                additionalMessage = "The details and design will be lost, along with any performance data for this message.";
+            }
+            else {
+                additionalMessage = "The details and design will be lost.";
+            }
         }
         else {
             // Flow is Active

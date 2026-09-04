@@ -149,6 +149,14 @@
     const adaptationSharedAttributes = ref(props.modelValue?.bag?.adaptationSharedAttributes ?? []);
     const adaptationAttributes = ref(props.modelValue?.bag?.adaptationAttributes ?? []);
     const adaptationAttribute = ref<PublicEditableAttributeBag | null>(null);
+
+    /**
+     * The Key the attribute had when the modal was opened for editing, used to
+     * locate the original entry on save. These client-side attributes have no
+     * Guid until the message is saved, and the Key may be renamed in the editor,
+     * so the original Key is the only stable identity available.
+     */
+    const editedAttributeOriginalKey = ref<string | null>(null);
     const isModalOpen = ref<boolean>(false);
     const submitEditAttribute = ref<boolean>(false);
     const reservedKeyNames = ref(props.modelValue?.bag?.reservedKeyNames ?? []);
@@ -218,6 +226,7 @@
 
     // #region Event Handlers
     async function onAddItem(): Promise<void> {
+        editedAttributeOriginalKey.value = null;
         adaptationAttribute.value = {} as PublicEditableAttributeBag;
         isModalOpen.value = true;
         adaptationAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
@@ -227,6 +236,7 @@
         const selectedSiteAttribute = adaptationAttributes.value.find(x => x.key === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedSiteAttribute) {
+            editedAttributeOriginalKey.value = key;
             adaptationAttribute.value = selectedSiteAttribute;
             isModalOpen.value = true;
         }
@@ -253,23 +263,21 @@
     function onSaveAttribute(): void {
 
         if (adaptationAttribute.value) {
-            const index = adaptationAttributes.value.findIndex(a => a.key === adaptationAttribute.value?.key);
+            const originalKey = editedAttributeOriginalKey.value;
+            const index = originalKey !== null
+                ? adaptationAttributes.value.findIndex(a => a.key === originalKey)
+                : -1;
+
             if (index !== -1) {
-                // Get the updated attribute and rowItem.
-                let editedAttribute = adaptationAttributes.value.find(a => a.guid === adaptationAttribute.value?.guid);
-                let rowItem = gridData.rows?.find(x => x.key === adaptationAttribute.value?.key);
+                // Replace the existing attribute and its grid row with the updated values.
+                adaptationAttributes.value.splice(index, 1, adaptationAttribute.value);
 
-                if (editedAttribute) {
-                    // Replace old attribute with updated attribute.
-                    editedAttribute = adaptationAttribute.value;
-                    adaptationAttributes.value.splice(index, 1, editedAttribute);
-                }
+                if (gridData.rows) {
+                    const rowIndex = gridData.rows.findIndex(r => r["key"] === originalKey);
 
-                if (rowItem && gridData.rows && editedAttribute) {
-                    // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = gridData.rows.findIndex(r => r.key === adaptationAttribute.value?.key);
-                    rowItem = convertToRowItem(editedAttribute);
-                    gridData.rows?.splice(rowIndex, 1, rowItem);
+                    if (rowIndex !== -1) {
+                        gridData.rows.splice(rowIndex, 1, convertToRowItem(adaptationAttribute.value));
+                    }
                 }
             }
             else {
@@ -280,6 +288,7 @@
                 gridData.rows?.push(newRowItem);
             }
 
+            editedAttributeOriginalKey.value = null;
             isModalOpen.value = false;
             adaptationAttribute.value = null;
         }
@@ -328,9 +337,9 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== adaptationAttribute.value?.key);
         }
         else {
-            if (adaptationAttribute.value?.key && !reservedKeyNames.value.some(k => k === adaptationAttribute.value?.key)) {
-                reservedKeyNames.value.push(adaptationAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = adaptationAttributes.value.map(a => a.key).filter((k): k is string => !!k);
         }
     });
 

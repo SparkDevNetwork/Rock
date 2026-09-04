@@ -239,7 +239,7 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( $"Not authorized to delete {StreakType.FriendlyTypeName}." );
                 }
 
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
+                if ( !entityService.CanDelete( entity, out var errorMessage, true ) )
                 {
                     return ActionBadRequest( errorMessage );
                 }

@@ -33,6 +33,12 @@ namespace Rock.ViewModels.Blocks.Crm.Disc
         public DateTime? StartDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the assessment record the results should be saved to.
+        /// A value of zero indicates that a new assessment should be created when the test is completed.
+        /// </summary>
+        public int AssessmentId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date the assessment was last saved.
         /// </summary>
         public DateTime? LastSavedDate { get; set; }
@@ -56,6 +62,13 @@ namespace Rock.ViewModels.Blocks.Crm.Disc
         /// Gets or sets whether the individual can retake the test.
         /// </summary>
         public bool CanRetakeTest { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the individual is retaking a previously
+        /// completed assessment. When <c>true</c> a new assessment is created instead of
+        /// updating the existing one, mirroring the legacy "Retake Test" behavior.
+        /// </summary>
+        public bool IsRetake { get; set; }
 
         /// <summary>
         /// Gets or sets the overall personality description for the individual based on the results of their DISC assessment.

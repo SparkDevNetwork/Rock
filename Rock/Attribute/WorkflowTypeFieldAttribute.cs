@@ -35,14 +35,22 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public WorkflowTypeFieldAttribute( string name = "Workflow", string description = "", bool allowMultiple = false, bool required = false, string defaultWorkflowTypeGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultWorkflowTypeGuid, category, order, key,
-            allowMultiple ?
-                typeof( Rock.Field.Types.WorkflowTypesFieldType ).FullName :
-                typeof( Rock.Field.Types.WorkflowTypeFieldType ).FullName )
+            : base( allowMultiple ? SystemGuid.FieldType.WORKFLOW_TYPES.AsGuid() : SystemGuid.FieldType.WORKFLOW_TYPE.AsGuid(),
+                  name, description, required, defaultWorkflowTypeGuid, category, order, key )
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowTypeFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public WorkflowTypeFieldAttribute( string name )
+            : base( SystemGuid.FieldType.WORKFLOW_TYPE.AsGuid(), name )
+        {
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether to allow the selection of more than one Workflow Type
@@ -54,21 +62,20 @@ namespace Rock.Attribute
         {
             get
             {
-                return this.FieldTypeClass == typeof( Rock.Field.Types.WorkflowTypesFieldType ).FullName;
+                return this.FieldTypeGuid == SystemGuid.FieldType.WORKFLOW_TYPES.AsGuid();
             }
 
             set
             {
                 if ( value )
                 {
-                    this.FieldTypeClass = typeof( Rock.Field.Types.WorkflowTypesFieldType ).FullName;
+                    this.FieldTypeGuid = SystemGuid.FieldType.WORKFLOW_TYPES.AsGuid();
                 }
                 else
                 {
-                    this.FieldTypeClass = typeof( Rock.Field.Types.WorkflowTypeFieldType ).FullName;
+                    this.FieldTypeGuid = SystemGuid.FieldType.WORKFLOW_TYPE.AsGuid();
                 }
             }
         }
-
     }
 }

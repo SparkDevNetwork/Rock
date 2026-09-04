@@ -41,5 +41,11 @@ namespace Rock.Enums.Connection
         /// Communication type.
         /// </summary>
         Communication = 3,
+
+        /// <summary>
+        /// Status change type. Rendered as a card entry so its optional status-change note reads as
+        /// editable card content rather than a passive system update line.
+        /// </summary>
+        StatusChange = 4,
     }
 }

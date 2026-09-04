@@ -433,8 +433,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -1088,7 +1087,7 @@ namespace Rock.Plugin.HotFixes {
                         "ents", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to /*
         ///&lt;doc&gt;
@@ -1104,11 +1103,100 @@ namespace Rock.Plugin.HotFixes {
         ///        and contextual registration or group information.
         ///     [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople
-        {
-            get
-            {
-                return ResourceManager.GetString( "_295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople", resourceCulture );
+        public static string _295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_295_FixGoupPlacementPersonFilter_spGetGroupPlacementPeople", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported
+        ///        configurations of the Group Placement block in Rock RMS. It supports filtering
+        ///        by template, instance, groups, entity sets, demographics, campus, DataView
+        ///        membership, and fee qualifications.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement-eligible people along with placement status
+        ///        and contextual registration or group information.
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _298_FixGroupPlacementWaitList_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_298_FixGroupPlacementWaitList_spGetGroupPlacementPeople", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_299_FixAnalyticsETLFamilyOperatorPrecedence_spAnalytics_ETL_Family", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsEraDataset]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsGiving]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up the ALTER PROCEDURE script for [spCrm_FamilyAnalyticsAttendance]
+        ///   that fixes the week-boundary comparison (issue #6902).
+        /// </summary>
+        public static string _306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance {
+            get {
+                return ResourceManager.GetString("_306_FixEraFamilyAnalyticsWeekBoundaries6902_spCrm_FamilyAnalyticsAttendance", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Follow-up ALTER PROCEDURE script for [spCrm_FamilyAnalyticsEraDataset]
+        ///   that aligns the giving and attendance temp-table pre-filters to the
+        ///   SundayDate week-boundary logic used everywhere else in the procedure
+        ///   and switches GETDATE() to dbo.RockGetDate() so timestamps honor
+        ///   Rock's configured time zone (issue #6902).
+        /// </summary>
+        public static string _311_FixEraFamilyAnalyticsWeekBoundariesFollowup6902_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_311_FixEraFamilyAnalyticsWeekBoundariesFollowup6902_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   ALTER PROCEDURE script for [spCrm_PersonDuplicateFinder] that adds
+        ///   IS NOT NULL guards to the BirthDate, MaritalStatusValueId, and
+        ///   SuffixValueId score-update self-joins so the optimizer stops
+        ///   picking a many-to-many merge plan that spins on the NULL block
+        ///   on large, NULL-heavy Person tables (issue #6959).
+        /// </summary>
+        public static string _313_FixPersonDuplicateFinderNullSelfJoinPerformance6959_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_313_FixPersonDuplicateFinderNullSelfJoinPerformance6959_spCrm_PersonDuplicateFinder", resourceCulture);
             }
         }
     }

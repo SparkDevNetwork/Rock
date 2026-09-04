@@ -129,12 +129,15 @@ namespace Rock.Blocks.Event
         /// <returns>The options that provide additional details to the block.</returns>
         private EventItemOccurrenceListOptionsBag GetBoxOptions()
         {
+            // The group and registration instance URLs are built with a "((Key))" placeholder as the
+            // identifier value so the page's friendly route is used when one is configured. The client
+            // replaces the placeholder with each row's identifier key.
             var options = new EventItemOccurrenceListOptionsBag()
             {
                 CampusItems = CampusCache.All().ToListItemBagList(),
-                ContentItemDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.RegistrationInstancePage ),
-                GroupDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage ),
-                RegistrationInstancePageUrl = this.GetLinkedPageUrl( AttributeKey.RegistrationInstancePage ),
+                ContentItemDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.ContentItemDetailPage ),
+                GroupDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage, "GroupId", "((Key))" ),
+                RegistrationInstancePageUrl = this.GetLinkedPageUrl( AttributeKey.RegistrationInstancePage, "RegistrationInstanceId", "((Key))" ),
                 IsBlockVisible = GetEventItem() != null,
             };
 
@@ -260,12 +263,14 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private string FormatContentItems( IEnumerable<ContentChannelItem> items )
         {
-            var qryParams = new Dictionary<string, string> { { "ContentItemId", "" } };
+            // autoEdit opens the content item in edit mode, matching the WebForms
+            // behavior where selecting an item from an event went straight to editing.
+            var qryParams = new Dictionary<string, string> { { "ContentItemId", "" }, { "autoEdit", "true" } };
 
             var itemLinks = new List<string>();
             foreach ( var item in items )
             {
-                qryParams["ContentItemId"] = item.Id.ToString();
+                qryParams["ContentItemId"] = item.IdKey;
                 itemLinks.Add( string.Format( $"{this.GetLinkedPageUrl( AttributeKey.ContentItemDetailPage, qryParams )}|{item.Title}|{item.ContentChannelType.Name}" ) );
             }
             return itemLinks.AsDelimited( "," );

@@ -20,25 +20,22 @@
                              @dismiss="emit('dismissErrorMessage')">
                 {{ errorMessage }}
             </NotificationBox>
-            <template v-else>
+            <template v-else-if="!areNoCampaigns">
                 <div class="row">
                     <div class="col-md-4">
-                        <template v-if="!isNullOrWhiteSpace(selectedOpportunityName)">
-                            <RockLabel>
-                                Opportunity
-                            </RockLabel>
-                            <div class="mb-spacing-sm">
+                        <div v-if="!isNullOrWhiteSpace(selectedOpportunityName)" class="form-group static-control">
+                            <RockLabel>Opportunity</RockLabel>
+                            <div class="control-wrapper">
                                 {{ selectedOpportunityName }}
                             </div>
-                        </template>
-                        <template v-else-if="filteredConnectionOpportunityItems.length === 1">
-                            <RockLabel>
-                                Opportunity
-                            </RockLabel>
-                            <div class="mb-spacing-sm">
+                        </div>
+                        <div v-else-if="filteredConnectionOpportunityItems.length === 1" class="form-group static-control">
+                            <RockLabel>Opportunity</RockLabel>
+                            <div class="control-wrapper">
                                 {{ filteredConnectionOpportunityItems[0].text }}
                             </div>
-                        </template>
+                        </div>
+
                         <DropDownList v-else
                                       v-model="opportunity"
                                       :items="filteredConnectionOpportunityItems"
@@ -49,14 +46,12 @@
                 </div>
                 <div class="row">
                     <div class="col-md-4">
-                        <template v-if="campaignItemsForOpportunity.length === 1">
-                            <RockLabel>
-                                Campaign
-                            </RockLabel>
-                            <div class="mb-spacing-sm">
+                        <div v-if="campaignItemsForOpportunity.length === 1" class="form-group static-control">
+                            <RockLabel>Campaign</RockLabel>
+                            <div class="control-wrapper">
                                 {{ campaignItemsForOpportunity[0].text }}
                             </div>
-                        </template>
+                        </div>
 
                         <DropDownList v-else
                                       v-model="campaign"
@@ -121,7 +116,7 @@
 
         campaignRecordBags: {
             type: Object as PropType<Record<string, ConnectionCampaignBag[]> | undefined>,
-            default: {}
+            default: () => ({})
         },
 
         errorMessage: {
@@ -234,7 +229,7 @@
         }
 
         // Set number of requests to the default number whenever the selected campaign changes.
-        numberOfRequests.value = props.campaignRecordBags[opportunity.value].find(c => c.guid === campaign.value)?.defaultNumberOfRequests;
+        numberOfRequests.value = props.campaignRecordBags[opportunity.value]?.find(c => c.guid === campaign.value)?.defaultNumberOfRequests;
     });
 
     watch(isVisible, () => {

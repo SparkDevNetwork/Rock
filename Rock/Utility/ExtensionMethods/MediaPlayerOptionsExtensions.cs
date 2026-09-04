@@ -154,6 +154,15 @@ namespace Rock
 
                         var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>();
                         options.Map = data?.WatchMap;
+
+                        // Surface the previously watched percentage so consumers
+                        // can reflect prior progress on load. The stored value is
+                        // a 0 to 100 percentage, so convert it to the 0 to 1 scale
+                        // used by the player.
+                        if ( data != null )
+                        {
+                            options.WatchedPercentage = data.WatchedPercentage / 100.0;
+                        }
                     }
                 }
 

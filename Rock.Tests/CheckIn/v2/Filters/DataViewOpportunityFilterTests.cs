@@ -7,6 +7,7 @@ using Moq;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
@@ -22,20 +23,21 @@ namespace Rock.Tests.CheckIn.v2.Filters
     /// </summary>
     /// <seealso cref="DataViewOpportunityFilter"/>
     [TestClass]
-    public class DataViewOpportunityFilterTests : MockDatabaseTestsBase
+    public class DataViewOpportunityFilterTests
     {
         #region IsGroupValid Tests
 
         [TestMethod]
         public void DataViewFilter_WithEmptyDataView_ExcludesGroup()
         {
+            using var app = TestHelper.CreateScopedRockApp();
             var dataViewGuid = new Guid( "f2bc089d-7754-4b9d-ba94-328b5279e0b4" );
             var dataViewMock = CreatePersistedDataViewMock( 1, dataViewGuid, "Test" );
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContext = app.App.CreateRockContext();
 
-            rockContextMock.Object.Set<DataView>().Add( dataViewMock.Object );
+            rockContext.Set<DataView>().Add( dataViewMock.Object );
 
-            var filter = CreateDataViewFilter( 3, rockContextMock.Object );
+            var filter = CreateDataViewFilter( 3, rockContext );
             var groupOpportunity = CreateGroupOpportunity( new[] { dataViewGuid } );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
@@ -46,9 +48,10 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void DataViewFilter_WithoutDataView_IncludesGroup()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            var filter = CreateDataViewFilter( 3, rockContextMock.Object );
+            var filter = CreateDataViewFilter( 3, rockContext );
             var groupOpportunity = CreateGroupOpportunity( Array.Empty<Guid>() );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
@@ -65,12 +68,14 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             var dataViewMock = CreatePersistedDataViewMock( dataViewId, dataViewGuid, "Test" );
             var persistedValueMock = GetPersistedDataViewValueMock( dataViewId, personId );
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.Object.Set<DataView>().Add( dataViewMock.Object );
-            rockContextMock.Object.Set<DataViewPersistedValue>().Add( persistedValueMock.Object );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            var filter = CreateDataViewFilter( personId, rockContextMock.Object );
+            rockContext.Set<DataView>().Add( dataViewMock.Object );
+            rockContext.Set<DataViewPersistedValue>().Add( persistedValueMock.Object );
+
+            var filter = CreateDataViewFilter( personId, rockContext );
             var groupOpportunity = CreateGroupOpportunity( new[] { dataViewGuid } );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
@@ -90,13 +95,14 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var includesPersonDataViewMock = CreatePersistedDataViewMock( includesPersonDataViewId, includesPersonDataViewGuid, "Test" );
             var excludesPersonDataViewMock = CreatePersistedDataViewMock( excludesPersonDataViewId, excludesPersonDataViewGuid, "Test" );
             var persistedValueMock = GetPersistedDataViewValueMock( includesPersonDataViewId, personId );
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            rockContextMock.Object.Set<DataView>().Add( includesPersonDataViewMock.Object );
-            rockContextMock.Object.Set<DataView>().Add( excludesPersonDataViewMock.Object );
-            rockContextMock.Object.Set<DataViewPersistedValue>().Add( persistedValueMock.Object );
+            rockContext.Set<DataView>().Add( includesPersonDataViewMock.Object );
+            rockContext.Set<DataView>().Add( excludesPersonDataViewMock.Object );
+            rockContext.Set<DataViewPersistedValue>().Add( persistedValueMock.Object );
 
-            var filter = CreateDataViewFilter( personId, rockContextMock.Object );
+            var filter = CreateDataViewFilter( personId, rockContext );
             var groupOpportunity = CreateGroupOpportunity( new[] { includesPersonDataViewGuid, excludesPersonDataViewGuid } );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
@@ -109,9 +115,10 @@ namespace Rock.Tests.CheckIn.v2.Filters
         {
             var personId = 3;
             var deletedDataViewGuid = new Guid( "b1f5fe41-d546-47e6-b4d0-09f9b2a3f676" );
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
 
-            var filter = CreateDataViewFilter( personId, rockContextMock.Object );
+            var filter = CreateDataViewFilter( personId, rockContext );
             var groupOpportunity = CreateGroupOpportunity( new[] { deletedDataViewGuid } );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );

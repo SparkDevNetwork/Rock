@@ -222,8 +222,13 @@ namespace Rock.Web
                     return match.Value;
                 }
 
+                var urlContainsQuery = url.Contains( "?" );
+                var urlWithoutQuery = urlContainsQuery
+                    ? url.Substring( 0, url.IndexOf( "?", StringComparison.Ordinal ) )
+                    : url;
+
                 // Resolve the imported file path to the absolute path on disk.
-                var importAbsPath = GetFullPath( url, baseDir );
+                var importAbsPath = GetFullPath( urlWithoutQuery, baseDir );
 
                 if ( !File.Exists( importAbsPath ) )
                 {
@@ -249,10 +254,10 @@ namespace Rock.Web
                 }
 
                 // Append ?v=hash while preserving any existing query string.
-                // We are aware that this might cause to 'v' parameters, but
+                // We are aware that this might cause two 'v' parameters, but
                 // that isn't a major issue since this is just for the browser
                 // to decide if it needs to re-fetch the file.
-                var sep = url.Contains( "?" ) ? "&" : "?";
+                var sep = urlContainsQuery ? "&" : "?";
                 var newUrl = url + sep + "v=" + hash;
 
                 // Rebuild the @import statement with the new URL.

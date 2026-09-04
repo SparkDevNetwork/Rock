@@ -22,11 +22,15 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
 using Rock.Attribute;
+using Rock.Bus.Locking;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.ViewModels.Blocks.Core.ServiceJobDetail;
@@ -106,34 +110,24 @@ namespace Rock.Model
                     return false;
                 }
 
-                // Check if another scheduler is running this job
-                try
+                // Probe the distributed lock as a hint. If we cannot grab it
+                // immediately, some other scheduler (on this node or elsewhere
+                // in the farm) is running the job — bail with false so the
+                // caller can surface "already running" to the user. If we do
+                // grab it, dispose immediately and proceed; the race window
+                // between this probe and the actual fire is acceptable because
+                // RockTriggerListener.VetoJobExecution will re-acquire and
+                // veto if another node wins the race in that window. This
+                // replaces a Quartz-internals enumeration
+                // (StdSchedulerFactory().AllSchedulers) that only saw local
+                // schedulers and does not compose across the farm.
+                var lockProvider = RockApp.Current.GetRequiredService<IDistributedLockProvider>();
+                using ( var probe = lockProvider.TryAcquire( typeof( RockTriggerListener ), jobId.ToString(), TimeSpan.Zero ) )
                 {
-                    var allSchedulers = new StdSchedulerFactory().AllSchedulers;
-                    var otherSchedulers = allSchedulers
-                        .Where( s => s.SchedulerName != runNowSchedulerName );
-
-                    foreach ( var scheduler in otherSchedulers )
+                    if ( !probe.IsAcquired )
                     {
-                        var currentlyExecutingJobs = scheduler.GetCurrentlyExecutingJobs();
-                        var isAlreadyRunning = currentlyExecutingJobs
-                            .Where( j =>
-                                j.JobDetail.Description == jobId.ToString() &&
-                                j.JobDetail.ConcurrentExectionDisallowed )
-                            .Any();
-
-                        if ( isAlreadyRunning )
-                        {
-                            // A job with that Id is already running and ConcurrentExectionDisallowed is true
-                            var errorMessage = $" Scheduler '{scheduler.SchedulerName}' is already executing job Id '{jobId}' (name: {job.Name})";
-                            System.Diagnostics.Debug.WriteLine( $"{RockDateTime.Now.ToString()} {errorMessage}" );
-                            return false;
-                        }
+                        return false;
                     }
-                }
-                catch
-                {
-                    // Was blank in the RunJobNowTransaction (intentional?)
                 }
 
                 // create the quartz job and trigger
@@ -159,6 +153,14 @@ namespace Rock.Model
                 // set up the listener to report back from the job when it completes
                 var listener = new RunNowRockJobListener( job.Id );
                 sched.ListenerManager.AddJobListener( listener, EverythingMatcher<JobKey>.AllJobs() );
+
+                // Register the trigger listener so Run Now goes through the same
+                // pre-execution gate as scheduled runs: cross-node distributed
+                // lock acquisition (VetoJobExecution in RockTriggerListener) plus
+                // the legacy "another scheduler already running this job" check.
+                // Without this, a Run Now on one node would bypass distributed
+                // coordination and could race a scheduled fire on another node.
+                sched.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<TriggerKey>.AllTriggers() );
 
                 // start the scheduler
                 sched.Start();

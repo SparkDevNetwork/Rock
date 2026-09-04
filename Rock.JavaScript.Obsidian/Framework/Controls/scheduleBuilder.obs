@@ -2,7 +2,7 @@
 <template>
     <RockFormField :modelValue="internalValue" v-bind="standardProps" name="schedule-builder">
         <template #besideLabel v-if="displayScheduleFriendlyTextBesideLabel && scheduleSummary">
-            <div class="label label-info schedulebuilder-info">{{ scheduleSummary }}</div>
+            <div class="label label-info label-form-control">{{ scheduleSummary }}</div>
         </template>
 
         <div class="control-wrapper">
@@ -27,6 +27,12 @@
         <RockFormField v-if="!hideDuration" :modelValue="durationInSeconds" label="Duration" name="duration">
             <template #default>
                 <div class="form-control-group">
+                    <NumberBox v-model="durationInDays" inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+
                     <NumberBox v-model="durationInHours" inputGroupClasses="input-width-md">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">hrs</span>
@@ -409,13 +415,25 @@
 
     // #region Computed Values
 
-    const durationInHours = computed({
+    const durationInDays = computed({
         get(): number | null {
-            return (durationInSeconds.value === null || durationInSeconds.value <= 1) ? 0 : Math.floor(durationInSeconds.value / 3600);
+            return (durationInSeconds.value === null || durationInSeconds.value <= 1) ? 0 : Math.floor(durationInSeconds.value / 86400);
         },
 
         set(value: number | null) {
-            const newDurationInSeconds = ((value ?? 0) * 3600) + ((durationInMinutes.value ?? 0) * 60);
+            const newDurationInSeconds = ((value ?? 0) * 86400) + ((durationInHours.value ?? 0) * 3600) + ((durationInMinutes.value ?? 0) * 60);
+
+            durationInSeconds.value = newDurationInSeconds >= 0 ? newDurationInSeconds : 0;
+        }
+    });
+
+    const durationInHours = computed({
+        get(): number | null {
+            return (durationInSeconds.value === null || durationInSeconds.value <= 1) ? 0 : Math.floor(durationInSeconds.value / 3600) % 24;
+        },
+
+        set(value: number | null) {
+            const newDurationInSeconds = ((durationInDays.value ?? 0) * 86400) + ((value ?? 0) * 3600) + ((durationInMinutes.value ?? 0) * 60);
 
             durationInSeconds.value = newDurationInSeconds >= 0 ? newDurationInSeconds : 0;
         }
@@ -427,7 +445,7 @@
         },
 
         set(value: number | null) {
-            const newDurationInSeconds = ((durationInHours.value ?? 0) * 3600) + ((value ?? 0) * 60);
+            const newDurationInSeconds = ((durationInDays.value ?? 0) * 86400) + ((durationInHours.value ?? 0) * 3600) + ((value ?? 0) * 60);
 
             durationInSeconds.value = newDurationInSeconds >= 0 ? newDurationInSeconds : 0;
         }

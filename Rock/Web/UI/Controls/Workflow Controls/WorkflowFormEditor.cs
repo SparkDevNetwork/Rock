@@ -298,12 +298,12 @@ namespace Rock.Web.UI.Controls
             foreach ( var attributeItem in workflowTypeAttributes )
             {
                 var fieldType = FieldTypeCache.Get( attributeItem.Value.FieldTypeId );
-                if ( fieldType?.Field is Rock.Field.Types.GroupFieldType )
+                if ( fieldType?.Guid == SystemGuid.FieldType.GROUP.AsGuid() )
                 {
                     _ddlPersonEntryFamilyAttribute.Items.Add( new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() ) );
                 }
 
-                if ( fieldType?.Field is Rock.Field.Types.PersonFieldType )
+                if ( fieldType?.Guid == SystemGuid.FieldType.PERSON.AsGuid() )
                 {
                     _ddlPersonEntryPersonAttribute.Items.Add( new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() ) );
                     _ddlPersonEntrySpouseAttribute.Items.Add( new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() ) );
@@ -343,7 +343,9 @@ namespace Rock.Web.UI.Controls
             foreach ( var attributeItem in workflowTypeAttributes )
             {
                 var fieldType = FieldTypeCache.Get( attributeItem.Value.FieldTypeId );
-                if ( fieldType != null && fieldType.Field is Rock.Field.Types.TextFieldType )
+                var isTextField = fieldType?.Guid == SystemGuid.FieldType.TEXT.AsGuid()
+                    || fieldType?.Guid == SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
+                if ( isTextField )
                 {
                     var li = new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() );
                     li.Selected = workflowActionForm.ActionAttributeGuid.HasValue && workflowActionForm.ActionAttributeGuid.Value.ToString() == li.Value;
@@ -728,7 +730,7 @@ namespace Rock.Web.UI.Controls
             {
                 ID = "_dvpPersonEntryRecordSource",
                 Label = "Record Source",
-                Required = true,
+                Required = false,
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )
             };
 

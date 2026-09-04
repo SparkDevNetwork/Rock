@@ -1,0 +1,77 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="config.bag?.isVisible" class="card card-profile overflow-hidden">
+        <div class="card-header">Connection Requests</div>
+
+        <template v-for="(row, index) in rows" :key="index">
+            <div v-if="row.isFirstOfType" class="card-subheader">{{ row.item.connectionTypeName }}</div>
+
+            <dl class="request-row m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium"
+                :class="{ 'request-row-striped': index % 2 === 1 }">
+                <dt>
+                    <a v-if="row.item.detailUrl" :href="row.item.detailUrl">{{ row.item.name }}</a>
+                    <template v-else>{{ row.item.name }}</template>
+                </dt>
+                <dd>{{ row.item.statusText }}</dd>
+            </dl>
+        </template>
+
+        <div v-if="rows.length === 0" class="card-body"></div>
+    </div>
+</template>
+
+<style scoped>
+.request-row dt,
+.request-row dd {
+    color: var(--color-interface-medium);
+}
+
+.request-row-striped {
+    background-color: var(--color-interface-softer);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ConnectionRequestItemBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/ConnectionRequests/connectionRequestItemBag";
+    import { ConnectionRequestsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/ConnectionRequests/connectionRequestsBag";
+    import { ConnectionRequestsOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/ConnectionRequests/connectionRequestsOptionsBag";
+
+    // #region Types
+
+    type ConnectionRequestRow = {
+        /** The connection request row data provided by the server. */
+        item: ConnectionRequestItemBag;
+
+        /**
+         * True when this row is the first of its connection type, which causes
+         * a sub-header with the connection type name to render above it.
+         */
+        isFirstOfType: boolean;
+    };
+
+    // #endregion Types
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<ConnectionRequestsBag, ConnectionRequestsOptionsBag>>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const rows = computed((): ConnectionRequestRow[] => {
+        const items = config.bag?.connectionRequests ?? [];
+
+        return items.map((item, index) => ({
+            item,
+            isFirstOfType: index === 0 || item.connectionTypeName !== items[index - 1].connectionTypeName
+        }));
+    });
+
+    // #endregion Computed Values
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

@@ -327,6 +327,8 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
+        [Obsolete( "This method will be removed in the future." )]
+        [RockObsolete( "20.0" )]
         public string GetSerializedValue( T value )
         {
             return ( ( int ) ( object ) value ).ToString();
@@ -338,20 +340,54 @@ namespace Rock.Field.Types
         /// <param name="serialized"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
+        [Obsolete( "Use the GetEnumDeserializedValue method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public T GetDeserializedValue( string serialized, T defaultValue )
         {
-            T enumValue;
+            return Helper.GetEnumDeserializedValue( serialized, defaultValue );
+        }
 
-            var isValid = Enum.TryParse( serialized, out enumValue );
+        #endregion
 
-            if ( isValid )
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( _EnumValues == null || !_EnumValues.Any() )
             {
-                return enumValue;
+                return null;
             }
-            else
+
+            /*
+                8/19/26 - CLAUDE
+
+                Always a complete list, and deliberately not capped. The members are
+                fixed at compile time, so unlike a defined type or a query backed list
+                there is no size this could grow to at run time and no context that
+                could change the answer. A subclass narrowing the set through
+                SetAvailableValues only makes it smaller.
+
+                Reason: A closed set is the one case where a complete list is complete
+                by construction.
+            */
+            return new FieldTypeHints
             {
-                return defaultValue;
-            }
+                Values = _EnumValues
+                    .Select( kvp => new ListItemBag
+                    {
+                        Value = kvp.Key.ToString(),
+                        Text = kvp.Value
+                    } )
+                    .ToList(),
+                IsCompleteList = true
+
+                // ValueFormat and Instructions are deliberately absent. The stored
+                // value is one entry taken straight from Values, so the pairing of
+                // number and name already says everything: the number is what is
+                // stored and the name is only a label. There is nowhere else to go
+                // looking.
+            };
         }
 
         #endregion

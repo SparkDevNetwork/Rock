@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="panelElement">
+        <h2>Thanks for Praying!</h2>
+        <p>If you'd like, you can start a new prayer session.</p>
+        <RockButton btnType="primary" class="pull-right js-start-again" :disabled="isBusy" @click="$emit('startAgain')">Start Again</RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    defineProps({
+        isBusy: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "startAgain"): void;
+    }>();
+
+    // #region Values
+
+    const panelElement = ref<HTMLElement>();
+
+    // #endregion Values
+
+    // #region Lifecycle Hooks
+
+    // Focus the Start Again button on render so a new session can be started from
+    // the keyboard.
+    onMounted(() => {
+        panelElement.value?.querySelector<HTMLButtonElement>("button.js-start-again")?.focus();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

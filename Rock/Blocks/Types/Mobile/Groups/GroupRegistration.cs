@@ -147,7 +147,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Prevent Overcapacity Registrations",
         Description = "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no family members can be registered.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = false,
         Key = AttributeKey.PreventOvercapacityRegistrations,
         Order = 12 )]
@@ -156,7 +156,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Autofill Form",
         Description = "If set to false then the form will not load the context of the logged in user.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.AutofillForm,
         Order = 13 )]

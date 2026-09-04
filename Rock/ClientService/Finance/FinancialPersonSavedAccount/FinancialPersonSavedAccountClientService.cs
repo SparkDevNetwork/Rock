@@ -107,6 +107,7 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                 {
                     var description = FinancialPaymentDetail.GetAccountDescription( a.AccountNumberMasked, a.ExpirationMonth, a.ExpirationYear );
                     var image = FinancialPaymentDetail.GetCreditCardImageSourceByTypeId( a.CreditCardTypeValueId );
+                    var accountTypeName = FinancialPaymentDetail.GetCreditCardBrandByTypeId( a.CreditCardTypeValueId );
 
                     Guid? currencyTypeGuid = null;
 
@@ -124,6 +125,7 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                         Image = image,
                         AccountNumberMasked = a.AccountNumberMasked,
                         CurrencyTypeGuid = currencyTypeGuid,
+                        AccountTypeName = accountTypeName,
                     };
                 } )
                 .OrderBy( a => a.Text )

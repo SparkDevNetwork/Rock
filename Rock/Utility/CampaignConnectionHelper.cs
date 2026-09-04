@@ -490,7 +490,7 @@ namespace Rock.Utility
             // If the person is a member in more than one of opportunity groups, get all the campus ids that the connector can work with
             connectorCampusIds = opportunityConnecterGroupQuery.Where( a => a.ConnectorGroup.Members.Any( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.PersonId == connectorPersonId ) ).Select( a => a.CampusId ).Distinct().ToList();
 
-            // NOTE: if connectorPerson isn't in a ConnectionOpportunityConnectorGroup, there will be no campus ids. The AddCampaignRequests block shouldn't of let them request connections for this campaign
+            // NOTE: if connectorPerson isn't in a ConnectionOpportunityConnectorGroup, there will be no campus ids.
             return connectorCampusIds;
         }
 

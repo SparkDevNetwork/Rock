@@ -80,10 +80,6 @@ namespace Rock.Blocks.Store
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            // Store.css supplies the styling the store category list relies on
-            // (mirrors the WebForms block's OnInit AddCSSLink).
-            RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( "~/Styles/Blocks/Store/Store.css" ), true );
-
             return GetBox();
         }
 

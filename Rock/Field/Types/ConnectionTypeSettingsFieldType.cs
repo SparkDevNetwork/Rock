@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,7 +62,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            ParseDelimitedGuids( privateValue, out var typeGuid, out var opportunityGuid, out _, out _ );
+            Helper.ParseConnectionTypeSettingsDelimitedGuids( privateValue, out var typeGuid, out var opportunityGuid, out _, out _ );
 
             if ( !typeGuid.HasValue && !opportunityGuid.HasValue )
             {
@@ -208,6 +208,21 @@ namespace Rock.Field.Types
 
         #endregion Edit Control
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Up to four guids separated by pipes, in the order connection type, connection opportunity, connection status, connection source, as in a1|b2|c3|d4. Any part may be left empty to leave that selection unset, and trailing parts may be omitted entirely, so a value with only the first two pipes sets just the type and opportunity.",
+                Instructions = "Each guid identifies a row in its own table: ConnectionType, ConnectionOpportunity, ConnectionStatus, and DefinedValue for the source. The opportunity, status and source all belong to the connection type named in the first part, so they are only meaningful alongside it."
+            };
+        }
+
+        #endregion
+
         #region Parse Helpers
 
         /// <summary>
@@ -218,13 +233,11 @@ namespace Rock.Field.Types
         /// <param name="connectionOpportunityGuid">The Connection Opportunity guid, if present.</param>
         /// <param name="connectionStatusGuid">The Connection Status guid, if present.</param>
         /// <param name="connectionTypeSourceGuid">The Connection Type Source guid, if present.</param>
+        [Obsolete( "Use the ParseConnectionTypeSettingsDelimitedGuids method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public static void ParseDelimitedGuids( string value, out Guid? connectionTypeGuid, out Guid? connectionOpportunityGuid, out Guid? connectionStatusGuid, out Guid? connectionTypeSourceGuid )
         {
-            var parts = ( value ?? string.Empty ).Split( '|' );
-            connectionTypeGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
-            connectionOpportunityGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
-            connectionStatusGuid = parts.Length > 2 ? parts[2].AsGuidOrNull() : null;
-            connectionTypeSourceGuid = parts.Length > 3 ? parts[3].AsGuidOrNull() : null;
+            Helper.ParseConnectionTypeSettingsDelimitedGuids( value, out connectionTypeGuid, out connectionOpportunityGuid, out connectionStatusGuid, out connectionTypeSourceGuid );
         }
 
         private static void GetModelsFromAttributeValue( string value, out ConnectionType type, out ConnectionOpportunity opportunity, out ConnectionStatus status, out ConnectionTypeSource source )
@@ -234,7 +247,7 @@ namespace Rock.Field.Types
             status = null;
             source = null;
 
-            ParseDelimitedGuids( value, out var typeGuid, out var opportunityGuid, out var statusGuid, out var sourceGuid );
+            Helper.ParseConnectionTypeSettingsDelimitedGuids( value, out var typeGuid, out var opportunityGuid, out var statusGuid, out var sourceGuid );
 
             if ( !typeGuid.HasValue && !opportunityGuid.HasValue && !statusGuid.HasValue && !sourceGuid.HasValue )
             {
@@ -272,7 +285,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            ParseDelimitedGuids( privateValue, out var typeGuid, out var opportunityGuid, out var statusGuid, out var sourceGuid );
+            Helper.ParseConnectionTypeSettingsDelimitedGuids( privateValue, out var typeGuid, out var opportunityGuid, out var statusGuid, out var sourceGuid );
 
             if ( !typeGuid.HasValue && !opportunityGuid.HasValue && !statusGuid.HasValue && !sourceGuid.HasValue )
             {

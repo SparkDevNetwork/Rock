@@ -28,6 +28,13 @@
         },
 
         /**
+         * Whether to hide the category axis line. Shown by default.
+         */
+        categoryHideAxisLine: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
          * The maximum number of ticks to show on the category axis.
          */
         categoryMaxTickCount: {
@@ -116,6 +123,13 @@
         },
 
         /**
+         * Whether to show a point marker at each data point. Points are shown only on hover by default.
+         */
+        showPoints: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
          * Whether the chart has stacked lines.
          */
         stack: {
@@ -166,6 +180,13 @@
          * The per series property, `props.data[n].isUnfilled`, overrides this setting.
          */
         unfilled: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * Whether to hide the value axis line. Shown by default.
+         */
+        valueHideAxisLine: {
             type: Boolean as PropType<boolean | undefined>
         },
 
@@ -425,8 +446,16 @@
                     // set the colors to "transparent" and the hover colors to the series color.
                     // This is the way as going the `options.elements.point.radius: 0` route
                     // causes hovered points to be clipped when they are min or max values.
-                    pointBackgroundColor: Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
-                    pointBorderColor: Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
+                    // When `showPoints` is set, render a hollow point at every data point
+                    // using the same style as the hovered point.
+                    pointRadius: props.showPoints === true ? hoverPointRadius : undefined,
+                    pointBorderWidth: props.showPoints === true ? hoverPointBorderWidth : undefined,
+                    pointBackgroundColor: props.showPoints === true
+                        ? getCssVar("--color-interface-softest")
+                        : Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
+                    pointBorderColor: props.showPoints === true
+                        ? seriesColor
+                        : Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
                     pointHoverBackgroundColor: getCssVar("--color-interface-softest"),
                     pointHoverBorderColor: seriesColor,
                     pointHoverBorderWidth: hoverPointBorderWidth,
@@ -671,7 +700,10 @@
             scales: {
                 x: {
                     border: {
-                        color: getCssVar("--color-interface-soft")
+                        color: getCssVar("--color-interface-soft"),
+
+                        // Show/hide the category axis line.
+                        display: props.categoryHideAxisLine !== true
                     },
 
                     grid: {
@@ -729,7 +761,10 @@
                     beginAtZero: internalValueSuggestedMin.value === 0,
 
                     border: {
-                        color: getCssVar("--color-interface-soft")
+                        color: getCssVar("--color-interface-soft"),
+
+                        // Show/hide the value axis line.
+                        display: props.valueHideAxisLine !== true
                     },
 
                     grid: {

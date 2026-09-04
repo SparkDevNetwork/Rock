@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block"
+           title="Link Organization"
+           titleIconCssClass="ti ti-link">
+
+        <p>
+            To get the most out of Rock, link your organization to a registered
+            Spark Development Network account.
+        </p>
+
+        <p>
+            To do this you will be directed to the Spark Development Network website
+            where you will be asked to log in and authorize Rock to access your
+            organization.
+        </p>
+
+        <NotificationBox v-if="warningMessage"
+                         type="warning">
+            {{ warningMessage }}
+        </NotificationBox>
+
+        <RockButton btnType="primary"
+                    autoDisable
+                    @click="onStartLink">
+            Link Organization
+        </RockButton>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+
+    type InitializationBag = {
+        errorMessage?: string | null;
+    };
+
+    // #region Values
+
+    const config = useConfigurationValues<InitializationBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const warningMessage = ref(config.errorMessage);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Starts the process of linking an organization.
+     */
+    async function onStartLink(): Promise<void> {
+        warningMessage.value = "";
+
+        const result = await invokeBlockAction<string>("StartLink", {
+            callbackUrl: window.location.href
+        });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to link organization.");
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

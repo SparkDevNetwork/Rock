@@ -6,12 +6,14 @@
 // =============================================================
 // Table of Content
 //  + Group Viewer - styles for the group viewer block.
+//  + Group Viewer v2 - styles for the new group viewer block.
 //  + Group Scheduler v2 - styles for the Obsidian group scheduler block.
 //  + Group Schedule Status Board v2
+//  + Group Finder - styles for the Obsidian group finder block.
 // =============================================================
 
 
-// ======================== GROUP VIEWER ========================
+// ======================== GROUP VIEWER / DETAIL ========================
 .group-location-map {
   margin-bottom:          var(--spacing-large);
 
@@ -38,7 +40,173 @@
     max-height:          calc(100vh - 112px);
   }
 }
+
+
 // ====================== END GROUP VIEWER ======================
+
+// ======================== GROUP VIEWER V2 ========================
+
+.group-detail {
+
+  // View Panel
+
+  /* The block surfaces requirement status in its own UI; the global
+     "Group has requirements" badge is redundant chrome. */
+  .rockbadge[data-original-title="Group has requirements."] {
+    display: none;
+  }
+
+  .alert {
+    margin-bottom: 0;
+  }
+
+  /* Hide the default ("Attributes") category heading. AttributeValuesContainer
+     always renders the empty-Guid default category first, so :first-child is a
+     stable target. Named categories keep their headings. */
+  .attributevaluescontainer > .attributevaluescontainer-category:first-child > h4 {
+    display: none;
+  }
+
+  .attributevaluescontainer > .attributevaluescontainer-category > h4 {
+    color: var(--color-interface-strong);
+  }
+
+  .linkages-list {
+    list-style: none;
+    padding-left: var(--spacing-medium);
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+
+      &::before {
+        content: "•";
+        color: var(--color-link);
+        font-size: var(--font-size-xsmall);
+        line-height: 1;
+      }
+    }
+  }
+
+  /* Drop the trailing form-group margin on whichever linkage section is the
+     last visible one. Registrations / event occurrences / content items each
+     render conditionally, so :last-child handles the dynamic case. */
+  .overview-linkages > .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+
+  // Edit Panel
+
+  .static-compact {
+    .form-group.static-control .form-control-static {
+      padding: 0;
+      min-height: 0;
+    }
+  }
+
+  .relationship-matrix > :nth-child(n+7) {
+    margin-top: 0.75rem;
+  }
+
+
+  // Location Card
+
+  .location-card {
+    display: block;
+    color: inherit;
+    border: 1px solid var(--color-interface-soft);
+    overflow: hidden;
+
+    & + & {
+      margin-top: var(--spacing-small);
+    }
+
+    /* Hover overlay is desktop-only. Touch devices rely on the entire card
+       being a navigable anchor (tap anywhere navigates). */
+    @media (hover: hover) {
+      &:hover .location-card-expand {
+        opacity: 1;
+      }
+    }
+  }
+
+  .location-card-map-wrap {
+    position: relative;
+  }
+
+  /* pointer-events:none ensures clicks bubble up to the wrapping anchor
+     instead of being intercepted by Google Maps internal handlers.
+     gestureHandling:"none" disables user gestures but does not stop event
+     bubbling. */
+  .location-card-map {
+    background: var(--color-interface-softer);
+    pointer-events: none;
+  }
+
+  .location-card-expand {
+    position: absolute;
+    bottom: var(--spacing-xsmall);
+    right: var(--spacing-xsmall);
+    background: var(--color-interface-softest);
+    padding: var(--spacing-xsmall);
+    border-radius: var(--rounded-small);
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    pointer-events: none;
+    line-height: 1;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 1px 4px -1px;
+  }
+
+  .location-card-body {
+    padding: var(--spacing-small) var(--spacing-medium);
+  }
+
+  .location-card-address {
+    white-space: pre-line;
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-small);
+  }
+
+  .location-card-schedule {
+    white-space: pre-line;
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    margin-top: var(--spacing-xsmall);
+  }
+
+
+  // Location Modal
+
+  .group-location-tabs {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .capacity-matrix {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      border: 0;
+      padding: var(--spacing-xsmall) var(--spacing-small);
+      vertical-align: middle;
+    }
+
+    th {
+      font-weight: var(--font-weight-regular);
+      color: var(--color-interface-strong);
+    }
+  }
+
+  .capacity-matrix__name {
+    white-space: nowrap;
+  }
+
+}
+
 
 // ====================== GROUP MAP ======================
 
@@ -471,3 +639,1276 @@
 
 
 // ====================== END GROUP SCHEDULE STATUS BOARD ======================
+
+
+// ======================== GROUP FINDER ========================
+/*
+    From groupFinder.obs and its partials under GroupFinder/.
+
+    Every class is prefixed groupfinder- rather than nested under .groupfinder: the filter
+    popovers (DropDownContent) and the mobile filter panel (Modal) teleport out of the block
+    root, so a nested selector would not reach them.
+*/
+
+.groupfinder {
+  position:                 relative;
+
+  /* The card column width and the three-column cap that both the results grid and the
+     result-count line align to. Declared once here so every consumer stays in step. */
+  --groupfinder-card-width: 370px;
+  --groupfinder-grid-max:  calc(3 * var(--groupfinder-card-width) + 2 * var(--spacing-medium));
+
+  /* No outer padding or background: the host layout owns the spacing and backdrop, so the
+     block sits full-bleed on whatever surface it is placed. */
+}
+
+/* The configuration-warning list inside the notification box. */
+.groupfinder-configuration-warnings {
+  margin:                   var(--spacing-xsmall) 0 0;
+}
+
+
+// ---- Filter bar -------------------------------------------------------------
+
+/*
+    Centered filter bar that pins to the top of the block and acts as the sticky header. The
+    bar is a soft pill that hugs its content (the search pill plus the More Filters action)
+    and centers in the block rather than stretching edge to edge.
+*/
+.groupfinder-filterbar {
+  position:                 sticky;
+  top:                      0;
+  z-index:                  10;
+  display:                  flex;
+  flex-wrap:                nowrap;
+  align-items:              center;
+  justify-content:          center;
+  gap:                      var(--spacing-xlarge);
+  width:                    fit-content;
+  max-width:                100%;
+  margin-inline:            auto;
+  margin-bottom:            var(--spacing-medium);
+  padding:                  var(--spacing-tiny);
+  background:               var(--color-interface-softer);
+  border-radius:            var(--rounded-full);
+  /* A soft shadow lifts the pill so its edge reads even when the page background matches the fill. */
+  box-shadow:               var(--box-shadow);
+
+  @media (max-width: ($screen-medium - 1)) {
+    display:                none;
+  }
+}
+
+/* The search pill: filter segments and the primary search action on one rounded, elevated surface. */
+.groupfinder-searchpill {
+  display:                  flex;
+  align-items:              center;
+  gap:                      var(--spacing-large);
+  min-width:                0;
+  /* Right padding insets the search button from the pill's rounded end so its full (square)
+     bounds sit in the straight middle and are not clipped by the border-radius + overflow.
+     Left stays flush. */
+  padding:                  0 var(--spacing-small) 0 0;
+  overflow:                 hidden;
+  background:               var(--color-interface-softest);
+  border-radius:            var(--rounded-full);
+  box-shadow:               var(--box-shadow);
+}
+
+.groupfinder-filter-segment-list {
+  display:                  flex;
+  align-items:              center;
+  min-width:                0;
+
+  /*
+      DropDownContent wraps each segment in an anchor element that sits between the segment
+      list and the button. Make the wrapper a shrinkable flex box (display: flex + min-width: 0)
+      so the 240px button can narrow when the bar runs out of room; without this the wrapper's
+      auto min-width pins the segment. Every direct child that is not a divider is such a wrapper.
+  */
+  > *:not(.groupfinder-filter-segment-divider) {
+    display:                flex;
+    min-width:              0;
+  }
+
+  /*
+      The pill is flush against its first segment, so that segment needs more than the segment
+      padding to clear the rounded end and not look wedged into the curve.
+  */
+  > *:first-child .groupfinder-filter-segment {
+    padding-left:           var(--spacing-large);
+  }
+}
+
+/*
+    A segment lays its two lines of text (the filter name over its current value or a placeholder)
+    beside a trailing control - the caret, or the clear action once there is something to clear.
+    The two sit side by side rather than the control floating over the text, so a long value
+    ellipsizes short of the control instead of running underneath it.
+*/
+.groupfinder-filter-segment {
+  position:                 relative;
+  display:                  flex;
+  align-items:              center;
+  gap:                      var(--spacing-xsmall);
+  width:                    240px;
+  /* Keep 240px as the preferred size, but allow shrinking below it when the bar runs out of
+     room, so the segments narrow and their values ellipsize instead of wrapping. */
+  min-width:                0;
+  padding:                  var(--spacing-medium);
+  border:                   0;
+  border-radius:            0;
+  background:               transparent;
+  text-align:               left;
+  cursor:                   pointer;
+
+  &:hover,
+  &.is-open {
+    background:             var(--color-interface-softer);
+  }
+
+  /*
+      Open: highlight the name and turn the caret over. The caret only survives an open segment
+      while there is nothing to clear; once the segment holds a value the clear action takes its
+      slot instead (see isSegmentClearShown), so the two affordances never compete.
+  */
+  &.is-open .groupfinder-filter-segment-name {
+    color:                  var(--color-primary);
+  }
+
+  &.is-open .groupfinder-filter-segment-caret {
+    transform:              rotate(180deg);
+  }
+
+  /*
+      &- concatenation, so these still compile to single-class selectors and keep the weight
+      the scoped rules had. It only factors out the shared prefix; it does not nest by DOM.
+  */
+  /*
+      The name and value column, taking the width the trailing control does not. min-width: 0 is
+      what lets the value ellipsize here rather than pushing the control past the segment edge.
+  */
+  &-text {
+    display:                flex;
+    flex:                   1 1 auto;
+    flex-direction:         column;
+    align-items:            flex-start;
+    gap:                    2px;
+    min-width:              0;
+  }
+
+  &-name {
+    font-size:              var(--font-size-small);
+    font-weight:            var(--font-weight-semibold);
+    line-height:            var(--line-height-tight);
+    color:                  var(--color-interface-strong);
+  }
+
+  &-value {
+    max-width:              100%;
+    font-size:              var(--font-size-regular);
+    line-height:            var(--line-height-normal);
+    color:                  var(--color-interface-strong);
+  }
+
+  /* The time-of-day icon sits just before the When value (e.g. a sun beside "Mon, Tue, Thu"). */
+  &-value-icon {
+    margin-right:           var(--spacing-xsmall);
+  }
+
+  /*
+      Only-More-Filters mode: the sole segment carries a summary of every applied value, which
+      can be long. A flex item defaults to min-width: auto (its content width), so without this
+      the summary would stretch the segment past its fixed width; min-width: 0 lets the fixed
+      width hold so the value truncates with an ellipsis instead.
+  */
+  &-filters,
+  &-filters &-value {
+    min-width:              0;
+  }
+
+  &-caret {
+    flex:                   none;
+    transition:             transform 0.15s ease-in-out;
+  }
+
+  /*
+      The clear action, which takes the place of the caret on an open segment that has something
+      to clear. It holds the same slot beside the text, so the swap does not shift the value, and
+      carries a hit area of its own since it is a target inside the larger segment button rather
+      than part of it. The negative margins keep that hit area from widening the slot the caret
+      occupies, so the ellipsis lands in the same place either way.
+  */
+  &-clear {
+    display:                inline-flex;
+    flex:                   none;
+    align-items:            center;
+    justify-content:        center;
+    width:                  24px;
+    height:                 24px;
+    margin:                 -4px;
+    font-size:              var(--font-size-regular);
+    color:                  var(--color-interface-strong);
+    border-radius:          50%;
+    cursor:                 pointer;
+
+    &:hover,
+    &:focus-visible {
+      background:           var(--color-interface-soft);
+      color:                var(--color-interface-stronger);
+    }
+  }
+
+  &-divider {
+    flex-shrink:            0;
+    align-self:             stretch;
+    width:                  1px;
+    margin:                 var(--spacing-small) 0;
+    background:             var(--color-interface-soft);
+  }
+}
+
+
+// ---- Shared filter-bar primitives -------------------------------------------
+
+/* Ellipsize a single-line value. Shared by the segment value and the icon-select trigger text. */
+.groupfinder-filter-segment-value,
+.groupfinder-icon-select-text {
+  overflow:                 hidden;
+  white-space:              nowrap;
+  text-overflow:            ellipsis;
+}
+
+/* An unset value reads muted in both the segment and the icon-select trigger. */
+.groupfinder-filter-segment-value.is-placeholder,
+.groupfinder-icon-select-value.is-placeholder {
+  color:                    var(--color-interface-medium);
+}
+
+/* The dropdown affordance, shared by the segment and the icon-select trigger. */
+.groupfinder-filter-segment-caret,
+.groupfinder-icon-select-caret {
+  font-size:                var(--font-size-regular);
+  color:                    var(--color-interface-medium);
+}
+
+/*
+    The round 44px icon button used for both the primary search action and the More Filters
+    toggle. Only the shape lives here; each consumer supplies its own surface.
+
+    The More Filters toggle also carries .btn, so it picks up the real default-button surface,
+    colors, and hover/active/focus effects rather than re-implementing them. Bootstrap .btn
+    declares display, border, padding, font-size, line-height, and border-radius as well, so
+    the shape is repeated at .btn specificity through the second selector instead of relying
+    on which stylesheet a theme happens to load last.
+*/
+.groupfinder-round-button,
+.btn.groupfinder-round-button {
+  display:                  inline-flex;
+  align-items:              center;
+  justify-content:          center;
+  width:                    44px;
+  height:                   44px;
+  padding:                  0;
+  border:                   0;
+  border-radius:            50%;
+  font-size:                var(--font-size-h5);
+  /* The .btn base line-height offsets the glyph's line box; reset it so the flex centering
+     actually centers the icon. */
+  line-height:              1;
+}
+
+
+// ---- Search action ----------------------------------------------------------
+
+/*
+    Round primary search action at the trailing end of the pill. While filters are pending it
+    widens into a pill with a "Search" label (see .is-expanded); the width and label slide in
+    rather than snap.
+*/
+.groupfinder-searchpill-button {
+  flex:                     0 0 auto;
+  /* No gap while collapsed: the zero-width label is still a flex item, so a gap before it
+     would push the icon left of center. The gap is added only once the label is shown. */
+  gap:                      0;
+  overflow:                 hidden;
+  background:               var(--color-primary);
+  color:                    #fff;
+  white-space:              nowrap;
+  cursor:                   pointer;
+  transition:               width 0.25s ease, border-radius 0.25s ease, gap 0.25s ease;
+
+  &:hover {
+    background:             var(--color-primary-shade);
+  }
+
+  /* While a search is running the button is inert and its search glyph becomes a spinner. */
+  &:disabled {
+    cursor:                 default;
+    opacity:                0.65;
+  }
+
+  &.is-expanded {
+    width:                  116px;
+    gap:                    var(--spacing-xsmall);
+    border-radius:          var(--rounded-full);
+  }
+
+  &.is-expanded &-label {
+    max-width:              5rem;
+    opacity:                1;
+  }
+
+  /*
+      A CSS ring spinner rather than a rotating icon glyph. An icon font's glyph is not
+      perfectly centered in its em box, so rotating the element makes the glyph orbit its box
+      center and wobble. A bordered circle is radially symmetric, so it spins dead-center.
+  */
+  &-spinner {
+    box-sizing:             border-box;
+    display:                inline-block;
+    width:                  1.1em;
+    height:                 1.1em;
+    border:                 2px solid currentColor;
+    border-top-color:       transparent;
+    border-radius:          50%;
+    animation:              groupfinder-search-spin 0.7s linear infinite;
+  }
+
+  /* The label slides open (0 to its width) and fades in as the button widens. */
+  &-label {
+    max-width:              0;
+    opacity:                0;
+    font-size:              var(--font-size-regular);
+    transition:             max-width 0.25s ease, opacity 0.2s ease;
+  }
+}
+
+@keyframes groupfinder-search-spin {
+  to {
+    transform:              rotate(360deg);
+  }
+}
+
+
+
+// ---- More Filters -----------------------------------------------------------
+
+/*
+    A non-interactive wrapper holding the label and the round button. The padding gives the
+    group breathing room without becoming part of the button's click/hover target.
+*/
+.groupfinder-more-filters {
+  display:                  inline-flex;
+  align-items:              center;
+  gap:                      var(--spacing-xsmall);
+  padding-right:            var(--spacing-xsmall);
+
+  &-label {
+    font-size:              var(--font-size-h6);
+    font-weight:            var(--font-weight-semibold);
+    color:                  var(--color-interface-strongest);
+    white-space:            nowrap;
+  }
+
+  /*
+      The clear glyph, larger than the icon it replaces so the action reads at a glance. It
+      appears only while the panel is open with values applied, which is the one state where the
+      button clears rather than toggles - the button otherwise keeps the icon it wears closed,
+      so an X never has to mean two things.
+  */
+  &-clear {
+    font-size:              var(--font-size-h4);
+  }
+}
+
+/*
+    Sizing and padding for the filter dropdown content; DropDownContent supplies the floating
+    card surface (anchoring, border, shadow) around it.
+
+    The panel floats over the results, so it carries its own hairline and elevation rather than
+    relying on the surrounding body: --box-shadow-strong is defined in styles-v2, which not
+    every theme loads, and an undefined custom property drops the whole declaration. Without the
+    fallback the panel loses its shadow, and since its fill matches the card surface underneath
+    it exactly, the options read as text floating over the group cards.
+*/
+.groupfinder-filter-popover {
+  min-width:                240px;
+  max-width:                min(92vw, 420px);
+  padding:                  var(--spacing-medium);
+  background:               var(--color-interface-softest, #fff);
+  border:                   1px solid var(--color-interface-soft, #d9d9e3);
+  box-shadow:               var(--box-shadow-strong);
+  /* The floating body is rounded but does not clip (preventOverflowClipping lets inner
+     dropdowns such as the address suggestions overflow), so round this opaque content to
+     match, or its square corners paint over the body's rounded ones. */
+  border-radius:            var(--rounded-large);
+}
+
+
+// ---- Map --------------------------------------------------------------------
+
+/* Map pane: rounded, clipped, and the positioning anchor for the approximation banner. */
+.groupfinder-map-pane {
+  position:                 relative;
+  overflow:                 hidden;
+  border-radius:            var(--rounded-xlarge);
+}
+
+/*
+    Top-center stack of map overlays: the "Search this area" prompt and, while fetching, the
+    loading pill beneath it. pointer-events: none keeps the map fully interactive under the
+    overlays. Span the full width (left/right 0) rather than left: 50%, so the centered pills
+    can grow to the available width instead of shrink-to-fit against only the right half.
+*/
+.groupfinder-map-overlays {
+  position:                 absolute;
+  top:                      var(--spacing-small);
+  right:                    0;
+  left:                     0;
+  z-index:                  3;
+  display:                  flex;
+  flex-direction:           column;
+  align-items:              center;
+  gap:                      var(--spacing-tiny);
+  padding:                  0 var(--spacing-small);
+  pointer-events:           none;
+}
+
+/*
+    The floating surface shared by every pill that sits over the map: the approximation note,
+    the loading indicator, and the "Search this area" prompt. A tighter shadow than
+    --box-shadow, which is tuned for panels rather than small floating chips.
+*/
+.groupfinder-map-pill {
+  background:               var(--color-interface-softest);
+  border-radius:            var(--rounded-huge);
+  box-shadow:               0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.groupfinder-map-note,
+.groupfinder-map-loading {
+  display:                  flex;
+  align-items:              center;
+  gap:                      var(--spacing-tiny);
+  max-width:                100%;
+  padding:                  var(--spacing-tiny) var(--spacing-small);
+  font-size:                var(--font-size-xsmall);
+  color:                    var(--color-interface-strong);
+}
+
+/*
+    The approximation note sits at the bottom-center of the map, its bottom edge aligned with
+    the bottom of the map provider zoom controls (anchoring by bottom keeps that alignment
+    regardless of the note's own height).
+*/
+.groupfinder-map-note-bottom {
+  position:                 absolute;
+  right:                    0;
+  bottom:                   var(--spacing-large);
+  left:                     0;
+  z-index:                  3;
+  display:                  flex;
+  justify-content:          center;
+  padding:                  0 var(--spacing-small);
+  pointer-events:           none;
+}
+
+/*
+    "Search this area" prompt at the top-center of the map (in the overlay stack) after a pan
+    or zoom. The overlay container is click-through, so the button re-enables pointer events
+    for itself.
+*/
+.groupfinder-search-area-button {
+  pointer-events:           auto;
+}
+
+
+// ---- Pending state ----------------------------------------------------------
+
+/*
+    Scrim over the whole page (position: fixed) while filters are pending, so everything behind
+    the filter bar reads as stale, not just the block. The sticky filter bar (z-index 10) paints
+    above the scrim (z-index 5), so only the pill stays lit; an open segment popover also sits
+    above it, so the filter being edited is never dimmed.
+
+    Matches the Rock modal backdrop: the backdrop color and its 0.5 opacity applied separately
+    on the element (as .modal-backdrop.fade.in does). --modal-backdrop-background is not
+    declared by core, so the fallback carries every theme that does not supply one.
+*/
+.groupfinder-pending-overlay {
+  position:                 fixed;
+  inset:                    0;
+  z-index:                  5;
+  background:               var(--modal-backdrop-background, #000);
+  opacity:                  0.5;
+  cursor:                   pointer;
+}
+
+/*
+    Cancel hint pinned just under the filter bar. It lives inside the sticky bar so it tracks
+    the bar and paints above the scrim, and ignores pointer events so the scrim still handles
+    the click.
+*/
+.groupfinder-pending-hint {
+  position:                 absolute;
+  top:                      calc(100% + var(--spacing-medium));
+  left:                     50%;
+  transform:                translateX(-50%);
+  display:                  inline-flex;
+  align-items:              center;
+  gap:                      var(--spacing-xsmall);
+  padding:                  var(--spacing-tiny) var(--spacing-small);
+  background:               var(--color-interface-softest);
+  border-radius:            var(--rounded-huge);
+  box-shadow:               var(--box-shadow);
+  font-size:                var(--font-size-small);
+  font-weight:              var(--font-weight-regular);
+  color:                    var(--color-interface-medium);
+  white-space:              nowrap;
+  pointer-events:           none;
+}
+
+/* Fade the scrim in and out (to its resting 0.5) rather than toggling it instantly. */
+.groupfinder-pending-fade-enter-active,
+.groupfinder-pending-fade-leave-active {
+  transition:               opacity 0.2s ease;
+}
+
+.groupfinder-pending-fade-enter-from,
+.groupfinder-pending-fade-leave-to {
+  opacity:                  0;
+}
+
+/* Fade the cancel hint quickly in and out rather than snapping it on and off. */
+.groupfinder-hint-fade-enter-active,
+.groupfinder-hint-fade-leave-active {
+  transition:               opacity 0.12s ease;
+}
+
+.groupfinder-hint-fade-enter-from,
+.groupfinder-hint-fade-leave-to {
+  opacity:                  0;
+}
+
+
+// ---- Layout modes -----------------------------------------------------------
+
+/*
+    Layout modes, chosen from the single width threshold in script:
+      results     map disabled, full-width grid.
+      sidebyside  fixed-height two-pane below the sticky filter bar; the card column scrolls
+                  internally and wraps from three to one column as width drops, while the map
+                  fills the rest of the width and the block height.
+      drawer      map is the main view; the list opens in a docked panel over it.
+*/
+.groupfinder-body {
+  position:                 relative;
+
+  &[data-layout="results"],
+  &[data-layout="drawer"] {
+    display:                block;
+  }
+
+  /*
+      Map-hidden (results) layout: center the capped card grid in the block so a wide page does
+      not leave dead space on one side (which reads as room reserved for the map). The
+      result-count line gets the same capped, centered width with its text flush-left, so the
+      count lines up with the left edge of the cards rather than centering over them.
+  */
+  &[data-layout="results"] .groupfinder-results {
+    justify-content:        start;
+    margin-inline:          auto;
+  }
+
+  &[data-layout="results"] .groupfinder-result-count {
+    max-width:              var(--groupfinder-grid-max);
+    margin-inline:          auto;
+    justify-content:        flex-start;
+  }
+
+  /*
+      Stacked is the tier between side-by-side and the drawer: the map is a fixed-height hero
+      across the block with the card column beneath it, both on the page. Nothing is pinned to
+      the viewport here, so the page scrolls as one and the bottom of the screen stays free for
+      whatever the host layout puts there (on an administrator page, Rock admin footer).
+
+      The map leads visually while the cards keep their document order, so the list stays first
+      for a screen reader and the pane is reordered instead of being moved in the markup.
+  */
+  &[data-layout="stacked"] {
+    display:                flex;
+    flex-direction:         column;
+    gap:                    var(--spacing-large);
+  }
+
+  &[data-layout="stacked"] .groupfinder-map-pane {
+    order:                  -1;
+    width:                  100%;
+    /* Tall enough to read as the hero, capped so a short window still leaves room for a card or two. */
+    height:                 min(50vh, 420px);
+  }
+
+  /* The single card column and its count line share one centered measure under the full-width map. */
+  &[data-layout="stacked"] .groupfinder-result-count {
+    max-width:              var(--groupfinder-card-width);
+    margin-inline:          auto;
+  }
+
+  /*
+      Side by side is a fixed-height two-pane: the body fills the space below the fixed top
+      header and the sticky filter bar, and never scrolls itself. The card column scrolls
+      internally while the map fills its side and stays put.
+  */
+  &[data-layout="sidebyside"] {
+    display:                flex;
+    gap:                    var(--spacing-large);
+    /*
+        The height is measured in script against the block own scroll container (see
+        fitSideBySide) rather than the viewport, so the two-pane fills the space actually
+        available to the block. The min-height is only a pre-measure floor so the panes never
+        collapse before the first measurement lands.
+    */
+    min-height:             400px;
+    overflow:               hidden;
+  }
+
+  /*
+      Cards keep their fixed column width and wrap to as many columns as fit; the map takes the
+      leftover width down to the same floor. No breakpoints drive the column count here, only
+      the mode switch.
+  */
+  &[data-layout="sidebyside"] .groupfinder-results-pane {
+    /* Width is set in script to a whole number of card columns plus the scrollbar gutter and this padding. */
+    flex:                   0 0 auto;
+    box-sizing:             border-box;
+    min-width:              var(--groupfinder-card-width);
+    height:                 100%;
+    /*
+        Horizontal padding gives card hover shadows room before the overflow clip (overflow-y
+        auto forces overflow-x to auto too), so the left and right shadows both read. Top and
+        bottom are flush, so only the first and last card vertical shadow clips at the pane edge.
+    */
+    padding:                0 var(--spacing-medium);
+    overflow-y:             auto;
+    /* Always reserve the scrollbar gutter so the content width (and column count) is stable. */
+    scrollbar-gutter:       stable;
+  }
+
+  &[data-layout="sidebyside"] .groupfinder-map-pane {
+    flex:                   1 1 auto;
+    min-width:              var(--groupfinder-card-width);
+    height:                 100%;
+  }
+
+  /*
+      In drawer (mobile) mode the map spans the full block width and runs to the viewport bottom
+      (height is set inline); square its corners, and give it the block background so the area
+      reserved behind the floating sheet matches the block rather than showing the page behind.
+  */
+  &[data-layout="drawer"] .groupfinder-map-pane {
+    width:                  100%;
+    height:                 70vh;
+    background:             var(--color-interface-softer);
+    border-radius:          0;
+    /* Ease the fill so the map grows or shrinks smoothly when the reserve changes after a
+       scroll settles. Only the padding transitions; the inline height stays instant. */
+    transition:             padding-bottom 250ms ease;
+  }
+
+  /* The drawer-mode pane runs full height behind the sheet, so round the inset map view itself
+     into a card (all four corners) rather than the pane. */
+  &[data-layout="drawer"] .groupfinder-map-pane .map-view {
+    overflow:               hidden;
+    border-radius:          var(--rounded-xlarge);
+  }
+}
+
+
+// ---- Bottom sheet (drawer mode) ---------------------------------------------
+
+/*
+    The drawer is a DockedPanel, which supplies the sheet surface, the grabber, drag-to-snap,
+    and tap-to-toggle. These rules only style the slotted content: the centered header title
+    (with room for the panel grabber) and the body padding.
+*/
+.groupfinder-sheet-title {
+  display:                  flex;
+  align-items:              center;
+  justify-content:          center;
+  gap:                      var(--spacing-xsmall);
+  padding:                  var(--spacing-medium) var(--spacing-medium) var(--spacing-small);
+  font-weight:              var(--font-weight-semibold);
+}
+
+.groupfinder-sheet-body {
+  padding:                  var(--spacing-medium);
+  background-color:         var(--color-interface-softer);
+}
+
+
+// ---- Mobile filter bar and modal --------------------------------------------
+
+/*
+    A single field above the results that opens the filter modal. Shown only at the mobile
+    breakpoint; the desktop horizontal bar is hidden there. The label reads Start or Refine
+    Your Search and the trailing action is the search icon or an applied-filter count badge.
+*/
+.groupfinder-mobile-filterbar {
+  display:                  none;
+  align-items:              center;
+  justify-content:          space-between;
+  gap:                      var(--spacing-small);
+  width:                    100%;
+  margin-bottom:            var(--spacing-small);
+  padding:                  var(--spacing-small) var(--spacing-medium);
+  background:               var(--color-interface-softest);
+  border:                   1px solid var(--color-interface-soft);
+  border-radius:            var(--rounded-large);
+  box-shadow:               0 1px 3px rgba(0, 0, 0, 0.08);
+  text-align:               left;
+  cursor:                   pointer;
+
+  @media (max-width: ($screen-medium - 1)) {
+    display:                flex;
+  }
+
+  &-label {
+    font-weight:            var(--font-weight-semibold);
+    color:                  var(--color-interface-stronger);
+  }
+
+  &-action {
+    display:                inline-flex;
+    flex:                   none;
+    align-items:            center;
+    justify-content:        center;
+    min-width:              32px;
+    height:                 32px;
+    padding:                0 var(--spacing-xsmall);
+    background:             var(--color-primary);
+    border-radius:          var(--rounded-full);
+    color:                  #fff;
+    font-weight:            var(--font-weight-semibold);
+  }
+}
+
+/*
+    Filter modal footer content (rendered into the Modal customButtons slot): both buttons
+    grouped to the right (Clear all, then Apply). Styled on the block own slot content so it
+    does not depend on overriding the teleported modal footer styles.
+*/
+.groupfinder-filter-footer {
+  display:                  flex;
+  align-items:              center;
+  justify-content:          flex-end;
+  gap:                      var(--spacing-small);
+  width:                    100%;
+}
+
+
+// ---- Result cards -----------------------------------------------------------
+// From groupFinderCard.partial.obs and groupFinderResults.partial.obs.
+
+/*
+    The wrapper owns only the card border, corner radius, highlighting, and click target.
+    Everything inside the border is rendered from the configurable Lava template and injected
+    with v-html, so those class names are authored in the template rather than the component.
+
+    The inner rules are nested as descendants (.groupfinder-card .groupfinder-card-title), not
+    concatenated with &-, because they need the two-class weight. In the .obs file these were
+    :deep() selectors, which compile to a descendant pair; writing them flat here would drop
+    them to a single class and let an ordinary theme rule such as .panel-body h3 outrank them
+    on the external sites this block is built for. &- concatenation would not help, since it
+    produces the same single-class weight.
+*/
+.groupfinder-card {
+  height:                   100%;
+  /* A hairline in its own right rather than a color-matched ring, so the card reads as a
+     distinct surface against the page; the hovered and selected states recolor it to primary. */
+  border:                   1px solid var(--color-interface-softest);
+  border-radius:            var(--rounded-xlarge);
+  cursor:                   pointer;
+  transition:               box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
+  /*
+      Raised states, both outlined in the primary color: hovered (its own hover, or its map
+      circle hovered) and selected (clicked, or its map circle clicked).
+
+      --box-shadow-strong is defined in styles-v2, which not every theme loads, and an undefined
+      custom property drops the whole declaration - so the fallback keeps the card lift on
+      those themes rather than leaving hover and selection with a border change alone.
+  */
+  &.is-hovered,
+  &.is-selected {
+    border-color:           var(--color-primary);
+    box-shadow:             var(--box-shadow);
+  }
+
+  &.is-selected .groupfinder-card-title {
+    color:                  var(--color-primary);
+  }
+
+  .groupfinder-card-content {
+    box-sizing:             border-box;
+    gap:                    var(--spacing-medium);
+  }
+
+  .groupfinder-card-body {
+    gap:                    var(--spacing-small);
+  }
+
+  /*
+      The cover is a framed, floating photo: inset by the card padding, white-bordered and
+      shadowed. The height cap keeps the 21:9 frame from scaling without limit on a card wider
+      than the width it is drawn for (a single-column list in a wide container); past the cap
+      the photo crops rather than growing.
+  */
+  .groupfinder-card-media {
+    position:               relative;
+    aspect-ratio:           21 / 9;
+    max-height:             240px;
+    overflow:               hidden;
+    border:                 4px solid var(--color-interface-softest);
+    border-radius:          var(--rounded-xlarge);
+    box-shadow:             0 0 1px rgba(145, 158, 171, 0.2), 0 12px 12px rgba(145, 158, 171, 0.1);
+
+    /*
+        No-image fallback: a grid and diagonal hatch texture tinted from the group type color.
+        The Lava template supplies the raw color as --groupfinder-fallback-color; the tint math
+        is done here in CSS.
+    */
+    &.is-fallback {
+      --gf-fallback-color: var(--groupfinder-fallback-color, #4fd1c5);
+      /*
+          8/28/26 - CLAUDE
+
+          Longhands rather than the background shorthand. The shorthand needs a position/size
+          slash (0 0 / 24px 24px), and Rock compiles themes at runtime with dotless, which reads
+          that slash as division: 0 / 24px collapses to 0px, leaving an invalid three-value
+          background-position. That makes the whole shorthand invalid at computed-value time, so
+          the browser drops it and the tile renders transparent instead of tinted. Node lessc and
+          dart-sass both handle the slash correctly, so this only breaks in the served theme.
+
+          Reason: dotless evaluates a slash in a shorthand value as division.
+      */
+      background-color: color-mix(in srgb, var(--gf-fallback-color) 50%, transparent);
+      background-image:
+        linear-gradient(90deg, color-mix(in srgb, var(--gf-fallback-color) 25%, transparent) 1px, transparent 0),
+        linear-gradient(color-mix(in srgb, var(--gf-fallback-color) 25%, transparent) 1px, transparent 0),
+        repeating-linear-gradient(45deg, color-mix(in srgb, var(--gf-fallback-color) 20%, transparent) 0, color-mix(in srgb, var(--gf-fallback-color) 20%, transparent) 2px, transparent 2px, transparent 6px);
+      background-position: 0 0;
+      background-size: 24px 24px;
+    }
+  }
+
+  .groupfinder-card-image {
+    display:                block;
+    width:                  100%;
+    height:                 100%;
+    object-fit:             cover;
+  }
+
+  .groupfinder-card-badge {
+    position:               absolute;
+    top:                    var(--spacing-xsmall);
+    left:                   var(--spacing-xsmall);
+    padding:                2px 10px;
+    background-color:       var(--color-interface-softest);
+    border-radius:          var(--rounded-huge);
+    font-size:              var(--font-size-regular);
+    font-weight:            var(--font-weight-regular);
+    color:                  var(--color-primary);
+  }
+
+  .groupfinder-card-meta {
+    display:                flex;
+    justify-content:        space-between;
+    gap:                    var(--spacing-small);
+    font-size:              var(--font-size-small);
+    color:                  var(--color-interface-strongest);
+  }
+
+  .groupfinder-card-divider {
+    width:                  100%;
+    margin:                 0;
+    border:                 0;
+    border-top:             1px solid var(--color-interface-softer);
+  }
+
+  .groupfinder-card-title {
+    margin:                 0;
+    font-size:              var(--font-size-h4);
+    font-weight:            var(--font-weight-semibold);
+    line-height:            var(--line-height-compact);
+    color:                  var(--color-interface-strongest);
+  }
+
+  .groupfinder-card-schedule {
+    font-size:              var(--font-size-regular);
+    font-weight:            var(--font-weight-semibold);
+    color:                  var(--color-interface-strong);
+  }
+
+  .groupfinder-card-description {
+    margin:                 0;
+    font-size:              var(--font-size-regular);
+    color:                  var(--color-interface-strong);
+  }
+
+  .groupfinder-card-attribute-list {
+    display:                flex;
+    flex-direction:         column;
+    gap:                    var(--spacing-xsmall);
+    margin:                 0;
+    padding:                0;
+    font-size:              var(--font-size-regular);
+    color:                  var(--color-interface-strong);
+    list-style:             none;
+  }
+
+  .groupfinder-card-attribute {
+    display:                flex;
+    align-items:            center;
+    gap:                    var(--spacing-tiny);
+
+    i {
+      font-size:            var(--font-size-regular);
+    }
+  }
+
+  .groupfinder-card-footer {
+    display:                flex;
+    justify-content:        flex-end;
+    margin-top:             auto;
+    padding-top:            var(--spacing-small);
+  }
+}
+
+/*
+    The real card surface and the skeleton placeholder share the same padded, rounded chrome so
+    the placeholder holds the same footprint in the grid. The Lava template owns the real card
+    markup, so these are grouped by selector rather than sharing a class. The card half stays
+    qualified by .groupfinder-card to keep the same weight as the nested rules above.
+*/
+.groupfinder-card .groupfinder-card-content,
+.groupfinder-skeleton-card {
+  display:                  flex;
+  flex-direction:           column;
+  height:                   100%;
+  padding:                  var(--spacing-medium);
+  background:               var(--color-interface-softest);
+  border-radius:            var(--rounded-xlarge);
+}
+
+.groupfinder-card .groupfinder-card-body,
+.groupfinder-skeleton-body {
+  display:                  flex;
+  flex:                     1 1 auto;
+  flex-direction:           column;
+  padding:                  0 var(--spacing-medium);
+}
+
+// ---- Results list, skeleton, empty state, pager -----------------------------
+
+.groupfinder-results-pane {
+  min-width:                0;
+}
+
+.groupfinder-result-count {
+  display:                  flex;
+  align-items:              center;
+  gap:                      var(--spacing-xsmall);
+  padding:                  var(--spacing-xsmall) 0;
+  font-size:                var(--font-size-h5);
+  font-weight:              var(--font-weight-semibold);
+}
+
+.groupfinder-results {
+  display:                  grid;
+  gap:                      var(--spacing-medium);
+}
+
+/*
+    Wide and stacked tiers: up to three flexible columns, left-aligned, each stretching to fill
+    its track. The min(340px, 100%) floor lets a column narrower than the min (a phone with the
+    map hidden) shrink to the container width instead of overflowing. auto-fill keeps the
+    three-track shape, so a lone card stays one track wide rather than stretching across the row.
+*/
+.groupfinder-results-pane.is-columns-auto .groupfinder-results {
+  grid-template-columns:    repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+  justify-content:          start;
+  max-width:                var(--groupfinder-grid-max);
+}
+
+/* Toggle tier: two flexible columns, since two full-width cards will not fit. */
+.groupfinder-results-pane.is-columns-two .groupfinder-results {
+  grid-template-columns:    repeat(2, minmax(0, 1fr));
+}
+
+/* Drawer tier: a single full-width column so cards are not skinny in the narrow panel. */
+/*
+    Stacked and drawer tiers: a single column, full width until it reaches the width the card is
+    drawn for, then centered at that width so the card matches the other tiers instead of
+    stretching. Both tiers can be far wider than one card wants to be - the drawer sheet is
+    fixed to the viewport rather than the block, and the stacked tier runs the full width of
+    whatever zone the block sits in - while a phone-width panel stays narrower than the cap and
+    simply fills it.
+*/
+.groupfinder-results-pane.is-columns-one .groupfinder-results {
+  grid-template-columns:    minmax(0, 1fr);
+  max-width:                var(--groupfinder-card-width);
+  margin-inline:            auto;
+}
+
+/*
+    Skeleton loading card. Uses the shared .skeleton kit for the gray bars and pulse; the
+    wrapper shares the real card chrome above.
+*/
+.groupfinder-skeleton-card {
+  gap:                      var(--spacing-small);
+  border:                   1px solid transparent;
+}
+
+/* The media band matches the real cover 21:9 frame rather than the kit default block height.
+   Written at the kit selector weight so it wins over .skeleton.skeleton-block. */
+.groupfinder-skeleton-media.skeleton.skeleton-block {
+  aspect-ratio:             21 / 9;
+  height:                   auto;
+  border-radius:            var(--rounded-xlarge);
+}
+
+/* The CTA placeholder sits at the end like the real footer register button. */
+.groupfinder-skeleton-cta {
+  align-self:               flex-end;
+  margin-top:               auto;
+}
+
+/*
+    Results pager, under the card list. Shown when the set spans more than one page; each page
+    swaps its cards and markers together, so it never accumulates or churns markers the way
+    infinite scroll would.
+*/
+.groupfinder-pager {
+  display:                  flex;
+  flex-wrap:                wrap;
+  align-items:              center;
+  justify-content:          center;
+  gap:                      var(--spacing-xsmall);
+  padding:                  var(--spacing-medium);
+
+  &-ellipsis {
+    padding:                0 var(--spacing-xsmall);
+  }
+}
+
+.groupfinder-empty {
+  padding:                  var(--spacing-large) 0;
+}
+
+.groupfinder-empty,
+.groupfinder-pager-ellipsis {
+  color:                    var(--color-interface-medium);
+}
+
+
+// ---- Filter content controls ------------------------------------------------
+// From the filter partials. These render inside teleported popovers and the mobile modal.
+
+/*
+    The selectable row shared by every list the finder opens in a dropdown: campus options,
+    icon-select options, and address suggestions. Each consumer adds only its selected state.
+*/
+.groupfinder-option-row {
+  display:                  flex;
+  align-items:              center;
+  gap:                      var(--spacing-xsmall);
+  width:                    100%;
+  padding:                  var(--spacing-xsmall) var(--spacing-small);
+  background:               transparent;
+  border:                   0;
+  border-radius:            var(--rounded-small);
+  color:                    var(--color-interface-strong);
+  text-align:               left;
+  cursor:                   pointer;
+
+  &:hover,
+  &.is-active {
+    background:             var(--color-interface-softer);
+  }
+}
+
+.groupfinder-campus-filter {
+  display:                  flex;
+  flex-direction:           column;
+  gap:                      var(--spacing-medium);
+}
+
+.groupfinder-campus-row {
+  padding:                  var(--spacing-tiny);
+}
+
+/* Matches how the Rock DropDownList marks a selected option: the info-soft (bluish) fill. */
+.groupfinder-campus-row.is-selected {
+  background:               var(--color-info-soft);
+  color:                    var(--color-interface-strong);
+}
+
+.groupfinder-campus-name {
+  font-size:                var(--font-size-h6);
+  font-weight:              var(--font-weight-semibold);
+  color:                    var(--color-interface-strongest);
+}
+
+.groupfinder-campus-check {
+  margin-left:              auto;
+  color:                    var(--color-info-strong);
+}
+
+.groupfinder-chip-list {
+  display:                  flex;
+  flex-wrap:                wrap;
+  gap:                      var(--spacing-xsmall);
+}
+
+.groupfinder-chip {
+  display:                  inline-flex;
+  align-items:              center;
+  gap:                      var(--spacing-xsmall);
+  padding:                  var(--spacing-tiny) var(--spacing-small);
+  background:               var(--color-interface-softer);
+  border:                   1px solid transparent;
+  border-radius:            var(--rounded-full);
+  font-size:                var(--font-size-small);
+  line-height:              var(--line-height-normal);
+  color:                    var(--color-interface-strong);
+  white-space:              nowrap;
+  cursor:                   pointer;
+  transition:               background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    background:             var(--color-interface-soft);
+  }
+
+  &.is-selected {
+    background:             var(--color-primary);
+    border-color:           var(--color-primary);
+    color:                  var(--color-interface-softest);
+  }
+
+  &:disabled {
+    cursor:                 default;
+    opacity:                0.6;
+  }
+
+  /* Size any leading icon a caller slots into a chip. */
+  i {
+    font-size:              var(--font-size-regular);
+    line-height:            1;
+  }
+}
+
+.groupfinder-icon-select-trigger {
+  display:                  flex;
+  align-items:              center;
+  justify-content:          space-between;
+  gap:                      var(--spacing-xsmall);
+  width:                    100%;
+  padding:                  var(--spacing-xsmall) var(--spacing-small);
+  background:               var(--color-interface-softest);
+  border:                   1px solid var(--color-interface-soft);
+  border-radius:            var(--rounded-small);
+  font-size:                var(--font-size-regular);
+  color:                    var(--color-interface-strong);
+  cursor:                   pointer;
+
+  &.is-open {
+    border-color:           var(--color-primary);
+  }
+}
+
+.groupfinder-icon-select-value {
+  display:                  inline-flex;
+  align-items:              center;
+  gap:                      var(--spacing-xsmall);
+  overflow:                 hidden;
+}
+
+.groupfinder-icon-select-caret {
+  flex:                     0 0 auto;
+}
+
+.groupfinder-icon-select-menu {
+  min-width:                180px;
+  margin:                   0;
+  padding:                  var(--spacing-tiny);
+  list-style:               none;
+}
+
+.groupfinder-icon-select-option {
+  white-space:              nowrap;
+
+  &.is-selected {
+    background:             var(--color-primary-soft);
+    color:                  var(--color-primary);
+  }
+
+  &:hover {
+    background:             var(--color-interface-soft);
+  }
+}
+
+.groupfinder-icon-select-icon {
+  width:                    1.25em;
+  text-align:               center;
+}
+
+.groupfinder-proximity {
+  display:                  flex;
+  flex-direction:           column;
+  gap:                      var(--spacing-xsmall);
+
+  /* The address field spans the full dropdown width; the current-location link centers beneath it. */
+  .groupfinder-address {
+    width:                  100%;
+  }
+}
+
+.groupfinder-use-location {
+  align-self:               center;
+}
+
+.groupfinder-current-location {
+  display:                  flex;
+  align-items:              center;
+  justify-content:          space-between;
+  gap:                      var(--spacing-small);
+
+  &-label {
+    display:                inline-flex;
+    align-items:            center;
+    gap:                    var(--spacing-xsmall);
+    font-weight:            var(--font-weight-semibold);
+  }
+}
+
+.groupfinder-address-typeahead {
+  position:                 relative;
+}
+
+.groupfinder-address-suggestion-list {
+  margin:                   var(--spacing-xsmall) 0 0;
+  padding:                  0;
+  background:               var(--color-interface-softest);
+  border:                   1px solid var(--color-interface-soft);
+  border-radius:            var(--rounded-small);
+  overflow:                 hidden;
+  list-style:               none;
+}
+
+.groupfinder-address-suggestion i {
+  flex:                     none;
+  color:                    var(--color-interface-medium);
+}
+
+// ====================== END GROUP FINDER ======================

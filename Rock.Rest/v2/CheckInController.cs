@@ -35,6 +35,8 @@ using Rock.Web.Cache;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.Security;
 using Rock.ViewModels.CheckIn;
+using Rock.Enums.CheckIn;
+
 
 
 #if WEBFORMS
@@ -392,6 +394,18 @@ namespace Rock.Rest.v2
                 var session = director.CreateSession( configuration );
                 var sessionRequest = new AttendanceSessionRequest( options.Session );
                 List<ClientLabelBag> clientLabelBags = null;
+
+                if ( options.OverridePinCode.IsNotNullOrWhiteSpace() )
+                {
+                    if ( director.TryAuthenticatePin( options.OverridePinCode, out var errorMessage ) )
+                    {
+                        session.IsOverrideEnabled = true;
+                    }
+                    else
+                    {
+                        return BadRequest( errorMessage );
+                    }
+                }
 
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RockRequestContext.ClientInformation.IpAddress );
 

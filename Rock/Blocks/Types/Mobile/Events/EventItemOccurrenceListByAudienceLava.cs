@@ -48,7 +48,8 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.ListTitle,
         Order = 0 )]
 
-    [DefinedValueField( name: "Audience", definedTypeGuid: Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE,
+    [DefinedValueField( "Audience",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE,
         Description = "The audience to show calendar items for.",
         IsRequired = true,
         Key = AttributeKeys.Audience,
@@ -60,7 +61,8 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.Calendar,
         Order = 2 )]
 
-    [CampusesField( "Campuses", includeInactive: true,
+    [CampusesField( "Campuses",
+        IncludeInactive = true,
         Description = "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.",
         IsRequired = false,
         Key = AttributeKeys.Campuses,
@@ -240,7 +242,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The lava template.
         /// </value>
-        protected string LavaTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.LavaTemplate ) );
+        protected string LavaTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.LavaTemplate ) );
 
         /// <summary>
         /// Gets the enabled lava commands.

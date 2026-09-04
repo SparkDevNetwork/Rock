@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Newtonsoft.Json;
 
 using Rock.AI.Classes.ChatCompletions;
@@ -26,13 +28,17 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
     /// <summary>
     /// The Request Message object for a chat completion.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIChatCompletionsRequestMessage
     {
         /// <summary>
         /// The role of the message. Don't send this to OpenAI they want the string version.
         /// </summary>
         [JsonIgnore]
+#pragma warning disable CS0618 // Type or member is obsolete
         public OpenAIChatMessageRole Role { get; set; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// The role that OpenAI is expecting.

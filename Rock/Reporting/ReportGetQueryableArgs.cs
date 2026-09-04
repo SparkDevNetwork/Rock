@@ -90,5 +90,23 @@ namespace Rock.Reporting
         ///   <c>true</c> if this instance is communication; otherwise, <c>false</c>.
         /// </value>
         public bool IsCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether attribute columns should return
+        /// the attribute value's persisted display text
+        /// (<see cref="Rock.Model.AttributeValue.PersistedTextValue"/>) as a string
+        /// instead of the raw stored value. This yields human-readable values for
+        /// field types whose stored form is not display-friendly (for example a
+        /// defined value stores a Guid). When <c>false</c> (the default) the raw,
+        /// natively typed value is returned, preserving existing behavior.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> to return persisted display text for attribute columns; otherwise <c>false</c>.
+        /// </value>
+        /// <remarks>
+        /// Internal because this is an edge-use option (currently only the headless
+        /// AI agent report runner) that we want to be able to change freely.
+        /// </remarks>
+        internal bool UseAttributePersistedTextValues { get; set; }
     }
 }

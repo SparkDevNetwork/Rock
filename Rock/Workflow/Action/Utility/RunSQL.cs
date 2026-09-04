@@ -42,6 +42,7 @@ namespace Rock.Workflow.Action
         Description = "The parameters to supply to the SQL query. <span class='tip tip-lava'></span>",
         IsRequired = false,
         KeyPrompt = "Parameter",
+        AllowLava = true,
         Order = 1 )]
     [WorkflowAttribute( "Result Attribute",
         Description = "An optional attribute to set to the scalar result of SQL query.",
@@ -68,7 +69,7 @@ namespace Rock.Workflow.Action
 
             var query = GetAttributeValue( action, "SQLQuery" );
             var parametersValue = GetAttributeValue( action, "Parameters" );
-            var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, parametersValue, null, false );
+            var parameterList = Field.Helper.GetKeyValueListValuesFromString( parametersValue, null, false );
 
             var mergeFields = GetMergeFields( action );
             query = query.ResolveMergeFields( mergeFields );

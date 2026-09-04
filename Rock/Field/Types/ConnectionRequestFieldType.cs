@@ -212,6 +212,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the ConnectionRequest table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is one person's request, not the opportunity or the type it was made against.",
+                Instructions = "To find the correct value, read the connection requests and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

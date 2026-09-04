@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Performance.Lava

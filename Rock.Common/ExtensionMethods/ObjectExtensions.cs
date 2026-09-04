@@ -65,7 +65,17 @@ namespace Rock
                 }
                 else
                 {
-                    var propertyMap = _propertyInfoCache.GetOrAdd( objType, t => t.GetProperties().ToDictionary( p => p.Name, StringComparer.Ordinal ) );
+                    var propertyMap = _propertyInfoCache.GetOrAdd( objType, t =>
+                    {
+                        var props = t.GetProperties();
+
+                        var map = new Dictionary<string, PropertyInfo>( props.Length, StringComparer.Ordinal );
+                        foreach ( var prop in props )
+                        {
+                            map[prop.Name] = prop;
+                        }
+                        return map;
+                    } );
 
                     if ( propertyMap.TryGetValue( segment, out var property ) )
                     {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -586,17 +586,34 @@ namespace RockWeb.Blocks.Event
                 {
                     var eventItemOccurrenceGroupMap = linkage.CloneWithoutIdentity();
                     eventItemOccurrenceGroupMap.EventItemOccurrenceId = 0;
-                    eventItemOccurrenceGroupMap.RegistrationInstance = linkage.RegistrationInstance != null ? linkage.RegistrationInstance.Clone( false ) : new RegistrationInstance();
                     eventItemOccurrenceGroupMap.RegistrationInstanceId = null;
-                    eventItemOccurrenceGroupMap.RegistrationInstance.Id = 0;
-                    eventItemOccurrenceGroupMap.RegistrationInstance.Guid = Guid.NewGuid();
 
-                    eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate =
-                        linkage.RegistrationInstance != null && linkage.RegistrationInstance.RegistrationTemplate != null ?
-                        linkage.RegistrationInstance.RegistrationTemplate.Clone( false ) :
-                        new RegistrationTemplate();
+                    // A URL slug should be unique across all events, so it shouldn't be copied;
+                    // otherwise saving the copy without opening the linkage edit modal (which is where
+                    // slug uniqueness is validated) would silently persist a duplicate slug.
+                    eventItemOccurrenceGroupMap.UrlSlug = null;
 
-                    eventItemOccurrenceGroupMap.Group = linkage.Group != null ? linkage.Group.Clone( false ) : new Group();
+                    // Only clone a RegistrationInstance (and its RegistrationTemplate) when the source
+                    // linkage actually has one†. See https://github.com/SparkDevNetwork/Rock/issues/6980
+                    if ( linkage.RegistrationInstance != null )
+                    {
+                        eventItemOccurrenceGroupMap.RegistrationInstance = linkage.RegistrationInstance.Clone( false );
+                        eventItemOccurrenceGroupMap.RegistrationInstance.Id = 0;
+                        eventItemOccurrenceGroupMap.RegistrationInstance.Guid = Guid.NewGuid();
+
+                        eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate =
+                            linkage.RegistrationInstance.RegistrationTemplate != null ?
+                            linkage.RegistrationInstance.RegistrationTemplate.Clone( false ) :
+                            null;
+                    }
+                    else
+                    {
+                        eventItemOccurrenceGroupMap.RegistrationInstance = null;
+                    }
+
+                    // † The same principle applies to Group: leave it null when the source had none rather
+                    // than attaching an empty Group.
+                    eventItemOccurrenceGroupMap.Group = linkage.Group != null ? linkage.Group.Clone( false ) : null;
 
                     eventItemOccurrence.Linkages.Add( eventItemOccurrenceGroupMap );
                 }

@@ -36,6 +36,8 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="PersonAliasService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public PersonAliasService(RockContext context) : base(context)
         {
         }
@@ -48,6 +50,8 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( PersonAlias item, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -142,17 +146,21 @@ namespace Rock.Model
                 return false;
             }
 
+            #pragma warning disable 612, 618 // AIProvider is obsolete, but we still need this code generated
             if ( new Service<AIProvider>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AIProvider.FriendlyTypeName );
                 return false;
             }
+            #pragma warning restore 612, 618
 
+            #pragma warning disable 612, 618 // AIProvider is obsolete, but we still need this code generated
             if ( new Service<AIProvider>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AIProvider.FriendlyTypeName );
                 return false;
             }
+            #pragma warning restore 612, 618
 
             if ( new Service<AISkill>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
@@ -1718,6 +1726,36 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<FlexibleDocument>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocument.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<FlexibleDocument>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocument.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<FlexibleDocument>( Context ).Queryable().Any( a => a.OwnerPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocument.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<FlexibleDocumentModel>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocumentModel.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<FlexibleDocumentModel>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocumentModel.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Following>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Following.FriendlyTypeName );
@@ -1787,6 +1825,18 @@ namespace Rock.Model
             if ( new Service<FollowingSuggestionType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingSuggestionType.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ForgeContent>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ForgeContent.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ForgeContent>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ForgeContent.FriendlyTypeName );
                 return false;
             }
 
@@ -3912,6 +3962,8 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static PersonAlias Clone( this PersonAlias source, bool deepCopy )
         {
             if (deepCopy)
@@ -3931,6 +3983,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static PersonAlias CloneWithoutIdentity( this PersonAlias source )
         {
             var target = new PersonAlias();
@@ -3950,6 +4004,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this PersonAlias target, PersonAlias source )
         {
             target.Id = source.Id;

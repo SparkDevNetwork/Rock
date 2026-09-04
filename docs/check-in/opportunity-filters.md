@@ -1,6 +1,6 @@
 ---
 title: Opportunity Filters
-last_updated: 2026-05-01
+last_updated: 2026-09-03
 related_files:
   - Rock/CheckIn/v2/Filters/OpportunityFilter.cs
   - Rock/CheckIn/v2/Filters/AbilityLevelOpportunityFilter.cs
@@ -177,6 +177,7 @@ Filters apply during the Selection phase of the v2 engine. The same filter set r
 - [docs/check-in/check-in-overview.md](check-in-overview.md)
 - [docs/check-in/v2-vs-legacy.md](v2-vs-legacy.md)
 - [docs/check-in/kiosk-configuration.md](kiosk-configuration.md)
+- [docs/check-in/skip-screen-behavior.md](skip-screen-behavior.md)
 
 ## Recent Impactful Changes
 

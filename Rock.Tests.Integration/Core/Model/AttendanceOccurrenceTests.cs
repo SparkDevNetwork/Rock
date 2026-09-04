@@ -29,19 +29,6 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void AttendanceOccurrenceDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrence();
-                attendanceOccurrence.OccurrenceDate = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, attendanceOccurrence.OccurrenceDateKey );
-            }
-        }
-
-        [TestMethod]
         public void AttendanceOccurrenceDateKeySavesCorrectly()
         {
             var rockContext = new RockContext();

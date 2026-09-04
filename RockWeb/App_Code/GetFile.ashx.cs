@@ -111,7 +111,7 @@ namespace RockWeb
                     var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
                     var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
-                    // If no parent entity is specified then check if there is scecurity on the BinaryFileType
+                    // If no parent entity is specified then check if there is security on the BinaryFileType
                     // Use BinaryFileType.RequiresViewSecurity because checking security for every file is slow (~40ms+ per request)
                     if ( parentEntityAllowsView == null && requiresViewSecurity )
                     {

@@ -18,36 +18,23 @@
     <ContentStack title="Configure Group Member Attributes"
                   description="Group Member Attributes apply to all of the members in this group. Each member will have their own value for these attributes."
                   headerLocation="top">
-        <Grid :data="gridData" keyField="guid" itemTerm="Group Member Attribute" liveUpdates light
-              :entityTypeGuid="EntityType.Attribute" @addItem="onAdd">
-            <ReorderColumn @orderChanged="onOrderChanged" />
-            <TextColumn name="name" field="name" title="Attribute" />
-            <TextColumn name="description" field="description" title="Description" />
-            <BooleanColumn name="isRequired" field="isRequired" title="Required" />
-            <SecurityColumn :itemTitle="'name'" />
-            <EditColumn @click="onEdit" />
-            <DeleteColumn @click="onDelete" disableConfirmation />
-        </Grid>
+        <EditableAttributesGrid v-model="attributes"
+                                itemTerm="Group Member Attribute"
+                                modalTitle="Group Member Attributes"
+                                :attributeEntityTypeGuid="EntityType.GroupMember"
+                                :reservedKeyNames="inheritedKeyNames" />
     </ContentStack>
-
-    <Modal v-model="isModalVisible" title="Group Member Attributes" saveText="Save" cancelText="Cancel"
-           :onSave="onSave">
-        <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.GroupMember" />
-    </Modal>
 </template>
 
 <script setup lang="ts">
-    import Grid, { BooleanColumn, DeleteColumn, EditColumn, ReorderColumn, TextColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn } from "@Obsidian/Controls/grid";
     import { GroupMemberInheritedAttributeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupMemberInheritedAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { computed, PropType, ref, watch } from "vue";
-    import { createNewAttribute } from "./utils.partial";
-    import { newGuid } from "@Obsidian/Utility/guid";
-    import Modal from "@Obsidian/Controls/modal.obs";
+    import { computed, PropType } from "vue";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import EditableAttributesGrid from "@Obsidian/Controls/editableAttributesGrid.obs";
     import InheritedFromCell from "./inheritedFromCell.partial.obs";
-    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
 
     const props = defineProps({
         /**
@@ -72,14 +59,6 @@
         (e: "update:groupMemberAttributes", value: PublicEditableAttributeBag[]): void
     }>();
 
-    // #region Values
-
-    const reservedKeyNames = ref<string[]>([]);
-    const isModalVisible = ref(false);
-    const theAttribute = ref<PublicEditableAttributeBag | null>(null);
-
-    // #endregion
-
     // #region Computed Values
 
     /**
@@ -93,21 +72,6 @@
         set(value: PublicEditableAttributeBag[]) {
             emit("update:groupMemberAttributes", value);
         }
-    });
-
-    /**
-     * Row data for the editable Group Member Attributes grid.
-     */
-    const gridData = computed(() => {
-        const rows = (attributes.value ?? []).map(a => ({
-            guid: a.guid,
-            name: a.name,
-            description: a.description,
-            isRequired: a.isRequired,
-            isSystem: a.isSystem
-        }));
-
-        return { rows };
     });
 
     /**
@@ -125,145 +89,16 @@
         return { rows };
     });
 
-    // #endregion
-
-    // #region Event Handlers
-
     /**
-     * Add button on the grid. Opens the modal with a blank attribute.
+     * Keys of the inherited attributes, reserved so this group cannot define
+     * an attribute that collides with one of them. The keys of the editable
+     * attributes themselves are reserved by the EditableAttributesGrid.
      */
-    function onAdd(): void {
-        theAttribute.value = createNewAttribute();
-        isModalVisible.value = true;
-    }
-
-    /**
-     * Edit button on a grid row. Opens the modal with a deep-cloned copy of
-     * the selected attribute; falls back to Add if the row is missing.
-     *
-     * @param guid The unique identifier of the attribute to edit.
-     */
-    function onEdit(guid: string): void {
-        const selected = (attributes.value ?? []).find(x => x.guid === guid);
-
-        if (selected) {
-            theAttribute.value = {
-                ...selected,
-                configurationValues: { ...(selected.configurationValues ?? {}) },
-                categories: (selected.categories ?? []).map(c => ({ ...c }))
-            };
-            isModalVisible.value = true;
-        }
-        else {
-            onAdd();
-        }
-    }
-
-    /**
-     * Delete button on a grid row.
-     *
-     * @param guid The unique identifier of the attribute to delete.
-     */
-    function onDelete(guid: string): void {
-        attributes.value = (attributes.value ?? []).filter(a => a.guid !== guid);
-    }
-
-    /**
-     * Save button on the attribute modal. Updates the existing entry when
-     * the Guid matches; otherwise assigns a fresh Guid and appends.
-     */
-    function onSave(): void {
-        if (!theAttribute.value) {
-            return;
-        }
-
-        const currentAttributes = attributes.value ?? [];
-        const idx = currentAttributes.findIndex(a => a.guid === theAttribute.value?.guid);
-
-        let updatedAttributes: PublicEditableAttributeBag[];
-
-        if (idx !== -1) {
-            updatedAttributes = [...currentAttributes];
-            updatedAttributes.splice(idx, 1, { ...theAttribute.value });
-        }
-        else {
-            theAttribute.value.guid = newGuid();
-            updatedAttributes = [...currentAttributes, { ...theAttribute.value }];
-        }
-
-        attributes.value = updatedAttributes;
-        isModalVisible.value = false;
-    }
-
-    /**
-     * Reorder callback fired by the grid when a row is dragged to a new position.
-     *
-     * @param item The row being moved.
-     * @param beforeItem The row the moved item was placed before, or null if moved to the end.
-     */
-    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        const itemGuid = item["guid"] as string;
-        const beforeItemGuid = beforeItem?.["guid"] as string | null;
-
-        const currentItems = [...(attributes.value ?? [])];
-        const idx = currentItems.findIndex(i => i.guid === itemGuid);
-
-        if (idx < 0) {
-            return false;
-        }
-
-        const itemToMove = currentItems.splice(idx, 1)[0];
-
-        if (beforeItemGuid) {
-            const beforeIndex = currentItems.findIndex(i => i.guid === beforeItemGuid);
-            if (beforeIndex < 0) {
-                currentItems.push(itemToMove);
-            }
-            else {
-                currentItems.splice(beforeIndex, 0, itemToMove);
-            }
-        }
-        else {
-            currentItems.push(itemToMove);
-        }
-
-        attributes.value = currentItems;
-        return true;
-    }
-
-    // #endregion
-
-    // #region Watchers
-
-    /**
-     * Manage the AttributeEditor's reservedKeyNames list as the modal opens
-     * and closes. Removes the currently-edited key while the modal is open
-     * (so the user can keep the same key) and re-adds it on close.
-     */
-    watch(isModalVisible, () => {
-        if (isModalVisible.value) {
-            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== theAttribute.value?.key);
-        }
-        else if (theAttribute.value?.key && !reservedKeyNames.value.includes(theAttribute.value.key)) {
-            reservedKeyNames.value.push(theAttribute.value.key);
-        }
+    const inheritedKeyNames = computed((): string[] => {
+        return (props.inheritedGroupMemberAttributes ?? [])
+            .map(a => a.key)
+            .filter((k): k is string => !!k);
     });
 
-    /**
-     * Rebuild the reservedKeyNames list whenever the inherited or own
-     * attribute lists change, so the AttributeEditor can prevent duplicates.
-     */
-    watch([() => props.groupMemberAttributes, () => props.inheritedGroupMemberAttributes], () => {
-        const inheritedKeys = (props.inheritedGroupMemberAttributes ?? [])
-            .map(a => a.key)
-            .filter((k): k is string => !!k);
-
-        const ownKeys = (props.groupMemberAttributes ?? [])
-            .map(a => a.key)
-            .filter((k): k is string => !!k);
-
-        reservedKeyNames.value = [...inheritedKeys, ...ownKeys];
-    }, { immediate: true, deep: true });
-
-    // #endregion
+    // #endregion Computed Values
 </script>

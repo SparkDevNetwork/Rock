@@ -1,0 +1,156 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-6">
+            <DropDownList v-if="!modelValue.isDocumentTypeReadOnly"
+                          v-model="documentTypeValue"
+                          label="Document Type"
+                          :items="documentTypeItems"
+                          rules="required" />
+            <StaticFormControl v-else
+                               label="Document Type"
+                               :modelValue="documentTypeText" />
+
+            <TextBox v-model="name"
+                     label="Document Name"
+                     rules="required" />
+
+            <TextBox v-model="description"
+                     label="Description"
+                     textMode="multiline" />
+        </div>
+
+        <div class="col-md-6">
+            <NotificationBox v-if="!isUploaderVisible"
+                             alertType="info">
+                Select a document type
+            </NotificationBox>
+
+            <FileUploader v-else
+                          v-model="binaryFile"
+                          label="Document File"
+                          :binaryFileTypeGuid="binaryFileTypeGuid ?? undefined"
+                          uploadButtonText="Drop File Here or Click to Select"
+                          rules="required" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { computed, PropType, ref, watch } from "vue";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { DocumentBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentList/documentBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<DocumentBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DocumentBag): void;
+    }>();
+
+    // #region Values
+
+    const name = ref("");
+    const description = ref("");
+    const documentTypeValue = ref("");
+    const binaryFile = ref<ListItemBag | null>(null);
+    const binaryFileTypeGuid = ref<Guid | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The document types available to choose from when adding a document. */
+    const documentTypeItems = computed((): ListItemBag[] => {
+        return (props.modelValue.availableDocumentTypes ?? [])
+            .map(t => ({ value: t.value, text: t.text }));
+    });
+
+    /** The display name of the selected document type (used in read-only mode). */
+    const documentTypeText = computed((): string => {
+        return props.modelValue.documentType?.text ?? "";
+    });
+
+    /** Whether the file uploader should be shown (a document type is selected). */
+    const isUploaderVisible = computed((): boolean => {
+        return props.modelValue.isDocumentTypeReadOnly || !!binaryFileTypeGuid.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the display text for a document type value.
+     *
+     * @param value The document type unique identifier.
+     */
+    function getDocumentTypeText(value: string): string {
+        const match = props.modelValue.availableDocumentTypes?.find(t => t.value === value);
+
+        if (match) {
+            return match.text ?? "";
+        }
+
+        return props.modelValue.documentType?.text ?? "";
+    }
+
+    // #endregion
+
+    // When the document type changes, apply that type's binary file type and,
+    // if the name is still empty, pre-fill it from the type's name template.
+    watch(documentTypeValue, () => {
+        // The document type cannot be changed while editing, so leave the
+        // existing file type and uploaded file in place.
+        if (props.modelValue.isDocumentTypeReadOnly) {
+            return;
+        }
+
+        const match = props.modelValue.availableDocumentTypes?.find(t => t.value === documentTypeValue.value);
+
+        if (match) {
+            binaryFileTypeGuid.value = match.binaryFileTypeGuid;
+
+            if (!name.value && match.nameTemplate) {
+                name.value = match.nameTemplate;
+            }
+        }
+        else {
+            // No type selected — hide the uploader and drop any uploaded file.
+            binaryFileTypeGuid.value = null;
+            binaryFile.value = null;
+        }
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(documentTypeValue, props.modelValue.documentType?.value ?? "");
+        updateRefValue(binaryFile, props.modelValue.binaryFile ?? null);
+        updateRefValue(binaryFileTypeGuid, props.modelValue.binaryFileTypeGuid ?? null);
+    }, { immediate: true });
+
+    watch([name, description, documentTypeValue, binaryFile, binaryFileTypeGuid], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            name: name.value,
+            description: description.value,
+            documentType: documentTypeValue.value
+                ? { value: documentTypeValue.value, text: getDocumentTypeText(documentTypeValue.value) }
+                : null,
+            binaryFile: binaryFile.value,
+            binaryFileTypeGuid: binaryFileTypeGuid.value
+        });
+    });
+</script>

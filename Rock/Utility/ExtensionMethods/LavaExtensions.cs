@@ -173,6 +173,18 @@ namespace Rock
                 var attr = (LavaTypeAttribute)entityType.GetCustomAttributes( typeof( LavaTypeAttribute ), false ).First();
                 foreach ( string propName in attr.AllowedMembers )
                 {
+                    // See the matching skip in the ILavaDataDictionary branch below and issue #6947.
+                    // Person does not currently use [LavaType], but keep this branch consistent so a
+                    // future change to Person (or a subclass) can't reintroduce silent token creation.
+                    if ( myObject is Person
+                         && ( propName == nameof( Person.ImpersonationParameter )
+                              || propName == nameof( Person.EncryptedKey )
+                              || propName == nameof( Person.UrlEncodedKey ) ) )
+                    {
+                        result.TryAdd( propName, "(value hidden in debug output)" );
+                        continue;
+                    }
+
                     var propInfo = entityType.GetProperty( propName );
                     {
                         if ( propInfo != null )
@@ -205,6 +217,31 @@ namespace Rock
                     if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
                         result.TryAdd( key, string.Empty );
+                    }
+                    /*
+                        8/4/2026 - NA
+
+                        We are hard-coding these three property names below rather than
+                        introducing a general marker (for example, a new [LavaHasSideEffect]
+                        attribute in Rock.Lava that the debug walker might honor generically).
+                        If additional side-effect-having [LavaVisible] properties appear over
+                        time, revisit this and consider promoting the check to an attribute-based
+                        mechanism so the walker does not need to know about specific model types.
+                    */
+
+                    // Skip Person properties whose getters have database side effects.
+                    // ImpersonationParameter, EncryptedKey, and UrlEncodedKey each mint a new
+                    // PersonToken (a 30-day, unlimited-use impersonation credential) when read.
+                    // The debug walker recurses through navigation properties, so evaluating
+                    // these getters would silently create tokens for unrelated people the
+                    // walker happens to reach (for example, Campus.LeaderPersonAlias.Person).
+                    // See issue #6947.
+                    else if ( myObject is Person
+                              && ( key == nameof( Person.ImpersonationParameter )
+                                   || key == nameof( Person.EncryptedKey )
+                                   || key == nameof( Person.UrlEncodedKey ) ) )
+                    {
+                        result.TryAdd( key, "(value hidden in debug output)" );
                     }
                     else
                     {

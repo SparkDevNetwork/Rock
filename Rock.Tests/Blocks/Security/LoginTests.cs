@@ -78,7 +78,7 @@ public class LoginTests
     public void Authenticate_NonMfa_CreatesComponentSession_WithStepUpRecencyOnly()
     {
         // Arrange.
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
         var userLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "testuser", personId: 1, primaryAliasId: 1 );
@@ -109,7 +109,7 @@ public class LoginTests
     public void Authenticate_Mfa_CreatesComponentSession_WithBothRecencyStamps()
     {
         // Arrange.
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
         var userLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "testuser", personId: 1, primaryAliasId: 1 );
@@ -139,7 +139,7 @@ public class LoginTests
     public void Authenticate_PersistedFlag_StampsIsPersistentOnSession()
     {
         // Arrange.
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
         var userLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "testuser", personId: 1, primaryAliasId: 1 );
@@ -166,7 +166,7 @@ public class LoginTests
     public void Authenticate_WithExpiresIn_StampsExpiresDateTime()
     {
         // Arrange.
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
         var userLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "testuser", personId: 1, primaryAliasId: 1 );
@@ -198,7 +198,7 @@ public class LoginTests
     public void Authenticate_AttachesNewSession_ToRequestContext()
     {
         // Arrange.
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
         var userLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "testuser", personId: 1, primaryAliasId: 1 );
@@ -227,7 +227,7 @@ public class LoginTests
     public void Authenticate_WritesAuthCookie_ViaPersonSessionService()
     {
         // Arrange.
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
         var userLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "testuser", personId: 1, primaryAliasId: 1 );
@@ -256,7 +256,7 @@ public class LoginTests
     public void Authenticate_ThrowsWhenPersonHasNoPrimaryAlias()
     {
         // Arrange.
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
         var authComponent = GetDatabaseAuthComponent( rockContext );
         var userLogin = SeedUserLoginWithoutPrimaryAlias( rockContext, authComponent, userLoginId: 1, userName: "orphan", personId: 1 );

@@ -128,20 +128,11 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="stepProgramGuid">The step program unique identifier.</param>
         /// <param name="stepTypeGuid">The step type unique identifier.</param>
+        [Obsolete( "Use the ParseStepProgramStepTypeDelimitedGuids method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public static void ParseDelimitedGuids( string value, out Guid? stepProgramGuid, out Guid? stepTypeGuid )
         {
-            var parts = ( value ?? string.Empty ).Split( '|' );
-
-            if ( parts.Length == 1 )
-            {
-                // If there is only one guid, assume it is the type
-                stepProgramGuid = null;
-                stepTypeGuid = parts[0].AsGuidOrNull();
-                return;
-            }
-
-            stepProgramGuid = parts.Length > 0 ? parts[0].AsGuidOrNull() : null;
-            stepTypeGuid = parts.Length > 1 ? parts[1].AsGuidOrNull() : null;
+            Helper.ParseStepProgramStepTypeDelimitedGuids(value, out stepProgramGuid, out stepTypeGuid );
         }
 
         /// <summary>
@@ -155,7 +146,7 @@ namespace Rock.Field.Types
             stepProgram = null;
             stepType = null;
 
-            ParseDelimitedGuids( value, out var stepProgramGuid, out var stepTypeGuid );
+            Helper.ParseStepProgramStepTypeDelimitedGuids( value, out var stepProgramGuid, out var stepTypeGuid );
 
             if ( stepProgramGuid.HasValue || stepTypeGuid.HasValue )
             {
@@ -182,7 +173,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            ParseDelimitedGuids( privateValue, out var stepProgramGuid, out var stepTypeGuid );
+            Helper.ParseStepProgramStepTypeDelimitedGuids( privateValue, out var stepProgramGuid, out var stepTypeGuid );
 
             if ( !stepProgramGuid.HasValue && !stepTypeGuid.HasValue )
             {
@@ -230,6 +221,21 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<StepType>().Value, nameof( StepType.Name ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<StepProgram>().Value, nameof( StepProgram.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two guids separated by a pipe, the StepProgram first and the StepType second, as in a1|b2. A single guid with no pipe is read as the step type alone with no program, which is the opposite of the order the two appear in when both are present.",
+                Instructions = "The program guid comes from the StepProgram table and the step type guid from the StepType rows belonging to that program."
             };
         }
 

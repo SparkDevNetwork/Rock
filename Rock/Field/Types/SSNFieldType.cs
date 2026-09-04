@@ -41,7 +41,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string ssn = UnencryptAndClean( privateValue );
+            string ssn = Helper.UnencryptAndCleanSocialSecurityNumber( privateValue );
 
             if ( ssn.Length == 9 )
             {
@@ -77,7 +77,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return UnencryptAndClean( privateValue );
+            return Helper.UnencryptAndCleanSocialSecurityNumber( privateValue );
         }
 
         /// <inheritdoc/>
@@ -95,7 +95,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override bool IsValid( string value, bool required, out string message )
         {
-            string ssn = UnencryptAndClean( value );
+            string ssn = Helper.UnencryptAndCleanSocialSecurityNumber( value );
             if ( ssn.Length == 9 )
             {
                 message = string.Empty;
@@ -126,20 +126,27 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="encryptedValue">The encrypted value.</param>
         /// <returns></returns>
+        [Obsolete( "Use the UnencryptAndCleanSocialSecurityNumber method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public static string UnencryptAndClean( string encryptedValue )
         {
-            if ( encryptedValue.IsNotNullOrWhiteSpace() )
-            {
-                string ssn = Rock.Security.Encryption.DecryptString( encryptedValue );
-                if ( !string.IsNullOrEmpty( ssn ) )
-                {
-                    return ssn.AsNumeric();
-                    ;
-                }
-            }
-
-            return string.Empty;
+            return Helper.UnencryptAndCleanSocialSecurityNumber( encryptedValue );
         }
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "An encrypted social security number rather than the number itself. Rock encrypts the value on the way in and decrypts it on the way out, so digits written directly into storage cannot be read back. The decrypted form is digits only, without dashes.",
+                Instructions = "Set this through the normal attribute value path so the encryption is applied, and never by writing the stored column directly."
+            };
+        }
+
+        #endregion
 
         #region WebForms
 #if WEBFORMS

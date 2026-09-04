@@ -170,6 +170,41 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration
         /// </summary>
         /// <value></value>
         public string SavedAccountName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the saved account this scheduled
+        /// transaction is drawing from. Used by the client to determine whether
+        /// a saved account is "in use" without relying on name matching.
+        /// </summary>
+        public int? SavedAccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last error code recorded on the saved account this
+        /// scheduled transaction draws from, if any.
+        /// </summary>
+        public string SavedAccountLastErrorCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date/time of the last error recorded on the saved
+        /// account this scheduled transaction draws from.
+        /// </summary>
+        public DateTime? SavedAccountLastErrorCodeDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the associated financial
+        /// gateway component supports inactivating (canceling) this scheduled
+        /// transaction. When false, the client should hide the inactivate
+        /// action because the gateway can't honor it.
+        /// </summary>
+        public bool IsInactivateSupported { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency information (symbol, decimal places,
+        /// symbol location) used to format the transaction total in the
+        /// scheduled transaction's own currency, honoring
+        /// ForeignCurrencyCodeValueId.
+        /// </summary>
+        public Rock.ViewModels.Utility.CurrencyInfoBag CurrencyInfo { get; set; }
     }
 
     /// <summary>
@@ -281,6 +316,15 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration
         /// </summary>
         /// <value>The currency type.</value>
         public string CurrencyType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the currency type defined value.
+        /// This allows the client to reliably distinguish between payment methods
+        /// (e.g., Credit Card vs. ACH vs. Apple Pay) without matching on the
+        /// display string, which is not locale- or configuration-stable.
+        /// </summary>
+        /// <value>The currency type defined value GUID.</value>
+        public Guid? CurrencyTypeGuid { get; set; }
         /// <summary>
         /// Gets or sets the credit card type.
         /// </summary>
@@ -358,6 +402,15 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration
         /// </summary>
         /// <value>The is expired status of the financial person saved account.</value>
         public bool IsExpired { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this saved account is eligible
+        /// for Text-To-Give. Only accounts whose gateway implements
+        /// IAutomatedGatewayComponent can be used, so the client should filter
+        /// the Text-To-Give dropdown to accounts where this is true while still
+        /// showing every saved account in the main saved-accounts list.
+        /// </summary>
+        public bool IsSupportedForTextToGive { get; set; }
     }
 
     /// <summary>

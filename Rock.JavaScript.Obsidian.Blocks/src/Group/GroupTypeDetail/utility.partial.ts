@@ -15,43 +15,6 @@
 // </copyright>
 //
 
-import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
-
-/**
- * Creates a new attribute instance suitable for editing with the AttributeEditor control.
- * Centralized to reduce the risk of fixing attribute-default bugs in one place but not another.
- */
-export function createNewAttribute(): PublicEditableAttributeBag {
-    return {
-        guid: "",
-        name: "",
-        description: "",
-        isActive: true,
-        isPublic: false,
-        isRequired: false,
-        isShowOnBulk: false,
-        isShowInGrid: false,
-        isAnalytic: false,
-        isAnalyticHistory: false,
-        isAllowSearch: false,
-        isEnableHistory: false,
-        isIndexEnabled: false,
-        isSystem: false,
-        fieldTypeGuid: FieldType.Text,
-        configurationValues: {},
-        categories: [],
-        key: "",
-        abbreviatedName: "",
-        preHtml: "",
-        postHtml: "",
-        defaultValue: "",
-        isSuppressHistoryLogging: false,
-        attributeColor: "",
-        iconCssClass: ""
-    };
-}
-
 /**
  * Converts a decimal multiplier (0.00 - 1.00) to a whole-number percent (0 - 100) for display.
  */

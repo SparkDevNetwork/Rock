@@ -20,7 +20,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Extension;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.SmsActions
@@ -29,7 +28,12 @@ namespace Rock.Communication.SmsActions
     /// 
     /// </summary>
     /// <seealso cref="Rock.Extension.Component" />
-    [TextValueFilterField( "Phone Numbers", "The phone numbers that this action will run on.", false, order: 0, category: BaseAttributeCategories.Filters, hideFilterMode: true )]
+    [TextValueFilterField( "Phone Numbers",
+        Description = "The phone numbers that this action will run on.",
+        IsRequired = false,
+        Order = 0,
+        Category = BaseAttributeCategories.Filters,
+        HideFilterMode = true )]
     public abstract class SmsActionComponent : Component
     {
         /// <summary>
@@ -146,7 +150,7 @@ namespace Rock.Communication.SmsActions
 
             var attribute = action.Attributes.ContainsKey( "PhoneNumbers" ) ? action.Attributes["PhoneNumbers"] : null;
             var phoneNumbers = GetAttributeValue( action, "PhoneNumbers" );
-            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, phoneNumbers );
+            var filter = Web.UI.Controls.FilterExpression.FromJsonOrNull( phoneNumbers );
 
             return filter != null ? filter.Evaluate( message, "ToNumber" ) : true;
         }

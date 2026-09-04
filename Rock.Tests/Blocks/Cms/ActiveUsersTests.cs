@@ -71,7 +71,7 @@ public class ActiveUsersTests
     [TestMethod]
     public void GetActiveUsers_IncludesPersonWithRecentSession_DespiteStaleUserLogin()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         const int targetPersonId = 42;
@@ -111,7 +111,7 @@ public class ActiveUsersTests
     [TestMethod]
     public void GetActiveUsers_ExcludesPersonWithOnlyInactiveSessions()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         const int targetPersonId = 99;
@@ -159,7 +159,7 @@ public class ActiveUsersTests
     [TestMethod]
     public void GetActiveUsers_CollapsesMultipleSessions_PerPerson()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         const int targetPersonId = 7;
@@ -188,7 +188,7 @@ public class ActiveUsersTests
     [TestMethod]
     public void GetActiveUsers_ExcludesPersonBrowsingDifferentSite()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         const int targetPersonId = 55;
@@ -214,7 +214,7 @@ public class ActiveUsersTests
     [TestMethod]
     public void GetActiveUsers_PopulatesPageTitles_ForLatestSession()
     {
-        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
         const int targetPersonId = 71;

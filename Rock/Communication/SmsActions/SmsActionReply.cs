@@ -21,7 +21,6 @@ using System.ComponentModel.Composition;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -173,7 +172,7 @@ namespace Rock.Communication.SmsActions
             // Get the filter expression for the message body.
             var attribute = action.Attributes.ContainsKey( AttributeKey.Message ) ? action.Attributes[AttributeKey.Message] : null;
             var msg = GetAttributeValue( action, AttributeKey.Message );
-            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
+            var filter = Web.UI.Controls.FilterExpression.FromJsonOrNull( msg );
 
             // Evaluate the message against the filter and return the match state.
             return filter != null ? filter.Evaluate( message, AttributeKey.Message ) : true;

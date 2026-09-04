@@ -40,8 +40,6 @@
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getInitiatorFilterValue"
-                      :quickFilterValue="getInitiatorFilterValue"
                       visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []"
@@ -62,7 +60,6 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FormSubmissionListOptionsBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormSubmissionList/formSubmissionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./FormSubmissionList/types.partial";
     import FiltersModal from "./FormSubmissionList/filtersModal.partial.obs";
@@ -110,11 +107,6 @@
         }
 
         throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
-    }
-
-    function getInitiatorFilterValue(row: Record<string, unknown>): string {
-        const person = row["initiator"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /** Scopes a preference key to the current workflow type so filters do not bleed across forms. */

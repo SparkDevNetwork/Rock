@@ -1,0 +1,461 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="config.bag?.isVisible" class="panel panel-block">
+        <div class="panel-heading">
+            <h1 class="panel-title">
+                <i class="ti ti-history"></i>
+                Group History
+            </h1>
+            <div class="panel-labels">
+                <div class="grouphistory-view-controls">
+                    <Toggle v-if="hasData"
+                            v-model="isYearView"
+                            trueText="Year"
+                            falseText="Month"
+                            btnSize="xs" />
+                    <RockButton :btnType="BtnType.Default"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :isSquare="true"
+                                title="Options"
+                                @click="onOptionsClick">
+                        <i class="ti ti-settings"></i>
+                    </RockButton>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="isOptionsVisible" class="panel-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <GroupTypePicker label="Group Types"
+                                     v-model="selectedGroupTypes"
+                                     :multiple="true"
+                                     :groupTypes="availableGroupTypeGuids"
+                                     :isSortedByName="true" />
+                </div>
+            </div>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary" :btnSize="BtnSize.ExtraSmall" :isLoading="isLoading" @click="onApplyClick">
+                    Apply
+                </RockButton>
+            </div>
+        </div>
+
+        <div class="panel-body styled-scroll">
+            <div v-show="hasData" ref="containerEl" class="panel-fullwidth"></div>
+
+            <LoadingIndicator v-if="isLoading" />
+            <NotificationBox v-else-if="!hasData" :alertType="AlertType.Info">No Group History Available</NotificationBox>
+
+            <div class="grouptype-legend">
+                <label>Group Types:</label>
+                <div class="grouptype-legend-items">
+                    <span v-for="(item, index) in legend" :key="item.value ?? index" class="padding-r-sm">
+                        <span class="label label-default" :style="item.color ? { backgroundColor: item.color } : undefined">{{ item.text }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+.swimlanes {
+    min-width: 100%;
+}
+
+.swimlanes .grid-background {
+    fill: none;
+}
+
+.swimlanes .grid-header {
+    fill: var(--color-interface-softer);
+    stroke: var(--color-interface-soft);
+    stroke-width: .3;
+}
+
+.swimlanes .grid-row {
+    fill: var(--color-interface-softest);
+}
+
+.swimlanes .grid-row:nth-child(even) {
+    fill: var(--color-interface-softer);
+}
+
+.swimlanes .row-line {
+    stroke: var(--color-interface-soft);
+}
+
+.swimlanes .tick {
+    stroke: var(--color-interface-softer);
+    stroke-width: .2;
+}
+
+.swimlanes .tick.thick {
+    stroke-width: .4;
+}
+
+.swimlanes .today-highlight {
+    opacity: .5;
+    fill: var(--color-primary-soft);
+}
+
+.swimlanes .bar {
+    user-select: none;
+    transition: stroke-width .3s ease;
+    fill: var(--color-interface-soft);
+    stroke: var(--color-interface-medium);
+    stroke-width: 0;
+    opacity: 0.8;
+}
+
+.swimlanes .bar-invalid {
+    fill: transparent;
+    stroke: var(--color-interface-medium);
+    stroke-width: 1;
+    stroke-dasharray: 5;
+}
+
+.swimlanes .bar-invalid ~ .bar-label {
+    fill: var(--color-interface-strong);
+}
+
+.swimlanes .bar-label {
+    font-size: 12px;
+    font-weight: 400;
+    fill: var(--color-interface-stronger);
+    dominant-baseline: central;
+    text-anchor: middle;
+}
+
+.swimlanes .bar-label.big {
+    fill: var(--color-interface-strong);
+    text-anchor: start;
+}
+
+.swimlanes .bar-wrapper {
+    cursor: pointer;
+}
+
+.swimlanes .bar-wrapper:hover .bar,
+.swimlanes .bar-wrapper.active .bar {
+    stroke-width: 2;
+    opacity: .8;
+}
+
+.swimlanes .bar-wrapper.is-leader .bar {
+    opacity: 1;
+}
+
+.swimlanes .lower-text,
+.swimlanes .upper-text {
+    font-size: 14px;
+    text-anchor: middle;
+}
+
+.swimlanes .upper-text {
+    font-weight: 800;
+    fill: var(--color-interface-strong);
+}
+
+.swimlanes .lower-text {
+    font-size: 12px;
+    fill: var(--color-interface-stronger);
+}
+
+.swimlanes .hide {
+    display: none;
+}
+
+.swimlanes-container {
+    position: relative;
+    overflow: auto;
+    border-bottom: 1px solid var(--color-interface-soft);
+    font-size: 12px;
+}
+
+.swimlanes-container .popup-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0;
+    color: var(--color-interface-medium);
+    background: var(--color-interface-strong);
+    border-radius: 3px;
+}
+
+.swimlanes-container .popup-wrapper .title {
+    padding: 10px;
+    border-bottom: 1px solid var(--color-interface-softest);
+}
+
+.swimlanes-container .popup-wrapper .title a {
+    color: var(--color-link);
+    font-size: 16px;
+}
+
+.swimlanes-container .popup-wrapper .subtitle {
+    padding: 10px;
+    color: var(--color-interface-softer);
+}
+
+.swimlanes-container .popup-wrapper .pointer {
+    position: absolute;
+    height: 5px;
+    margin: 0 0 0 -5px;
+    border: 5px solid transparent;
+    border-top-color: var(--color-interface-strong);
+}
+
+.grouphistory-view-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
+/* Match the Month/Year toggle buttons to the square xs options button (26px tall). */
+.grouphistory-view-controls .btn-toggle .btn {
+    height: 26px;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 24px;
+}
+
+/* Match the toggle's outer corner rounding to the xs options button (inner corners stay square). */
+.grouphistory-view-controls .btn-toggle .btn:first-child {
+    border-top-left-radius: var(--rounded-xsmall);
+    border-bottom-left-radius: var(--rounded-xsmall);
+}
+
+.grouphistory-view-controls .btn-toggle .btn:last-child {
+    border-top-right-radius: var(--rounded-xsmall);
+    border-bottom-right-radius: var(--rounded-xsmall);
+}
+
+.grouptype-legend {
+    display: flex;
+    margin-top: var(--spacing-medium);
+    align-items: center;
+    gap: var(--spacing-medium);
+}
+
+.grouptype-legend label {
+    color: var(--color-interface-medium);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+    import { Guid } from "@Obsidian/Types";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonGroupHistoryBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/PersonGroupHistory/personGroupHistoryBag";
+    import { PersonGroupHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/PersonGroupHistory/personGroupHistoryOptionsBag";
+    import { PersonGroupHistoryDataBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/PersonGroupHistory/personGroupHistoryDataBag";
+    import { GroupHistoryLaneBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/PersonGroupHistory/groupHistoryLaneBag";
+    import { GroupHistoryLegendItemBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/PersonGroupHistory/groupHistoryLegendItemBag";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ViewMode, SwimlanesGroup, SwimlanesInstance } from "./PersonGroupHistory/types.partial";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<PersonGroupHistoryBag, PersonGroupHistoryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const containerEl = ref<HTMLElement | null>(null);
+    const viewMode = ref<ViewMode>(config.options?.defaultViewMode === "Month" ? ViewMode.Month : ViewMode.Year);
+    const selectedGroupTypes = ref<ListItemBag[]>(config.bag?.selectedGroupTypes ?? []);
+    const legend = ref<GroupHistoryLegendItemBag[]>([]);
+    const isOptionsVisible = ref(false);
+    const isLoading = ref(false);
+    const hasData = ref(false);
+
+    let instance: SwimlanesInstance | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const availableGroupTypeGuids = computed((): Guid[] => config.options?.availableGroupTypeGuids ?? []);
+
+    /** Two-way binding for the Month/Year toggle; true when the timeline is in Year mode. */
+    const isYearView = computed<boolean>({
+        get(): boolean {
+            return viewMode.value === ViewMode.Year;
+        },
+        set(value: boolean): void {
+            onViewModeClick(value ? ViewMode.Year : ViewMode.Month);
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Toggles the visibility of the group type filter options panel.
+     */
+    function onOptionsClick(): void {
+        isOptionsVisible.value = !isOptionsVisible.value;
+    }
+
+    /**
+     * Switches the timeline scale between Month and Year.
+     */
+    function onViewModeClick(mode: ViewMode): void {
+        if (viewMode.value === mode) {
+            return;
+        }
+
+        viewMode.value = mode;
+        instance?.change_view_mode(mode);
+    }
+
+    /**
+     * Persists the selected group types as the block preference and re-renders the timeline.
+     */
+    async function onApplyClick(): Promise<void> {
+        isOptionsVisible.value = false;
+        await fetchAndRender(true);
+    }
+
+    /**
+     * Tracks the mouse position the swimlanes library reads when positioning its popup.
+     */
+    function onMouseMove(event: MouseEvent): void {
+        const scrollContainer = containerEl.value?.querySelector(".swimlanes-container") as HTMLElement | null;
+
+        if (!scrollContainer) {
+            return;
+        }
+
+        const rect = scrollContainer.getBoundingClientRect();
+
+        window.currentMousePos = {
+            x: event.pageX - (rect.left + window.scrollX) + scrollContainer.scrollLeft,
+            y: event.pageY + scrollContainer.scrollTop
+        };
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Maps the camelCase data bags into the PascalCase shape the swimlanes library reads.
+     */
+    function toSwimlanesLanes(lanes: GroupHistoryLaneBag[]): SwimlanesGroup[] {
+        return lanes.map(lane => ({
+            GroupId: lane.groupIdKey ?? "",
+            GroupTypeId: lane.groupTypeId,
+            GroupTypeColor: lane.groupTypeColor,
+            GroupTypeName: lane.groupTypeName,
+            StartStopHistory: (lane.startStopHistory ?? []).map(history => ({
+                GroupName: history.groupName,
+                StartDateTime: history.startDateTime,
+                StopDateTime: history.stopDateTime,
+                IsLeader: history.isLeader,
+                GroupRoleName: history.groupRoleName
+            }))
+        }));
+    }
+
+    /**
+     * Tears down the swimlanes instance and clears the host element.
+     */
+    function destroyInstance(): void {
+        instance?.clear();
+        instance = null;
+
+        if (containerEl.value) {
+            containerEl.value.innerHTML = "";
+        }
+    }
+
+    /**
+     * Fetches the timeline data for the current filter and renders (or refreshes) the swimlanes.
+     */
+    async function fetchAndRender(isSavingPreference: boolean): Promise<void> {
+        isLoading.value = true;
+
+        try {
+            const result = await invokeBlockAction<PersonGroupHistoryDataBag>("GetGroupHistory", {
+                request: {
+                    selectedGroupTypeGuids: selectedGroupTypes.value.map(groupType => groupType.value).filter((value): value is string => !!value),
+                    isSavingPreference
+                }
+            });
+
+            if (!result.isSuccess || !result.data) {
+                legend.value = [];
+                hasData.value = false;
+                destroyInstance();
+                return;
+            }
+
+            legend.value = result.data.legend ?? [];
+
+            const lanes = toSwimlanesLanes(result.data.lanes ?? []);
+            hasData.value = lanes.length > 0;
+
+            if (!hasData.value) {
+                destroyInstance();
+                return;
+            }
+
+            // Make sure the host element is shown before the library measures and draws into it.
+            await nextTick();
+
+            if (!containerEl.value) {
+                return;
+            }
+
+            if (instance) {
+                instance.refresh(lanes);
+            }
+            else {
+                instance = new window.Swimlanes(containerEl.value, lanes, { view_mode: viewMode.value });
+            }
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(async () => {
+        if (!config.bag?.isVisible) {
+            return;
+        }
+
+        window.currentMousePos = window.currentMousePos ?? { x: -1, y: -1 };
+        document.addEventListener("mousemove", onMouseMove);
+
+        await loadJavaScriptAsync("/Scripts/rock-swimlanes.min.js", () => "Swimlanes" in window);
+        await fetchAndRender(false);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("mousemove", onMouseMove);
+        destroyInstance();
+    });
+
+    // #endregion Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

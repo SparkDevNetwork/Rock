@@ -159,6 +159,10 @@ namespace Rock.Blocks.Lms
             {
                 errorMessage = "Activity Type is a required field";
             }
+            else if ( learningClassActivity.RetakeThreshold.HasValue && learningClassActivity.RetakeThreshold.Value > learningClassActivity.Points )
+            {
+                errorMessage = "Retake Threshold cannot be greater than Points";
+            }
 
             return errorMessage == null;
         }
@@ -280,6 +284,7 @@ namespace Rock.Blocks.Lms
                 Order = entity.Order,
                 PercentComplete = completionStatistics.PercentComplete,
                 Points = entity.Points,
+                RetakeThreshold = entity.RetakeThreshold,
                 SendNotificationCommunication = entity.SendNotificationCommunication
             };
         }
@@ -417,6 +422,9 @@ namespace Rock.Blocks.Lms
 
             box.IfValidProperty( nameof( box.Bag.Points ),
                 () => entity.Points = box.Bag.Points );
+
+            box.IfValidProperty( nameof( box.Bag.RetakeThreshold ),
+                () => entity.RetakeThreshold = box.Bag.RetakeThreshold );
 
             box.IfValidProperty( nameof( box.Bag.SendNotificationCommunication ),
                 () => entity.SendNotificationCommunication = box.Bag.SendNotificationCommunication );

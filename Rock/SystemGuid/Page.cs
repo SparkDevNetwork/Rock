@@ -364,7 +364,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Check-in page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
 
@@ -626,6 +626,18 @@ namespace Rock.SystemGuid
         public const string CONNECTIONS_HUB = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
 
         /// <summary>
+        /// Gets the My Connection Requests page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string MY_CONNECTIONS = "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B";
+
+        /// <summary>
+        /// Gets the My Connection Opportunities page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string MY_CONNECTION_OPPORTUNITIES = "29C23E3B-13E3-4FF6-883C-0EFA1C7C40B9";
+
+        /// <summary>
         /// Gets the Connections List page guid.
         /// ParentPage: Connections
         /// </summary>
@@ -680,6 +692,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Content Channel Detail
         /// </summary>
         public const string CONTENT_ITEM_DETAIL = "ABF26679-1051-4F4F-8A67-5958E5BF71F8";
+
+        /// <summary>
+        /// Gets the Content Item Metrics page guid
+        /// ParentPage: Content Channel Detail
+        /// </summary>
+        public const string CONTENT_ITEM_METRICS = "B917B620-C172-4E52-9695-917E3833DB09";
 
         /// <summary>
         /// Gets the Content Type Detail page guid
@@ -993,7 +1011,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the External Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string EXTERNAL_HOMEPAGE = "85F25819-E948-4960-9DDF-00F54D32444E";
 
@@ -1247,7 +1265,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Internal Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string INTERNAL_HOMEPAGE = "20F97A93-7949-4C2A-8A5E-C756FE8585CA";
 
@@ -1423,6 +1441,8 @@ namespace Rock.SystemGuid
         /// Gets the New Communication page guid
         /// ParentPage: Communications
         /// </summary>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use NEW_COMMUNICATION_OBSIDIAN instead." )]
         public const string NEW_COMMUNICATION = "2A22D08D-73A8-4AAF-AC7E-220E8B2E7857";
 
         /// <summary>
@@ -1850,6 +1870,12 @@ namespace Rock.SystemGuid
         public const string SMS_PHONE_NUMBERS = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 
         /// <summary>
+        /// The Spark Connected SErvices page guid.
+        /// ParentPage: System Settings
+        /// </summary>
+        public const string SPARK_CONNECTED_SERVICES = "42c6994a-76e0-48e1-87a3-a011e238b906";
+
+        /// <summary>
         /// Gets the SQL Command page guid
         /// ParentPage: Power Tools
         /// </summary>
@@ -2167,5 +2193,10 @@ namespace Rock.SystemGuid
         /// The Ncoa Process Page
         /// </summary>
         public const string NCOA_PROCESS = "56EDE500-CEE6-41F4-B724-E44E66A4432F";
+
+        /// <summary>
+        /// The Mobile Page Layout Detail Page
+        /// </summary>
+        public const string MOBILE_LAYOUT = "5583A55D-7398-48E9-971F-6A1EF8158943";
     }
 }

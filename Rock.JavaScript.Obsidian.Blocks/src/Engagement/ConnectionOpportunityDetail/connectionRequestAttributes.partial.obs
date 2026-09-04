@@ -25,39 +25,24 @@
     </ContentStack>
 
     <ContentStack title="Configure Request Attributes" description="Configure the connection request attributes that should be available for connection requests associated with this opportunity." headerLocation="top">
-        <Grid :data="gridData" keyField="guid" itemTerm="Connection Request Attribute" liveUpdates light
-              @addItem="onAdd">
-
-            <ReorderColumn v-if="options?.isReOrderColumnVisible" @orderChanged="onOrderChanged" />
-
-            <TextColumn name="name" field="name" title="Attribute" />
-            <TextColumn name="description" field="description" title="Description" />
-            <BooleanColumn name="isRequired" field="isRequired" title="Required" />
-            <EditColumn @click="onEdit" />
-            <SecurityColumn itemTitle="name" />
-            <DeleteColumn @click="onDelete" disableConfirmation />
-        </Grid>
+        <EditableAttributesGrid v-model="attributes"
+                                itemTerm="Connection Request Attribute"
+                                modalTitle="Request Attributes"
+                                :attributeEntityTypeGuid="EntityType.ConnectionRequest"
+                                :reservedKeyNames="inheritedKeyNames"
+                                :isReorderHidden="!options?.isReOrderColumnVisible" />
     </ContentStack>
-
-    <Modal v-model="isModalVisible" title="Request Attributes" saveText="Save" cancelText="Cancel"
-           :onSave="onSave">
-        <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.ConnectionRequest" />
-    </Modal>
 </template>
 
 <script setup lang="ts">
-    import { ref, watch, PropType, computed } from "vue";
+    import { computed, PropType } from "vue";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
-    import Grid, { BooleanColumn, EditColumn, TextColumn, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
-    import Modal from "@Obsidian/Controls/modal.obs";
-    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import EditableAttributesGrid from "@Obsidian/Controls/editableAttributesGrid.obs";
+    import Grid, { TextColumn } from "@Obsidian/Controls/grid";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-    import { newGuid } from "@Obsidian/Utility/guid";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { InheritedAttributeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/inheritedAttributeBag";
     import { ConnectionOpportunityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionOpportunityDetailOptionsBag";
-    import { Enumerable } from "@Obsidian/Utility/linq";
 
     const props = defineProps({
         /**
@@ -105,14 +90,6 @@
         (e: "update:connectionRequestAttributes", value: PublicEditableAttributeBag[]): void
     }>();
 
-    // #region Values
-
-    const reservedKeyNames = ref<string[]>([]);
-    const isModalVisible = ref(false);
-    const theAttribute = ref<PublicEditableAttributeBag | null>(null);
-
-    //#endregion Values
-
     // #region Computed Values
 
     const attributes = computed({
@@ -122,17 +99,6 @@
         set(value: PublicEditableAttributeBag[]) {
             emit("update:connectionRequestAttributes", value);
         }
-    });
-
-    const gridData = computed(() => {
-        const rows = (attributes.value ?? []).map(attribute => ({
-            guid: attribute.guid,
-            name: attribute.name,
-            description: attribute.description,
-            isRequired: attribute.isRequired,
-            isSystem: attribute.isSystem
-        }));
-        return { rows };
     });
 
     const inheritedGridData = computed(() => {
@@ -145,172 +111,17 @@
         return { rows };
     });
 
-    // #endregion Computed Values
-
-    // #region Functions
-
     /**
-     * Creates a new attribute with default values.
+     * Keys of the attributes inherited from the connection type, reserved so
+     * this opportunity cannot define an attribute that collides with one of
+     * them. The keys of the editable attributes themselves are reserved by
+     * the EditableAttributesGrid.
      */
-    function createNewAttribute(): PublicEditableAttributeBag {
-        return {
-            guid: "",
-            name: "",
-            description: "",
-            isActive: true,
-            isPublic: false,
-            isRequired: false,
-            isShowOnBulk: false,
-            isShowInGrid: false,
-            isAnalytic: false,
-            isAnalyticHistory: false,
-            isAllowSearch: false,
-            isEnableHistory: false,
-            isIndexEnabled: false,
-            isSystem: false,
-            fieldTypeGuid: FieldType.Text,
-            configurationValues: {},
-            categories: [],
-            key: "",
-            abbreviatedName: "",
-            preHtml: "",
-            postHtml: "",
-            defaultValue: "",
-            isSuppressHistoryLogging: false,
-            attributeColor: "",
-            iconCssClass: ""
-        };
-    }
-
-    // #endregion Functions
-
-    // #region Event Handlers
-
-    /**
-     * Called when the Add button is clicked.
-     */
-    function onAdd(): void {
-        theAttribute.value = createNewAttribute();
-        isModalVisible.value = true;
-    }
-
-    /**
-     * Called when the Edit button for an attribute row is clicked.
-     *
-     * @param guid The unique identifier of the attribute to edit.
-     */
-    function onEdit(key: string): void {
-        const selected = (attributes.value ?? []).find(a => a.guid === key);
-
-        if (selected) {
-            theAttribute.value = {
-                ...selected,
-                configurationValues: { ...(selected.configurationValues ?? {}) },
-                categories: (selected.categories ?? []).map(c => ({ ...c }))
-            };
-            isModalVisible.value = true;
-        }
-        else {
-            onAdd();
-        }
-    }
-
-    /**
-     * Called when the Delete button for an attribute row is clicked.
-     *
-     * @param guid The unique identifier of the attribute to delete.
-     */
-    function onDelete(guid: string): void {
-        isModalVisible.value = false;
-        attributes.value = (attributes.value ?? []).filter(a => a.guid !== guid);
-    }
-
-    /**
-     * Called when the attribute modal Save button is clicked.
-     */
-    function onSave(): void {
-        if (!theAttribute.value) {
-            return;
-        }
-
-        const currentAttributes = attributes.value ?? [];
-        const idx = currentAttributes.findIndex(a => a.guid === theAttribute.value?.guid);
-        let updatedAttributes: PublicEditableAttributeBag[];
-
-        if (idx !== -1) {
-            updatedAttributes = [...currentAttributes];
-            updatedAttributes.splice(idx, 1, { ...theAttribute.value });
-        }
-        else {
-            theAttribute.value.guid = newGuid();
-            updatedAttributes = [...currentAttributes, { ...theAttribute.value }];
-        }
-
-        attributes.value = updatedAttributes;
-        isModalVisible.value = false;
-    }
-
-    // #endregion Event Handlers
-
-    /**
-     * Called when the order of attributes changes.
-     * @param item The item that was moved.
-     * @param beforeItem The item that the moved item was placed before.
-     */
-    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        const itemGuid = item["guid"] as string;
-        const beforeItemGuid = beforeItem?.["guid"] as string | null;
-
-        const currentItems = [...(attributes.value ?? [])];
-        const idx = currentItems.findIndex(i => i.guid === itemGuid);
-
-        if (idx < 0) {
-            return false;
-        }
-
-        const itemToMove = currentItems.splice(idx, 1)[0];
-
-        if (beforeItemGuid) {
-            const beforeIndex = currentItems.findIndex(i => i.guid === beforeItemGuid);
-            if (beforeIndex < 0) {
-                currentItems.push(itemToMove);
-            }
-            else {
-                currentItems.splice(beforeIndex, 0, itemToMove);
-            }
-        }
-        else {
-            currentItems.push(itemToMove);
-        }
-
-        attributes.value = currentItems;
-        return true;
-    }
-
-    // #region Watchers
-
-    watch(isModalVisible, () => {
-        if (isModalVisible.value) {
-            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== theAttribute.value?.key);
-        }
-        else {
-            if (theAttribute.value?.key && !reservedKeyNames.value.includes(theAttribute.value.key)) {
-                reservedKeyNames.value.push(theAttribute.value.key);
-            }
-        }
+    const inheritedKeyNames = computed((): string[] => {
+        return (props.inheritedConnectionRequestAttributes ?? [])
+            .map(a => a?.key)
+            .filter((k): k is string => !!k);
     });
 
-    watch([() => props.connectionRequestAttributes, () => props.inheritedConnectionRequestAttributes], () => {
-        const inheritedKeys = Enumerable.from(props.inheritedConnectionRequestAttributes ?? [])
-            .select(attr => attr?.key)
-            .where(k => !!k);
-
-        const ownKeys = Enumerable.from(props.connectionRequestAttributes ?? [])
-            .select(attr => attr.key)
-            .where(k => !!k);
-
-        reservedKeyNames.value = inheritedKeys.concat(ownKeys).toArray() as string[];
-    }, { immediate: true });
-
-    // #endregion Watchers
+    // #endregion Computed Values
 </script>

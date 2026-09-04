@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="warning">{{ errorMessage }}</NotificationBox>
+
+    <div v-else-if="detail" class="attendance-detail">
+        <ViewPanel :detail="detail"
+                   :isLoadingEdit="isLoadingEdit"
+                   :isLoadingDelete="isLoadingDelete"
+                   @edit="onEditClick"
+                   @delete="onDeleteClick" />
+
+        <MovePersonModal v-model="isMoveModalOpen"
+                         :options="moveOptions"
+                         :allowEditingStartAndEndTimes="allowEditingStartAndEndTimes"
+                         :onSave="onMoveSave" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import ViewPanel from "./AttendanceDetail/viewPanel.partial.obs";
+    import MovePersonModal from "./AttendanceDetail/movePersonModal.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { AttendanceDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailBag";
+    import { AttendanceDetailDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailDeleteResponseBag";
+    import { AttendanceDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailInitializationBox";
+    import { AttendanceDetailMovePersonOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailMovePersonOptionsBag";
+    import { AttendanceDetailMovePersonRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailMovePersonRequestBag";
+    import { AttendanceDetailMovePersonResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailMovePersonResponseBag";
+
+    const config = useConfigurationValues<AttendanceDetailInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // A change to any block setting (Profile Page, Allow Editing Start and
+    // End Times, etc.) reloads the entire block so links, options, and
+    // visibility toggles rebuild from the updated configuration.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const detail = ref<AttendanceDetailBag | null>(config.detail ?? null);
+    const errorMessage = ref<string>(config.errorMessage ?? "");
+    const allowEditingStartAndEndTimes = ref<boolean>(config.options?.allowEditingStartAndEndTimes === true);
+
+    const isMoveModalOpen = ref(false);
+    const moveOptions = ref<AttendanceDetailMovePersonOptionsBag | null>(null);
+    const isLoadingEdit = ref(false);
+    const isLoadingDelete = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Fetches the schedule/location/group options from the server, then
+     * opens the Move Person modal. Any server-side "not found" error is
+     * surfaced through the alert dialog instead of opening the modal.
+     */
+    async function onEditClick(): Promise<void> {
+        if (isLoadingEdit.value) {
+            return;
+        }
+
+        isLoadingEdit.value = true;
+
+        try {
+            const result = await invokeBlockAction<AttendanceDetailMovePersonOptionsBag>("GetMovePersonOptions");
+
+            if (!result.isSuccess || !result.data) {
+                await alert(result.errorMessage ?? "Unable to load move options.");
+                return;
+            }
+
+            if (result.data.errorMessage) {
+                await alert(result.data.errorMessage);
+                return;
+            }
+
+            moveOptions.value = result.data;
+            isMoveModalOpen.value = true;
+        }
+        finally {
+            isLoadingEdit.value = false;
+        }
+    }
+
+    /**
+     * Confirms and deletes the attendance, then navigates to the Person
+     * Profile page returned by the server.
+     */
+    async function onDeleteClick(): Promise<void> {
+        if (isLoadingDelete.value) {
+            return;
+        }
+
+        const label = `Check-in for ${detail.value?.personName ?? "this person"}`;
+        const confirmed = await confirmDelete(label);
+        if (!confirmed) {
+            return;
+        }
+
+        isLoadingDelete.value = true;
+
+        try {
+            const result = await invokeBlockAction<AttendanceDetailDeleteResponseBag>("Delete");
+
+            if (!result.isSuccess || !result.data) {
+                await alert(result.errorMessage ?? "Unable to delete this attendance.");
+                return;
+            }
+
+            if (result.data.redirectUrl) {
+                window.location.href = result.data.redirectUrl;
+            }
+        }
+        finally {
+            isLoadingDelete.value = false;
+        }
+    }
+
+    /**
+     * Sends the Move Person selection to the server. On success the modal
+     * closes and the view panel rebinds to the freshly-composed detail bag.
+     * On warning/error the modal stays open and the message is passed back.
+     */
+    async function onMoveSave(request: AttendanceDetailMovePersonRequestBag): Promise<AttendanceDetailMovePersonResponseBag | null> {
+        const result = await invokeBlockAction<AttendanceDetailMovePersonResponseBag>("MovePerson", { request });
+
+        if (!result.isSuccess || !result.data) {
+            return {
+                isSuccess: false,
+                errorMessage: result.errorMessage ?? "Unable to move this attendance."
+            };
+        }
+
+        if (result.data.isSuccess && result.data.refreshedDetail) {
+            detail.value = result.data.refreshedDetail;
+            isMoveModalOpen.value = false;
+        }
+
+        return result.data;
+    }
+
+    // #endregion Event Handlers
+</script>

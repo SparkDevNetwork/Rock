@@ -44,7 +44,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name of the field.</param>
         public DeviceFieldAttribute( string name )
-            : base( name, fieldTypeClass: typeof( Rock.Field.Types.DeviceFieldType ).FullName )
+            : base( SystemGuid.FieldType.DEVICE.AsGuid(), name: name )
         {
         }
     }

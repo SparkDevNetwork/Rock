@@ -19,14 +19,14 @@
              v-drag-source="dragSourceOptions"
              v-drag-target="dragSourceOptions.id"
              :data-group-key="group.key ?? ''">
-            <div v-if="group.gridData.rows.length > 0" :style="beforePadStyle" class="flex-shrink-0"></div>
-            <div v-for="row in virtualItems"
+            <div v-if="group.gridData.rows.length > 0" :style="beforePad" class="flex-shrink-0"></div>
+            <div v-for="row in displayedItems"
                  :key="(row.idKey as string)"
                  :data-id-key="(row.idKey as string)"
                  class="board-card-wrapper">
                 <slot name="boardCard" v-bind="{ row }" />
             </div>
-            <div :style="afterPadStyle" class="flex-shrink-0"></div>
+            <div :style="afterPad" class="flex-shrink-0"></div>
             <div v-if="group.gridData.rows.length === 0" class="board-column-empty">
                 <slot name="emptyColumn" />
             </div>
@@ -53,7 +53,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-xsmall);
-    border-bottom: 2px solid var(--color-interface-soft);
+    border-bottom: 1px solid var(--color-interface-soft);
 }
 
 .board-column-body {
@@ -89,6 +89,18 @@
 
 .board-column-body:hover::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-interface-medium);
+}
+
+/* A touch that begins on a card is a drag, never a scroll. Without this the
+   browser treats the touch as a potential pan, which (1) forces Dragula's
+   document-level touchmove listener passive so its preventDefault is rejected
+   ("Unable to preventDefault inside passive event listener") and (2) scrolls the
+   column or board strip underneath the drag. touch-action is locked at touchstart
+   (the same instant the drag starts), so this must stay static rather than being
+   gated on body.is-dragging, which would apply one gesture too late. Edge
+   auto-scroll in groupedBoardView handles scrolling during the drag instead. */
+.board-card-wrapper {
+    touch-action: none;
 }
 
 .board-column.drag-over {
@@ -127,6 +139,17 @@
         dragSourceOptions: {
             type: Object as PropType<IDragSourceOptions>,
             required: true
+        },
+
+        /**
+         * True while a card is being dragged anywhere on the board. During a
+         * drag the column renders every row (bypassing virtualization) so that
+         * auto-scrolling the column body cannot add or remove card nodes mid
+         * drag, which would otherwise corrupt Dragula's live DOM manipulation.
+         */
+        isDragging: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -140,4 +163,24 @@
         container: itemsContainer,
         estimatedItemHeight: 220
     });
+
+    /*
+        7/13/26 - KBH
+
+        While a drag is in progress the virtual scroller must be bypassed. Its
+        scroll handler re-renders the visible card range whenever the column
+        scrolls, but Dragula physically relocates the dragged node in the DOM
+        during a drag (Rock reverts that only on drop). Letting Vue re-render the
+        v-for mid-drag reconciles a DOM that Dragula has mutated, which drops
+        cards in the wrong place and throws insertBefore/removeChild errors
+        (reliably on touch devices). Rendering every row keeps the rendered set
+        constant for the whole drag, so no churn occurs.
+
+        Reason: Prevent virtual-scroller re-renders from fighting Dragula mid-drag.
+    */
+    const displayedItems = computed(() => props.isDragging ? rows.value : virtualItems.value);
+
+    /** Pad spacers collapse to zero while every row is rendered during a drag. */
+    const beforePad = computed(() => props.isDragging ? { height: "0px" } : beforePadStyle.value);
+    const afterPad = computed(() => props.isDragging ? { height: "0px" } : afterPadStyle.value);
 </script>

@@ -205,7 +205,11 @@ namespace Rock.Blocks.Group
             {
                 return new GroupAttendanceListOptionsBag
                 {
-                    IsAuthorized = false
+                    IsAuthorized = false,
+                    // Expose the key only when a group is actually in scope so the client
+                    // can distinguish an unauthorized group from a missing GroupId and
+                    // only warn in the former case (WebForms parity).
+                    GroupIdKey = group?.IdKey
                 };
             }
 

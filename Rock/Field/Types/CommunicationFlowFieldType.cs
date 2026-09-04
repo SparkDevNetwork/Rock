@@ -231,6 +231,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the CommunicationFlow table. Not its id or idKey.",
+                Instructions = "To find the correct value, read the communication flows and take its guid."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

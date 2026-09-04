@@ -46,8 +46,10 @@ namespace Rock.Security.ExternalAuthentication
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Twitter" )]
 
-    [TextField( "Consumer Key", "The Twitter Consumer Key" )]
-    [TextField( "Consumer Secret", "The Twitter Consumer Secret" )]
+    [TextField( "Consumer Key",
+        Description = "The Twitter Consumer Key" )]
+    [TextField( "Consumer Secret",
+        Description = "The Twitter Consumer Secret" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "CE5C0844-4020-45E8-9777-1EE13CB890BF")]
     public class Twitter : AuthenticationComponent, IExternalRedirectAuthentication

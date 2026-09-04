@@ -41,6 +41,9 @@ export type CommunicationEntryInitializationBox = {
     /** Gets or sets the communication details being created/edited. */
     communication?: CommunicationEntryCommunicationBag | null;
 
+    /** Gets or sets the communication list groups the current person may choose from. */
+    communicationListGroups?: ListItemBag[] | null;
+
     /** Determines if the asset manager feature is enabled in the HTML editor control. */
     enableAssetManager: boolean;
 
@@ -52,6 +55,9 @@ export type CommunicationEntryInitializationBox = {
 
     /** Gets or sets a value indicating whether CC/BCC entry is allowed. */
     isCcBccEntryAllowed: boolean;
+
+    /** Gets or sets a value indicating whether the sender may choose a communication list as the recipient source. */
+    isCommunicationListSelectionEnabled: boolean;
 
     /** Gets or sets a value indicating whether the duplicate prevention option is shown. */
     isDuplicatePreventionOptionShown: boolean;

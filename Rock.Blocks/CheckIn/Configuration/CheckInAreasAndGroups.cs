@@ -61,6 +61,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     public class CheckInAreasAndGroups : RockBlockType
     {
         #region Keys
+
         private static class AttributeKey
         {
             public const string EnableClassicCheckInLabels = "EnableClassicCheckInLabels";
@@ -1467,8 +1468,13 @@ namespace Rock.Blocks.CheckIn.Configuration
                     relatedEntityQry,
                     cl => cl.Id,
                     re => re.TargetEntityId,
-                    ( cl, re ) => new { cl.Id, cl.Name, re.Order }
-                )
+                    ( cl, re ) => new {
+                        cl.Id,
+                        cl.Name,
+                        re.Order,
+                        cl.IsActive,
+                    } )
+                .Where( a => a.IsActive )
                 .OrderBy( x => x.Order )
                 .ToList()
                 .Select( x => new CheckInLabelBag

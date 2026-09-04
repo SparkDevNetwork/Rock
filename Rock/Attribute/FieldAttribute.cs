@@ -16,9 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Rock.Enums.Cms;
 using Rock.Field;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -31,6 +33,10 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true )]
     public abstract class FieldAttribute : System.Attribute
     {
+        private string _fieldTypeClass;
+        private string _fieldTypeAssembly;
+        private Guid? _fieldTypeGuid;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldAttribute" /> class.
         /// </summary>
@@ -43,6 +49,8 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeAssembly">The field type assembly.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
+        [Obsolete( "Use the constructor that takes a fieldTypeGuid instead." )]
+        [RockObsolete( "20.0" )]
         public FieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string fieldTypeClass = null, string fieldTypeAssembly = "Rock" )
             : base()
         {
@@ -54,10 +62,10 @@ namespace Rock.Attribute
             {
                 Key = key;
             }
-            
+
             if ( string.IsNullOrWhiteSpace( fieldTypeClass ) )
             {
-                fieldTypeClass = typeof( Rock.Field.Types.TextFieldType ).FullName;
+                fieldTypeClass = "Rock.Field.Types.TextFieldType";
             }
 
             Name = name;
@@ -68,6 +76,57 @@ namespace Rock.Attribute
             Order = order;
             FieldTypeAssembly = fieldTypeAssembly;
             FieldTypeClass = fieldTypeClass;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldAttribute" /> class.
+        /// </summary>
+        /// <param name="fieldTypeGuid">The unique identifier of the field type.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a fieldTypeGuid and name only." )]
+        [RockObsolete( "20.0" )]
+        public FieldAttribute( Guid fieldTypeGuid, string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
+            : base()
+        {
+            if ( string.IsNullOrWhiteSpace( key ) )
+            {
+                Key = name.Replace( " ", string.Empty );
+            }
+            else
+            {
+                Key = key;
+            }
+
+            Name = name;
+            Category = category;
+            Description = description;
+            FieldTypeGuid = fieldTypeGuid;
+            IsRequired = required;
+            DefaultValue = defaultValue;
+            Order = order;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldAttribute" /> class.
+        /// </summary>
+        /// <param name="fieldTypeGuid">The unique identifier of the field type.</param>
+        /// <param name="name">The name.</param>
+        public FieldAttribute( Guid fieldTypeGuid, string name )
+        {
+            Category = string.Empty;
+            DefaultValue = string.Empty;
+            Description = string.Empty;
+            FieldTypeGuid = fieldTypeGuid;
+            IsRequired = true;
+            Key = name.Replace( " ", string.Empty );
+            Name = name;
+            Order = 0;
         }
 
         /// <summary>
@@ -132,7 +191,33 @@ namespace Rock.Attribute
         /// <value>
         /// The field type assembly.
         /// </value>
-        public virtual string FieldTypeAssembly { get; set; }
+        [Obsolete( "Use FieldTypeGuid instead." )]
+        [RockObsolete( "20.0" )]
+        public virtual string FieldTypeAssembly
+        {
+            get
+            {
+                if ( _fieldTypeAssembly == null )
+                {
+                    PopulateLegacyClassAndAssembly();
+                }
+
+                return _fieldTypeAssembly ?? string.Empty;
+            }
+            set
+            {
+                // The obsolete constructor writes FieldTypeAssembly and
+                // FieldTypeClass separately in sequence, so this setter
+                // must not clobber _fieldTypeClass here. We null only
+                // _fieldTypeGuid so the next FieldTypeGuid read re-resolves
+                // against the (assembly, class) pair. Mixing legacy setter
+                // writes with FieldTypeGuid writes is not a supported
+                // pattern; if you need to change the field type, set
+                // FieldTypeGuid instead.
+                _fieldTypeAssembly = value;
+                _fieldTypeGuid = null;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the class name of the <see cref="Rock.Field.IFieldType"/> to be used for the attribute.
@@ -140,7 +225,91 @@ namespace Rock.Attribute
         /// <value>
         /// The field type class.
         /// </value>
-        public virtual string FieldTypeClass { get; set; }
+        [Obsolete( "Use FieldTypeGuid instead." )]
+        [RockObsolete( "20.0" )]
+        public virtual string FieldTypeClass
+        {
+            get
+            {
+                if ( _fieldTypeClass == null )
+                {
+                    PopulateLegacyClassAndAssembly();
+                }
+
+                return _fieldTypeClass ?? string.Empty;
+            }
+            set
+            {
+                // The obsolete constructor writes FieldTypeAssembly and
+                // FieldTypeClass separately in sequence, so this setter
+                // must not clobber _fieldTypeAssembly here. We null only
+                // _fieldTypeGuid so the next FieldTypeGuid read re-resolves
+                // against the (assembly, class) pair. Mixing legacy setter
+                // writes with FieldTypeGuid writes is not a supported
+                // pattern; if you need to change the field type, set
+                // FieldTypeGuid instead.
+                _fieldTypeClass = value;
+                _fieldTypeGuid = null;
+            }
+        }
+
+        /// <summary>
+        /// The unique identifier of the field type that will handle the
+        /// configuration and UI for this attribute.
+        /// </summary>
+        /// <remarks>
+        /// This is a string instead of a Guid so that it can be used in
+        /// C# attribute constructors.
+        /// </remarks>
+        public Guid FieldTypeGuid
+        {
+            get
+            {
+                if ( _fieldTypeGuid == null )
+                {
+                    // Legacy fallback: this path only runs when the
+                    // attribute was constructed via the obsolete
+                    // fieldTypeClass constructor. Full-cache walks and
+                    // cache-miss retries are acceptable here because this
+                    // is not a hot path in normal Rock usage.
+                    try
+                    {
+                        // Only check the class and ignore the assembly because
+                        // the assembly might have changed since the attribute
+                        // was created.
+                        var fieldType = FieldTypeCache.All()
+                            .FirstOrDefault( c => c.Class == _fieldTypeClass );
+
+                        if ( fieldType == null )
+                        {
+                            // Don't set _fieldTypeGuid to Guid.Empty here
+                            // because that would prevent future attempts to
+                            // look up the field type by class name once the
+                            // cache is warm.
+                            return Guid.Empty;
+                        }
+
+                        _fieldTypeGuid = fieldType.Guid;
+                    }
+                    catch
+                    {
+                        // Don't set _fieldTypeGuid to Guid.Empty here
+                        // because that would prevent future attempts to
+                        // look up the field type by class name once the
+                        // cache is available.
+                        return Guid.Empty;
+                    }
+                }
+
+                return _fieldTypeGuid ?? Guid.Empty;
+            }
+            set
+            {
+                _fieldTypeGuid = value;
+                _fieldTypeAssembly = null;
+                _fieldTypeClass = null;
+            }
+        }
 
         /// <summary>
         /// The site types this attribute will be displayed on. This is currently
@@ -166,6 +335,56 @@ namespace Rock.Attribute
                 FieldConfigurationValues = value;
             }
         }
-        private Dictionary<string, ConfigurationValue> fieldConfigurationValues = new Dictionary<string, ConfigurationValue>(); 
+        private Dictionary<string, ConfigurationValue> fieldConfigurationValues = new Dictionary<string, ConfigurationValue>();
+
+        /// <summary>
+        /// Populate the <strong>FieldTypeClass</strong> and
+        /// <strong>FieldTypeAssembly</strong> properties based on the
+        /// <see cref="FieldTypeGuid"/> value.
+        /// </summary>
+        /// <remarks>
+        /// FieldTypeClass and FieldTypeAssembly are legacy properties and
+        /// are not expected to be read at runtime in normal Rock code paths.
+        /// They exist only for backwards compatibility with plugins that
+        /// reflect on FieldAttribute. On cache miss (which can happen during
+        /// early attribute reflection before FieldTypeCache is warm), we
+        /// deliberately leave the backing fields null so a subsequent read
+        /// after the cache warms up will retry the lookup. Caching a miss
+        /// as string.Empty would permanently return an empty value even
+        /// once the field type becomes resolvable.
+        /// </remarks>
+        [Obsolete( "This is a legacy support method and should be removed when FieldTypeClass is removed." )]
+        [RockObsolete( "20.0" )]
+        private void PopulateLegacyClassAndAssembly()
+        {
+            // Route through the FieldTypeGuid property so the class-name
+            // fallback fires when only FieldTypeClass has been set.
+            var guid = FieldTypeGuid;
+
+            if ( guid == Guid.Empty )
+            {
+                return;
+            }
+
+            try
+            {
+                var fieldType = FieldTypeCache.Get( guid );
+
+                if ( fieldType == null )
+                {
+                    return;
+                }
+
+                _fieldTypeAssembly ??= fieldType.Assembly;
+                _fieldTypeClass ??= fieldType.Class;
+            }
+            catch
+            {
+                // Intentionally ignore exceptions since this is only used
+                // for backwards compatibility with the old constructor.
+                // Leave the backing fields null so a subsequent read once
+                // the cache is available can succeed.
+            }
+        }
     }
 }

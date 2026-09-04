@@ -17,12 +17,11 @@
 using System;
 using System.Web.UI.WebControls;
 
-using Rock.Web.UI.Controls;
-
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting items from a <seealso cref="RockCheckBoxList"/>. Value is saved as a comma-delimited list
+    /// Field Attribute for selecting items from a list of checkboxes.
+    /// Value is saved as a comma-delimited list.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomCheckboxListFieldAttribute : SelectFieldAttribute
@@ -35,9 +34,9 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         public CustomCheckboxListFieldAttribute( string name )
-            : this( name, string.Empty, string.Empty )
+            : base( SystemGuid.FieldType.MULTI_SELECT.AsGuid(), name )
         {
-
+            IsRequired = false;
         }
 
         /// <summary>
@@ -51,9 +50,22 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public CustomCheckboxListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName )
+            : base( SystemGuid.FieldType.MULTI_SELECT.AsGuid(), name )
         {
+            Category = category;
+            DefaultValue = defaultValue;
+            Description = description;
+            IsRequired = required;
+            Order = order;
+
+            if ( key.IsNotNullOrWhiteSpace() )
+            {
+                Key = key;
+            }
+
             ListSource = listSource;
         }
 

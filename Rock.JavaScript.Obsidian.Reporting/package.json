@@ -1,11 +1,15 @@
 {
   "private": true,
   "description": "Project for all core data filters and data selects in Rock.",
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "scripts": {
     "build-fast": "node build/build-fast.js",
-    "build": "npm run build:types && node ../Rock.JavaScript.Obsidian/Build/rollup-mt.js rollup.config.cjs && echo '' > dist/.buildstamp && echo DONE",
+    "build": "npm run build:types && obsidian-build && echo '' > dist/.buildstamp && echo DONE",
     "build:types": "node ./build/build-types.js",
-    "watch": "rollup --config rollup.config.cjs --watch",
+    "watch": "obsidian-build --watch",
     "clean": "rimraf dist",
     "lint": "eslint --ext .ts --ext .obs src"
   },
@@ -16,6 +20,7 @@
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-node-resolve": "^15.2.1",
+    "@sparkdevnetwork/obsidian-build-tools": "^1.0.13",
     "@types/google.maps": "^3.54.0",
     "@types/node": "^20.19.25",
     "@typescript-eslint/eslint-plugin": "^6.5.0",

@@ -27,7 +27,6 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
@@ -447,8 +446,7 @@ namespace RockWeb.Blocks.Crm
                 SetAttributeValue( AttributeKey.Workflow, "" );
             }
 
-            var ppFieldType = new PageReferenceFieldType();
-            SetAttributeValue( AttributeKey.DonePage, ppFieldType.GetEditValue( ppDonePage, null ) );
+            SetAttributeValue( AttributeKey.DonePage, ppDonePage.GetValueAsAttributeValue() );
 
             ParseEditControls();
             var jsonSetting = new JsonSerializerSettings
@@ -819,8 +817,7 @@ namespace RockWeb.Blocks.Crm
                 wtpWorkflow.SetValue( null );
             }
 
-            var ppFieldType = new PageReferenceFieldType();
-            ppFieldType.SetEditValue( ppDonePage, null, GetAttributeValue( AttributeKey.DonePage ) );
+            ppDonePage.SetValueFromAttributeValue( GetAttributeValue( AttributeKey.DonePage ) );
 
             string json = GetAttributeValue( AttributeKey.Forms );
             if ( string.IsNullOrWhiteSpace( json ) )

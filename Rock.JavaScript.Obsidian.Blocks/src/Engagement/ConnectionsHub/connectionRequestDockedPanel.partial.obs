@@ -7,53 +7,51 @@
                  :closeOnOutsideClick="dockedPanelCloseOnOutsideClick">
         <template #header>
             <template v-if="isLoading">
-                <div v-if="isInEditMode" class="p-spacing-md">
-                    <div class="skeleton skeleton-heading my-spacing-none"></div>
+                <div v-if="isInEditMode" class="docked-panel-header-skeleton docked-panel-header-skeleton--edit">
+                    <div class="skeleton skeleton-heading"></div>
                 </div>
-                <div v-else class="bg-interface-softer">
-                    <div class="py-spacing-lg px-spacing-md">
-                        <div class="d-flex gap-sm align-items-center">
-                            <div class="skeleton skeleton-avatar flex-shrink-0"></div>
-                            <div class="w-100">
-                                <div class="skeleton skeleton-text"></div>
-                                <div class="skeleton skeleton-text"></div>
-                                <div class="skeleton skeleton-text mb-spacing-none"></div>
-                            </div>
+                <div v-else class="docked-panel-header-skeleton docked-panel-header-skeleton-info">
+                    <div class="docked-panel-header-skeleton-info-row">
+                        <div class="skeleton skeleton-avatar"></div>
+                        <div class="docked-panel-header-skeleton-info-row-text">
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text"></div>
                         </div>
                     </div>
                 </div>
             </template>
-            <div v-else class="mb-spacing-sm">
-                <div v-if="isInEditMode" class="d-flex align-items-center justify-content-between p-spacing-md">
-                    <div class="font-size-h5 text-semibold">Connection Request</div>
+            <div v-else class="docked-panel-header-connection-request">
+                <div v-if="isInEditMode || !isNullOrWhiteSpace(viewErrorMessage)" class="docked-panel-header-connection-request-header">
+                    <div class="docked-panel-header-connection-request-header-title">Connection Request</div>
                     <i class="ti ti-x cursor-pointer" @click="closeDockedPanel"></i>
                 </div>
-                <div v-else class="pt-spacing-xs bg-interface-softer">
-                    <div class="d-flex justify-content-between px-spacing-sm">
+                <div v-else class="docked-panel-header-connection-request-content">
+                    <div class="docked-panel-header-connection-request-toolbar">
                         <div v-if="connectionRequestBreadcrumbs.length > 0"
-                             class="w-100 d-flex align-items-center gap-tiny flex-wrap text-small">
-                            <span class="cursor-pointer request-breadcrumb" @click="emit('navigateToBreadcrumb', 0)">
+                             class="docked-panel-header-connection-request-breadcrumbs">
+                            <span class="request-breadcrumb" @click="emit('navigateToBreadcrumb', 0)">
                                 {{ connectionRequestBreadcrumbs[0].text }}
                             </span>
                             <template v-if="connectionRequestBreadcrumbs.length > 2">
                                 <i class="ti ti-chevron-right"></i>
-                                <span class="d-flex align-items-end cursor-pointer request-breadcrumb" @click="emit('navigateToBreadcrumb', connectionRequestBreadcrumbs.length - 2)">
+                                <span class="request-breadcrumb request-breadcrumb--ellipsis" @click="emit('navigateToBreadcrumb', connectionRequestBreadcrumbs.length - 2)">
                                     <i class="ti ti-dots"></i>
                                 </span>
                             </template>
                             <template v-if="connectionRequestBreadcrumbs.length > 1">
                                 <i class="ti ti-chevron-right"></i>
-                                <span class="cursor-pointer request-breadcrumb"
+                                <span class="request-breadcrumb"
                                       @click="emit('navigateToBreadcrumb', connectionRequestBreadcrumbs.length - 1)">
                                     {{ connectionRequestBreadcrumbs[connectionRequestBreadcrumbs.length - 1].text }}
                                 </span>
                             </template>
                         </div>
-                        <div v-else class="d-flex gap-sm">
+                        <div v-else class="docked-panel-nav">
                             <i class="ti ti-chevron-left cursor-pointer" :class="{ disabled: !hasPrevious }" @click="goPrevious"></i>
                             <i class="ti ti-chevron-right cursor-pointer" :class="{ disabled: !hasNext }" @click="goNext"></i>
                         </div>
-                        <div class="d-flex gap-sm">
+                        <div class="docked-panel-header-connection-request-toolbar-actions">
                             <i v-if="!isFullWidth" class="ti ti-layout-sidebar-right-expand cursor-pointer" @click="setFullWidth(true)"></i>
                             <i v-else class="ti ti-layout-sidebar-right-collapse cursor-pointer" @click="setFullWidth(false)"></i>
                             <i ref="copyRequestLinkRef" class="ti ti-link cursor-pointer" title="Copy Request Link" @click="copyRequestLink"></i>
@@ -61,25 +59,25 @@
                         </div>
                     </div>
                     <template v-if="requestDetails?.requesterPerson">
-                        <div class="px-spacing-md py-spacing-xs d-flex align-items-center justify-content-between">
-                            <div class="d-flex gap-sm">
+                        <div class="docked-panel-header-connection-request-person">
+                            <div class="docked-panel-header-connection-request-person-info">
                                 <PersonAvatar :personIdKey="requestDetails.requesterPerson.idKey ?? ''"
                                               :photoUrl="requestDetails.requesterPerson.photoUrl ?? ''"
                                               :photoSize="70" />
-                                <div class="d-flex flex-column flex-shrink-0 person-details">
-                                    <div class="text-interface-stronger text-md">{{ requestDetails.requesterPerson.nickName }} {{ requestDetails.requesterPerson.lastName }}</div>
-                                    <div v-if="!isNullOrWhiteSpace(requestDetails.requesterPerson.connectionStatus)" class="text-interface-medium text-sm">{{ requestDetails.requesterPerson.connectionStatus }}</div>
-                                    <div v-if="requestDetails.requesterPerson.age" class="text-interface-medium text-sm">{{ requestDetails.requesterPerson.age }} {{ pluralize("year", requestDetails.requesterPerson.age) }} old</div>
-                                    <div class="text-interface-medium text-sm">{{ requestDetails.requesterPerson.gender }} | {{ requestDetails.requesterPerson.maritalStatus }}</div>
+                                <div class="person-details">
+                                    <div style="color: var(--color-interface-stronger); font-size: var(--font-size-regular);">{{ requestDetails.requesterPerson.nickName }} {{ requestDetails.requesterPerson.lastName }}</div>
+                                    <div v-if="!isNullOrWhiteSpace(requestDetails.requesterPerson.connectionStatus)" class="docked-panel-header-connection-request-person-meta">{{ requestDetails.requesterPerson.connectionStatus }}</div>
+                                    <div v-if="requestDetails.requesterPerson.age" class="docked-panel-header-connection-request-person-meta">{{ requestDetails.requesterPerson.age }} {{ pluralize("year", requestDetails.requesterPerson.age) }} old</div>
+                                    <div class="docked-panel-header-connection-request-person-meta">{{ requestDetails.requesterPerson.gender }} | {{ requestDetails.requesterPerson.maritalStatus }}</div>
                                 </div>
                             </div>
-                            <div v-if="options?.badgeGuids && options.badgeGuids.length > 0">
+                            <div v-if="options?.badgeGuids && options.badgeGuids.length > 0 && !isDockedBtnIconVisible">
                                 <BadgeList :entityTypeGuid="EntityType.Person"
                                            :entityKey="requestDetails.requesterPerson.idKey ?? ''"
                                            :badgeTypeGuids="options.badgeGuids"
-                                           class="align-items-center justify-content-center flex-wrap" />
+                                           class="docked-panel-header-connection-request-badge-list" />
                             </div>
-                            <div class="d-flex py-spacing-lg gap-xs">
+                            <div class="docked-panel-header-connection-request-person-actions">
                                 <RockButton :btnType="BtnType.Default"
                                             isSquare
                                             title="View Profile"
@@ -100,10 +98,16 @@
                                 </RockButton>
                             </div>
                         </div>
+                        <div v-if="options?.badgeGuids && options.badgeGuids.length > 0 && isDockedBtnIconVisible" class="docked-panel-header-connection-request-badges">
+                            <BadgeList :entityTypeGuid="EntityType.Person"
+                                       :entityKey="requestDetails.requesterPerson.idKey ?? ''"
+                                       :badgeTypeGuids="options.badgeGuids"
+                                       class="docked-panel-header-connection-request-badge-list" />
+                        </div>
                     </template>
                     <template v-if="requestDetails?.personNotes && requestDetails.personNotes.length > 0">
-                        <div class="bg-info-soft py-spacing-tiny">
-                            <div class="w-100 text-center cursor-pointer text-link text-small" @click="toggleVisibleNotes">
+                        <div class="docked-panel-header-connection-request-notes-toggle">
+                            <div class="docked-panel-header-connection-request-notes-toggle-label" @click="toggleVisibleNotes">
                                 {{ areNotesVisible ? "Hide" : "Show" }} {{ requestDetails.personNotes.length }} {{ pluralize("Note", requestDetails.personNotes.length) }}
                             </div>
                         </div>
@@ -118,10 +122,15 @@
         </template>
         <template #default>
             <template v-if="isLoading">
-                <div class="p-spacing-md h-100">
-                    <div class="skeleton rounded h-100"></div>
+                <div class="docked-panel-body-skeleton">
+                    <div class="skeleton" style="border-radius: var(--rounded-small); height: 100%;"></div>
                 </div>
             </template>
+            <NotificationBox v-else-if="!isInEditMode && !isNullOrWhiteSpace(viewErrorMessage)"
+                             alertType="danger"
+                             style="margin: var(--spacing-medium) var(--spacing-medium) 0;">
+                {{ viewErrorMessage }}
+            </NotificationBox>
             <template v-else>
                 <EditDockedPanelBody v-if="isInEditMode"
                                      :modelValue="editConnectionRequestBox"
@@ -153,65 +162,79 @@
             </template>
         </template>
         <template #footer>
-            <div class="d-flex align-items-center justify-content-between px-spacing-lg py-spacing-xs bg-interface-softer border-top">
+            <div ref="footerRef" class="docked-panel-footer-content">
                 <template v-if="isLoading">
-                    <div class="skeleton skeleton-button m-spacing-none"></div>
+                    <div class="skeleton skeleton-button" style="margin: 0;"></div>
                 </template>
                 <template v-else>
                     <template v-if="isInEditMode">
-                        <div class="d-flex align-items-center gap-xs">
+                        <div class="docked-panel-footer-button-group">
                             <RockButton :btnType="BtnType.Primary"
                                         :form="editConnectionRequestFormId"
                                         :disabled="isSaving"
+                                        :isSquare="isDockedBtnIconVisible"
                                         type="submit">
-                                Save
+                                <i v-if="isDockedBtnIconVisible" class="ti ti-device-floppy"></i>
+                                <template v-else>Save</template>
                             </RockButton>
                             <RockButton :btnType="BtnType.Link"
                                         @click="setEditMode(false)">
                                 Cancel
                             </RockButton>
                         </div>
-                        <div class="d-flex align-items-center gap-xs">
+                        <div class="docked-panel-footer-button-group">
                             <RockButton v-if="isRequestActiveOrFutureFollowUp"
                                         :btnType="BtnType.Default"
                                         :disabled="isCompleteButtonDisabled"
                                         :title="completeButtonTooltip"
+                                        :isSquare="isDockedBtnIconVisible"
                                         @click="changeRequestState(ConnectionState.Connected)">
                                 <i class="ti ti-circle-check"></i>
-                                Complete Request
+                                <span v-if="!isDockedBtnIconVisible" class="docked-panel-footer-button-label">Complete Request</span>
                             </RockButton>
                             <RockButton :btnType="BtnType.Link"
+                                        :isSquare="isDockedBtnIconVisible"
                                         @click="emit('deleteRequest')">
-                                Delete
+                                <i v-if="isDockedBtnIconVisible" class="ti ti-trash"></i>
+                                <template v-else>Delete</template>
                             </RockButton>
                         </div>
                     </template>
                     <template v-else-if="canEditConnectionRequest">
-                        <div class="d-flex align-items-center gap-xs">
-                            <RockButton :btnType="BtnType.Primary"
-                                        @click="onEditClick">
-                                Edit
-                            </RockButton>
-                            <template v-if="isRequestActiveOrFutureFollowUp">
+                        <div class="docked-footer-grid">
+                            <div class="docked-panel-footer-button-group">
+                                <RockButton :btnType="BtnType.Primary"
+                                            @click="onEditClick"
+                                            :isSquare="isDockedBtnIconVisible">
+                                    <i v-if="isDockedBtnIconVisible" class="ti ti-edit"></i>
+                                    <template v-else>Edit</template>
+                                </RockButton>
+                                <template v-if="isRequestActiveOrFutureFollowUp">
+                                    <RockButton :btnType="BtnType.Default"
+                                                :disabled="isCompleteButtonDisabled"
+                                                :title="completeButtonTooltip"
+                                                :isSquare="isDockedBtnIconVisible"
+                                                @click="changeRequestState(ConnectionState.Connected)">
+                                        <i v-if="isDockedBtnIconVisible" class="ti ti-circle-check"></i>
+                                        <template v-else>Complete</template>
+                                    </RockButton>
+                                    <RockButton :btnType="BtnType.Link"
+                                                :isSquare="isDockedBtnIconVisible"
+                                                @click="() => emit('transferRequest')">
+                                        <i v-if="isDockedBtnIconVisible" class="ti ti-switch-3"></i>
+                                        <template v-else>Transfer</template>
+                                    </RockButton>
+                                </template>
+                            </div>
+                            <div class="docked-panel-footer-button-group docked-panel-footer-button-group--end">
                                 <RockButton :btnType="BtnType.Default"
-                                            :disabled="isCompleteButtonDisabled"
-                                            :title="completeButtonTooltip"
-                                            @click="changeRequestState(ConnectionState.Connected)">
-                                    Complete
+                                            :isSquare="isDockedBtnIconVisible"
+                                            @click="() => emit('addActivity')">
+                                    <i class="ti ti-activity"></i>
+                                    <span v-if="!isDockedBtnIconVisible" class="docked-panel-footer-button-label">Add Activity</span>
                                 </RockButton>
-                                <RockButton :btnType="BtnType.Link"
-                                            @click="() => emit('transferRequest')">
-                                    Transfer
-                                </RockButton>
-                            </template>
-                        </div>
-                        <div class="d-flex align-items-center gap-xs">
-                            <RockButton :btnType="BtnType.Default"
-                                        @click="() => emit('addActivity')">
-                                <i class="ti ti-activity"></i>
-                                Add Activity
-                            </RockButton>
-                            <div style="min-width: 150px;">
+                            </div>
+                            <div>
                                 <ConnectionStatusButton :isSequentialStatusMode="options?.isSequentialStatusMode"
                                                         :highlightColor="requestDetails?.connectionStatus?.highlightColor"
                                                         :currentStatusName="requestDetails?.connectionStatus?.name"
@@ -220,8 +243,8 @@
                         </div>
                     </template>
                     <template v-else>
-                        <div class="d-flex align-items-center justify-content-end w-100">
-                            <div style="min-width: 150px;">
+                        <div class="docked-panel-footer-status">
+                            <div class="docked-status-btn">
                                 <ConnectionStatusButton :isSequentialStatusMode="options?.isSequentialStatusMode"
                                                         :highlightColor="requestDetails?.connectionStatus?.highlightColor"
                                                         :currentStatusName="requestDetails?.connectionStatus?.name"
@@ -235,114 +258,15 @@
     </DockedPanel>
 </template>
 
-<style scoped>
-.person-note-container {
-    background-color: var(--color-interface-softest);
-    max-height: 400px;
-    overflow-y: auto;
-    border-bottom: 1px solid var(--color-interface-soft);
-}
-
-.disabled {
-    cursor: default;
-    color: var(--color-interface-medium);
-}
-
-.person-details {
-    white-space: nowrap;
-}
-
-.header-icon {
-    width: 20px;
-    height: 20px;
-}
-
-.additional-request {
-    display: flex;
-    flex-direction: column;
-}
-
-.person-dropdown {
-    min-width: 200px;
-    max-height: 40vh;
-    overflow-y: auto;
-}
-
-.dropdown-content-item.selected {
-    color: var(--color-interface-strong);
-    font-weight: var(--font-weight-semibold);
-    background-color: var(--color-info-soft);
-}
-
-.text-regular {
-    font-weight: var(--font-weight-regular);
-}
-
-/* text-sm is incorrectly returning xsmall at the moment in develop */
-.text-small {
-    font-size: var(--font-size-small);
-}
-
-.text-slate {
-    color: #64748B;
-}
-
-.text-emerald {
-    color: #10B981;
-}
-
-.gap-tiny {
-    gap: var(--spacing-tiny);
-}
-
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
-
-.gap-sm {
-    gap: var(--spacing-small);
-}
-
-.gap-md {
-    gap: var(--spacing-medium);
-}
-
-.gap-lg {
-    gap: var(--spacing-large);
-}
-
-.w-fit {
-    width: fit-content;
-}
-
-.h-fit {
-    height: fit-content;
-}
-
-.request-breadcrumb:hover {
-    color: var(--color-link);
-    text-decoration: underline;
-}
-
-/* Skeleton adjustments */
-.skeleton {
-    background: var(--color-interface-soft);
-}
-
-.skeleton-heading {
-    max-width: none;
-    border-radius: var(--rounded-small);
-}
-</style>
-
 <script setup lang="ts">
     import DockedPanel from "@Obsidian/Controls/Internal/dockedPanel.obs";
-    import { ref, PropType, watch, computed } from "vue";
+    import { ref, PropType, watch, computed, onBeforeUnmount } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailsBag";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import BadgeList from "@Obsidian/Controls/badgeList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { NavigationUrlKey } from "./types.partial";
     import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -458,6 +382,7 @@
     const isLoading = ref(true);
     const isInEditMode = ref<boolean>(false);
     const copyRequestLinkRef = ref<HTMLElement | null>(null);
+    const footerRef = ref<HTMLElement | null>(null);
 
     const viewErrorMessage = ref<string>("");
     const editErrorMessage = ref<string>("");
@@ -468,6 +393,7 @@
 
     const isFullWidth = ref(false);
     const dockedPanelWidth = ref(defaultDockedPanelWidth);
+    const dockedPanelPixelWidth = ref(0);
     const areNotesVisible = ref(false);
     const aiSummary = ref<string>("");
     const aiSummaryError = ref<string>("");
@@ -505,6 +431,25 @@
         }
 
         return parseInt(dockedPanelWidth.value, 10);
+    });
+
+    /**
+     * Indicates whether the docked panel footer buttons should collapse to their icon
+     * (hiding the text label) because the panel is too narrow to comfortably show both.
+     * True when the panel's actual rendered width is narrower than 650px. The width is
+     * measured directly (see the ResizeObserver below) so it stays correct in every mode,
+     * including full-width where the width string is "100%" and cannot be parsed to pixels.
+     */
+    const isDockedBtnIconVisible = computed(() => dockedPanelPixelWidth.value > 0 && dockedPanelPixelWidth.value < 650);
+
+    // Measures the docked panel's actual rendered width. A ResizeObserver is used instead
+    // of parsing the width string because it reports the true pixel width in every mode
+    // (manual resize, window resize, and full-width "100%") and updates reactively whenever
+    // the panel's size changes for any reason.
+    const dockedPanelResizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+            dockedPanelPixelWidth.value = entry.contentRect.width;
+        }
     });
 
     const isRequestActiveOrFutureFollowUp = computed(() => requestDetails.value?.connectionState === ConnectionState.Active || requestDetails.value?.connectionState === ConnectionState.FutureFollowUp);
@@ -727,5 +672,20 @@
                 fetchAISummary(false);
             }
         }
+    });
+
+    // The footer is rendered inside the docked panel element, so (re-)attach the observer to
+    // the owning panel whenever the footer is mounted or unmounted (panel open/close).
+    watch(footerRef, (footerElement) => {
+        dockedPanelResizeObserver.disconnect();
+
+        const dockedPanelElement = footerElement?.closest(".docked-panel");
+        if (dockedPanelElement) {
+            dockedPanelResizeObserver.observe(dockedPanelElement);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        dockedPanelResizeObserver.disconnect();
     });
 </script>

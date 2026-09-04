@@ -169,7 +169,7 @@ namespace Rock.Workflow.Action
                     string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute.Value );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
-                        if ( attributePerson.FieldType.Class == typeof( Rock.Field.Types.PersonFieldType ).FullName )
+                        if ( attributePerson.FieldType.Guid == SystemGuid.FieldType.PERSON.AsGuid() )
                         {
                             Guid personAliasGuid = attributePersonValue.AsGuid();
                             if ( !personAliasGuid.IsEmpty() )

@@ -99,6 +99,33 @@ namespace Rock.Field.Types
             return privateValue.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
         }
 
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Describes the shape only, which is all this level knows. Whether the value
+        /// holds one item or several comes from
+        /// <see cref="IsMultipleSelection"/>, and that is the part a caller is most
+        /// likely to get wrong, because the two shapes look identical until a second
+        /// item is added.
+        /// </para>
+        /// <para>
+        /// Says nothing about which items exist, because this has no way to find out
+        /// without a subclass telling it, and asking would cost a query on every
+        /// attribute described. A subclass that can answer cheaply should override
+        /// this and add them, the way the picker below does.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = IsMultipleSelection
+                    ? "One or more item values separated by commas. Each is a guid in nearly every implementation, and never a display name."
+                    : "The value of a single item, a guid in nearly every implementation and never a display name. Only one is stored, so a comma separated list is not valid here."
+            };
+        }
+
         /// <summary>
         /// Gets the item bags for the values. If an item is not found
         /// (for example, no longer exists), then it should not be included
@@ -428,8 +455,9 @@ namespace Rock.Field.Types
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
-                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
+
+                if ( field == null )
                 {
                     continue;
                 }
@@ -442,7 +470,7 @@ namespace Rock.Field.Types
                 var configurationValues = fieldTypeAttribute.FieldConfigurationValues
                     .ToDictionary( k => k.Key, k => k.Value.Value );
 
-                privateConfigurationValues[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPrivateEditValue( publicValue, configurationValues );
+                privateConfigurationValues[fieldTypeAttribute.Key] = field.GetPrivateEditValue( publicValue, configurationValues );
             }
 
             return privateConfigurationValues;
@@ -460,8 +488,9 @@ namespace Rock.Field.Types
                 // each of the field type attributes defined on this instance.
                 foreach ( var fieldTypeAttribute in fieldTypeAttributes )
                 {
-                    var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
-                    if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                    var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
+
+                    if ( field == null )
                     {
                         continue;
                     }
@@ -474,7 +503,7 @@ namespace Rock.Field.Types
                     var configurationValues = fieldTypeAttribute.FieldConfigurationValues
                         .ToDictionary( k => k.Key, k => k.Value.Value );
 
-                    publicConfigurationValues[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPublicEditValue( privateValue, configurationValues );
+                    publicConfigurationValues[fieldTypeAttribute.Key] = field.GetPublicEditValue( privateValue, configurationValues );
                 }
 
                 return publicConfigurationValues;
@@ -495,7 +524,8 @@ namespace Rock.Field.Types
             // the client can present them with standard logic.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
+
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -565,7 +595,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null )
                 {
@@ -600,7 +630,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null && controls.Count > i )
                 {
@@ -620,7 +650,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null && controls.Count > i )
                 {

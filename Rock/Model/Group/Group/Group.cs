@@ -190,6 +190,15 @@ namespace Rock.Model
         public int? PhotoId { get; set; }
 
         /// <summary>
+        /// Gets or sets how this Group meets (in person, online, or hybrid). Null when unspecified.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.MeetingStyle"/> value, or null when no meeting style has been set for the Group.
+        /// </value>
+        [DataMember]
+        public MeetingStyle? MeetingStyle { get; set; }
+
+        /// <summary>
         /// Indicates this Group is a Security Role even though it isn't a SecurityRole Group Type.
         /// Note: Don't use this alone to determine if a Group is a security role group. Use <see cref="IsSecurityRoleOrSecurityGroupType()"/> to see if a Group is for a Security Role.
         /// </summary>

@@ -157,6 +157,26 @@ namespace Rock.Web.Cache
         public string RootImageDirectory { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether items in this channel use the
+        /// structured content editor rather than the HTML editor.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the channel uses structured content; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsStructuredContent { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the DefinedValue that selects the structured
+        /// content editor tool set, or <c>null</c> to use the system default tools.
+        /// </summary>
+        /// <value>
+        /// The structured content tool DefinedValue Id.
+        /// </value>
+        [DataMember]
+        public int? StructuredContentToolValueId { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
         /// </summary>
         /// <value>
@@ -173,6 +193,33 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool EnablePersonalization { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether tagging is enabled for items in
+        /// this channel.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if tagging is enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsTaggingEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the category that tags applied to this channel's
+        /// items must belong to, or <c>null</c> when item tags are not restricted
+        /// to a single category.
+        /// </summary>
+        /// <value>
+        /// The item tag category identifier.
+        /// </value>
+        [DataMember]
+        public int? ItemTagCategoryId { get; private set; }
+
+        /// <summary>
+        /// Gets the category that tags applied to this channel's items must belong
+        /// to, or <c>null</c> when item tags are not restricted to a single category.
+        /// </summary>
+        public CategoryCache ItemTagCategory => ItemTagCategoryId.HasValue ? CategoryCache.Get( ItemTagCategoryId.Value ) : null;
 
         /// <summary>
         /// Gets or sets the category ids.
@@ -428,8 +475,12 @@ namespace Rock.Web.Cache
             TimeToLive = contentChannel.TimeToLive;
             ContentControlType = contentChannel.ContentControlType;
             RootImageDirectory = contentChannel.RootImageDirectory;
+            IsStructuredContent = contentChannel.IsStructuredContent;
+            StructuredContentToolValueId = contentChannel.StructuredContentToolValueId;
             IsIndexEnabled = contentChannel.IsIndexEnabled;
             EnablePersonalization = contentChannel.EnablePersonalization;
+            IsTaggingEnabled = contentChannel.IsTaggingEnabled;
+            ItemTagCategoryId = contentChannel.ItemTagCategoryId;
             CategoryIds = contentChannel.Categories.Select( c => c.Id ).ToList();
             ContentLibraryConfigurationJson = contentChannel.ContentLibraryConfigurationJson;
 

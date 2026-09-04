@@ -24,7 +24,6 @@ using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Extension;
 using Rock.Field;
-using Rock.Field.Types;
 using Rock.Net;
 using Rock.Security;
 using Rock.ViewModels.Controls;
@@ -43,7 +42,7 @@ namespace Rock.AI.Agent
     /// Each individual tool must be decorated with <see cref="SystemGuid.AgentToolGuidAttribute"/>.
     /// </para>
     /// </summary>
-    internal abstract class AgentSkillComponent : LightComponent
+    public abstract class AgentSkillComponent : LightComponent
     {
         #region Constants
 
@@ -75,7 +74,10 @@ namespace Rock.AI.Agent
         #region Methods
 
         /// <summary>
-        /// Initializes the component for use with a chat agent.
+        /// Initializes the component for use with a chat agent. Unit tests reach
+        /// this through the <c>InitializeForTesting</c> helper in
+        /// <c>Rock.Tests.Shared.TestAccess.AI.Agent</c>, which has access to this
+        /// internal method; keep that helper in sync with this signature.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="agentRequestContext">The context for this chat agent request.</param>
@@ -88,7 +90,7 @@ namespace Rock.AI.Agent
             // attributes.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -110,7 +112,7 @@ namespace Rock.AI.Agent
         /// supported.
         /// </summary>
         /// <returns>A collection of <see cref="AgentTool"/> objects that represent the dynamic tools.</returns>
-        public virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
+        internal virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
 
         /// <summary>
         /// Creates a <see cref="ToolStatus.Success"/> result with no content.
@@ -188,7 +190,7 @@ namespace Rock.AI.Agent
             // the client can present them with standard logic.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -255,7 +257,7 @@ namespace Rock.AI.Agent
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -297,7 +299,7 @@ namespace Rock.AI.Agent
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -328,10 +330,10 @@ namespace Rock.AI.Agent
                 .GetCustomAttributes( true )
                 .Where( a => typeof( FieldAttribute ).IsAssignableFrom( a.GetType() ) )
                 .Cast<FieldAttribute>()
-                .Where( fa => fa.FieldTypeClass != typeof( FileFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( ImageFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( BackgroundCheckFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( StructureContentEditorFieldType ).FullName )
+                .Where( fa => fa.FieldTypeGuid != SystemGuid.FieldType.FILE.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.IMAGE.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.STRUCTURE_CONTENT_EDITOR.AsGuid() )
                 .OrderBy( a => a.Order )
                 .ToList();
         }

@@ -10,7 +10,7 @@
         <svg v-if="showArrow" ref="arrowElement" class="arrow">
             <path d="M0,7L5,0L10,7"></path>
         </svg>
-        <div class="body">
+        <div class="body" :class="{ 'is-rounded': rounded, 'is-raised': raised }">
             <slot />
         </div>
     </div>
@@ -47,6 +47,14 @@
     margin-top: 6px;
     border-radius: 4px;
     box-shadow: var(--box-shadow);
+}
+
+.floating-dropdown > .body.is-rounded {
+    border-radius: var(--rounded-large);
+}
+
+.floating-dropdown > .body.is-raised {
+    box-shadow: var(--box-shadow-strong);
 }
 
 .floating-dropdown:not(.allow-overflow) > .body {
@@ -103,6 +111,18 @@
 
         /** If true, clicks on the anchor element will not bubble up to parent elements. Useful when the dropdown is inside a clickable container. */
         preventAnchorClickPropagation: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true, the dropdown body uses the large corner radius rather than the default small one. */
+        rounded: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true, the dropdown body uses the stronger elevation shadow rather than the default one. */
+        raised: {
             type: Boolean,
             default: false
         }

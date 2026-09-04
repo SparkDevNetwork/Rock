@@ -39,8 +39,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        [Obsolete( "Use the constructor that takes a name only." )]
+        [RockObsolete( "20.0" )]
         public MetricCategoriesFieldAttribute( string name = "Metrics", string description = "", bool required = true, string defaultMetricsGuids = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultMetricsGuids, category, order, key, typeof( Rock.Field.Types.MetricCategoriesFieldType ).FullName )
+            : base( SystemGuid.FieldType.METRIC_CATEGORIES.AsGuid(), name, description, required, defaultMetricsGuids, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricCategoriesFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public MetricCategoriesFieldAttribute( string name )
+            : base( SystemGuid.FieldType.METRIC_CATEGORIES.AsGuid(), name )
         {
         }
 

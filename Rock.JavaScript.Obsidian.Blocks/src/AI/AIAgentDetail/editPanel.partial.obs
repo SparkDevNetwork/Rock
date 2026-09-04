@@ -34,7 +34,9 @@
 
         <TextBox v-model="instructions"
                  label="Instructions"
-                 textMode="multiline" />
+                 textMode="multiline"
+                 :rows="8"
+                 allowHtml />
 
         <template v-if="agentType === AgentType.Chat.toString()">
             <div class="row">
@@ -45,7 +47,8 @@
 
                 <div class="col-md-6">
                     <DropDownList v-model="role"
-                                  label="Role"
+                                  label="Model"
+                                  help="The language model to use when this agent handles requests."
                                   :items="roleItems"
                                   :showBlankItem="false"
                                   rules="required" />
@@ -57,8 +60,7 @@
                     <div class="col-md-6">
                         <NumberBox v-model="autoSummarizeThreshold"
                                    label="Auto Summarize Threshold"
-                                   help="The number of tokens that will trigger an auto summarization of the conversion when the agent is processing a message."
-                                   :minimumValue="0" />
+                                   help="The number of tokens that will trigger an auto summarization of the conversion when the agent is processing a message. If blank a suitable default will be used." />
 
                     </div>
 
@@ -143,9 +145,9 @@
     const agentType = propertyRef((props.modelValue.bag?.agentType ?? AgentType.Chat).toString(), "AgentType");
     const audienceType = propertyRef((props.modelValue.bag?.audienceType ?? AudienceType.Internal).toString(), "AudienceType");
     const instructions = propertyRef(props.modelValue.bag?.instructions ?? "", "Instructions");
-    const autoSummarizeThreshold = ref(props.modelValue.bag?.autoSummarizeThreshold ?? 0);
+    const autoSummarizeThreshold = ref(props.modelValue.bag?.autoSummarizeThreshold ?? null);
     const avatarBinaryFile = ref(props.modelValue.bag?.avatarBinaryFile ?? null);
-    const role = ref((props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
+    const role = ref((props.modelValue.bag?.role ?? ModelServiceRole.Medium).toString());
     const currentPersonTemplate = ref(props.modelValue.bag?.currentPersonTemplate ?? "");
     const slug = ref(props.modelValue.bag?.slug ?? "");
     const isExcludingSystemSkills = ref(props.modelValue.bag?.isExcludingSystemSkills ?? false);
@@ -197,9 +199,9 @@
         updateRefValue(agentType, (props.modelValue.bag?.agentType ?? AgentType.Chat).toString());
         updateRefValue(audienceType, (props.modelValue.bag?.audienceType ?? AudienceType.Internal).toString());
         updateRefValue(instructions, props.modelValue.bag?.instructions ?? "");
-        updateRefValue(autoSummarizeThreshold, props.modelValue.bag?.autoSummarizeThreshold ?? 0);
+        updateRefValue(autoSummarizeThreshold, props.modelValue.bag?.autoSummarizeThreshold ?? null);
         updateRefValue(avatarBinaryFile, props.modelValue.bag?.avatarBinaryFile ?? null);
-        updateRefValue(role, (props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
+        updateRefValue(role, (props.modelValue.bag?.role ?? ModelServiceRole.Medium).toString());
         updateRefValue(currentPersonTemplate, props.modelValue.bag?.currentPersonTemplate ?? "");
         updateRefValue(slug, props.modelValue.bag?.slug ?? "");
         updateRefValue(isExcludingSystemSkills, props.modelValue.bag?.isExcludingSystemSkills ?? false);

@@ -46,17 +46,21 @@ namespace Rock.Workflow.Action
     [TextField( "URL",
         Description = "Sets the BaseUrl property for requests made by this client instance  <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Key = "Url",
         Order = 1 )]
     [KeyValueListField( "Parameters",
         Description = "The parameters to send with request. <span class='tip tip-lava'></span>",
         IsRequired = false,
         KeyPrompt = "Parameters",
+        AllowLava = true,
         Order = 2 )]
     [KeyValueListField( "Headers",
         Description = "The key value pairs to add in the http header. <span class='tip tip-lava'></span>",
         IsRequired = false,
         KeyPrompt = "Headers",
+        AllowLava = true,
         Order = 3 )]
     [TextField( "Basic Auth UserName",
         Description = "The user name for basic http authentication.",
@@ -118,7 +122,7 @@ namespace Rock.Workflow.Action
             string url = GetAttributeValue( action, URL ).ResolveMergeFields( mergeFields );
 
             var parametersValue = GetAttributeValue( action, PARAMETERS );
-            var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, parametersValue, null, false );
+            var parameterList = Field.Helper.GetKeyValueListValuesFromString( parametersValue, null, false );
             var parameters = new Dictionary<string, object>();
             foreach ( var p in parameterList )
             {
@@ -128,7 +132,7 @@ namespace Rock.Workflow.Action
             }
 
             var headersValue = GetAttributeValue( action, HEADERS );
-            var headerList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, headersValue, null, false );
+            var headerList = Field.Helper.GetKeyValueListValuesFromString( headersValue, null, false );
             var headers = new Dictionary<string, object>();
             foreach ( var p in headerList )
             {

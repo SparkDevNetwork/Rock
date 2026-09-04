@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -257,6 +257,21 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.ContentTopicDomain entity
         /// </summary>
         public const string CONTENT_TOPIC_DOMAIN = "8C26A4D9-9C0B-4433-AF31-6C7094BEFB51";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.FlexibleDocument"/>
+        /// </summary>
+        public const string FLEXIBLE_DOCUMENT = "962D0C52-FA32-4863-977F-D6A4B2DF0C09";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.FlexibleDocumentModel"/>
+        /// </summary>
+        public const string FLEXIBLE_DOCUMENT_MODEL = "28A1D38E-333C-46C5-A896-7500DFFEAB74";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.ForgeContent"/>
+        /// </summary>
+        public const string FORGE_CONTENT = "38F182A7-9FE4-4D7B-B483-59F615BDE41C";
 
         /// <summary>
         /// The guid for the Rock.Model.DataView entity.
@@ -518,27 +533,27 @@ namespace Rock.SystemGuid
         public const string MOBILE_CORE_NOTES_BLOCK_TYPE = "2FED71D1-4A60-4EB5-B971-530B5D1FC041";
 
         /// <summary>
-        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList"/>.
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList.
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_TYPE_LIST_BLOCK_TYPE = "F30667AC-5FAA-429C-AD7F-D4B7C0C5C293";
 
         /// <summary>
-        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList"/>.
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList".
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST_BLOCK_TYPE = "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A";
 
         /// <summary>
-        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList"/>.
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList".
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_LIST_BLOCK_TYPE = "E1C52624-898F-46EF-98B0-3C06B6D81654";
 
         /// <summary>
-        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail"/>.
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail".
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE = "6C9B8E2A-A0B1-4E52-B419-250A77AFBCBF";
 
         /// <summary>
-        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest"/>.
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest.
         /// </summary>
         public const string MOBILE_CONNECTION_ADD_CONNECTION_REQUEST = "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F";
 
@@ -890,9 +905,21 @@ namespace Rock.SystemGuid
         public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";
 
         /// <summary>
-        /// The protect my ministry provider
+        /// The protect my ministry provider.
         /// </summary>
+        [System.Obsolete( "The Protect My Ministry (v1) background check component was removed in Rock v20. Use PROTECT_MY_MINISTRY_PROVIDER_LEGACY when detecting historical background-check data that was stored under the removed provider." )]
+        [RockObsolete( "20.0" )]
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
+
+        /// <summary>
+        /// The Guid of the legacy Protect My Ministry (v1) background check EntityType.
+        /// The component itself was removed in Rock v20; this constant is retained (as
+        /// <c>internal</c> — Rock-assembly only, not part of the plugin surface) so that
+        /// historical <c>[AttributeValue]</c> rows written under the removed provider
+        /// (background check documents stored as a bare Guid, without a provider prefix)
+        /// can still be recognized and rendered.
+        /// </summary>
+        internal const string PROTECT_MY_MINISTRY_PROVIDER_LEGACY = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
 
         /// <summary>
         /// The guid for the Rock.Model.Registration entity

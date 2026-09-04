@@ -26,7 +26,7 @@ namespace Rock.Utility.GroupFinder
         #region Properties
 
         /// <summary>
-        /// Valid values are 'campus', 'attribute', 'dayofweek', 'timeofday'.
+        /// Valid values are 'campus', 'attribute', 'dayofweek', 'timeofday', 'meetingstyle'.
         /// </summary>
         public string Type { get; }
 

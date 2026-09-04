@@ -23,7 +23,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 
@@ -35,6 +37,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Configuration.ConnectedServices;
 using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
@@ -362,6 +365,10 @@ namespace Rock.Jobs
             RunCleanupTask( "delete expired short links", () => DeleteExpiredShortLinks() );
 
             RunCleanupTask( "update schedule dates", () => UpdateScheduleDates() );
+
+            RunCleanupTask( "interaction component daily count", () => UpdateInteractionComponentDailyCounts() );
+            
+            RunCleanupTask( "connected services manifest", () => RefreshConnectedServicesManifest() );
 
             /*
              * 21-APR-2022 DMV
@@ -2706,6 +2713,217 @@ SELECT @@ROWCOUNT
         }
 
         /// <summary>
+        /// The number of days processed per chunk when populating
+        /// <see cref="InteractionComponentDailyCount"/>. A multi-year backfill iterates
+        /// many chunks; a steady-state run iterates exactly one. Sized to keep round-trip
+        /// overhead reasonable while still fitting comfortably inside the per-task command
+        /// timeout (<see cref="commandTimeout"/> &#215; 4) on heavy databases.
+        /// </summary>
+        private const int InteractionComponentDailyCountBackfillChunkDays = 30;
+
+        /// <summary>
+        /// Populates the <see cref="InteractionComponentDailyCount"/> aggregate table for
+        /// every <see cref="InteractionComponent"/> that belongs to an
+        /// <see cref="InteractionChannel"/> where <c>EnableComponentDailyCounts = true</c>.
+        /// <para>
+        /// The task tracks its progress via the
+        /// <see cref="Rock.SystemKey.SystemSetting.INTERACTION_COMPONENT_DAILY_COUNT_LAST_PROCESSED_DATE"/>
+        /// system setting and processes the date range in
+        /// <see cref="InteractionComponentDailyCountBackfillChunkDays"/>-day chunks. Each
+        /// chunk runs an anti-join <c>INSERT</c> under its own <see cref="RockContext"/> so
+        /// progress is durable across job interruptions; the next run resumes from
+        /// <c>(setting + 1 day)</c> automatically.
+        /// </para>
+        /// </summary>
+        /// <returns>The total number of aggregate rows inserted across all chunks.</returns>
+        private int UpdateInteractionComponentDailyCounts()
+        {
+            // Feature is opt-in per channel; do nothing when nobody opted in.
+            bool anyEnabled;
+            using ( var probeContext = CreateRockContext() )
+            {
+                anyEnabled = new InteractionChannelService( probeContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Any( c => c.EnableComponentDailyCounts );
+            }
+
+            if ( !anyEnabled )
+            {
+                return 0;
+            }
+
+            // Resolve the Anonymous Visitor person id once so every chunk reuses the
+            // same parameter value. PersonAlias rows for this person can number in the
+            // millions on heavy systems; the SQL compares against the single PersonId
+            // rather than materializing the full alias set (see spec rationale).
+            // Fall back to 0 (which never matches a real PersonId) if the system is
+            // somehow missing the Anonymous Visitor record, so the "logged in" branch
+            // doesn't silently zero out every count.
+            int anonymousVisitorPersonId;
+            using ( var lookupContext = CreateRockContext() )
+            {
+                anonymousVisitorPersonId = new PersonService( lookupContext )
+                    .GetId( Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() ) ?? 0;
+            }
+
+            var lastProcessedDate = Rock.Web.SystemSettings
+                .GetValue( Rock.SystemKey.SystemSetting.INTERACTION_COMPONENT_DAILY_COUNT_LAST_PROCESSED_DATE )
+                .AsDateTime();
+
+            DateTime chunkLowerBound;
+            if ( lastProcessedDate.HasValue )
+            {
+                chunkLowerBound = lastProcessedDate.Value.Date.AddDays( 1 );
+            }
+            else
+            {
+                // First run: anchor the chunk loop on the earliest interaction
+                // that actually exists.
+                DateTime? earliestInteractionDateTime;
+                using ( var minContext = CreateRockContext() )
+                {
+                    earliestInteractionDateTime = new InteractionService( minContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Min( i => ( DateTime? ) i.InteractionDateTime );
+                }
+
+                if ( !earliestInteractionDateTime.HasValue )
+                {
+                    return 0;
+                }
+
+                chunkLowerBound = earliestInteractionDateTime.Value.Date;
+            }
+
+            // Upper bound is exclusive: today's interactions are still in flight and are
+            // intentionally not aggregated until tomorrow's run.
+            var upperBound = RockDateTime.Today;
+
+            var totalRowsInserted = 0;
+
+            while ( chunkLowerBound < upperBound )
+            {
+                var chunkUpperBound = chunkLowerBound.AddDays( InteractionComponentDailyCountBackfillChunkDays );
+                if ( chunkUpperBound > upperBound )
+                {
+                    chunkUpperBound = upperBound;
+                }
+
+                using ( var rockContext = new RockContext() )
+                {
+                    /*
+                        6/15/26 - NA
+
+                        Allow first-run multi-year backfills more time per chunk than
+                        the global CommandTimeout. The 4x multiplier mirrors the spec's
+                        recommendation and is hard-coded here intentionally: introducing
+                        a per-task job attribute for a value that is unlikely to need
+                        per-environment tuning is overhead we don't yet need. Raising
+                        the global CommandTimeout still lifts this ceiling.
+
+                        Reason: Heavy first-run backfill needs headroom beyond steady state.
+                    */
+                    rockContext.Database.SetCommandTimeout( commandTimeout * 4 );
+
+                    var rowsInserted = rockContext.Database.ExecuteSqlCommand(
+                        InteractionComponentDailyCountInsertSql,
+                        new System.Data.SqlClient.SqlParameter( "@AnonymousVisitorPersonId", anonymousVisitorPersonId ),
+                        new System.Data.SqlClient.SqlParameter( "@ChunkLowerBound", chunkLowerBound ),
+                        new System.Data.SqlClient.SqlParameter( "@ChunkUpperBound", chunkUpperBound ) );
+
+                    totalRowsInserted += rowsInserted;
+                }
+
+                // Persist progress AFTER the chunk's INSERT commits. The "last fully
+                // processed date" is the day BEFORE the (exclusive) chunk upper bound.
+                var lastProcessedInChunk = chunkUpperBound.AddDays( -1 );
+                Rock.Web.SystemSettings.SetValue(
+                    Rock.SystemKey.SystemSetting.INTERACTION_COMPONENT_DAILY_COUNT_LAST_PROCESSED_DATE,
+                    lastProcessedInChunk.ToString( "yyyy-MM-dd" ) );
+
+                chunkLowerBound = chunkUpperBound;
+            }
+
+            return totalRowsInserted;
+        }
+
+        /// <summary>
+        /// Per-chunk anti-join INSERT for <see cref="UpdateInteractionComponentDailyCounts"/>.
+        /// Drives the query from <c>@EnabledComponents</c> (the small side) so the planner
+        /// can use <c>IX_InteractionComponentId_InteractionDateTime</c> per component; see
+        /// the spec's "Recommended query shape" for the full rationale and benchmark data.
+        /// </summary>
+        private const string InteractionComponentDailyCountInsertSql = @"
+-- Materialize the small set of components belonging to enabled channels so the
+-- planner drives the heavy join from the small side rather than scanning Interaction.
+-- Suppress row-count messages so the @EnabledComponents temp-table INSERT does not
+-- inflate ExecuteSqlCommand's return value; only the final aggregate INSERT's
+-- @@ROWCOUNT should bubble up to the caller.
+SET NOCOUNT ON;
+
+DECLARE @EnabledComponents TABLE ( [Id] INT PRIMARY KEY );
+
+INSERT INTO @EnabledComponents ( [Id] )
+SELECT [ic].[Id]
+FROM [InteractionComponent] [ic]
+INNER JOIN [InteractionChannel] [ich] ON [ich].[Id] = [ic].[InteractionChannelId]
+WHERE [ich].[EnableComponentDailyCounts] = 1;
+
+-- Re-enable row counts so the aggregate INSERT below returns its true affected-row count.
+SET NOCOUNT OFF;
+
+INSERT INTO [InteractionComponentDailyCount]
+    ( [InteractionComponentId], [InteractionDate], [Operation], [InteractionDateKey],
+      [LoggedInInteractionCount], [AnonymousInteractionCount],
+      [LoggedInSessionCount], [AnonymousSessionCount],
+      [TotalInteractionCount], [TotalSessionCount],
+      [AverageInteractionLength] )
+SELECT
+    [src].[InteractionComponentId],
+    [src].[InteractionDate],
+    [src].[Operation],
+    CONVERT( INT, CONVERT( VARCHAR(8), [src].[InteractionDate], 112 ) ) AS [InteractionDateKey],
+    [src].[LoggedInInteractionCount],
+    [src].[AnonymousInteractionCount],
+    [src].[LoggedInSessionCount],
+    [src].[AnonymousSessionCount],
+    [src].[LoggedInInteractionCount] + [src].[AnonymousInteractionCount] AS [TotalInteractionCount],
+    [src].[LoggedInSessionCount] + [src].[AnonymousSessionCount] AS [TotalSessionCount],
+    [src].[AverageInteractionLength]
+FROM (
+    SELECT
+        [i].[InteractionComponentId],
+        CAST( [i].[InteractionDateTime] AS DATE ) AS [InteractionDate],
+        ISNULL( [i].[Operation], '' ) AS [Operation],
+        SUM( CASE WHEN [pa].[PersonId] IS NOT NULL AND [pa].[PersonId] <> @AnonymousVisitorPersonId THEN 1 ELSE 0 END ) AS [LoggedInInteractionCount],
+        SUM( CASE WHEN [pa].[PersonId] IS NULL OR [pa].[PersonId] = @AnonymousVisitorPersonId THEN 1 ELSE 0 END ) AS [AnonymousInteractionCount],
+        COUNT( DISTINCT CASE WHEN [pa].[PersonId] IS NOT NULL AND [pa].[PersonId] <> @AnonymousVisitorPersonId THEN [i].[InteractionSessionId] END ) AS [LoggedInSessionCount],
+        COUNT( DISTINCT CASE WHEN [pa].[PersonId] IS NULL OR [pa].[PersonId] = @AnonymousVisitorPersonId THEN [i].[InteractionSessionId] END ) AS [AnonymousSessionCount],
+        AVG( CAST( [i].[InteractionLength] AS DECIMAL(18, 2) ) ) AS [AverageInteractionLength]
+    FROM @EnabledComponents [ec]
+    INNER JOIN [Interaction] [i] ON [i].[InteractionComponentId] = [ec].[Id]
+                                AND [i].[InteractionDateTime] >= @ChunkLowerBound
+                                AND [i].[InteractionDateTime] <  @ChunkUpperBound
+    LEFT JOIN [PersonAlias] [pa] ON [pa].[Id] = [i].[PersonAliasId]
+    GROUP BY
+        [i].[InteractionComponentId],
+        CAST( [i].[InteractionDateTime] AS DATE ),
+        ISNULL( [i].[Operation], '' )
+) AS [src]
+WHERE NOT EXISTS (
+    -- Belt-and-suspenders guard against an aborted run that updated the system
+    -- setting (it shouldn't, but the guard costs nothing).
+    SELECT 1
+    FROM [InteractionComponentDailyCount] [icdc]
+    WHERE [icdc].[InteractionComponentId] = [src].[InteractionComponentId]
+      AND [icdc].[InteractionDate]        = [src].[InteractionDate]
+      AND [icdc].[Operation]              = [src].[Operation]
+);
+";
+
+        /// <summary>
         /// Removes any expired saved accounts (if <see cref="AttributeKey.RemovedExpiredSavedAccountDays" /> is set)
         /// </summary>
         /// <returns></returns>
@@ -2867,93 +3085,23 @@ SELECT @@ROWCOUNT
                     .ToList();
             }
 
-            var deleteCount = 0;
-
-            // stalePersonAliasIds could have over a million values. So instead of
-            // using Skip().ToList() to rebuild the list, we are going to use a
-            // for loop so we don't have to waste as much memory.
-            for ( int bulkStart = 0; bulkStart < stalePersonAliasIds.Count; bulkStart += 500 )
-            {
-                // Work in relatively small batches of 500 at a time. Since we
-                // have to revert to single deletes if the batch fails this
-                // gives us a decent balance between speed when everything
-                // works and not having to do single deletes on too many records
-                // because a single record failed.
-                var batchPersonAliasIds = stalePersonAliasIds.Skip( bulkStart ).Take( 500 ).ToList();
-
-                using ( var bulkRockContext = CreateRockContext() )
+            // Nulling out the interactions that reference these aliases has to
+            // happen before the delete is attempted, so it is passed in as the
+            // pre-batch step. The shared routine owns the batching and the
+            // per-record fallback.
+            var deleteCount = PersonAliasService.DeletePersonAliasesInBatches(
+                stalePersonAliasIds,
+                CreateRockContext,
+                Logger,
+                ( bulkRockContext, batchPersonAliasIds ) =>
                 {
-                    var bulkPersonAliasService = new PersonAliasService( bulkRockContext );
                     var interactionQry = new InteractionService( bulkRockContext ).Queryable()
                         .Where( a => a.PersonAliasId.HasValue && batchPersonAliasIds.Contains( a.PersonAliasId.Value ) );
 
                     // Update all the interactions that point to one of these
                     // PersonAlias records to have a NULL value instead.
                     BulkUpdateInChunks( interactionQry, i => new Interaction { PersonAliasId = null }, batchAmount, commandTimeout, int.MaxValue );
-
-                    try
-                    {
-                        // Try to delete all records in the batch in bulk.
-                        // NOTE: This will bypass any save hooks.
-                        var personAliasesQry = bulkPersonAliasService.Queryable()
-                            .Where( pa => batchPersonAliasIds.Contains( pa.Id ) );
-
-                        deleteCount += bulkRockContext.BulkDelete( personAliasesQry, batchAmount );
-                    }
-                    catch
-                    {
-                        // At least one record failed. Try again one record at
-                        // a time so we can log which one(s) failed.
-                        foreach ( var personAliasId in batchPersonAliasIds )
-                        {
-                            try
-                            {
-                                using ( var singleRockContext = CreateRockContext() )
-                                {
-                                    var singlePersonAliasService = new PersonAliasService( singleRockContext );
-                                    var personAlias = singlePersonAliasService.Get( personAliasId );
-
-                                    if ( personAlias != null )
-                                    {
-                                        singlePersonAliasService.Delete( personAlias );
-                                        singleRockContext.SaveChanges();
-
-                                        deleteCount += 1;
-                                    }
-                                }
-                            }
-                            catch ( Exception ex )
-                            {
-                                // Something prevented us from deleting the record.
-                                // This is most likely a foreign key violation. Find
-                                // the inner most exception and log it and then update
-                                // the PersonAlias record to note we couldn't delete it.
-                                var innerEx = ex;
-
-                                while ( innerEx.InnerException != null )
-                                {
-                                    innerEx = innerEx.InnerException;
-                                }
-
-                                Logger.LogWarning( $"Error occurred deleting stale anonymous visitor record ID {personAliasId}: {innerEx.Message}" );
-
-                                // The context we used to attempt the deletion is no
-                                // good to use now since it is in a bad state. Create
-                                // a new context.
-                                using ( var errorRockContext = CreateRockContext() )
-                                {
-                                    var singlePersonAliasService = new PersonAliasService( errorRockContext );
-                                    var personAlias = singlePersonAliasService.Get( personAliasId );
-
-                                    personAlias.InternalMessage = innerEx.Message.SubstringSafe( 0, 250 );
-
-                                    errorRockContext.SaveChanges();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                } );
 
             // Manually update the CreatedByPersonAliasId and ModifiedByPersonAliasId
             // columns to be null for any aliases that do not exist anymore.
@@ -3763,6 +3911,43 @@ SET @UpdatedCampusCount = @CampusCount;
         private int UpdateScheduleDates()
         {
             return ScheduleService.UpdateScheduleDates( true, CancellationToken.None );
+        }
+
+        /// <summary>
+        /// Refreshes the cached connected services manifest from the Spark
+        /// API so bundle changes propagate to Rock without an administrator
+        /// having to manually refresh from the Connected Services block.
+        /// Any automatic bundle replacements happen as a side effect of the
+        /// refresh.
+        /// </summary>
+        /// <returns>1 if the manifest was refreshed, 0 if skipped because the organization is not linked.</returns>
+        private int RefreshConnectedServicesManifest()
+        {
+            var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+
+            // Skip silently for Rock instances that have never linked to
+            // Spark. UpdateManifestAsync would throw otherwise and add
+            // noise to every nightly cleanup summary on those instances.
+            if ( !provider.IsOrganizationLinked() )
+            {
+                return 0;
+            }
+
+            try
+            {
+                provider.UpdateManifestAsync( CancellationToken.None ).GetAwaiter().GetResult();
+            }
+            catch ( HttpRequestException ex ) when ( ex.InnerException != null )
+            {
+                // Surface the underlying network/DNS/TLS exception so the
+                // job summary shows an actionable message rather than
+                // HttpRequestException's generic wrapper text. Use
+                // ExceptionDispatchInfo so the inner exception's original
+                // stack trace is preserved for diagnostics.
+                ExceptionDispatchInfo.Capture( ex.InnerException ).Throw();
+            }
+
+            return 1;
         }
 
         /// <summary>

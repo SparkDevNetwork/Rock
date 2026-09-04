@@ -57,7 +57,8 @@ namespace Rock.CheckIn.v2
         {
             typeof( LocationClosedOpportunityFilter ),
             typeof( ThresholdOpportunityFilter ),
-            typeof( LocationOverflowOpportunityFilter )
+            typeof( LocationOverflowOpportunityFilter ),
+            typeof( LocationOverrideOverflowOpportunityFilter ),
         };
 
         /// <summary>
@@ -123,6 +124,22 @@ namespace Rock.CheckIn.v2
                 person.UnavailableMessage = "No Eligible Options Found";
             }
 
+            // Get the potential schedules that might still be valid after group
+            // filtering has completed. This must be done before location
+            // filtering happens.
+            var potentialValidOverflowScheduleIds = person
+                .Opportunities
+                .Groups
+                .SelectMany( g => g.OverflowLocations.Select( l => l.ScheduleId ) );
+            person.PotentialScheduleIds = person
+                .Opportunities
+                .Groups
+                .SelectMany( g => g.Locations.Select( l => l.ScheduleId ) )
+                .Union( potentialValidOverflowScheduleIds )
+                .Distinct()
+                .Where( sid => person.Opportunities.Schedules.Any( s => s.Id == sid ) )
+                .ToList();
+
             // Remove any locations that have no group referencing them.
             var allReferencedLocationIds = new HashSet<string>(
                 person.Opportunities
@@ -179,8 +196,8 @@ namespace Rock.CheckIn.v2
         {
             // Skip the ability level selection if:
             // The configuration tells us to never ask.
-            // If we only ask if they have no ability level but they already do
-            // If we only ask if they have an ability level but they don't have one
+            // We only ask when they already have a level, but this person has none.
+            // We only ask when they have no level, but this person already has one.
             // If no groups require ability level for check-in.
             var skipAbilityLevels =
                 Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAsk

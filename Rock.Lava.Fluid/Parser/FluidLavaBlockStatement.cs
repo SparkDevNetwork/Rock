@@ -94,7 +94,13 @@ namespace Rock.Lava.Fluid
         {
             // Re-wrap inner block content in a synthetic {% liquid %} tag so nested Fluid blocks (for/if/case/etc.)
             // are parsed by the exact same code path as top-level {% liquid %}/{% lava %} content.
-            var template = _isLiquidTagBody
+            //
+            // Only do this when the block's content is Lava code. Blocks whose content is
+            // opaque data (SQL, JavaScript, CSS, C#, etc.) opt out via LavaBlockBase.IsContentLavaCode = false
+            // so that raw text like a "SELECT ..." line is not misparsed as an unknown Lava tag.
+            var wrapAsLiquidBody = _isLiquidTagBody && IsRegisteredBlockContentLavaCode();
+
+            var template = wrapAsLiquidBody
                 ? $"{{% liquid\r\n{_blockContent}\r\n%}}"
                 : _blockContent;
 
@@ -104,6 +110,30 @@ namespace Rock.Lava.Fluid
             _ = _parser.Grammar.Parse( blockContext, ref parseResult );
 
             return parseResult.Value ?? new List<Statement>();
+        }
+
+        /// <summary>
+        /// Probes the registered block factory to determine whether the block's inner content
+        /// should be parsed as Lava code. Defaults to true (preserving the historical wrap
+        /// behavior) when the block cannot be resolved or is not a LavaBlockBase-derived block.
+        /// </summary>
+        private bool IsRegisteredBlockContentLavaCode()
+        {
+            var registeredTagName = _tagName + ( _tagFormat == LavaTagFormatSpecifier.LavaShortcode ? "_" : string.Empty );
+
+            if ( !_factoryMethods.TryGetValue( registeredTagName, out var factoryMethod ) )
+            {
+                return true;
+            }
+
+            var probeInstance = factoryMethod( _tagName );
+
+            if ( probeInstance is LavaBlockBase blockBase )
+            {
+                return blockBase.IsContentLavaCode;
+            }
+
+            return true;
         }
 
         #endregion

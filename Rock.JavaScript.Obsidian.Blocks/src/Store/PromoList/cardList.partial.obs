@@ -1,0 +1,141 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="title">
+        <div>
+            <div class="row d-flex flex-wrap">
+                <div v-for="promo in promos"
+                     :key="promo.packageId"
+                     class="col-lg-3 col-sm-4 col-xs-6 mb-4">
+                    <div class="packagesummary">
+                        <a @click.prevent="emit('promoClick', promo.packageId)">
+                            <div class="packagesummary-image">
+                                <img class="img-responsive"
+                                     :src="promo.packageIconUrl ?? ''" />
+                            </div>
+
+                            <div class="packagesummary-body">
+                                <h2>{{ promo.packageName }}</h2>
+                                <p class="vendor text-sm text-muted">{{ promo.packageVendor }}</p>
+                            </div>
+
+                            <div class="packagesummary-footer">
+                                <div class="rating text-warning">
+                                    <i v-for="(cssClass, i) in getRatingStars(promo.packageRating)"
+                                       :key="i"
+                                       :class="cssClass"></i>
+                                </div>
+                                <div class="cost text-color text-sm">
+                                    <template v-if="promo.packagePrice === 0">Free</template>
+                                    <template v-else-if="promo.packagePrice != null">${{ promo.packagePrice }}</template>
+                                    <template v-else>Paid</template>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Panel>
+</template>
+
+<style scoped>
+/*
+    These styles are copied from blocks-store.scss because the PromoList block is used on the RockRMS site
+    which does not currently include blocks-store.scss. If the RockRMS site is updated to include blocks-store.scss, these styles should be removed from this file.
+*/
+.packagesummary {
+    position: relative;
+    max-width: 282px;
+    height: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    cursor: pointer;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    overflow: clip;
+}
+
+.packagesummary a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.packagesummary-image {
+    height: 140px;
+    overflow: hidden;
+}
+
+.packagesummary-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.packagesummary .packagesummary-body {
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softest);
+}
+
+.packagesummary .packagesummary-body h2 {
+    margin: 0;
+    overflow: hidden;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.packagesummary .packagesummary-body .vendor {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.packagesummary-footer {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    background-color: var(--color-interface-softest);
+    border-top: 1px solid var(--color-interface-soft);
+}
+</style>
+
+<script setup lang="ts">
+    import { PromoBag } from "@Obsidian/ViewModels/Blocks/Store/PromoList/promoBag";
+    import Panel from "@Obsidian/Controls/panel.obs";
+
+    defineProps<{
+        promos: PromoBag[];
+        title: string;
+    }>();
+
+    const emit = defineEmits<{
+        (e: "promoClick", packageId: number): void;
+    }>();
+
+    // #region Functions
+
+    /**
+     * Returns an array of Tabler icon CSS classes for a 5-star rating display.
+     * Matches the behavior of the RatingMarkup Lava filter (integer truncation,
+     * filled vs empty only — no half stars).
+     */
+    function getRatingStars(rating: number | null | undefined): string[] {
+        const filled = Math.floor(rating ?? 0);
+        const stars: string[] = [];
+
+        for (let i = 0; i < 5; i++) {
+            stars.push(i < filled ? "ti ti-star-filled" : "ti ti-star");
+        }
+
+        return stars;
+    }
+
+    // #endregion Functions
+</script>

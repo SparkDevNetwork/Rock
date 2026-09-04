@@ -440,10 +440,10 @@ function ReviewFlag(elem) {
 
             // Determine the category to filter to.
             var categoryGuid = GetAttributeValue( AttributeKey.Category ).AsGuidOrNull();
-            var categoryIdQryString = PageParameter( PageParameterKey.CategoryId ).AsIntegerOrNull();
-            if ( categoryGuid == null && categoryIdQryString.HasValue )
+            if ( categoryGuid == null )
             {
-                categoryGuid = CategoryCache.Get( categoryIdQryString.Value )?.Guid;
+                var category = CategoryCache.Get( PageParameter( PageParameterKey.CategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+                categoryGuid = category?.Guid;
             }
 
             // Determine the campus to filter to.

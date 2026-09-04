@@ -75,6 +75,16 @@
         },
 
         /**
+         * Whether to skip the automatic scroll to the selected item when the root
+         * items first load. Useful when a deep selection would otherwise scroll the
+         * rest of the page out of view. The scroll on `isVisible` is unaffected.
+         */
+        disableInitialScroll: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
          * Whether to show the number of children a parent node has, if provided
          */
         showChildCount: {
@@ -154,7 +164,11 @@
             emit("update:items", internalItems.value);
 
             await nextTick();
-            scrollToSelectedItem();
+
+            if (!props.disableInitialScroll) {
+                scrollToSelectedItem();
+            }
+
             trySelectFirst();
         }
     };

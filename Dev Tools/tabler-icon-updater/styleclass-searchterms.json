@@ -51,6 +51,17 @@
     "accessibility",
     "wheelchair"
   ],
+  "ti-acorn": [
+    "acorn",
+    "nut",
+    "seed",
+    "nature"
+  ],
+  "ti-acrobatic": [
+    "acrobatics",
+    "gymnast",
+    "flip"
+  ],
   "ti-activity": [
     "activity",
     "heartbeat"
@@ -236,6 +247,23 @@
   ],
   "ti-ai": [
     "artificial intelligence"
+  ],
+  "ti-ai-agent": [
+    "ai",
+    "agent",
+    "robot",
+    "assistant"
+  ],
+  "ti-ai-agents": [
+    "ai",
+    "agents",
+    "bot",
+    "automation"
+  ],
+  "ti-ai-gateway": [
+    "gateway",
+    "ai",
+    "network"
   ],
   "ti-air-balloon": [
     "hot air balloon",
@@ -544,6 +572,14 @@
     "text",
     "letter"
   ],
+  "ti-alphabet-polish": [
+    "polish",
+    "alphabet"
+  ],
+  "ti-alphabet-runes": [
+    "runes",
+    "alphabet"
+  ],
   "ti-alphabet-thai": [
     "thai",
     "alphabet"
@@ -658,6 +694,11 @@
     "off",
     "disconnect"
   ],
+  "ti-api-book": [
+    "api",
+    "book",
+    "documentation"
+  ],
   "ti-api-off": [
     "api",
     "off",
@@ -669,6 +710,27 @@
     "window",
     "interface",
     "application"
+  ],
+  "ti-app-window-bottom": [
+    "window",
+    "app",
+    "bottom"
+  ],
+  "ti-app-window-bottom-left": [
+    "window",
+    "app",
+    "corner"
+  ],
+  "ti-app-window-bottom-right": [
+    "window",
+    "app",
+    "corner",
+    "resize"
+  ],
+  "ti-app-window-center": [
+    "window",
+    "app",
+    "center"
   ],
   "ti-apple": [
     "apple",
@@ -1054,6 +1116,11 @@
   ],
   "ti-arrow-fork": [
     "split"
+  ],
+  "ti-arrow-fork-triple": [
+    "arrow",
+    "fork",
+    "branch"
   ],
   "ti-arrow-forward": [
     "arrow",
@@ -2046,6 +2113,11 @@
     "prohibit",
     "no"
   ],
+  "ti-banana": [
+    "banana",
+    "fruit",
+    "food"
+  ],
   "ti-bandage": [
     "bandage",
     "medical",
@@ -2619,6 +2691,11 @@
     "appliance",
     "mixer"
   ],
+  "ti-blind": [
+    "blind",
+    "accessibility",
+    "visually impaired"
+  ],
   "ti-blob": [
     "abstract",
     "shape",
@@ -2913,6 +2990,11 @@
   "ti-border-vertical": [
     "border vertical line"
   ],
+  "ti-bot-id": [
+    "bot",
+    "id",
+    "robot"
+  ],
   "ti-bottle": [
     "bottle",
     "drink",
@@ -3186,6 +3268,12 @@
     "software",
     "animation"
   ],
+  "ti-brand-adobe-after-effects": [
+    "adobe",
+    "after effects",
+    "brand",
+    "logo"
+  ],
   "ti-brand-adobe-illustrator": [
     "adobe",
     "illustrator",
@@ -3209,6 +3297,12 @@
     "premiere",
     "adobe",
     "film"
+  ],
+  "ti-brand-adobe-premiere": [
+    "adobe",
+    "premiere",
+    "brand",
+    "video"
   ],
   "ti-brand-adobe-xd": [
     "adobe",
@@ -3329,6 +3423,11 @@
     "rocket",
     "astronomy",
     "brand"
+  ],
+  "ti-brand-audible": [
+    "audio",
+    "brand",
+    "sound"
   ],
   "ti-brand-auth0": [
     "auth0",
@@ -3967,6 +4066,11 @@
     "brand",
     "physics"
   ],
+  "ti-brand-infakt": [
+    "infakt",
+    "brand",
+    "logo"
+  ],
   "ti-brand-instagram": [
     "instagram",
     "social",
@@ -3989,10 +4093,20 @@
     "code",
     "programming"
   ],
+  "ti-brand-jira": [
+    "jira",
+    "brand",
+    "logo"
+  ],
   "ti-brand-juejin": [
     "juejin",
     "brand",
     "logo"
+  ],
+  "ti-brand-kakao-talk": [
+    "chat",
+    "message",
+    "brand"
   ],
   "ti-brand-kako-talk": [
     "chat",
@@ -4436,6 +4550,10 @@
     "commerce",
     "retail"
   ],
+  "ti-brand-signal": [
+    "signal",
+    "brand"
+  ],
   "ti-brand-sketch": [
     "sketch",
     "design",
@@ -4508,6 +4626,11 @@
     "gaming",
     "valve",
     "platform"
+  ],
+  "ti-brand-stellar": [
+    "stellar",
+    "brand",
+    "logo"
   ],
   "ti-brand-stocktwits": [
     "stocktwits",
@@ -4589,6 +4712,12 @@
   "ti-brand-tabler": [
     "brand",
     "tabler"
+  ],
+  "ti-brand-tabnine": [
+    "tabnine",
+    "ai",
+    "code",
+    "assistant"
   ],
   "ti-brand-tailwind": [
     "tailwind",
@@ -4734,6 +4863,11 @@
     "game",
     "logo",
     "v"
+  ],
+  "ti-brand-vechain": [
+    "vechain",
+    "logo",
+    "brand"
   ],
   "ti-brand-vercel": [
     "triangle",
@@ -5221,6 +5355,11 @@
     "cottage",
     "house",
     "home"
+  ],
+  "ti-building-eiffel-tower": [
+    "eiffel",
+    "tower",
+    "landmark"
   ],
   "ti-building-estate": [
     "real estate",
@@ -5737,6 +5876,12 @@
     "outdoor",
     "flame"
   ],
+  "ti-canary": [
+    "bird",
+    "canary",
+    "animal",
+    "pet"
+  ],
   "ti-cancel": [
     "cancel",
     "close",
@@ -5819,6 +5964,12 @@
     "accident",
     "crash"
   ],
+  "ti-car-door": [
+    "car",
+    "door",
+    "vehicle",
+    "auto"
+  ],
   "ti-car-fan": [
     "car",
     "fan",
@@ -5851,11 +6002,27 @@
     "car",
     "garage"
   ],
+  "ti-car-lifter": [
+    "car",
+    "lift",
+    "repair",
+    "mechanic"
+  ],
   "ti-car-off": [
     "car",
     "vehicle",
     "automobile",
     "off"
+  ],
+  "ti-car-off-road": [
+    "off-road",
+    "car",
+    "vehicle"
+  ],
+  "ti-car-suspension": [
+    "car",
+    "suspension",
+    "vehicle"
   ],
   "ti-car-suv": [
     "suv",
@@ -6567,6 +6734,11 @@
     "chisel",
     "tool"
   ],
+  "ti-chocolate": [
+    "sweet",
+    "candy",
+    "dessert"
+  ],
   "ti-christmas-ball": [
     "ornament",
     "decoration"
@@ -6625,6 +6797,12 @@
     "arrow",
     "up",
     "right"
+  ],
+  "ti-circle-asterisk": [
+    "circle",
+    "asterisk",
+    "star",
+    "mark"
   ],
   "ti-circle-caret-down": [
     "dropdown",
@@ -7327,6 +7505,29 @@
     "forbidden",
     "cancel"
   ],
+  "ti-circle-open-arrow-down": [
+    "arrow",
+    "down",
+    "circle",
+    "open"
+  ],
+  "ti-circle-open-arrow-left": [
+    "arrow",
+    "left",
+    "circle",
+    "back"
+  ],
+  "ti-circle-open-arrow-right": [
+    "arrow",
+    "circle",
+    "right",
+    "open"
+  ],
+  "ti-circle-open-arrow-up": [
+    "arrow",
+    "circle",
+    "up"
+  ],
   "ti-circle-percentage": [
     "percentage",
     "discount"
@@ -7342,6 +7543,12 @@
     "plus",
     "circle",
     "new"
+  ],
+  "ti-circle-plus-minus": [
+    "plus",
+    "minus",
+    "circle",
+    "add"
   ],
   "ti-circle-rectangle": [
     "circle",
@@ -7482,6 +7689,16 @@
     "text",
     "erase",
     "remove"
+  ],
+  "ti-clef": [
+    "music",
+    "key",
+    "note"
+  ],
+  "ti-clef-staff": [
+    "music",
+    "staff",
+    "clef"
   ],
   "ti-click": [
     "mouse",
@@ -8002,6 +8219,11 @@
     "programming",
     "development"
   ],
+  "ti-code-ai": [
+    "code",
+    "ai",
+    "artificial intelligence"
+  ],
   "ti-code-asterisk": [
     "asterisk",
     "star"
@@ -8051,6 +8273,11 @@
     "code",
     "variable",
     "plus"
+  ],
+  "ti-codeblock": [
+    "code",
+    "block",
+    "programming"
   ],
   "ti-coffee": [
     "coffee",
@@ -8276,6 +8503,11 @@
   "ti-congruent-to": [
     "equal",
     "geometry"
+  ],
+  "ti-connection": [
+    "link",
+    "network",
+    "connect"
   ],
   "ti-container": [
     "box",
@@ -8532,6 +8764,12 @@
     "finance",
     "bank"
   ],
+  "ti-credit-card-hand": [
+    "credit",
+    "card",
+    "payment",
+    "hand"
+  ],
   "ti-credit-card-off": [
     "payment",
     "billing",
@@ -8548,6 +8786,12 @@
     "credit card",
     "transaction",
     "payment"
+  ],
+  "ti-credits": [
+    "credits: payment",
+    "money",
+    "card",
+    "transaction"
   ],
   "ti-cricket": [
     "cricket",
@@ -8853,6 +9097,12 @@
     "currency",
     "hryvnia"
   ],
+  "ti-currency-husd": [
+    "currency",
+    "husd",
+    "money",
+    "payment"
+  ],
   "ti-currency-iranian-rial": [
     "currency",
     "money",
@@ -8992,6 +9242,11 @@
     "money",
     "finance"
   ],
+  "ti-currency-ruble": [
+    "ruble",
+    "currency",
+    "money"
+  ],
   "ti-currency-rufiyaa": [
     "currency",
     "rufiyaa",
@@ -9035,6 +9290,11 @@
     "currency",
     "tenge"
   ],
+  "ti-currency-tether": [
+    "tether",
+    "currency",
+    "crypto"
+  ],
   "ti-currency-tugrik": [
     "currency",
     "tugrik",
@@ -9070,6 +9330,11 @@
     "yuan",
     "money",
     "finance"
+  ],
+  "ti-currency-zcash": [
+    "zcash",
+    "currency",
+    "crypto"
   ],
   "ti-currency-zloty": [
     "currency",
@@ -9219,6 +9484,11 @@
     "remove",
     "x"
   ],
+  "ti-deaf": [
+    "hearing",
+    "accessibility",
+    "ear"
+  ],
   "ti-decimal": [
     "decimal",
     "point",
@@ -9269,6 +9539,16 @@
     "off",
     "hidden"
   ],
+  "ti-device-3d-camera": [
+    "3d",
+    "camera",
+    "device"
+  ],
+  "ti-device-3d-lens": [
+    "3d",
+    "device",
+    "lens"
+  ],
   "ti-device-airpods": [
     "earbuds",
     "headphones",
@@ -9318,6 +9598,12 @@
     "webcam",
     "camera",
     "device"
+  ],
+  "ti-device-computer-camera-2": [
+    "computer",
+    "camera",
+    "device",
+    "webcam"
   ],
   "ti-device-computer-camera-off": [
     "computer",
@@ -9968,6 +10254,11 @@
     "control",
     "device"
   ],
+  "ti-device-screen": [
+    "screen",
+    "device",
+    "monitor"
+  ],
   "ti-device-sd-card": [
     "sd card",
     "memory",
@@ -10149,6 +10440,12 @@
     "headset",
     "device"
   ],
+  "ti-device-vision-pro-wifi": [
+    "device",
+    "vision",
+    "wifi",
+    "headset"
+  ],
   "ti-device-watch": [
     "watch",
     "smartwatch",
@@ -10271,6 +10568,11 @@
     "wearable",
     "smartwatch",
     "device"
+  ],
+  "ti-device-workstation": [
+    "computer",
+    "workstation",
+    "desktop"
   ],
   "ti-devices": [
     "devices",
@@ -10628,6 +10930,12 @@
     "leave",
     "logout"
   ],
+  "ti-door-hanger": [
+    "door",
+    "hanger",
+    "sign",
+    "tag"
+  ],
   "ti-door-off": [
     "door",
     "exit",
@@ -10684,6 +10992,11 @@
     "move",
     "arrange",
     "organize"
+  ],
+  "ti-dragon": [
+    "dragon",
+    "fantasy",
+    "mythical"
   ],
   "ti-drone": [
     "drone",
@@ -10835,6 +11148,12 @@
   "ti-dual-screen": [
     "dual screen"
   ],
+  "ti-dumbbell": [
+    "fitness",
+    "weight",
+    "exercise",
+    "gym"
+  ],
   "ti-dumpling": [
     "dumpling",
     "food"
@@ -10857,6 +11176,11 @@
     "ear",
     "scan",
     "hearing",
+    "audio"
+  ],
+  "ti-earphone-bluetooth": [
+    "bluetooth",
+    "earphone",
     "audio"
   ],
   "ti-ease-in": [
@@ -10946,6 +11270,12 @@
     "lift",
     "disabled",
     "off"
+  ],
+  "ti-email-stamp": [
+    "email",
+    "stamp",
+    "mail",
+    "postal"
   ],
   "ti-emergency-bed": [
     "hospital",
@@ -11051,6 +11381,12 @@
     "alert",
     "warning",
     "mute"
+  ],
+  "ti-exercise-ball": [
+    "fitness",
+    "ball",
+    "gym",
+    "exercise"
   ],
   "ti-explicit": [
     "explicit",
@@ -12152,6 +12488,18 @@
     "vehicle",
     "truck"
   ],
+  "ti-firewall-check": [
+    "firewall",
+    "security",
+    "check",
+    "shield"
+  ],
+  "ti-firewall-flame": [
+    "firewall",
+    "flame",
+    "fire",
+    "security"
+  ],
   "ti-first-aid-kit": [
     "first aid",
     "medical",
@@ -12393,6 +12741,11 @@
   "ti-float-right": [
     "align right"
   ],
+  "ti-flood": [
+    "water",
+    "flood",
+    "wave"
+  ],
   "ti-flower": [
     "flower",
     "blossom",
@@ -12572,6 +12925,12 @@
     "off",
     "disable",
     "files"
+  ],
+  "ti-footsteps": [
+    "footsteps",
+    "walk",
+    "trail",
+    "path"
   ],
   "ti-forbid": [
     "forbidden",
@@ -12819,6 +13178,12 @@
   "ti-gender-trasvesti": [
     "transgender"
   ],
+  "ti-gender-travesti": [
+    "gender",
+    "transgender",
+    "travesti",
+    "identity"
+  ],
   "ti-geometry": [
     "geometry",
     "shapes"
@@ -12907,6 +13272,12 @@
   "ti-git-pull-request-closed": [
     "merge closed"
   ],
+  "ti-git-pull-request-conflict": [
+    "git",
+    "pull request",
+    "conflict",
+    "merge"
+  ],
   "ti-git-pull-request-draft": [
     "draft",
     "git",
@@ -12988,6 +13359,11 @@
   "ti-grain": [
     "pattern",
     "texture"
+  ],
+  "ti-grape": [
+    "fruit",
+    "grape",
+    "vine"
   ],
   "ti-graph": [
     "chart",
@@ -13130,6 +13506,12 @@
     "tool",
     "construction",
     "repair"
+  ],
+  "ti-hammer-drill": [
+    "hammer",
+    "drill",
+    "tool",
+    "construction"
   ],
   "ti-hammer-off": [
     "hammer",
@@ -13564,6 +13946,11 @@
     "3D",
     "hexagon"
   ],
+  "ti-hexagon-asterisk": [
+    "hexagon",
+    "star",
+    "asterisk"
+  ],
   "ti-hexagon-letter-a": [
     "hexagon",
     "letter",
@@ -13948,6 +14335,11 @@
     "home",
     "link"
   ],
+  "ti-home-lock": [
+    "home",
+    "lock",
+    "security"
+  ],
   "ti-home-minus": [
     "home",
     "minus",
@@ -14209,6 +14601,11 @@
     "off",
     "network"
   ],
+  "ti-hula-hoop": [
+    "hoop",
+    "circle",
+    "toy"
+  ],
   "ti-ice-cream": [
     "ice cream",
     "dessert",
@@ -14231,6 +14628,12 @@
     "winter",
     "sports"
   ],
+  "ti-iceberg": [
+    "iceberg",
+    "ice",
+    "mountain",
+    "cold"
+  ],
   "ti-icons": [
     "icons"
   ],
@@ -14238,6 +14641,12 @@
     "power",
     "off",
     "shutdown"
+  ],
+  "ti-icosahedron": [
+    "polyhedron",
+    "3d",
+    "geometric",
+    "shape"
   ],
   "ti-id": [
     "id card",
@@ -14273,6 +14682,12 @@
     "shape",
     "geometric"
   ],
+  "ti-image-generation": [
+    "image",
+    "photo",
+    "picture",
+    "generate"
+  ],
   "ti-image-in-picture": [
     "picture-in-picture",
     "video",
@@ -14305,6 +14720,11 @@
     "loop",
     "endless",
     "unlimited"
+  ],
+  "ti-infinity-2": [
+    "infinity",
+    "loop",
+    "endless"
   ],
   "ti-infinity-off": [
     "infinity",
@@ -14471,6 +14891,12 @@
   "ti-italic": [
     "italic"
   ],
+  "ti-italic-off": [
+    "italic",
+    "text",
+    "typography",
+    "style"
+  ],
   "ti-jacket": [
     "jacket",
     "clothing",
@@ -14482,6 +14908,12 @@
     "jetpack",
     "flight",
     "travel"
+  ],
+  "ti-jetski": [
+    "jetski",
+    "water",
+    "sport",
+    "vehicle"
   ],
   "ti-jewish-star": [
     "star",
@@ -14702,6 +15134,12 @@
     "laurel",
     "wreath",
     "victory"
+  ],
+  "ti-lawn-mower": [
+    "garden",
+    "mower",
+    "grass",
+    "lawn"
   ],
   "ti-layers-difference": [
     "layers comparison"
@@ -14953,6 +15391,12 @@
     "nature",
     "plant",
     "foliage"
+  ],
+  "ti-leaf-maple": [
+    "leaf",
+    "maple",
+    "nature",
+    "plant"
   ],
   "ti-leaf-off": [
     "leaf",
@@ -15441,6 +15885,12 @@
     "loading",
     "spinner",
     "progress"
+  ],
+  "ti-loader-4": [
+    "loading",
+    "spinner",
+    "progress",
+    "wait"
   ],
   "ti-loader-quarter": [
     "loading",
@@ -16089,6 +16539,12 @@
     "heart",
     "favorite"
   ],
+  "ti-map-lock": [
+    "map",
+    "lock",
+    "location",
+    "security"
+  ],
   "ti-map-minus": [
     "map",
     "minus",
@@ -16253,6 +16709,11 @@
     "share",
     "location",
     "navigation"
+  ],
+  "ti-map-shield": [
+    "map",
+    "shield",
+    "security"
   ],
   "ti-map-south": [
     "map",
@@ -16642,6 +17103,11 @@
     "organize",
     "menu",
     "order"
+  ],
+  "ti-mesh": [
+    "network",
+    "grid",
+    "connection"
   ],
   "ti-message": [
     "chat",
@@ -17110,6 +17576,12 @@
     "cartoon",
     "disney"
   ],
+  "ti-microfrontends": [
+    "microfrontend",
+    "modular",
+    "components",
+    "integration"
+  ],
   "ti-microphone": [
     "audio",
     "voice",
@@ -17155,6 +17627,11 @@
     "microwave",
     "appliance",
     "kitchen"
+  ],
+  "ti-middleware": [
+    "integration",
+    "connection",
+    "network"
   ],
   "ti-military-award": [
     "medal",
@@ -17304,6 +17781,11 @@
   "ti-mood-cog": [
     "settings",
     "cog"
+  ],
+  "ti-mood-confused": [
+    "confused",
+    "face",
+    "emotion"
   ],
   "ti-mood-confuzed": [
     "confused",
@@ -17583,6 +18065,12 @@
     "scooter",
     "bike",
     "vehicle"
+  ],
+  "ti-mosque": [
+    "mosque",
+    "building",
+    "religion",
+    "islam"
   ],
   "ti-motorbike": [
     "motorbike",
@@ -17981,9 +18469,18 @@
     "restriction",
     "forbidden"
   ],
+  "ti-noise-reduction": [
+    "noise",
+    "reduction",
+    "audio"
+  ],
   "ti-north-star": [
     "compass",
     "navigation"
+  ],
+  "ti-notdef": [
+    "undefined",
+    "placeholder"
   ],
   "ti-note": [
     "note",
@@ -18686,6 +19183,11 @@
   "ti-old": [
     "floppy disk"
   ],
+  "ti-olympic-torch": [
+    "torch",
+    "olympic",
+    "flame"
+  ],
   "ti-olympics": [
     "olympics",
     "sports",
@@ -18704,6 +19206,11 @@
   "ti-omega": [
     "omega",
     "symbol"
+  ],
+  "ti-option": [
+    "settings",
+    "options",
+    "menu"
   ],
   "ti-outbound": [
     "send"
@@ -18851,6 +19358,12 @@
     "circle",
     "sign",
     "P"
+  ],
+  "ti-parking-meter": [
+    "parking",
+    "meter",
+    "pay",
+    "ticket"
   ],
   "ti-parking-off": [
     "disabled",
@@ -19032,6 +19545,11 @@
     "edit",
     "remove",
     "delete"
+  ],
+  "ti-pendulum": [
+    "swing",
+    "clock",
+    "motion"
   ],
   "ti-pennant": [
     "flag",
@@ -19316,6 +19834,12 @@
     "image",
     "machine learning"
   ],
+  "ti-photo-alt": [
+    "photo",
+    "image",
+    "picture",
+    "gallery"
+  ],
   "ti-photo-bitcoin": [
     "cryptocurrency",
     "bitcoin",
@@ -19492,6 +20016,11 @@
     "remove image",
     "cancel picture"
   ],
+  "ti-physiotherapist": [
+    "health",
+    "therapy",
+    "person"
+  ],
   "ti-physotherapist": [
     "massage",
     "therapy",
@@ -19566,6 +20095,12 @@
     "drug",
     "capsule"
   ],
+  "ti-pillow": [
+    "bed",
+    "pillow",
+    "sleep",
+    "rest"
+  ],
   "ti-pills": [
     "medicine",
     "pills",
@@ -19599,6 +20134,11 @@
   ],
   "ti-pinned-off": [
     "unpin"
+  ],
+  "ti-pipeline": [
+    "pipeline",
+    "flow",
+    "process"
   ],
   "ti-pizza": [
     "pizza",
@@ -19683,6 +20223,16 @@
     "sports",
     "game",
     "ball"
+  ],
+  "ti-play-bug": [
+    "bug",
+    "play",
+    "insect"
+  ],
+  "ti-play-bugs": [
+    "bugs",
+    "insect",
+    "play"
   ],
   "ti-play-card": [
     "card",
@@ -19909,6 +20459,11 @@
     "power",
     "remove"
   ],
+  "ti-plunger": [
+    "plunger",
+    "tool",
+    "plumbing"
+  ],
   "ti-plus": [
     "add",
     "new",
@@ -19954,6 +20509,11 @@
     "cursor",
     "pointer"
   ],
+  "ti-pointer-2": [
+    "pointer",
+    "cursor",
+    "arrow"
+  ],
   "ti-pointer-bolt": [
     "lightning bolt",
     "electricity"
@@ -19980,6 +20540,17 @@
     "settings",
     "cog",
     "gear"
+  ],
+  "ti-pointer-collaboration": [
+    "pointer",
+    "collaboration",
+    "cursor",
+    "group"
+  ],
+  "ti-pointer-collaboration-2": [
+    "collaboration",
+    "pointer",
+    "teamwork"
   ],
   "ti-pointer-dollar": [
     "money",
@@ -20296,6 +20867,17 @@
     "help",
     "support"
   ],
+  "ti-queue-pop-in": [
+    "queue",
+    "pop-in",
+    "list",
+    "items"
+  ],
+  "ti-queue-pop-out": [
+    "queue",
+    "pop-out",
+    "list"
+  ],
   "ti-quote": [
     "speech bubble",
     "dialogue",
@@ -20303,6 +20885,12 @@
   ],
   "ti-quote-off": [
     "mute"
+  ],
+  "ti-quote-open": [
+    "quote",
+    "speech",
+    "chat",
+    "quotation"
   ],
   "ti-quotes": [
     "quotes",
@@ -20593,6 +21181,11 @@
     "refresh",
     "reload"
   ],
+  "ti-remote-control": [
+    "remote",
+    "control",
+    "device"
+  ],
   "ti-reorder": [
     "reorder",
     "list",
@@ -20777,11 +21370,22 @@
     "wave",
     "ripple"
   ],
+  "ti-ripple-down": [
+    "ripple",
+    "down",
+    "waves"
+  ],
   "ti-ripple-off": [
     "ripple",
     "wave",
     "off",
     "disable"
+  ],
+  "ti-ripple-up": [
+    "ripple",
+    "wave",
+    "up",
+    "arrow"
   ],
   "ti-road": [
     "road",
@@ -20827,6 +21431,11 @@
     "space",
     "off"
   ],
+  "ti-rocking-chair": [
+    "chair",
+    "rocking",
+    "furniture"
+  ],
   "ti-roller-skating": [
     "roller",
     "skating",
@@ -20848,6 +21457,12 @@
     "badge",
     "medal",
     "achievement"
+  ],
+  "ti-rosette-asterisk": [
+    "rosette",
+    "asterisk",
+    "star",
+    "badge"
   ],
   "ti-rosette-discount": [
     "discount",
@@ -20966,6 +21581,12 @@
   "ti-rotate-rectangle": [
     "rotate rectangle"
   ],
+  "ti-roulette": [
+    "gamble",
+    "wheel",
+    "casino",
+    "game"
+  ],
   "ti-route": [
     "route",
     "path",
@@ -21057,6 +21678,10 @@
     "off",
     "cancel"
   ],
+  "ti-rugby": [
+    "rugby",
+    "ball"
+  ],
   "ti-ruler": [
     "ruler",
     "measure",
@@ -21096,6 +21721,12 @@
   ],
   "ti-run": [
     "run"
+  ],
+  "ti-run-sprint": [
+    "run",
+    "sprint",
+    "fast",
+    "speed"
   ],
   "ti-rv-truck": [
     "rv",
@@ -21198,16 +21829,37 @@
     "barcode",
     "scan"
   ],
+  "ti-scan-cube": [
+    "scan",
+    "cube",
+    "3d",
+    "qr"
+  ],
   "ti-scan-eye": [
     "eye",
     "scan",
     "vision"
+  ],
+  "ti-scan-letter-a": [
+    "scan",
+    "letter a",
+    "document"
+  ],
+  "ti-scan-letter-t": [
+    "scan",
+    "letter",
+    "document"
   ],
   "ti-scan-position": [
     "scan",
     "position",
     "target",
     "focus"
+  ],
+  "ti-scan-traces": [
+    "scan",
+    "traces",
+    "fingerprint"
   ],
   "ti-schema": [
     "database",
@@ -21380,6 +22032,11 @@
     "off",
     "disabled"
   ],
+  "ti-segway": [
+    "segway",
+    "scooter",
+    "transport"
+  ],
   "ti-select": [
     "select"
   ],
@@ -21464,6 +22121,11 @@
     "data",
     "cloud"
   ],
+  "ti-serverless": [
+    "cloud",
+    "server",
+    "network"
+  ],
   "ti-servicemark": [
     "service mark"
   ],
@@ -21476,6 +22138,10 @@
     "cog",
     "gear",
     "settings"
+  ],
+  "ti-settings-ai": [
+    "settings",
+    "ai"
   ],
   "ti-settings-automation": [
     "automation",
@@ -22125,6 +22791,12 @@
     "skateboard",
     "sports"
   ],
+  "ti-sketching": [
+    "draw",
+    "pencil",
+    "design",
+    "sketch"
+  ],
   "ti-skew-x": [
     "skew",
     "transform",
@@ -22387,11 +23059,38 @@
     "card",
     "suit"
   ],
+  "ti-sparkle": [
+    "sparkle",
+    "star",
+    "shine"
+  ],
+  "ti-sparkle-2": [
+    "sparkle",
+    "star",
+    "shine"
+  ],
+  "ti-sparkle-highlight": [
+    "sparkle",
+    "highlight",
+    "star",
+    "shine"
+  ],
   "ti-sparkles": [
     "sparkles",
     "magic",
     "glitter",
     "shine"
+  ],
+  "ti-sparkles-2": [
+    "sparkle",
+    "star",
+    "shine"
+  ],
+  "ti-sparkles-2-off": [
+    "sparkle",
+    "sparkle off",
+    "sparkle disabled",
+    "star off"
   ],
   "ti-speakerphone": [
     "megaphone",
@@ -22409,6 +23108,12 @@
     "circle",
     "3D",
     "round"
+  ],
+  "ti-sphere-2": [
+    "circle",
+    "globe",
+    "3d",
+    "sphere"
   ],
   "ti-sphere-off": [
     "globe",
@@ -22439,6 +23144,12 @@
   ],
   "ti-sport-billard": [
     "billiard",
+    "pool",
+    "sport",
+    "game"
+  ],
+  "ti-sport-billiard": [
+    "billiards",
     "pool",
     "sport",
     "game"
@@ -22764,6 +23475,12 @@
   "ti-square-minus": [
     "subtract"
   ],
+  "ti-square-minus-2": [
+    "square",
+    "minus",
+    "remove",
+    "subtract"
+  ],
   "ti-square-number-0": [
     "zero"
   ],
@@ -22847,6 +23564,11 @@
   ],
   "ti-square-rotated": [
     "diamond"
+  ],
+  "ti-square-rotated-asterisk": [
+    "asterisk",
+    "star",
+    "shape"
   ],
   "ti-square-rotated-forbid": [
     "block",
@@ -23360,6 +24082,19 @@
   "ti-strikethrough": [
     "strikethrough"
   ],
+  "ti-stroke-curved": [
+    "curved",
+    "stroke"
+  ],
+  "ti-stroke-dynamic": [
+    "dynamic",
+    "motion",
+    "stroke"
+  ],
+  "ti-stroke-straight": [
+    "straight",
+    "line"
+  ],
   "ti-submarine": [
     "submarine",
     "underwater",
@@ -23373,6 +24108,30 @@
     "task",
     "checklist",
     "project"
+  ],
+  "ti-subtitles": [
+    "captions",
+    "text",
+    "video",
+    "speech"
+  ],
+  "ti-subtitles-ai": [
+    "subtitles",
+    "ai",
+    "text",
+    "speech"
+  ],
+  "ti-subtitles-edit": [
+    "subtitles",
+    "edit",
+    "text",
+    "captions"
+  ],
+  "ti-subtitles-off": [
+    "subtitles",
+    "off",
+    "mute",
+    "video"
   ],
   "ti-sum": [
     "sum",
@@ -23528,6 +24287,12 @@
     "battle",
     "duel"
   ],
+  "ti-tab-close": [
+    "close",
+    "close-tab",
+    "remove",
+    "cancel"
+  ],
   "ti-table": [
     "table"
   ],
@@ -23603,6 +24368,11 @@
     "chart",
     "data"
   ],
+  "ti-tabs": [
+    "tabs",
+    "interface",
+    "navigation"
+  ],
   "ti-tag": [
     "label",
     "tag",
@@ -23637,11 +24407,38 @@
     "price",
     "sale"
   ],
+  "ti-tags-chevron-down": [
+    "tags",
+    "chevron",
+    "dropdown"
+  ],
+  "ti-tags-chevron-left": [
+    "tags",
+    "chevron",
+    "left"
+  ],
+  "ti-tags-chevron-right": [
+    "tags",
+    "chevron",
+    "arrow",
+    "label"
+  ],
+  "ti-tags-chevron-up": [
+    "tags",
+    "chevron",
+    "up"
+  ],
   "ti-tags-off": [
     "tags",
     "label",
     "off",
     "disable"
+  ],
+  "ti-taiwan-dollar": [
+    "taiwan",
+    "dollar",
+    "currency",
+    "money"
   ],
   "ti-tallymark-1": [
     "tally",
@@ -23680,6 +24477,12 @@
   "ti-target": [
     "target",
     "aim"
+  ],
+  "ti-target-2": [
+    "target",
+    "bullseye",
+    "aim",
+    "focus"
   ],
   "ti-target-arrow": [
     "target",
@@ -23857,6 +24660,11 @@
   "ti-text-orientation": [
     "text orientation"
   ],
+  "ti-text-outline": [
+    "text",
+    "outline",
+    "typography"
+  ],
   "ti-text-plus": [
     "add text"
   ],
@@ -23864,6 +24672,34 @@
     "text",
     "recognition",
     "OCR"
+  ],
+  "ti-text-regex-asterisk": [
+    "regex",
+    "text",
+    "asterisk"
+  ],
+  "ti-text-regex-end": [
+    "regex",
+    "text",
+    "pattern",
+    "end"
+  ],
+  "ti-text-regex-plus": [
+    "regex",
+    "text",
+    "plus",
+    "pattern"
+  ],
+  "ti-text-regex-question": [
+    "regex",
+    "text",
+    "question"
+  ],
+  "ti-text-regex-start": [
+    "regex",
+    "text",
+    "pattern",
+    "start"
   ],
   "ti-text-resize": [
     "text",
@@ -23873,6 +24709,11 @@
     "scan",
     "text",
     "document"
+  ],
+  "ti-text-scan-ai": [
+    "text",
+    "scan",
+    "ai"
   ],
   "ti-text-size": [
     "text",
@@ -23911,6 +24752,23 @@
     "thermometer",
     "heat",
     "cold"
+  ],
+  "ti-thinking-high": [
+    "think",
+    "idea",
+    "head"
+  ],
+  "ti-thinking-low": [
+    "thinking",
+    "low",
+    "brain",
+    "idea"
+  ],
+  "ti-thinking-medium": [
+    "thinking",
+    "head",
+    "idea",
+    "pondering"
   ],
   "ti-thumb-down": [
     "dislike",
@@ -24425,6 +25283,12 @@
     "gym",
     "fitness"
   ],
+  "ti-treasure-chest": [
+    "chest",
+    "treasure",
+    "box",
+    "container"
+  ],
   "ti-tree": [
     "tree",
     "nature",
@@ -24471,6 +25335,12 @@
     "trending",
     "growth",
     "increase",
+    "chart"
+  ],
+  "ti-trending-up-down": [
+    "trending",
+    "arrow",
+    "graph",
     "chart"
   ],
   "ti-triangle": [
@@ -24576,6 +25446,11 @@
     "return",
     "transport"
   ],
+  "ti-twig": [
+    "branch",
+    "plant",
+    "twig"
+  ],
   "ti-txt": [
     "text",
     "document",
@@ -24656,6 +25531,18 @@
     "underline",
     "text",
     "formatting"
+  ],
+  "ti-underline-off": [
+    "underline",
+    "text",
+    "formatting",
+    "off"
+  ],
+  "ti-unicycle": [
+    "unicycle",
+    "bike",
+    "wheel",
+    "cycle"
   ],
   "ti-universe": [
     "universe",
@@ -24756,6 +25643,12 @@
     "profile",
     "user",
     "hexagon"
+  ],
+  "ti-user-key": [
+    "user",
+    "key",
+    "security",
+    "access"
   ],
   "ti-user-minus": [
     "user",
@@ -24928,6 +25821,12 @@
     "add",
     "math"
   ],
+  "ti-vault": [
+    "secure",
+    "safe",
+    "lock",
+    "storage"
+  ],
   "ti-vector": [
     "vector",
     "design",
@@ -25067,6 +25966,12 @@
     "viewport",
     "browser"
   ],
+  "ti-vignette": [
+    "vignette",
+    "filter",
+    "photo",
+    "effect"
+  ],
   "ti-vinyl": [
     "record",
     "music",
@@ -25079,11 +25984,23 @@
     "exclusive",
     "premium"
   ],
+  "ti-vip-2": [
+    "vip",
+    "star",
+    "badge",
+    "premium"
+  ],
   "ti-vip-off": [
     "vip",
     "off",
     "badge",
     "no-entry"
+  ],
+  "ti-virtual-space": [
+    "virtual",
+    "space",
+    "cube",
+    "3d"
   ],
   "ti-virus": [
     "virus",
@@ -25137,6 +26054,12 @@
     "speaker",
     "sound",
     "audio"
+  ],
+  "ti-volume-4": [
+    "volume",
+    "sound",
+    "audio",
+    "speaker"
   ],
   "ti-volume-off": [
     "mute"
@@ -25434,6 +26357,12 @@
   "ti-whirl": [
     "spiral"
   ],
+  "ti-whisk": [
+    "kitchen",
+    "cooking",
+    "baking",
+    "utensil"
+  ],
   "ti-wifi": [
     "wifi",
     "wireless",
@@ -25606,6 +26535,12 @@
     "longitude",
     "map"
   ],
+  "ti-world-map": [
+    "map",
+    "world",
+    "globe",
+    "location"
+  ],
   "ti-world-minus": [
     "world",
     "globe",
@@ -25712,6 +26647,12 @@
     "remove",
     "delete"
   ],
+  "ti-x-mark": [
+    "close",
+    "cancel",
+    "delete",
+    "remove"
+  ],
   "ti-x-power-y": [
     "1. Power  \n2. Off  \n3. Shutdown  \n4. Energy"
   ],
@@ -25747,6 +26688,11 @@
   "ti-xxx": [
     "xxx"
   ],
+  "ti-yarn": [
+    "yarn",
+    "thread",
+    "knitting"
+  ],
   "ti-yin-yang": [
     "yin yang"
   ],
@@ -25766,6 +26712,11 @@
     "blimp",
     "flight",
     "travel"
+  ],
+  "ti-zero-config": [
+    "zero",
+    "config",
+    "settings"
   ],
   "ti-zip": [
     "zip",

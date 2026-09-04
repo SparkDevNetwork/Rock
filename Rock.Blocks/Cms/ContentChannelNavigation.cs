@@ -192,7 +192,10 @@ namespace Rock.Blocks.Cms
             {
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
                 {
-                    ["ContentItemId"] = "((Key))"
+                    ["ContentItemId"] = "((Key))",
+                    // Open the selected item in edit mode, matching the WebForms
+                    // behavior and the sibling Content Channel Item List block.
+                    ["autoEdit"] = "true"
                 } )
             };
         }

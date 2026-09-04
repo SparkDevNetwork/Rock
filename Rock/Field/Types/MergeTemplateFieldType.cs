@@ -22,6 +22,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -50,7 +51,8 @@ namespace Rock.Field.Types
                 return value;
             }
 
-            using ( var rockContext = new RockContext() )
+            // Resolve the context from the factory so tests can supply a mocked context.
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mergeTemplate = new MergeTemplateService( rockContext ).GetNoTracking( value.AsGuid() );
                 if ( mergeTemplate != null )
@@ -192,6 +194,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<MergeTemplate>().Value, nameof( MergeTemplate.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the MergeTemplate table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = "To find the correct value, read the merge templates and take the guid of the one you want."
             };
         }
 

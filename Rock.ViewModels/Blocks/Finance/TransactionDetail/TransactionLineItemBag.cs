@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -108,5 +108,12 @@ namespace Rock.ViewModels.Blocks.Finance.TransactionDetail
         /// appended by the client for display purposes and should not be saved.
         /// </summary>
         public bool IsTotalRow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the condensed display values for each attribute on this line item,
+        /// keyed by <c>attr_{attributeKey}</c>. Each value contains <c>Html</c> and <c>Text</c>
+        /// representations in the format expected by the grid attribute column renderer.
+        /// </summary>
+        public Dictionary<string, object> AttributeDisplayValues { get; set; }
     }
 }

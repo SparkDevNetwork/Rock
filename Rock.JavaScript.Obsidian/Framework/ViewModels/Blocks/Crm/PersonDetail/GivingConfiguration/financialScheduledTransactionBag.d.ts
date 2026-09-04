@@ -25,6 +25,7 @@ import { Guid } from "@Obsidian/Types";
 import { FinancialPaymentDetailBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialPaymentDetailBag";
 import { FinancialScheduledTransactionDetailBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialScheduledTransactionDetailBag";
 import { PersonAliasBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/personAliasBag";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 
 /** Contains the Financial Scheduled Transaction data for the person or business. */
 export type FinancialScheduledTransactionBag = {
@@ -33,6 +34,14 @@ export type FinancialScheduledTransactionBag = {
 
     /** Gets or sets the authorized person alias for the financial scheduled transaction. */
     authorizedPersonAlias?: PersonAliasBag | null;
+
+    /**
+     * Gets or sets the currency information (symbol, decimal places,
+     * symbol location) used to format the transaction total in the
+     * scheduled transaction's own currency, honoring
+     * ForeignCurrencyCodeValueId.
+     */
+    currencyInfo?: CurrencyInfoBag | null;
 
     /** Gets or sets the payment detail for the financial scheduled transaction. */
     financialPaymentDetail?: FinancialPaymentDetailBag | null;
@@ -52,8 +61,35 @@ export type FinancialScheduledTransactionBag = {
     /** Gets or sets the isActive status of the financial scheduled transaction. */
     isActive: boolean;
 
+    /**
+     * Gets or sets a value indicating whether the associated financial
+     * gateway component supports inactivating (canceling) this scheduled
+     * transaction. When false, the client should hide the inactivate
+     * action because the gateway can't honor it.
+     */
+    isInactivateSupported: boolean;
+
     /** Gets or sets the next payment date for the financial scheduled transaction. */
     nextPaymentDate?: string | null;
+
+    /**
+     * Gets or sets the identifier of the saved account this scheduled
+     * transaction is drawing from. Used by the client to determine whether
+     * a saved account is "in use" without relying on name matching.
+     */
+    savedAccountId?: number | null;
+
+    /**
+     * Gets or sets the last error code recorded on the saved account this
+     * scheduled transaction draws from, if any.
+     */
+    savedAccountLastErrorCode?: string | null;
+
+    /**
+     * Gets or sets the date/time of the last error recorded on the saved
+     * account this scheduled transaction draws from.
+     */
+    savedAccountLastErrorCodeDateTime?: string | null;
 
     /** Gets or sets the saved account name for the financial scheduled transaction. */
     savedAccountName?: string | null;

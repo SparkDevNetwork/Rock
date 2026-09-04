@@ -95,21 +95,23 @@
 
                         <Column title="Processing Fees" name="feeAmount">
                             <template #format="{ row }">
-                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.feeAmount) }}</strong>
+                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.feeAmount, options.currencyInfo) }}</strong>
                                 <template v-else>
-                                    {{ toCurrencyOrNull(row.feeAmount) }}
+                                    {{ toCurrencyOrNull(row.feeAmount, options.currencyInfo) }}
                                 </template>
                             </template>
                         </Column>
 
                         <Column title="Amount" name="amount">
                             <template #format="{ row }">
-                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount) }}</strong>
+                                <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</strong>
                                 <template v-else>
-                                    {{ toCurrencyOrNull(row.amount) }}
+                                    {{ toCurrencyOrNull(row.amount, options.currencyInfo) }}
                                 </template>
                             </template>
                         </Column>
+
+                        <AttributeColumns :attributes="transactionDetailsAttributeFields" :filter="undefined" />
 
                         <Column name="edit" title="" width="52px" headerClass="grid-columncommand" itemClass="grid-columncommand">
                             <template #format="{ row }">
@@ -281,11 +283,7 @@
 
             </ContentSection>
         </ContentSectionContainer>
-        <div v-if="isLoading"
-             class="d-flex align-items-center justify-content-center p-4">
-            <i class="ti ti-loader-2 fa-spin" style="font-size: 2rem;" />
-        </div>
-        <EditTransactionDetail v-else-if="isEditTransactionDetailVisible"
+        <EditTransactionDetail v-if="isEditTransactionDetailVisible"
                                :modelValue="editTransactionDetail"
                                :foreignCurrencyCodeGuid="showForeignCurrencyFields ? modelValue.bag?.currencyCode?.value ?? undefined : undefined"
                                @save="onTransactionDetailSave"
@@ -327,7 +325,7 @@ strong {
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
-    import Grid, { TextColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, Column } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { TransactionLineItemBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/transactionLineItemBag";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
@@ -355,12 +353,8 @@ strong {
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ValidPropertiesBox<TransactionBag>): void,
-        (e: "propertyChanged", value: string): void,
-        (e: "saveThenAdd"): void, // TODO
-        (e: "saveThenViewBatch"): void // TODO
+        (e: "propertyChanged", value: string): void
     }>();
-
-    const isLoading = ref(false);
 
     // #region Values
     const isEditTransactionDetailVisible = ref(false);
@@ -372,14 +366,7 @@ strong {
     const paymentDetailAttributes = ref(props.modelValue.bag?.paymentDetail?.attributes ?? {});
     const paymentDetailAttributeValues = ref(props.modelValue.bag?.paymentDetail?.attributeValues ?? {});
 
-    const personOrBusinessItemBag: ListItemBag | undefined = props.modelValue.bag?.authorizedPerson
-        ? {
-            text: props.modelValue.bag.authorizedPerson.name ?? "",
-            value: props.modelValue.bag.authorizedPerson.guid ?? ""
-        }
-        : undefined;
-
-    const personOrBusiness = propertyRef(personOrBusinessItemBag ?? undefined, "PersonOrBusiness");
+    const personOrBusiness = propertyRef(props.modelValue.bag?.personOrBusiness ?? undefined, "PersonOrBusiness");
 
     const isAnonymous = propertyRef(props.modelValue.bag?.showAsAnonymous ?? false, "IsAnonymous");
 
@@ -395,6 +382,8 @@ strong {
         ?.map(td => ({
             ...td
         })) ?? []);
+
+    const transactionDetailsAttributeFields = ref(props.modelValue.bag?.transactionDetails?.attributeFields ?? []);
 
     const transactionDetailsToDelete = propertyRef(props.modelValue.bag?.transactionDetails?.rowsToDelete ?? [] as string[], "TransactionDetailsToDelete");
 
@@ -473,10 +462,13 @@ strong {
 
     /** Grid rows for the allocations table, including a computed totals row appended at the bottom. */
     const transactionDetailsGridData = computed<GridDataBag>(() => {
-        const rows = [...transactionDetails.value];
+        const rows = transactionDetails.value.map(row => ({
+            ...row,
+            ...row.attributeDisplayValues
+        }));
 
-        const feeTotal = rows.reduce((sum, row) => sum + (row.feeAmount ?? 0), 0);
-        const amountTotal = rows.reduce((sum, row) => sum + (row.amount ?? 0), 0);
+        const feeTotal = rows.reduce((sum, row) => sum + ((row.feeAmount as number) ?? 0), 0);
+        const amountTotal = rows.reduce((sum, row) => sum + ((row.amount as number) ?? 0), 0);
 
         return {
             rows: [
@@ -634,19 +626,45 @@ strong {
 
     /**
      * Called when the transaction detail modal emits a save event.
-     * Updates the matching line item in transactionDetails.
+     * Updates the matching line item in transactionDetails, then refreshes its
+     * attributeDisplayValues from the server so the grid shows current rendered values.
      */
-    function onTransactionDetailSave(updatedDetail: TransactionLineItemBag): void {
-        const index = transactionDetails.value.findIndex(td => td.guid === updatedDetail.guid);
+    async function onTransactionDetailSave(updatedDetail: TransactionLineItemBag): Promise<void> {
+        const row = { ...updatedDetail };
+
+        const index = transactionDetails.value.findIndex(td => td.guid === row.guid);
 
         if (index >= 0) {
-            transactionDetails.value.splice(index, 1, updatedDetail);
+            transactionDetails.value.splice(index, 1, row);
         }
         else {
-            transactionDetails.value.push({ ...updatedDetail });
+            transactionDetails.value.push(row);
         }
 
         isEditTransactionDetailVisible.value = false;
+
+        if (transactionDetailsAttributeFields.value.length > 0) {
+            try {
+                const result = await invokeBlockAction<Record<string, { html?: string; text?: string }>>(
+                    "GetLineItemAttributeDisplay",
+                    { attributeValues: row.attributeValues ?? {} }
+                );
+
+                if (result.isSuccess && result.data) {
+                    const currentIndex = transactionDetails.value.findIndex(td => td.guid === row.guid);
+
+                    if (currentIndex >= 0) {
+                        transactionDetails.value.splice(currentIndex, 1, {
+                            ...transactionDetails.value[currentIndex],
+                            attributeDisplayValues: result.data
+                        });
+                    }
+                }
+            }
+            catch (error) {
+                console.error("Error refreshing attribute display values:", error);
+            }
+        }
     }
 
     /**
@@ -665,7 +683,6 @@ strong {
             const transactionDetailAttributes = await invokeBlockAction<TransactionDetailsBag>("GetTransactionDetailAttributes", {
                 guid: ""
             });
-
             editTransactionDetail.value = {
                 guid: newGuid(),
                 attributes: transactionDetailAttributes.data?.attributes ?? {},
@@ -727,22 +744,15 @@ strong {
         updateRefValue(refundReason, props.modelValue.bag?.refundDetails?.refundReason ?? null);
         updateRefValue(isRefund, props.modelValue.bag?.isRefund ?? false);
 
-        const updatedPerson: ListItemBag | undefined = props.modelValue.bag?.authorizedPerson
-            ? {
-                text: props.modelValue.bag.authorizedPerson.name ?? "",
-                value: props.modelValue.bag.authorizedPerson.guid ?? ""
-            }
-            : undefined;
-
-
         const newTransactionDetails = props.modelValue.bag?.transactionDetails
             ?.rows?.map(td => ({
                 ...td
             })) ?? [];
 
         updateRefValue(transactionDetails, newTransactionDetails);
+        updateRefValue(transactionDetailsAttributeFields, props.modelValue.bag?.transactionDetails?.attributeFields ?? []);
 
-        updateRefValue(personOrBusiness, updatedPerson);
+        updateRefValue(personOrBusiness, props.modelValue.bag?.personOrBusiness ?? undefined);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -758,7 +768,7 @@ strong {
         setPropertiesBoxValue(newValue, "summary", summary.value ?? "");
         setPropertiesBoxValue(newValue, "transactionCode", transactionCode.value ?? "");
         setPropertiesBoxValue(newValue, "images", images.value ?? []);
-        setPropertiesBoxValue(newValue, "transactionDetails", { rows: transactionDetails.value, rowsToDelete: transactionDetailsToDelete.value });
+        setPropertiesBoxValue(newValue, "transactionDetails", { rows: transactionDetails.value, rowsToDelete: transactionDetailsToDelete.value, attributeFields: transactionDetailsAttributeFields.value } as TransactionDetailsBag);
 
         setPropertiesBoxValue(newValue, "transactionType", transactionType.value ?? null);
 
@@ -793,11 +803,7 @@ strong {
         );
         setPropertiesBoxValue(newValue, "isRefund", isRefund.value);
 
-        setPropertiesBoxValue(newValue, "authorizedPerson", {
-            ...props.modelValue.bag?.authorizedPerson,
-            name: personOrBusiness.value?.text ?? "",
-            guid: personOrBusiness.value?.value ?? ""
-        });
+        setPropertiesBoxValue(newValue, "personOrBusiness", personOrBusiness.value);
 
         emit("update:modelValue", newValue);
     });

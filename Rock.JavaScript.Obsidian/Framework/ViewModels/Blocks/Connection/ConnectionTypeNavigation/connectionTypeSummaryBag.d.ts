@@ -50,6 +50,9 @@ export type ConnectionTypeSummaryBag = {
     /** Gets whether board view is enabled for this connection type. */
     isBoardViewEnabled: boolean;
 
+    /** Gets or sets whether the Celebrations feature is enabled for this connection type. */
+    isCelebrationEnabled: boolean;
+
     /** Gets whether board view is enabled for this connection type. */
     isGridViewEnabled: boolean;
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,5 +34,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormList
         /// Gets or sets a value indicating whether the current user can add a new category.
         /// </summary>
         public bool CanAddNewCategory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow form categories paired with their IdKey, so the block can
+        /// resolve the selected category from the IdKey carried in the page parameter.
+        /// </summary>
+        public List<FormListCategoryBag> Categories { get; set; }
     }
 }

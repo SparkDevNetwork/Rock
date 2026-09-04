@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -33,8 +32,6 @@ namespace Rock.Tests.Shared.TestFramework
 {
     public static class TestHelper
     {
-        public const string DefaultTaskName = "Main Test Action";
-
         static TestHelper()
         {
             // Add the console as the default trace output.
@@ -51,116 +48,6 @@ namespace Rock.Tests.Shared.TestFramework
             Trace.WriteLine( $"[{timestamp}] {message}" );
         }
 
-        /// <summary>
-        /// Gets the path to the RockWeb folder. This is determined automatically
-        /// by searching for the solution file.
-        /// </summary>
-        /// <returns>The path to the RockWeb folder or <c>null</c> if it could not be determined.</returns>
-        public static string GetRockWebPath()
-        {
-            var directory = new DirectoryInfo( Directory.GetCurrentDirectory() );
-
-            while ( directory != null )
-            {
-                var solutionFile = Path.Combine( directory.FullName, "Rock.sln" );
-
-                if ( File.Exists( solutionFile ) )
-                {
-                    return Path.Combine( directory.FullName, "RockWeb" ) + Path.DirectorySeparatorChar;
-                }
-
-                directory = directory.Parent;
-            }
-
-            return null;
-        }
-
-        #region Stopwatch
-
-        private static Dictionary<string, Stopwatch> _stopwatches = new Dictionary<string, Stopwatch>( StringComparer.OrdinalIgnoreCase );
-
-        /// <summary>
-        /// Starts or restarts a named timer.
-        /// </summary>
-        /// <param name="name"></param>
-        public static Stopwatch ExecuteWithTimer( string message, Action testMethod )
-        {
-            var stopwatch = StartTimer( message );
-            try
-            {
-                testMethod();
-            }
-            catch ( Exception ex )
-            {
-                Log( $"** ERROR:\n{ex.Message}" );
-            }
-            finally
-            {
-                EndTimer( message );
-            }
-
-            return stopwatch;
-        }
-
-        /// <summary>
-        /// Starts or restarts a named timer.
-        /// </summary>
-        /// <param name="name"></param>
-        public static Stopwatch StartTimer( string name = DefaultTaskName )
-        {
-            Stopwatch stopwatch;
-            if ( _stopwatches.ContainsKey( name ) )
-            {
-                stopwatch = _stopwatches[name];
-            }
-            else
-            {
-                stopwatch = new Stopwatch();
-                _stopwatches[name] = stopwatch;
-                Log( $"** START: {name}" );
-            }
-            stopwatch.Start();
-
-            return stopwatch;
-        }
-
-        /// <summary>
-        /// Pauses the named timer.
-        /// </summary>
-        /// <param name="name"></param>
-        public static void PauseTimer( string name = DefaultTaskName )
-        {
-            if ( !_stopwatches.ContainsKey( name ) )
-            {
-                return;
-            }
-
-            var stopwatch = _stopwatches[name];
-            stopwatch.Stop();
-        }
-
-        /// <summary>
-        /// Finalizes the named timer and prints the elapsed time to debug output.
-        /// </summary>
-        /// <param name="name"></param>
-        public static Stopwatch EndTimer( string name = DefaultTaskName )
-        {
-            if ( !_stopwatches.ContainsKey( name ) )
-            {
-                return null;
-            }
-
-            var stopwatch = _stopwatches[name];
-            stopwatch.Stop();
-            _stopwatches.Remove( name );
-
-            Log( $"**   END: {name} ({stopwatch.ElapsedMilliseconds}ms)" );
-
-            return stopwatch;
-        }
-
-        #endregion
-
         #region RockApp Initialization
 
         /// <summary>
@@ -168,7 +55,7 @@ namespace Rock.Tests.Shared.TestFramework
         /// connection string, which may be <c>null</c>.
         /// </summary>
         /// <param name="connectionString">The connection string to use for configuring the RockApp.</param>
-        public static void ConfigureRockApp( string connectionString )
+        internal static void ConfigureRockApp( string connectionString )
         {
             var app = CreateRockApp( connectionString, null );
 
@@ -182,56 +69,37 @@ namespace Rock.Tests.Shared.TestFramework
         /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
         public static RockAppScope CreateScopedRockApp()
         {
-            return CreateScopedRockApp( null, null );
+            return CreateScopedRockApp( null );
         }
 
         /// <summary>
-        /// Creates a new scoped RockApp instance with no database configuration.
+        /// Creates a new scoped RockApp instance with database configuration.
         /// When the instance is no longer required the scope should be disposed.
         /// </summary>
         /// <param name="configureApp">A function to call to perform additional configuration of the services.</param>
         /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
         public static RockAppScope CreateScopedRockApp( Action<ServiceCollection> configureApp )
         {
-            return CreateScopedRockApp( null, configureApp );
-        }
-
-        /// <summary>
-        /// Creates a new scoped RockApp instance with database configuration.
-        /// When the instance is no longer required the scope should be disposed.
-        /// </summary>
-        /// <param name="connectionString">The connection string to use when connecting to the database.</param>
-        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
-        public static RockAppScope CreateScopedRockApp( string connectionString )
-        {
-            return CreateScopedRockApp( connectionString, null );
-        }
-
-        /// <summary>
-        /// Creates a new scoped RockApp instance with database configuration.
-        /// When the instance is no longer required the scope should be disposed.
-        /// </summary>
-        /// <param name="connectionString">The connection string to use when connecting to the database.</param>
-        /// <param name="configureApp">A function to call to perform additional configuration of the services.</param>
-        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
-        public static RockAppScope CreateScopedRockApp( string connectionString, Action<ServiceCollection> configureApp )
-        {
-            var app = CreateRockApp( connectionString, configureApp );
-
-            return new RockAppScope( app );
-        }
-
-        /// <summary>
-        /// Creates a new scoped RockApp instance with a mock database configuration.
-        /// The database can be accessed via the IRockContextFactory service.
-        /// </summary>
-        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
-        public static RockAppScope CreateScopedRockAppWithMockDatabase()
-        {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            return CreateScopedRockApp( "Server=localhost\\MockInstance;Database=Rock", sc => sc.AddSingleton( rockContextFactory ) );
+            // Provide a mocked IDatabaseConfiguration. The real implementation
+            // queries a live database in its constructor to determine the
+            // platform, version, edition and size - none of which is available
+            // when running against a mocked context. Using the real one would
+            // open a connection to a non-existent server and block until the
+            // connection timeout elapsed.
+            var databaseConfigurationMock = new Mock<IDatabaseConfiguration>( MockBehavior.Loose );
+            databaseConfigurationMock.Setup( m => m.IsDatabaseAvailable ).Returns( true );
+
+            var app = CreateRockApp( "Server=localhost\\MockInstance;Database=Rock", sc =>
+            {
+                sc.AddSingleton( rockContextFactory );
+                sc.AddSingleton<IDatabaseConfiguration>( databaseConfigurationMock.Object );
+                configureApp?.Invoke( sc );
+            } );
+
+            return new RockAppScope( app );
         }
 
         /// <summary>
@@ -270,6 +138,30 @@ namespace Rock.Tests.Shared.TestFramework
             }
 
             return app;
+        }
+
+        /// <summary>
+        /// Gets the path to the RockWeb folder. This is determined automatically
+        /// by searching for the solution file.
+        /// </summary>
+        /// <returns>The path to the RockWeb folder or <c>null</c> if it could not be determined.</returns>
+        private static string GetRockWebPath()
+        {
+            var directory = new DirectoryInfo( Directory.GetCurrentDirectory() );
+
+            while ( directory != null )
+            {
+                var solutionFile = Path.Combine( directory.FullName, "Rock.sln" );
+
+                if ( File.Exists( solutionFile ) )
+                {
+                    return Path.Combine( directory.FullName, "RockWeb" ) + Path.DirectorySeparatorChar;
+                }
+
+                directory = directory.Parent;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -346,6 +238,10 @@ namespace Rock.Tests.Shared.TestFramework
 
             private readonly RockApp _previousApp;
 
+            private readonly DateTime? _previousTestDateTimeUtc;
+
+            private readonly TimeZoneInfo _previousTestOrgTimeZone;
+
             /// <summary>
             /// Initializes a new instance of the RockAppScope class.
             /// </summary>
@@ -355,7 +251,93 @@ namespace Rock.Tests.Shared.TestFramework
                 App = app;
                 _previousApp = RockApp.Current;
 
+                // Snapshot the current date/time overrides so any changes made within
+                // this scope are reverted when it is disposed. These are normally null.
+                _previousTestDateTimeUtc = RockDateTime.TestCurrentDateTimeUtcOverride;
+                _previousTestOrgTimeZone = RockDateTime.TestOrgTimeZoneInfoOverride;
+
                 RockApp.Current = app;
+            }
+
+            /// <summary>
+            /// Overrides the organization time zone for the duration of this scope. This
+            /// determines the time zone used to calculate <see cref="RockDateTime.Now"/>.
+            /// </summary>
+            /// <param name="timeZone">The organization time zone to use.</param>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope SetOrgTimeZone( TimeZoneInfo timeZone )
+            {
+                RockDateTime.TestOrgTimeZoneInfoOverride = timeZone;
+
+                return this;
+            }
+
+            /// <summary>
+            /// Freezes <see cref="RockDateTime.Now"/> at the specified organization
+            /// wall-clock time for the duration of this scope. The value is interpreted
+            /// in the organization time zone currently in effect, so pin the time zone
+            /// first (via <see cref="SetOrgTimeZone"/> or the two-argument overload) when
+            /// the result needs to be deterministic across environments.
+            /// </summary>
+            /// <param name="organizationDateTime">The organization-local date and time to freeze at.</param>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope SetCurrentDateTime( DateTime organizationDateTime )
+            {
+                // Interpret the value as a wall-clock time in the organization time zone
+                // and convert it to the UTC instant that the override actually stores.
+                var unspecified = DateTime.SpecifyKind( organizationDateTime, DateTimeKind.Unspecified );
+
+                RockDateTime.TestCurrentDateTimeUtcOverride = TimeZoneInfo.ConvertTimeToUtc( unspecified, RockDateTime.OrgTimeZoneInfo );
+
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the organization time zone and freezes <see cref="RockDateTime.Now"/>
+            /// at the specified organization wall-clock time, in a single call. This is
+            /// the recommended way to make a date/time-sensitive test deterministic.
+            /// </summary>
+            /// <param name="organizationDateTime">The organization-local date and time to freeze at.</param>
+            /// <param name="organizationTimeZone">The organization time zone the value is expressed in.</param>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope SetCurrentDateTime( DateTime organizationDateTime, TimeZoneInfo organizationTimeZone )
+            {
+                SetOrgTimeZone( organizationTimeZone );
+
+                return SetCurrentDateTime( organizationDateTime );
+            }
+
+            /// <summary>
+            /// Freezes the current instant at the specified UTC date and time for the
+            /// duration of this scope. Use this overload when the test already reasons in
+            /// UTC; otherwise prefer <see cref="SetCurrentDateTime(DateTime, TimeZoneInfo)"/>.
+            /// </summary>
+            /// <param name="utcDateTime">The UTC instant to freeze at.</param>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope SetCurrentDateTimeUtc( DateTime utcDateTime )
+            {
+                // Normalize to a UTC-kind value so the downstream time zone conversion
+                // treats it as UTC. A Local value is converted; anything else is labeled.
+                var utc = utcDateTime.Kind == DateTimeKind.Local
+                    ? utcDateTime.ToUniversalTime()
+                    : DateTime.SpecifyKind( utcDateTime, DateTimeKind.Utc );
+
+                RockDateTime.TestCurrentDateTimeUtcOverride = utc;
+
+                return this;
+            }
+
+            /// <summary>
+            /// Clears any frozen current instant set within this scope, restoring
+            /// <see cref="RockDateTime.Now"/> to the real system clock. The organization
+            /// time zone override, if any, is left in place.
+            /// </summary>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope ClearCurrentDateTime()
+            {
+                RockDateTime.TestCurrentDateTimeUtcOverride = null;
+
+                return this;
             }
 
             /// <inheritdoc/>
@@ -363,6 +345,10 @@ namespace Rock.Tests.Shared.TestFramework
             {
                 if ( ReferenceEquals( RockApp.Current, App ) )
                 {
+                    // Revert any date/time overrides made within this scope.
+                    RockDateTime.TestCurrentDateTimeUtcOverride = _previousTestDateTimeUtc;
+                    RockDateTime.TestOrgTimeZoneInfoOverride = _previousTestOrgTimeZone;
+
                     RockCache.ClearAllCachedItems( false );
                     RockApp.Current = _previousApp;
                 }
