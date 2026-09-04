@@ -325,12 +325,13 @@ namespace Rock.Blocks.Crm.PersonDetail
                 DeceasedDate = person.DeceasedDate?.ToString( "yyyy-MM-dd" ),
                 RecordSource = ToDefinedValueListItemBag( person.RecordSourceValueId ),
                 Gender = person.Gender,
+                // Person.BirthDate reports DateTime.MinValue.Year when the year is unknown, so treat that as no year.
                 BirthDate = person.BirthDate != null
                     ? new BirthdayPickerBag
                     {
                         Day = person.BirthDate.Value.Day,
                         Month = person.BirthDate.Value.Month,
-                        Year = person.BirthDate.Value.Year
+                        Year = person.BirthDate.Value.Year != System.DateTime.MinValue.Year ? person.BirthDate.Value.Year : 0
                     }
                     : null,
                 Grade = gradeFormatted.IsNotNullOrWhiteSpace()
