@@ -46,8 +46,8 @@ Only use `WillCascadeOnDelete( true )` when the child entity has no meaning with
 Enums must be defined in `Rock.Enums/[Domain]/EnumName.cs`, NOT in the entity file or the Rock project directly.
 
 Requirements:
-- **Namespace:** `Rock.Model` (NOT `Rock.Enums.Domain`)
-- **Attribute:** `[Enums.EnumDomain( "Domain" )]`
+- **Namespace:** `Rock.Enums.[Domain]` (match the folder). NOT `Rock.Model` — that is a legacy holdover from before enums were moved into the `Rock.Enums` project.
+- **No `[Enums.EnumDomain]` attribute** — it is only for legacy enums still in the `Rock.Model` namespace. The `Rock.Enums.[Domain]` namespace already conveys the domain.
 - XML doc comments on every value
 
 If the enum is in the wrong location or namespace, code generation and Obsidian type generation will fail.
@@ -123,5 +123,5 @@ Run through this before presenting the entity:
 13. GUID is uppercase, hyphenated, proper format
 14. Copyright header is complete
 15. `ToString()` override returns meaningful value (usually `Name`)
-16. Any new enums are in `Rock.Enums/[Domain]/` with `[EnumDomain]` attribute
+16. Any new enums are in `Rock.Enums/[Domain]/` with namespace `Rock.Enums.[Domain]` and NO `[EnumDomain]` attribute (that attribute is only for legacy `Rock.Model` enums)
 17. `using` statements are minimal and correct

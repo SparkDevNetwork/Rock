@@ -44,7 +44,7 @@ Three casings exist for the same domain. Use the form appropriate to the context
 
 - **Release-note form** — commit messages (`+ (Domain) ...`), the `Domain` column of `specs/completed/INDEX.md`, the H1 of every `docs/{folder}/README.md`. Human-facing.
 - **Folder name** — every directory under `specs/completed/` and `docs/`. Lowercase, hyphens for spaces, no exceptions. Path-safe and case-insensitive-filesystem-safe.
-- **Namespace / Enum form** — C# `[RockDomain]` and `[Enums.EnumDomain]` attributes, file paths under `Rock.Enums/{Domain}/`, namespace placement. PascalCase. Includes some domains that do NOT appear in the release-note list (`Blocks`, `Controls`, `Geography`, `Net`, `Observability`, `Security`) because those are code organization, not user-visible feature areas. See `.claude/rules/code-conventions.md` for the complete namespace list.
+- **Namespace / Enum form** — C# `[RockDomain]` and `[Enums.EnumDomain]` attributes (the latter is legacy-only — it appears solely on enums still declared in the `Rock.Model` namespace; new enums live in `Rock.Enums.[Domain]` and carry no such attribute), file paths under `Rock.Enums/{Domain}/`, namespace placement. PascalCase. Includes some domains that do NOT appear in the release-note list (`Blocks`, `Controls`, `Geography`, `Net`, `Observability`, `Security`) because those are code organization, not user-visible feature areas. See `.claude/rules/code-conventions.md` for the complete namespace list.
 
 ---
 
