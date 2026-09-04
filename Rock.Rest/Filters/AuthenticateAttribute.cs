@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -30,6 +32,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.Rest.Jwt;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Filters
 {
@@ -70,6 +74,16 @@ namespace Rock.Rest.Filters
             var principal = System.Threading.Thread.CurrentPrincipal;
             if ( principal != null && principal.Identity != null && !string.IsNullOrWhiteSpace( principal.Identity.Name ) )
             {
+                // PIN authentications are not permitted to access the REST API.
+                // A .ROCK session can never be backed by a PIN login (the login
+                // paths reject them), so this is defense-in-depth against the
+                // current user having been established as a PIN login upstream.
+                if ( IsPinAuthentication( TryGetRequestContext( actionContext )?.CurrentUser ) )
+                {
+                    actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+                    return;
+                }
+
                 // Don't call SetCurrentPerson here because it is already been
                 // set when the request first started.
                 actionContext.Request.SetUserPrincipal( principal );
@@ -136,6 +150,13 @@ namespace Rock.Rest.Filters
 
                                     if ( userLogin != null )
                                     {
+                                        // PIN authentications are not permitted to access the REST API.
+                                        if ( IsPinAuthentication( userLogin ) )
+                                        {
+                                            actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+                                            return;
+                                        }
+
                                         var identity = new GenericIdentity( userLogin.UserName );
                                         principal = new GenericPrincipal( identity, null );
                                         actionContext.Request.SetUserPrincipal( principal );
@@ -174,6 +195,13 @@ namespace Rock.Rest.Filters
                     .FirstOrDefault();
                 if ( userLogin != null )
                 {
+                    // PIN authentications are not permitted to access the REST API.
+                    if ( IsPinAuthentication( userLogin ) )
+                    {
+                        actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+                        return;
+                    }
+
                     var identity = new GenericIdentity( userLogin.UserName );
                     principal = new GenericPrincipal( identity, null );
                     actionContext.Request.SetUserPrincipal( principal );
@@ -234,6 +262,13 @@ namespace Rock.Rest.Filters
                 // If the JSON Web Token is in the header, we can determine the User from that
                 if ( userLogin != null )
                 {
+                    // PIN authentications are not permitted to access the REST API.
+                    if ( IsPinAuthentication( userLogin ) )
+                    {
+                        actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+                        return;
+                    }
+
                     var identity = new GenericIdentity( userLogin.UserName );
                     principal = new GenericPrincipal( identity, null );
                     actionContext.Request.SetUserPrincipal( principal );
@@ -291,6 +326,27 @@ namespace Rock.Rest.Filters
                 // by a UserLogin, so the current person is that user's person.
                 requestContext.SetCurrentIdentity( user?.Person, user );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified <see cref="UserLogin"/> authenticated
+        /// via <see cref="Rock.Security.Authentication.PINAuthentication"/>. PIN
+        /// logins identify a person for low-trust scenarios (e.g. check-in) and
+        /// are intentionally not permitted to access the REST API.
+        /// </summary>
+        /// <param name="userLogin">The user login to check. May be <c>null</c>.</param>
+        /// <returns><c>true</c> if the user login is a PIN authentication; otherwise <c>false</c>.</returns>
+        private static bool IsPinAuthentication( UserLogin userLogin )
+        {
+            if ( userLogin?.EntityTypeId == null )
+            {
+                return false;
+            }
+
+            var pinAuthentication = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
+            var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
+
+            return userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication?.EntityType?.Id;
         }
 
         /// <summary>

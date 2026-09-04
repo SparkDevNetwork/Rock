@@ -23,8 +23,11 @@ using System.ServiceModel.Channels;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -95,54 +98,84 @@ namespace Rock.Rest.Filters
         /// <param name="actionContext">The action context.</param>
         public override void OnActionExecuting( HttpActionContext actionContext )
         {
-            var principal = actionContext.Request.GetUserPrincipal();
-            Person person = null;
+            var person = GetPerson( actionContext );
+            var actionMethod = actionContext.Request.Method.Method;
+            var item = GetSecuredItem( actionContext, actionMethod );
+            var authorized = IsAuthorized( item, person, actionMethod, actionContext );
 
-            if ( principal != null && principal.Identity != null )
+            if ( !authorized )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    string userName = principal.Identity.Name;
-                    UserLogin userLogin = null;
-                    if ( userName.StartsWith( "rckipid=" ) )
-                    {
-                        var personService = new PersonService( rockContext );
-                        var impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ) );
-                        if ( impersonatedPerson != null )
-                        {
-                            userLogin = impersonatedPerson.GetImpersonatedUser();
-                        }
-                    }
-                    else
-                    {
-                        var userLoginService = new UserLoginService( rockContext );
-                        userLogin = userLoginService.GetByUserName( userName );
-                    }
+                actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+            }
+        }
 
-                    if ( userLogin != null )
-                    {
-                        person = userLogin.Person;
-                        var pinAuthentication = AuthenticationContainer.GetComponent( typeof( Security.Authentication.PINAuthentication ).FullName );
-
-                        // Don't allow PIN authentications.
-                        if ( userLogin.EntityTypeId != null )
-                        {
-                            var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
-                            if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication?.EntityType?.Id )
-                            {
-                                actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
-                                return;
-                            }
-                        }
-                    }
-                }
+        /// <summary>
+        /// Gets the <see cref="Person"/> that the current request is authorized as.
+        /// Returns the person already attached to the request when one is present;
+        /// otherwise resolves it from the <see cref="RockRequestContext"/> (established
+        /// earlier in the pipeline by the PersonSession resolution), caches it on the
+        /// request, and mirrors it onto the current <see cref="System.Web.HttpContext"/>
+        /// so the model save hooks can attribute changes to the correct person.
+        /// </summary>
+        /// <param name="actionContext">The context that describes the API action request.</param>
+        /// <returns>The current <see cref="Person"/>, or <c>null</c> when the request is anonymous.</returns>
+        private static Person GetPerson( HttpActionContext actionContext )
+        {
+            if ( actionContext.Request.Properties.Keys.Contains( "Person" ) )
+            {
+                return actionContext.Request.Properties["Person"] as Person;
             }
 
+            /*
+                9/4/26 - CLAUDE
+
+                Under the PersonSession model the current person is resolved earlier in
+                the pipeline - from the .ROCK cookie in Application_PostMapRequestHandler,
+                or from the apikey/JWT/OIDC credential in AuthenticateAttribute - and
+                exposed on the RockRequestContext. Sourcing it here, rather than
+                re-resolving from the request principal as this filter previously did,
+                also covers impersonation and UserToken sessions, which set CurrentPerson
+                without setting a principal. The legacy rckipid identity-name branch is
+                gone; impersonation tokens are converted to sessions by
+                PersonSessionService.ProcessImpersonationToken. The PIN-authentication
+                guard that lived here moved to AuthenticateAttribute, alongside the
+                credential resolution it protects.
+
+                Reason: Person resolution is now owned by the PersonSession pipeline.
+            */
+            var person = TryGetRequestContext( actionContext )?.CurrentPerson;
+
+            actionContext.Request.Properties.Add( "Person", person );
+
+            /* 12/12/2019 BJW
+             *
+             * Setting this current person item was only done in put, post, and patch in the ApiController
+             * class. Set it here so that it is always set for all methods, including delete. This enhances
+             * history logging done in the pre and post save model hooks (when the pre-save event is called
+             * we can access DbContext.GetCurrentPersonAlias and log who deleted the record).
+             *
+             * Task: https://app.asana.com/0/1120115219297347/1153140643799337/f
+             */
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
+
+            return person;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ISecured"/> item that authorization is checked against
+        /// for the current request. This is the matching <see cref="RestAction"/> when
+        /// one exists in the database, falling back to the <see cref="RestController"/>,
+        /// and finally to a new empty <see cref="RestController"/> when neither is found.
+        /// </summary>
+        /// <param name="actionContext">The context that describes the API action request.</param>
+        /// <param name="actionMethod">The HTTP method of the request (e.g. GET, POST) used to identify the action.</param>
+        /// <returns>The <see cref="ISecured"/> item to authorize against. Never <c>null</c>.</returns>
+        private static ISecured GetSecuredItem( HttpActionContext actionContext, string actionMethod )
+        {
             var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) actionContext.ActionDescriptor;
 
             var controller = actionContext.ActionDescriptor.ControllerDescriptor;
             var controllerClassName = controller.ControllerType.FullName;
-            var actionMethod = actionContext.Request.Method.Method;
 
             var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out Guid? restActionGuid );
             ISecured item;
@@ -167,26 +200,24 @@ namespace Rock.Rest.Filters
                 }
             }
 
-            if ( actionContext.Request.Properties.Keys.Contains( "Person" ) )
-            {
-                person = actionContext.Request.Properties["Person"] as Person;
-            }
-            else
-            {
-                actionContext.Request.Properties.Add( "Person", person );
+            return item;
+        }
 
-                /* 12/12/2019 BJW
-                 *
-                 * Setting this current person item was only done in put, post, and patch in the ApiController
-                 * class. Set it here so that it is always set for all methods, including delete. This enhances
-                 * history logging done in the pre and post save model hooks (when the pre-save event is called
-                 * we can access DbContext.GetCurrentPersonAlias and log who deleted the record).
-                 *
-                 * Task: https://app.asana.com/0/1120115219297347/1153140643799337/f
-                 */
-                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
-            }
-
+        /// <summary>
+        /// Determines whether the specified <paramref name="person"/> is authorized for
+        /// the request. When no <see cref="SecurityActions"/> were specified, the action
+        /// is inferred from the HTTP verb (GET = VIEW, all others = EDIT). The person is
+        /// authorized when they are authorized for any one of the actions. As a fallback,
+        /// a Mobile App request (identified by its headers) is authorized when the
+        /// application itself has been granted access.
+        /// </summary>
+        /// <param name="item">The <see cref="ISecured"/> item to authorize against.</param>
+        /// <param name="person">The <see cref="Person"/> to authorize, or <c>null</c> for an anonymous request.</param>
+        /// <param name="actionMethod">The HTTP method of the request, used to infer the security action when none is specified.</param>
+        /// <param name="actionContext">The context that describes the API action request.</param>
+        /// <returns><c>true</c> if the request is authorized; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorized( ISecured item, Person person, string actionMethod, HttpActionContext actionContext )
+        {
             var actions = SecurityActions;
 
             if ( actions.Count == 0 )
@@ -197,13 +228,12 @@ namespace Rock.Rest.Filters
                 actions = new[] { action };
             }
 
-            bool authorized = false;
-
             if ( actions.Any( action => item.IsAuthorized( action, person ) ) )
             {
-                authorized = true;
+                return true;
             }
-            else if ( actionContext.Request.Headers.Contains( "X-Rock-App-Id" ) && actionContext.Request.Headers.Contains( "X-Rock-Mobile-Api-Key" ) )
+
+            if ( actionContext.Request.Headers.Contains( "X-Rock-App-Id" ) && actionContext.Request.Headers.Contains( "X-Rock-Mobile-Api-Key" ) )
             {
                 // Normal authorization failed, but this is a Mobile App request so check
                 // if the application itself has been given permission.
@@ -218,16 +248,32 @@ namespace Rock.Rest.Filters
 
                         if ( appUser != null && actions.Any( action => item.IsAuthorized( action, appUser.Person ) ) )
                         {
-                            authorized = true;
+                            return true;
                         }
                     }
                 }
             }
 
-            if ( !authorized )
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="RockRequestContext"/> attached to the current
+        /// request via the <see cref="IRockRequestContextAccessor"/>, or
+        /// <c>null</c> when no service provider / accessor is available on the
+        /// request (e.g., unusual hosting scenarios).
+        /// </summary>
+        /// <param name="actionContext">The context that describes the API action request.</param>
+        /// <returns>The current <see cref="RockRequestContext"/>, or <c>null</c>.</returns>
+        private static RockRequestContext TryGetRequestContext( HttpActionContext actionContext )
+        {
+            if ( !actionContext.Request.Properties.TryGetValue( "RockServiceProvider", out var objectProvider )
+                || !( objectProvider is IServiceProvider serviceProvider ) )
             {
-                actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+                return null;
             }
+
+            return serviceProvider.GetService<IRockRequestContextAccessor>()?.RockRequestContext;
         }
     }
 }

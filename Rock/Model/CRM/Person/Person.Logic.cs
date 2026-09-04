@@ -1003,6 +1003,21 @@ namespace Rock.Model
         /// <value>
         /// Th <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </value>
+        /*
+            9/4/26 - CLAUDE
+
+            Obsoleted with the move to the PersonSession model. This method built a
+            transient, unsaved UserLogin wrapper so the old rckipid identity-name
+            branch in SecuredAttribute could treat an impersonation token like a
+            normal login. That branch is gone: impersonation tokens are now converted
+            into UserToken PersonSessions by PersonSessionService.ProcessImpersonationToken,
+            and the current person is resolved from the RockRequestContext. Removing
+            the SecuredAttribute call site left this method with no remaining callers.
+
+            Reason: Impersonation is now handled by the PersonSession pipeline.
+        */
+        [Obsolete( "Impersonation is now handled by PersonSessionService.ProcessImpersonationToken. This method is no longer used." )]
+        [RockObsolete( "20.0" )]
         public virtual UserLogin GetImpersonatedUser()
         {
             UserLogin user = new UserLogin();
