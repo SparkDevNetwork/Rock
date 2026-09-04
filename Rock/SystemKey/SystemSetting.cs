@@ -49,16 +49,22 @@ namespace Rock.SystemKey
         /// <summary>
         /// The minimum distance in miles person/family has to have moved before automatically inactivating their record
         /// </summary>
+        [Obsolete( "This setting is no longer used." )]
+        [RockObsolete( "21.0" )]
         public const string NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE = "core_MinimumMoveDistanceToInactivate";
 
         /// <summary>
         /// Should a NCOA 48 month move request change a family's address to 'previous'
         /// </summary>
+        [Obsolete( "This setting is no longer used." )]
+        [RockObsolete( "21.0" )]
         public const string NCOA_SET_48_MONTH_AS_PREVIOUS = "core_Set48monthAsPrevious";
 
         /// <summary>
         /// Should a NCOA invalid address change a family's address to 'previous'
         /// </summary>
+        [Obsolete( "This setting is no longer used." )]
+        [RockObsolete( "21.0" )]
         public const string NCOA_SET_INVALID_AS_PREVIOUS = "core-SetinvalidAsAddress";
 
         /// <summary>
