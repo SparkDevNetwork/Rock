@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
@@ -24,7 +25,8 @@ namespace Rock.ViewModels.Blocks.Crm.BulkUpdate
     /// <summary>
     /// Response payload for the GetGroupRoles block action. Carries the
     /// picked group's group type identifier (so follow-up lookups can be
-    /// scoped to the same type) plus the role options for the role dropdown.
+    /// scoped to the same type), the role options for the role dropdown, and
+    /// the default role the dropdown pre-selects.
     /// </summary>
     public class GroupRolesResponseBag
     {
@@ -32,6 +34,12 @@ namespace Rock.ViewModels.Blocks.Crm.BulkUpdate
         /// Gets or sets the unique identifier of the group's group type.
         /// </summary>
         public string GroupTypeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the group type's default role, or null when
+        /// the group type has no default role.
+        /// </summary>
+        public Guid? DefaultGroupRoleGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the role options available for the picked group.
