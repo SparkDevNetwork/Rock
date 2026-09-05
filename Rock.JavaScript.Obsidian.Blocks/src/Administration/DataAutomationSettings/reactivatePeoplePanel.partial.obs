@@ -1,0 +1,224 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack>
+        <CheckBox v-model="settings.isEnabled"
+                  label="Enable"
+                  text="Enable the automatic activating of individuals who are currently inactive and who meet any of the following selected criteria. Note: This will not include people who were inactivated for a reason that was configured to not allow automatic reactivation." />
+    </ContentStack>
+
+    <fieldset :disabled="!settings.isEnabled">
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isLastContributionEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <NumberBox v-model="settings.lastContributionPeriod"
+                           label="Any family member has made a contribution in the last"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isAttendanceInServiceGroupEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <NumberBox v-model="settings.attendanceInServiceGroupPeriod"
+                           label="Any family member has attended a group that is considered a service in the last"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isRegisteredInAnyEventEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <NumberBox v-model="settings.registeredInAnyEventPeriod"
+                           label="Any family member has registered for any event in the last"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isAttendanceInGroupTypeEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <RockLabel>Any family member has attended a group of this type in the last</RockLabel>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-6 col-md-4">
+                        <ListBox v-model="attendanceInGroupType" :items="attendanceGroupTypes" enhanceForLongLists :key="listBoxKey" />
+                    </div>
+                    <div class="col-xs-12 col-sm-6 col-md-4">
+                        <NumberBox v-model="settings.attendanceInGroupTypeDays" inputGroupClasses="input-width-md">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">days</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isSiteLoginEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <NumberBox v-model="settings.siteLoginPeriod"
+                           label="Any family member has logged into Rock in the last"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isPrayerRequestEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <NumberBox v-model="settings.prayerRequestPeriod"
+                           label="Any family member has submitted a prayer request in the last"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isPersonAttributesEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <RockLabel>Any family member has a new value for any of the following person attributes in the last</RockLabel>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-6 col-md-4">
+                        <ListBox v-model="personAttributeValues" :items="personAttributes" enhanceForLongLists :key="listBoxKey" />
+                    </div>
+                    <div class="col-xs-12 col-sm-6 col-md-4">
+                        <NumberBox v-model="settings.personAttributesDays" inputGroupClasses="input-width-md">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">days</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isInteractionsEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <RockLabel>Any family member has an interaction of the following type in the last</RockLabel>
+                <ConditionalWell>
+                    <InteractionChannelList v-model="interactions" />
+                </ConditionalWell>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isIncludeDataViewEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <DataViewPicker v-model="settings.includeDataView"
+                                label="The person is in the following data view"
+                                :entityTypeGuid="EntityType.Person" />
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isExcludeDataViewEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <DataViewPicker v-model="settings.excludeDataView"
+                                label="Exclude any person in the following data view"
+                                :entityTypeGuid="EntityType.Person" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch, WritableComputedRef } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import ListBox from "@Obsidian/Controls/listBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import InteractionChannelList from "./interactionChannelList.partial.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ReactivatePeopleSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/reactivatePeopleSettingsBag";
+    import { DataAutomationInteractionItemBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/dataAutomationInteractionItemBag";
+
+    const props = defineProps({
+        settings: {
+            type: Object as PropType<ReactivatePeopleSettingsBag>,
+            required: true
+        },
+
+        attendanceGroupTypes: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        personAttributes: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /** True when this section is expanded and its content is visible. */
+        isExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    // Bumping this key remounts the enhanced (Chosen) list boxes so jQuery
+    // Chosen initializes against a visible element.
+    const listBoxKey = ref(0);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // ListBox binds to a string array, so bridge the nullable bag properties to
+    // always-present arrays.
+    const attendanceInGroupType: WritableComputedRef<string[]> = computed({
+        get: () => props.settings.attendanceInGroupType ?? [],
+        set: (value) => props.settings.attendanceInGroupType = value
+    });
+
+    const personAttributeValues: WritableComputedRef<string[]> = computed({
+        get: () => props.settings.personAttributes ?? [],
+        set: (value) => props.settings.personAttributes = value
+    });
+
+    const interactions: WritableComputedRef<DataAutomationInteractionItemBag[]> = computed({
+        get: () => props.settings.interactions ?? [],
+        set: (value) => props.settings.interactions = value
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    // Chosen caches its hidden/disabled state at initialization, so remount the
+    // list boxes whenever the section becomes visible or its enabled state
+    // changes. This rebuilds Chosen against a shown, correctly-enabled element.
+    watch(() => [props.isExpanded, props.settings.isEnabled], () => {
+        if (props.isExpanded) {
+            nextTick(() => {
+                listBoxKey.value++;
+            });
+        }
+    });
+
+    // #endregion Watchers
+</script>

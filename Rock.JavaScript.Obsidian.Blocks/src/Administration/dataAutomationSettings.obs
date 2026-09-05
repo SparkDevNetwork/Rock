@@ -1,0 +1,263 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Data Automation Settings" titleIconCssClass="ti ti-brand-speedtest" type="block">
+        <RockForm @submit="onSave">
+            <ContentSectionContainer :sidebar="false">
+                <ContentSection :isCollapsed="true" title="General Settings" icon="ti ti-settings">
+                    <template #description>
+                        General settings used by the data automation jobs.
+                    </template>
+                    <NumberBox v-model="settings.genderAutoFillConfidence"
+                               label="Gender AutoFill Confidence"
+                               inputGroupClasses="input-width-md"
+                               :minimumValue="0"
+                               :maximumValue="100"
+                               help="The minimum confidence level required to automatically set blank genders in the Data Automation service job. If set to 0 then gender will not be automatically determined.">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">%</span>
+                        </template>
+                    </NumberBox>
+                </ContentSection>
+
+                <ContentSection v-model:isCollapsed="reactivateCollapsed" title="Reactivate People" icon="ti ti-user-check">
+                    <template #description>
+                        Automatically activate individuals who are currently inactive and who meet any of the selected criteria.
+                    </template>
+                    <template #headerActions>
+                        <span :class="statusLabelClass(reactivate.isEnabled)">{{ statusLabelText(reactivate.isEnabled) }}</span>
+                    </template>
+                    <ReactivatePeoplePanel :settings="reactivate"
+                                           :attendanceGroupTypes="config.attendanceGroupTypes ?? []"
+                                           :personAttributes="config.personAttributes ?? []"
+                                           :isExpanded="!reactivateCollapsed" />
+                </ContentSection>
+
+                <ContentSection v-model:isCollapsed="inactivateCollapsed" title="Inactivate People" icon="ti ti-user-x">
+                    <template #description>
+                        Automatically inactivate individuals who are currently active and who meet all of the selected criteria.
+                    </template>
+                    <template #headerActions>
+                        <span :class="statusLabelClass(inactivate.isEnabled)">{{ statusLabelText(inactivate.isEnabled) }}</span>
+                    </template>
+                    <InactivatePeoplePanel :settings="inactivate"
+                                           :attendanceGroupTypes="config.attendanceGroupTypes ?? []"
+                                           :personAttributes="config.personAttributes ?? []"
+                                           :isExpanded="!inactivateCollapsed" />
+                </ContentSection>
+
+                <ContentSection v-if="config.isUpdateFamilyCampusVisible" :isCollapsed="true" title="Update Family Campus" icon="ti ti-building-community">
+                    <template #description>
+                        Automatically update a family's campus when it differs from the one determined by the selected criteria.
+                    </template>
+                    <template #headerActions>
+                        <span :class="statusLabelClass(campus.isEnabled)">{{ statusLabelText(campus.isEnabled) }}</span>
+                    </template>
+                    <UpdateFamilyCampusPanel :settings="campus"
+                                             :mostAttendanceOrGivingOptions="config.mostAttendanceOrGivingOptions ?? []"
+                                             :campusChangeBasedOnOptions="config.campusChangeBasedOnOptions ?? []" />
+                </ContentSection>
+
+                <ContentSection :isCollapsed="true" title="Move Adult Children" icon="ti ti-users-group">
+                    <template #description>
+                        Automatically move children to their own new family when they become adults.
+                    </template>
+                    <template #headerActions>
+                        <span :class="statusLabelClass(adultChildren.isEnabled)">{{ statusLabelText(adultChildren.isEnabled) }}</span>
+                    </template>
+                    <MoveAdultChildrenPanel :settings="adultChildren"
+                                            :knownRelationshipGroupTypeGuid="config.knownRelationshipGroupTypeGuid" />
+                </ContentSection>
+
+                <ContentSection :isCollapsed="true" title="Update Connection Status" icon="ti ti-plug">
+                    <template #description>
+                        Automatically update a person's connection status based on data view membership.
+                    </template>
+                    <template #headerActions>
+                        <span :class="statusLabelClass(connectionStatus.isEnabled)">{{ statusLabelText(connectionStatus.isEnabled) }}</span>
+                    </template>
+                    <UpdateConnectionStatusPanel :settings="connectionStatus" />
+                </ContentSection>
+
+                <ContentSection :isCollapsed="true" title="Update Family Status" icon="ti ti-home">
+                    <template #description>
+                        Automatically update a family's status based on data view membership.
+                    </template>
+                    <template #headerActions>
+                        <span :class="statusLabelClass(familyStatus.isEnabled)">{{ statusLabelText(familyStatus.isEnabled) }}</span>
+                    </template>
+                    <UpdateFamilyStatusPanel :settings="familyStatus" />
+                </ContentSection>
+            </ContentSectionContainer>
+
+            <div class="actions d-flex align-items-center">
+                <RockButton :btnType="BtnType.Primary"
+                            type="submit"
+                            loadingText="Saving..."
+                            :isLoading="isSaving">
+                    Save
+                </RockButton>
+
+                <Transition name="data-automation-fade">
+                    <NotificationBox v-if="saveMessage" :alertType="saveAlertType" class="margin-l-md margin-b-0">
+                        {{ saveMessage }}
+                    </NotificationBox>
+                </Transition>
+            </div>
+        </RockForm>
+    </Panel>
+</template>
+
+<style scoped>
+.data-automation-fade-enter-active,
+.data-automation-fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.data-automation-fade-enter-from,
+.data-automation-fade-leave-to {
+    opacity: 0;
+}
+
+/*
+    Mute and disable a section body (labels, headings, and controls) while its
+    Enable checkbox is off. The opacity mirrors the WebForms div.aspNetDisabled
+    treatment; pointer-events also blocks interaction with the custom controls
+    (pickers, dropdowns, list boxes) that a disabled fieldset does not natively
+    disable.
+*/
+:deep(fieldset:disabled) {
+    opacity: 0.5;
+    pointer-events: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { onUnmounted, reactive, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import ReactivatePeoplePanel from "./DataAutomationSettings/reactivatePeoplePanel.partial.obs";
+    import InactivatePeoplePanel from "./DataAutomationSettings/inactivatePeoplePanel.partial.obs";
+    import UpdateFamilyCampusPanel from "./DataAutomationSettings/updateFamilyCampusPanel.partial.obs";
+    import MoveAdultChildrenPanel from "./DataAutomationSettings/moveAdultChildrenPanel.partial.obs";
+    import UpdateConnectionStatusPanel from "./DataAutomationSettings/updateConnectionStatusPanel.partial.obs";
+    import UpdateFamilyStatusPanel from "./DataAutomationSettings/updateFamilyStatusPanel.partial.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { DataAutomationSettingsInitializationBox } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/dataAutomationSettingsInitializationBox";
+    import { DataAutomationSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/dataAutomationSettingsBag";
+    import { ReactivatePeopleSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/reactivatePeopleSettingsBag";
+    import { InactivatePeopleSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/inactivatePeopleSettingsBag";
+    import { UpdateFamilyCampusSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/updateFamilyCampusSettingsBag";
+    import { MoveAdultChildrenSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/moveAdultChildrenSettingsBag";
+    import { UpdateConnectionStatusSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/updateConnectionStatusSettingsBag";
+    import { UpdateFamilyStatusSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/updateFamilyStatusSettingsBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<DataAutomationSettingsInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The settings bag is edited in place by the section partials and posted
+    // back on save.
+    const settings = reactive<DataAutomationSettingsBag>(config.settings ?? {});
+
+    // References to each section so the header status badges and the section
+    // bodies share the same underlying reactive object.
+    const reactivate = settings.reactivatePeople as ReactivatePeopleSettingsBag;
+    const inactivate = settings.inactivatePeople as InactivatePeopleSettingsBag;
+    const campus = settings.updateFamilyCampus as UpdateFamilyCampusSettingsBag;
+    const adultChildren = settings.moveAdultChildren as MoveAdultChildrenSettingsBag;
+    const connectionStatus = settings.updateConnectionStatus as UpdateConnectionStatusSettingsBag;
+    const familyStatus = settings.updateFamilyStatus as UpdateFamilyStatusSettingsBag;
+
+    // Track the collapse state of the sections that contain enhanced (Chosen)
+    // list boxes so those list boxes can re-initialize once their section is
+    // actually visible.
+    const reactivateCollapsed = ref(true);
+    const inactivateCollapsed = ref(true);
+
+    const isSaving = ref(false);
+    const saveMessage = ref("");
+    const saveAlertType = ref("success");
+
+    // Tracks the timer that fades the success confirmation away.
+    let saveMessageTimer: ReturnType<typeof setTimeout> | undefined;
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Saves every data automation setting.
+     */
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+
+        if (saveMessageTimer) {
+            clearTimeout(saveMessageTimer);
+            saveMessageTimer = undefined;
+        }
+
+        try {
+            const result = await invokeBlockAction("SaveSettings", { bag: settings });
+
+            if (result.isSuccess) {
+                saveAlertType.value = "success";
+                saveMessage.value = "Changes have been saved.";
+
+                // Fade the confirmation away after a few seconds.
+                saveMessageTimer = setTimeout(() => {
+                    saveMessage.value = "";
+                }, 3500);
+            }
+            else {
+                saveAlertType.value = "danger";
+                saveMessage.value = result.errorMessage || "An unexpected error occurred.";
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the CSS class for the section status badge.
+     *
+     * @param isEnabled Whether the section is enabled.
+     */
+    function statusLabelClass(isEnabled: boolean): string {
+        return isEnabled ? "label label-success" : "label label-warning";
+    }
+
+    /**
+     * Gets the display text for the section status badge.
+     *
+     * @param isEnabled Whether the section is enabled.
+     */
+    function statusLabelText(isEnabled: boolean): string {
+        return isEnabled ? "Enabled" : "Disabled";
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onUnmounted(() => {
+        if (saveMessageTimer) {
+            clearTimeout(saveMessageTimer);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

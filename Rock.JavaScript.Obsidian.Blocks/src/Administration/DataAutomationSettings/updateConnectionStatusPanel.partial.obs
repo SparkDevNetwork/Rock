@@ -1,0 +1,37 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack>
+        <CheckBox v-model="settings.isEnabled"
+              label="Enable"
+              text="Enable the automatic updating of connection status." />
+    </ContentStack>
+
+    <fieldset :disabled="!settings.isEnabled">
+        <RockLabel>Update Connection Status based on Data View</RockLabel>
+        <StatusDataViewList :modelValue="statusDataViews" :entityTypeGuid="EntityType.Person" :disabled="!settings.isEnabled" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import StatusDataViewList from "./statusDataViewList.partial.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { UpdateConnectionStatusSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/updateConnectionStatusSettingsBag";
+    import { StatusDataViewMappingBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/statusDataViewMappingBag";
+
+    const props = defineProps({
+        settings: {
+            type: Object as PropType<UpdateConnectionStatusSettingsBag>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const statusDataViews = computed((): StatusDataViewMappingBag[] => props.settings.statusDataViews ?? []);
+
+    // #endregion Computed Values
+</script>

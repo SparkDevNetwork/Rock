@@ -1,0 +1,162 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack>
+        <CheckBox v-model="settings.isEnabled"
+                  label="Enable"
+                  text="Enable the automatic updating of campus for families who currently have a different campus than what is determined by the following selected criteria." />
+    </ContentStack>
+
+    <fieldset :disabled="!settings.isEnabled">
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isMostFamilyAttendanceEnabled" label="" class="margin-r-sm" />
+            <div class="row flex-fill">
+                <div class="col-md-8">
+                    <NumberBox v-model="settings.mostFamilyAttendancePeriod"
+                               label="Calculate campus based on the most family attendance to a campus-specific location in the last"
+                               inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                    <NumberBox v-model="settings.timesToTriggerCampusChange"
+                               label="Minimum number of times to attend a campus before triggering a campus change"
+                               inputGroupClasses="input-width-md"
+                               :minimumValue="1">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">times</span>
+                        </template>
+                    </NumberBox>
+                </div>
+                <div class="col-md-4">
+                    <SchedulePicker v-model="excludeSchedules" label="Exclude Schedules" :multiple="true" />
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isMostFamilyGivingEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <NumberBox v-model="settings.mostFamilyGivingPeriod"
+                           label="Calculate campus based on the most family giving to a campus-specific account in the last"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+                <DropDownList v-model="mostAttendanceOrGiving"
+                              label="If the calculated campus for most attendance and most giving are different"
+                              class="input-width-lg"
+                              :items="mostAttendanceOrGivingOptions"
+                              :showBlankItem="false" />
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isIgnoreIfManualUpdateEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <NumberBox v-model="settings.ignoreIfManualUpdatePeriod"
+                           label="Ignore any family that has had a manual campus update in the last"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-start margin-b-lg">
+            <CheckBox v-model="settings.isIgnoreCampusChangesEnabled" label="" class="margin-r-sm" />
+            <div class="flex-fill">
+                <RockLabel>Ignore any update that would change the campus</RockLabel>
+
+                <div v-for="(row, index) in ignoreCampusChanges" :key="index" class="row margin-l-sm margin-b-sm form-inline">
+                    <CampusPicker v-model="row.fromCampus" label="From" class="margin-r-md input-width-lg" :includeInactive="true" :showBlankItem="true" />
+                    <CampusPicker v-model="row.toCampus" label="To" class="margin-r-md input-width-lg" :includeInactive="true" :showBlankItem="true" />
+                    <DropDownList :modelValue="row.basedOn ?? ''" label="Based On" class="margin-r-md" inputClasses="input-width-md" :items="campusChangeBasedOnOptions" :showBlankItem="false" @update:modelValue="row.basedOn = ($event as string)" />
+                    <RockButton :btnType="BtnType.Danger" :btnSize="BtnSize.ExtraSmall" class="btn-square form-action-remove" @click="onRemoveRow(index)">
+                        <i class="ti ti-x"></i>
+                    </RockButton>
+                </div>
+
+                <RockButton :btnType="BtnType.Action" :btnSize="BtnSize.ExtraSmall" class="margin-l-sm" @click="onAddRow">
+                    <i class="ti ti-circle-plus"></i>
+                </RockButton>
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, WritableComputedRef } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { UpdateFamilyCampusSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/updateFamilyCampusSettingsBag";
+    import { IgnoreCampusChangeBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/ignoreCampusChangeBag";
+
+    const props = defineProps({
+        settings: {
+            type: Object as PropType<UpdateFamilyCampusSettingsBag>,
+            required: true
+        },
+
+        mostAttendanceOrGivingOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        campusChangeBasedOnOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    // Bridge the nullable bag properties to always-present values for the controls.
+    const excludeSchedules: WritableComputedRef<ListItemBag[]> = computed({
+        get: () => props.settings.excludeSchedules ?? [],
+        set: (value) => props.settings.excludeSchedules = value
+    });
+
+    const mostAttendanceOrGiving: WritableComputedRef<string> = computed({
+        get: () => props.settings.mostAttendanceOrGiving ?? "",
+        set: (value) => props.settings.mostAttendanceOrGiving = value
+    });
+
+    const ignoreCampusChanges = computed((): IgnoreCampusChangeBag[] => props.settings.ignoreCampusChanges ?? []);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Adds a new, empty ignore campus change rule.
+     */
+    function onAddRow(): void {
+        if (!props.settings.ignoreCampusChanges) {
+            props.settings.ignoreCampusChanges = [];
+        }
+
+        props.settings.ignoreCampusChanges.push({ fromCampus: null, toCampus: null, basedOn: "" });
+    }
+
+    /**
+     * Removes the ignore campus change rule at the specified index.
+     *
+     * @param index The index of the rule to remove.
+     */
+    function onRemoveRow(index: number): void {
+        props.settings.ignoreCampusChanges?.splice(index, 1);
+    }
+
+    // #endregion Event Handlers
+</script>
