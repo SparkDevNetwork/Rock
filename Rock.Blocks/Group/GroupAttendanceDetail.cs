@@ -1269,14 +1269,25 @@ namespace Rock.Blocks.Group
                 return new List<ListItemBag>();
             }
 
-            var groupLocationSchedules = new GroupLocationService( rockContext )
+            var groupLocationSchedulesQuery = new GroupLocationService( rockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Where( gl => gl.Group.Guid == bag.GroupGuid.Value )
                 .Where( gl => gl.Location.Guid == bag.LocationGuid.Value )
                 .Where( gl => gl.Schedules.Any() )
                 .SelectMany( gl => gl.Schedules )
-                .Where( s => s.IsActive )
+                .Where( s => s.IsActive );
+
+            // The scheduled date picker sets the schedule along with the date, so when a schedule was supplied by
+            // page parameter only offer that schedule's dates. Otherwise picking a date could change a pinned schedule.
+            var pinnedScheduleId = this.ScheduleIdPageParameter;
+
+            if ( pinnedScheduleId.HasValue )
+            {
+                groupLocationSchedulesQuery = groupLocationSchedulesQuery.Where( s => s.Id == pinnedScheduleId.Value );
+            }
+
+            var groupLocationSchedules = groupLocationSchedulesQuery
                 .OrderBy( s => s.Name )
                 .Distinct()
                 .ToList();
@@ -1465,48 +1476,26 @@ namespace Rock.Blocks.Group
                     OccurrenceDate = this.DateSelectionMode != DateSelectionModeSpecifier.PickFromSchedule ? occurrence.OccurrenceDate : ( DateTimeOffset? )null
                 } ) );
 
-            if ( occurrenceData.IsSpecificOccurrence )
+            box.AttendanceOccurrenceDate = occurrenceData.AttendanceOccurrence.OccurrenceDate.Date;
+
+            // A date supplied by page parameter, or an occurrence requested by id or guid, fixes the date. Otherwise
+            // the block setting governs it, even when a location or schedule was supplied by page parameter.
+            if ( occurrenceData.SearchParameters.IsDatePinned )
             {
-                box.AttendanceOccurrenceDate = occurrenceData.AttendanceOccurrence.OccurrenceDate.Date;
                 box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.Readonly;
-
-                if ( occurrence.Location != null )
-                {
-                    box.LocationGuid = occurrence.Location.Guid;
-                    box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.Readonly;
-                    box.LocationLabel = new LocationService( rockContext ).GetPath( occurrence.Location.Id );
-                }
-                else
-                {
-                    box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.None;
-                }
-
-                if ( occurrence.Schedule != null )
-                {
-                    box.ScheduleGuid = occurrence.Schedule.Guid;
-                    box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.Readonly;
-                    box.ScheduleLabel = occurrence.Schedule.ToString();
-                }
-                else
-                {
-                    box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.None;
-                }
             }
-            // The individual is not looking at a specific occurrence, so let them choose a date, location, and schedule.
             else
             {
-                box.AttendanceOccurrenceDate = occurrenceData.AttendanceOccurrence.OccurrenceDate.Date;
                 switch ( this.DateSelectionMode )
                 {
                     case DateSelectionModeSpecifier.DatePicker:
-                        // If there are no date query parameters then show a date picker.
                         box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.DatePicker;
                         break;
                     case DateSelectionModeSpecifier.CurrentDate:
-                        if ( occurrenceData.AttendanceOccurrence.Location != null && groupLocationScheduleDates.Value.Any() )
+                        if ( occurrenceData.AttendanceOccurrence.Location != null && !occurrenceData.SearchParameters.IsSchedulePinned && groupLocationScheduleDates.Value.Any() )
                         {
-                            // There is a location, and schedules for the group, location, and current date,
-                            // so show a scheduled date picker.
+                            // There is a location with schedules meeting today and the schedule is not pinned,
+                            // so let the individual choose which schedule today's attendance is for.
                             box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker;
                         }
                         else
@@ -1521,9 +1510,15 @@ namespace Rock.Blocks.Group
                             // so show a scheduled date picker.
                             box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.ScheduledDatePicker;
                         }
+                        else if ( occurrence.Location != null )
+                        {
+                            // The chosen location has no scheduled dates to offer, so show the date read-only
+                            // rather than the free date picker this mode was configured to avoid.
+                            box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.Readonly;
+                        }
                         else if ( groupLocations.Value.Any() )
                         {
-                            // If are locations to choose from, then hide the date picker.
+                            // No location has been chosen yet, so hide the date picker until one is.
                             box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.None;
                         }
                         else
@@ -1533,7 +1528,24 @@ namespace Rock.Blocks.Group
                         }
                         break;
                 }
+            }
 
+            if ( occurrenceData.SearchParameters.IsLocationPinned )
+            {
+                if ( occurrence.Location != null )
+                {
+                    box.LocationGuid = occurrence.Location.Guid;
+                    box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.Readonly;
+                    box.LocationLabel = new LocationService( rockContext ).GetPath( occurrence.Location.Id );
+                }
+                else
+                {
+                    box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.None;
+                }
+            }
+            // The location was not pinned, so let the individual choose one.
+            else
+            {
                 if ( groupLocations.Value.Any() )
                 {
                     box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.GroupLocationPicker;
@@ -1554,7 +1566,24 @@ namespace Rock.Blocks.Group
                         box.LocationSelectionMode = GroupAttendanceDetailLocationSelectionMode.Readonly;
                     }
                 }
+            }
 
+            if ( occurrenceData.SearchParameters.IsSchedulePinned )
+            {
+                if ( occurrence.Schedule != null )
+                {
+                    box.ScheduleGuid = occurrence.Schedule.Guid;
+                    box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.Readonly;
+                    box.ScheduleLabel = occurrence.Schedule.ToString();
+                }
+                else
+                {
+                    box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.None;
+                }
+            }
+            // The schedule was not pinned, so let the individual choose one from the location's schedules.
+            else
+            {
                 if ( groupLocationSchedules.Value.Any() )
                 {
                     box.ScheduleSelectionMode = GroupAttendanceDetailScheduleSelectionMode.GroupLocationSchedulePicker;
@@ -2052,7 +2081,8 @@ namespace Rock.Blocks.Group
             {
                 var occurrenceData = new OccurrenceData()
                 {
-                    Group = searchParameters.Group
+                    Group = searchParameters.Group,
+                    SearchParameters = searchParameters
                 };
 
                 if ( occurrenceData.IsAuthorizedGroupNotFoundError )
@@ -2095,12 +2125,20 @@ namespace Rock.Blocks.Group
                     ScheduleId = _block.ScheduleIdPageParameter ?? group?.ScheduleId,
                 };
 
-                occurrenceDataSearchParameters.IsSpecificSearch =
-                    ( _block.DatePageParameter ?? _block.OccurrencePageParameter ).HasValue
-                    || _block.LocationIdPageParameter.HasValue
-                    || _block.ScheduleIdPageParameter.HasValue
-                    || attendanceOccurrenceGuid.HasValue
+                // Each page parameter pins only its own field. Requesting a particular occurrence by id or guid pins
+                // all three, since its date, location, and schedule identify it. This reflects what was requested,
+                // not whether that occurrence exists.
+                var isParticularOccurrenceRequested = attendanceOccurrenceGuid.HasValue
                     || _block.OccurrenceIdPageParameter.HasValue;
+
+                occurrenceDataSearchParameters.IsDatePinned = isParticularOccurrenceRequested
+                    || ( _block.DatePageParameter ?? _block.OccurrencePageParameter ).HasValue;
+
+                occurrenceDataSearchParameters.IsLocationPinned = isParticularOccurrenceRequested
+                    || _block.LocationIdPageParameter.HasValue;
+
+                occurrenceDataSearchParameters.IsSchedulePinned = isParticularOccurrenceRequested
+                    || _block.ScheduleIdPageParameter.HasValue;
 
                 // If overrides are allowed, then use the overrides.
                 if ( searchParameterOverrides != null && !_block.IsNewAttendanceDateAdditionRestricted )
@@ -2351,7 +2389,6 @@ namespace Rock.Blocks.Group
                     // If we have a valid occurrence return it now (the date, location, schedule cannot be changed for an existing occurrence).
                     if ( attendanceOccurrence != null )
                     {
-                        occurrenceData.IsSpecificOccurrence = attendanceOccurrenceSearchParameters.IsSpecificSearch;
                         occurrenceData.AttendanceOccurrence = attendanceOccurrence;
                         return;
                     }
@@ -2372,7 +2409,6 @@ namespace Rock.Blocks.Group
                     // If we have a valid occurrence return it now (the date, location, schedule cannot be changed for an existing occurrence).
                     if ( attendanceOccurrence != null )
                     {
-                        occurrenceData.IsSpecificOccurrence = attendanceOccurrenceSearchParameters.IsSpecificSearch;
                         occurrenceData.AttendanceOccurrence = attendanceOccurrence;
                         return;
                     }
@@ -2405,7 +2441,6 @@ namespace Rock.Blocks.Group
 
                 if ( attendanceOccurrence != null )
                 {
-                    occurrenceData.IsSpecificOccurrence = attendanceOccurrenceSearchParameters.IsSpecificSearch;
                     occurrenceData.AttendanceOccurrence = attendanceOccurrence;
                     return;
                 }
@@ -2452,7 +2487,6 @@ namespace Rock.Blocks.Group
                         _attendanceOccurrenceService.Add( attendanceOccurrence );
                     }
 
-                    occurrenceData.IsSpecificOccurrence = attendanceOccurrenceSearchParameters.IsSpecificSearch;
                     occurrenceData.AttendanceOccurrence = attendanceOccurrence;
                     return;
                 }
@@ -2518,7 +2552,10 @@ namespace Rock.Blocks.Group
 
             public bool IsNewOccurrence => AttendanceOccurrence?.Id == 0;
 
-            public bool IsSpecificOccurrence { get; set; }
+            /// <summary>
+            /// The search parameters this occurrence was resolved from, including which fields the request pinned.
+            /// </summary>
+            public AttendanceOccurrenceSearchParameters SearchParameters { get; set; }
 
             public bool IsNoAttendanceOccurrencesError => !IsAuthorizedGroupNotFoundError && AttendanceOccurrence == null;
 
@@ -2551,9 +2588,19 @@ namespace Rock.Blocks.Group
             public int? ScheduleId { get; set; }
 
             /// <summary>
-            /// If true, then the individual is trying to load a specific occurrence via page parameters by id, guid, date, location, and/or schedule.
+            /// If true, then the request pinned the occurrence date and it cannot be changed.
             /// </summary>
-            public bool IsSpecificSearch { get; internal set; }
+            public bool IsDatePinned { get; internal set; }
+
+            /// <summary>
+            /// If true, then the request pinned the occurrence location and it cannot be changed.
+            /// </summary>
+            public bool IsLocationPinned { get; internal set; }
+
+            /// <summary>
+            /// If true, then the request pinned the occurrence schedule and it cannot be changed.
+            /// </summary>
+            public bool IsSchedulePinned { get; internal set; }
         }
 
         /// <summary>

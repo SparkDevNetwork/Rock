@@ -29,9 +29,6 @@ export type NoteTypeBag = {
     /** Gets or sets the criteria for AI to automatically approve notes.  */
     aiApprovalGuidelines?: string | null;
 
-    /** Gets or sets the AI provider to use for AI approvals. */
-    aiProvider?: ListItemBag | null;
-
     /** Gets or sets a value indicating whether attachments are allowed for this note type. */
     allowsAttachments: boolean;
 

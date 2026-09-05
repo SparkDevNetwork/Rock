@@ -131,11 +131,11 @@ catch
 
 ## Enums
 
-- New enums go in the **`Rock.Enums`** project under the appropriate domain namespace.
-- **File:** `Rock.Enums/[Domain]/EnumName.cs`
-- **Namespace:** `Rock.Model`
-- **Required:** `[Enums.EnumDomain( "Domain" )]` attribute.
-- Enums in `Rock.Model` that could collide with entity names should use the `*Specifier` suffix (e.g., `GroupTypeSpecifier`).
+- New enums go in the **`Rock.Enums`** project under the appropriate domain folder.
+- **File:** `Rock.Enums/[Domain]/EnumName.cs`. Nested sub-domains are fine (e.g., `Rock.Enums/Blocks/Security/Login/LoginMethod.cs`).
+- **Namespace:** match the folder — `Rock.Enums.[Domain]` (e.g., `Rock.Enums.Blocks.Security.Login`). Do **not** use `Rock.Model`; that is a legacy holdover from where enums lived before they were moved into the `Rock.Enums` project.
+- **`[Enums.EnumDomain( "Domain" )]` attribute:** only for the legacy enums still declared in the `Rock.Model` namespace, where the namespace does not convey the domain. New enums in a `Rock.Enums.[Domain]` namespace must **not** carry it — the namespace already carries the domain. Do not add it to new enums, and do not add it when moving an enum into a `Rock.Enums.*` namespace.
+- Enums whose name could collide with an entity name should use the `*Specifier` suffix (e.g., `GroupTypeSpecifier`).
 
 ---
 

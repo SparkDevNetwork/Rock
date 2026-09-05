@@ -22,6 +22,8 @@ namespace Rock.Attribute
     /// Attribute to specify AI Provider field.
     /// </summary>
     /// <seealso cref="Rock.Attribute.FieldAttribute" />
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public class AIProviderFieldAttribute : FieldAttribute
     {
         /// <summary>

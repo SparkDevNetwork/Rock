@@ -29,6 +29,7 @@ internal class ConfigureAgentServices : Plugin.IConfigureServices
     /// <inheritdoc/>
     public void ConfigureServices( IServiceCollection services )
     {
+        services.AddSingleton<AI.TextProcessingService, TextProcessingServiceImplementation>();
         services.AddScoped<ChatAgentBuilder, ChatAgentBuilderImplementation>();
         services.AddSingleton<IMcpServer, McpServer>();
     }

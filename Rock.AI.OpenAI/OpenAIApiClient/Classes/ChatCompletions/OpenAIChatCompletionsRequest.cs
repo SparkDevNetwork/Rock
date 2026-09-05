@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,6 +29,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
     /// <summary>
     /// The Request object for a chat completion.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIChatCompletionsRequest
     {
         /// <summary>
@@ -40,7 +43,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// The prompt for the completion.
         /// </summary>
         [JsonProperty( "messages" )]
-        public List<OpenAIChatCompletionsRequestMessage> Messages { get; set; } = new List<OpenAIChatCompletionsRequestMessage>();
+        public List<OpenAIChatCompletionsRequestMessage> Messages { get; set; } = [];
 
         /// <summary>
         /// Max Tokens to allow. For now we'll default this to be the max size.

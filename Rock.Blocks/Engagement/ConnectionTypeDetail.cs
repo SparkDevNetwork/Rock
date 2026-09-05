@@ -21,7 +21,11 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.AI;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Connection;
@@ -118,7 +122,7 @@ namespace Rock.Blocks.Engagement
             var options = new ConnectionTypeDetailOptionsBag
             {
                 ConnectionTypeOptions = connectionTypes,
-                HasActiveAIProvider = AIProviderCache.All( RockContext ).Any( a => a.IsActive ),
+                HasActiveAIProvider = RockApp.Current.GetRequiredService<TextProcessingService>().IsAvailable,
                 PersonNoteTypeItems = personNoteTypeItems,
                 OpportunityConnectionRequestAttributeKeys = GetOpportunityConnectionRequestAttributeKeys( currentConnectionTypeId )
             };

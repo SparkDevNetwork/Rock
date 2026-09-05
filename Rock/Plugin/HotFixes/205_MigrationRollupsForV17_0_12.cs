@@ -2377,6 +2377,7 @@ WHERE a.[Guid] = @entityTypeCategoryDetailAttributeGuid
 
         private void AIAutomationAttributesUp()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             Sql( $@"
 DECLARE @categoryEntityTypeId INT = (SELECT Id FROM EntityType WHERE [Guid] = '{SystemGuid.EntityType.CATEGORY}');
 DECLARE @prayerRequestEntityTypeId INT = (SELECT Id FROM EntityType WHERE [Guid] = '{SystemGuid.EntityType.PRAYER_REQUEST}');
@@ -2520,6 +2521,7 @@ WHERE a.[Guid] IN (
 		WHERE ex.AttributeId = a.Id
 			AND ex.CategoryId = @aiAutomationsCategoryId
 	)" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private PrayerRequest.PrayerRequestAICompletions PrayerRequestAICompletionTemplate()
@@ -2666,6 +2668,7 @@ Respond with ONLY a JSON object in the following format:
 
         private void AIAutomationAttributesDown()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             Sql( $@"
 DECLARE @aiProviderAttributeGuid NVARCHAR(40) = '{SystemGuid.Attribute.AI_AUTOMATION_AI_PROVIDER}';
 DECLARE @aiTextEnhancementAttributeGuid NVARCHAR(40) = '{SystemGuid.Attribute.AI_AUTOMATION_TEXT_ENHANCEMENT}';
@@ -2690,6 +2693,7 @@ WHERE [Guid] IN (
 	@aiPublicAppropriatenessAttributeGuid,
 	@aiChildCategoriesInheritAttributeGuid
 )" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         #endregion

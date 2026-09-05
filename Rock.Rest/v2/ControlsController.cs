@@ -715,6 +715,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+        [RockObsolete( "21.0" )]
         [Rock.SystemGuid.RestActionGuid( "A9403C3A-E66F-4051-B857-30B89C3A65B3" )]
         public IActionResult AIProviderPickerGetAIProviders( [FromBody] AIProviderPickerGetAIProviderOptionsBag options )
         {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -77,7 +77,7 @@ namespace Rock.Reporting
         /// <param name="report">The report to build a query for.</param>
         /// <param name="rockContext">The context to query against.</param>
         /// <param name="useAttributePersistedTextValues">When <c>true</c>, attribute columns return their persisted display text instead of the raw stored value.</param>
-        /// <param name="sortByFieldId">The <see cref="ReportField.Id"/> to sort by, or <c>null</c> to use the report's own saved sort.</param>
+        /// <param name="sortByFieldId">The <c>ReportField.Id</c> to sort by, or <c>null</c> to use the report's own saved sort.</param>
         /// <param name="sortDescending">When sorting by <paramref name="sortByFieldId"/>, whether to sort descending.</param>
         /// <returns>The classified selections and the entity query.</returns>
         /// <exception cref="RockReportException">The report has no resolvable entity type, or produced no query.</exception>
