@@ -29,7 +29,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
     /// <summary>
     /// Allows you to view and edit an existing contact.
     /// </summary>
-    [DisplayName( "My Contact" )]
+    [DisplayName( "My Contacts" )]
     [Category( "Engagement" )]
     [IconCssClass( "ti ti-user-circle" )]
     [Description( "Allows you to view and edit an existing contact." )]
