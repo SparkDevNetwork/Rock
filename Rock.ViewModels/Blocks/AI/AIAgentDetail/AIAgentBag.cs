@@ -72,6 +72,13 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public bool IsExcludingSystemSkills { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this agent is part of the
+        /// Rock core system. System agents cannot be deleted and their
+        /// instructions cannot be modified.
+        /// </summary>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
         /// The friendly name of the agent that will be used to identify it in the UI.
         /// </summary>
         public string Name { get; set; }
