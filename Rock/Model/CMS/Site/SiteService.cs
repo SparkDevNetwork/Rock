@@ -35,6 +35,14 @@ namespace Rock.Model
     public partial class SiteService
     {
         /// <summary>
+        /// The Guid of the platform-managed mobile application site. Editing of this site is blocked
+        /// through the entire admin UI/API because it is created and maintained exclusively by platform
+        /// plugin migrations. See <see cref="IsSiteEditRestrict(Site)"/>.
+        /// </summary>
+        private static readonly Guid PlatformMobileApplicationGuid = new Guid( Rock.SystemGuid.Site.PLATFORM_MOBILE_APPLICATION );
+
+
+        /// <summary>
         /// Returns a collection of <see cref="Rock.Model.Site"/> entities that by their Default <see cref="Rock.Model.Page">Page's</see> PageId.
         /// </summary>
         /// <param name="defaultPageId">An <see cref="System.Int32"/> containing the Id of the default <see cref="Rock.Model.Page"/> to search by. This
@@ -116,8 +124,7 @@ namespace Rock.Model
         /// <returns><c>true</c> if the site is the platform-managed application; otherwise <c>false</c>.</returns>
         public static bool IsSiteEditRestrict( Site site )
         {
-            //return site != null && site.Guid == PlatformMobileApplicationGuid;
-            return false;
+            return site != null && site.Guid == PlatformMobileApplicationGuid;
         }
 
         /// <summary>
@@ -128,8 +135,7 @@ namespace Rock.Model
         /// <returns><c>true</c> if the site is the platform-managed application; otherwise <c>false</c>.</returns>
         public static bool IsSiteEditRestrict( SiteCache site )
         {
-            //return site != null && site.Guid == PlatformMobileApplicationGuid;
-            return false;
+            return site != null && site.Guid == PlatformMobileApplicationGuid;
         }
 
         #region Mobile Site Deployment

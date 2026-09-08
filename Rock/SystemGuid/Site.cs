@@ -40,5 +40,12 @@ namespace Rock.SystemGuid
         /// The next generation check-in site guid.
         /// </summary>
         public const string NEXT_GEN_CHECK_IN = "BFBB35BD-D0B0-459E-9329-B082CE4F253E";
+
+        /// <summary>
+        /// The platform-managed mobile application site guid. This site is created and maintained
+        /// exclusively by platform plugin migrations, so it is the same in every church database and
+        /// is locked from all admin-UI editing. See <see cref="Rock.Model.SiteService.IsSiteEditRestrict(Rock.Model.Site)"/>.
+        /// </summary>
+        public const string PLATFORM_MOBILE_APPLICATION = "23B51BD6-912D-4269-B7F9-75A7B1ED7DB6";
     }
 }
