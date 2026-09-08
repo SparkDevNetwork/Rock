@@ -66,6 +66,10 @@ internal sealed partial class LavaApplicationBuilderSkill
         var application = endpoint.LavaApplication;
         var endpointId = endpoint.Id;
 
+        // Auth rows reference the endpoint by loose id and would otherwise
+        // survive it as orphans.
+        DeleteSkillOwnedRules( rockContext, endpoint.TypeId, endpoint.Id );
+
         new LavaEndpointService( rockContext ).Delete( endpoint );
 
         helper.SaveChangesIfNoErrors();

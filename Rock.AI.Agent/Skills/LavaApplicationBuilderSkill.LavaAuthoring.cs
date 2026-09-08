@@ -425,19 +425,77 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     }
 
     /// <summary>
-    /// Determines whether the application carries any execute-view rules the
-    /// skill does not own. Once an administrator has authored their own
+    /// Determines whether the entity carries any rules for the action that
+    /// the skill does not own. Once an administrator has authored their own
     /// rules, the audience belongs to them and the skill must not rewrite it.
     /// </summary>
     /// <param name="rockContext">The context to read the rules from.</param>
-    /// <param name="application">The application whose rules are inspected.</param>
+    /// <param name="entityTypeId">The entity type of the secured entity.</param>
+    /// <param name="entityId">The identifier of the secured entity.</param>
+    /// <param name="action">The authorization action whose rules are inspected.</param>
     /// <returns><c>true</c> when a rule without the skill's provenance stamp exists.</returns>
-    private static bool HasHandAuthoredReadRules( RockContext rockContext, LavaApplication application )
+    private static bool HasHandAuthoredRules( RockContext rockContext, int entityTypeId, int entityId, string action )
     {
         return new AuthService( rockContext )
-            .GetAuths( application.TypeId, application.Id, LavaApplication.EXECUTE_VIEW )
+            .GetAuths( entityTypeId, entityId, action )
             .ToList()
             .Any( a => a.ForeignKey != AgentProvenanceKey );
+    }
+
+    /// <summary>
+    /// Describes the audience the skill has rigged for an action, from the
+    /// allow rules it owns, so a read tool can report who may execute
+    /// without the agent having to remember the create-time result.
+    /// </summary>
+    /// <param name="rockContext">The context to read the rules from.</param>
+    /// <param name="entityTypeId">The entity type of the secured entity.</param>
+    /// <param name="entityId">The identifier of the secured entity.</param>
+    /// <param name="action">The authorization action whose rules are described.</param>
+    /// <returns>One phrase per skill-owned allow rule, in rule order. Empty when the skill has rigged nothing.</returns>
+    private static List<string> GetAudienceDescriptions( RockContext rockContext, int entityTypeId, int entityId, string action )
+    {
+        return new AuthService( rockContext )
+            .GetAuths( entityTypeId, entityId, action )
+            .Where( a => a.ForeignKey == AgentProvenanceKey && a.AllowOrDeny == "A" )
+            .OrderBy( a => a.Order )
+            .Select( a => new { a.SpecialRole, GroupName = a.Group != null ? a.Group.Name : null } )
+            .ToList()
+            .Select( a =>
+            {
+                if ( a.SpecialRole == SpecialRole.AllUsers )
+                {
+                    return "everyone, including anonymous visitors";
+                }
+
+                if ( a.SpecialRole == SpecialRole.AllAuthenticatedUsers )
+                {
+                    return "anyone who is logged in";
+                }
+
+                return $"members of the '{a.GroupName}' security role";
+            } )
+            .ToList();
+    }
+
+    /// <summary>
+    /// Removes every authorization rule the skill wrote for an entity that
+    /// is being deleted. Auth rows are tied to their entity by loose id, so
+    /// nothing else removes them and they would otherwise linger as orphans.
+    /// Rules a person authored are left for Rock's own cleanup.
+    /// </summary>
+    /// <param name="rockContext">The context to delete the rules with. The caller saves.</param>
+    /// <param name="entityTypeId">The entity type of the entity being deleted.</param>
+    /// <param name="entityId">The identifier of the entity being deleted.</param>
+    private static void DeleteSkillOwnedRules( RockContext rockContext, int entityTypeId, int entityId )
+    {
+        var authService = new AuthService( rockContext );
+
+        var skillOwnedRules = authService
+            .Get( entityTypeId, entityId )
+            .Where( a => a.ForeignKey == AgentProvenanceKey )
+            .ToList();
+
+        authService.DeleteRange( skillOwnedRules );
     }
 
     /*
@@ -463,19 +521,22 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     */
 
     /// <summary>
-    /// Replaces the skill-owned execute-view rules on the application with
-    /// one allow rule per resolved audience, leaving any person-authored
-    /// rules untouched.
+    /// Replaces the skill-owned rules for one action on an entity with one
+    /// allow rule per resolved audience, leaving any person-authored rules
+    /// untouched. Used for an application's ExecuteView and for an
+    /// endpoint's Execute.
     /// </summary>
     /// <param name="rockContext">The context to write the rules with.</param>
-    /// <param name="application">The application being rigged. Must already be saved.</param>
-    /// <param name="grants">The audiences to grant execute-view to. Must contain at least one grant.</param>
-    private static void SetApplicationReadAudience( RockContext rockContext, LavaApplication application, List<AudienceGrant> grants )
+    /// <param name="entityTypeId">The entity type of the secured entity.</param>
+    /// <param name="entityId">The identifier of the secured entity, which must already be saved.</param>
+    /// <param name="action">The authorization action being rigged.</param>
+    /// <param name="grants">The audiences to grant the action to. Must contain at least one grant.</param>
+    private static void SetAudienceRules( RockContext rockContext, int entityTypeId, int entityId, string action, List<AudienceGrant> grants )
     {
         var authService = new AuthService( rockContext );
 
         var skillOwnedRules = authService
-            .GetAuths( application.TypeId, application.Id, LavaApplication.EXECUTE_VIEW )
+            .GetAuths( entityTypeId, entityId, action )
             .ToList()
             .Where( a => a.ForeignKey == AgentProvenanceKey )
             .ToList();
@@ -499,10 +560,10 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         {
             authService.Add( new Auth
             {
-                EntityTypeId = application.TypeId,
-                EntityId = application.Id,
+                EntityTypeId = entityTypeId,
+                EntityId = entityId,
                 Order = order++,
-                Action = LavaApplication.EXECUTE_VIEW,
+                Action = action,
                 AllowOrDeny = "A",
                 SpecialRole = grant.SpecialRole,
                 GroupId = grant.GroupId,
@@ -517,10 +578,10 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         {
             authService.Add( new Auth
             {
-                EntityTypeId = application.TypeId,
-                EntityId = application.Id,
+                EntityTypeId = entityTypeId,
+                EntityId = entityId,
                 Order = order,
-                Action = LavaApplication.EXECUTE_VIEW,
+                Action = action,
                 AllowOrDeny = "D",
                 SpecialRole = SpecialRole.AllUsers,
                 ForeignKey = AgentProvenanceKey
@@ -532,7 +593,7 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         // The authorization dictionary caches rules per action and does not
         // observe direct AuthService writes, so refresh it the way the
         // Authorization helpers themselves do.
-        Authorization.RefreshAction( application.TypeId, application.Id, LavaApplication.EXECUTE_VIEW, rockContext );
+        Authorization.RefreshAction( entityTypeId, entityId, action, rockContext );
     }
 
     /// <summary>
@@ -900,9 +961,10 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     /// AddOrUpdateLavaApplication: the application itself plus a summarized
     /// list of its endpoints, templates excluded.
     /// </summary>
+    /// <param name="rockContext">The context to read the rigged audiences from.</param>
     /// <param name="application">The application to describe.</param>
     /// <returns>The detail result.</returns>
-    private LavaApplicationDetailResult CreateApplicationDetailResult( LavaApplication application )
+    private LavaApplicationDetailResult CreateApplicationDetailResult( RockContext rockContext, LavaApplication application )
     {
         var endpoints = application.LavaEndpoints
             .OrderBy( e => e.Slug )
@@ -913,6 +975,9 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                 Method = e.HttpMethod.ToString(),
                 Name = e.Name,
                 SecurityMode = e.SecurityMode.ToString(),
+                Audiences = e.SecurityMode == LavaEndpointSecurityMode.EndpointExecute
+                    ? GetAudienceDescriptions( rockContext, e.TypeId, e.Id, Authorization.EXECUTE )
+                    : null,
                 IsActive = e.IsActive,
                 Url = GetEndpointUrl( application.Slug, e.Slug )
             } )
@@ -926,6 +991,7 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             ApplicationSlug = application.Slug,
             Description = application.Description,
             IsActive = application.IsActive,
+            ReadAudiences = GetAudienceDescriptions( rockContext, application.TypeId, application.Id, LavaApplication.EXECUTE_VIEW ),
             Endpoints = endpoints
         };
     }

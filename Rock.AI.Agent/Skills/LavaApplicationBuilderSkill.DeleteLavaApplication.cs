@@ -92,6 +92,15 @@ internal sealed partial class LavaApplicationBuilderSkill
         var endpointService = new LavaEndpointService( rockContext );
         var deletedEndpointCount = application.LavaEndpoints.Count;
 
+        // Auth rows reference their entity by loose id and would otherwise
+        // survive the delete as orphans. Only the skill's own rules go.
+        foreach ( var endpoint in application.LavaEndpoints )
+        {
+            DeleteSkillOwnedRules( rockContext, endpoint.TypeId, endpoint.Id );
+        }
+
+        DeleteSkillOwnedRules( rockContext, application.TypeId, application.Id );
+
         endpointService.DeleteRange( application.LavaEndpoints.ToList() );
         applicationService.Delete( application );
 

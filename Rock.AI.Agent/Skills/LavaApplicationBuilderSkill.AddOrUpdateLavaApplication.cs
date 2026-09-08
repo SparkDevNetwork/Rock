@@ -149,7 +149,7 @@ internal sealed partial class LavaApplicationBuilderSkill
                 // Once an administrator has authored their own execute-view
                 // rules, the audience belongs to them; rewriting it here
                 // would silently undo a decision made in the admin pages.
-                if ( hasAudiences && HasHandAuthoredReadRules( rockContext, application ) )
+                if ( hasAudiences && HasHandAuthoredRules( rockContext, application.TypeId, application.Id, LavaApplication.EXECUTE_VIEW ) )
                 {
                     helper.AddError( $"An administrator has added their own security rules to the '{application.Slug}' Lava application, so its audience cannot be changed here. Ask the user to adjust the ExecuteView rules through the Lava Applications admin pages." );
                 }
@@ -233,10 +233,10 @@ internal sealed partial class LavaApplicationBuilderSkill
         // and rigging failures surface as the tool call's own exception.
         if ( audienceGrants != null )
         {
-            SetApplicationReadAudience( rockContext, application, audienceGrants );
+            SetAudienceRules( rockContext, application.TypeId, application.Id, LavaApplication.EXECUTE_VIEW, audienceGrants );
         }
 
-        var result = Success( CreateApplicationDetailResult( application ) )
+        var result = Success( CreateApplicationDetailResult( rockContext, application ) )
             .WithHistoryContent( new LavaApplicationReferenceResult
             {
                 Id = application.Id,

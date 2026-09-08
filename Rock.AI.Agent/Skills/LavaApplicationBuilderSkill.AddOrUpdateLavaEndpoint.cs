@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -24,6 +25,7 @@ using Rock.Cms;
 using Rock.Configuration;
 using Rock.Enums.Cms;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
@@ -82,6 +84,7 @@ internal sealed partial class LavaApplicationBuilderSkill
     [AgentUsage( "testExecution.isSuccess means only that Lava rendered without an exception. It does not mean expected records were returned, that option items match a control's required shape, or that a JSON success flag is true. State the expected test outcome first, inspect testExecution.output and verificationWarnings, and correct unexpected empty collections or business failures before using the endpoint." )]
     [AgentUsage( "Do not save a placeholder endpoint whose normal valid-input path always returns success false, not implemented, or instructions to research later. Research and implement the real boundary before saving it. If a concrete blocker remains, preserve working state and report that exact blocker." )]
     [AgentUsage( "Enabling RockEntityModify or RockEntityDelete turns automatic test execution off because running it would perform real writes. This is an expected safety constraint, not a failed or unverifiable build and not a reason to stop. Keep write endpoints small, put read and option logic in separate RockEntity-only endpoints that can be tested, inspect the write against the retrieved contracts and domain behavior, then verify it through the safest available real workflow." )]
+    [AgentUsage( "By default an endpoint inherits the application's read audience (ApplicationView). When one endpoint must be callable by a narrower or different set of people than the rest of the application, for example a write endpoint only leaders may call, pass definition.audiences with one or more values ('Public', 'AllAuthenticatedPeople', or exact security role names, mapped with ResolveAudience). That switches the endpoint to EndpointExecute and writes its own Execute rules. In EndpointExecute mode nobody outside the listed audiences can call it, Rock Administrators included, so add the administrator's role if they need to test it." )]
     [AgentToolGuid( "5F1E8C29-A47B-4D63-B905-E26A1D79F4C8" )]
     public AgentToolResult AddOrUpdateLavaEndpoint(
         [Description( "The slug of the Lava application the endpoint belongs to. Reuse one slug per dashboard so all of its endpoints group under one application." )]
@@ -90,7 +93,7 @@ internal sealed partial class LavaApplicationBuilderSkill
         [Description( "The slug of the endpoint to add or update." )]
         string endpointSlug,
 
-        [Description( "The definition of the endpoint: its Lava template, HTTP method, security mode, enabled Lava commands and content type. On an update, omitted fields are left unchanged." )]
+        [Description( "The definition of the endpoint: its Lava template, HTTP method, security mode, optional endpoint-specific audiences, enabled Lava commands and content type. On an update, omitted fields are left unchanged." )]
         LavaEndpointDefinition definition,
 
         [Description( "Why raw SQL is unavoidable. Required only when definition.enabledLavaCommands includes 'Sql', and only after the user explicitly approved it." )]
@@ -133,6 +136,39 @@ internal sealed partial class LavaApplicationBuilderSkill
         if ( !TryGetSecurityMode( definition?.SecurityMode, out var securityMode, out var securityModeError ) )
         {
             helper.AddError( securityModeError );
+        }
+
+        /*
+            9/8/2026 - CLAUDE
+
+            Endpoint-level audiences exist for the endpoint whose callers
+            differ from the rest of its application: the one write endpoint
+            in a dashboard everyone on staff can read. They only mean
+            anything in EndpointExecute mode, because the application modes
+            never consult the endpoint's own rules, so passing them together
+            with a different explicit mode is a contradiction the caller has
+            to resolve rather than something to guess at. When no mode is
+            given, audiences imply EndpointExecute.
+
+            Reason: Per-endpoint security without a silent mode change.
+        */
+        var hasEndpointAudiences = definition?.Audiences?.Any( a => a.IsNotNullOrWhiteSpace() ) == true;
+        List<AudienceGrant> endpointAudienceGrants = null;
+
+        if ( hasEndpointAudiences )
+        {
+            if ( definition.SecurityMode.IsNotNullOrWhiteSpace() && securityMode != LavaEndpointSecurityMode.EndpointExecute )
+            {
+                helper.AddError( $"definition.audiences only applies when the endpoint answers for itself, but securityMode was set to {securityMode}. Either omit securityMode (audiences implies EndpointExecute) or omit audiences and let the application's security govern." );
+            }
+            else if ( TryResolveAudiences( rockContext, definition.Audiences, out endpointAudienceGrants, out var endpointAudienceError ) )
+            {
+                securityMode = LavaEndpointSecurityMode.EndpointExecute;
+            }
+            else
+            {
+                helper.AddError( endpointAudienceError );
+            }
         }
 
         if ( !TryGetHttpMethod( definition?.HttpMethod, out var method, out var httpMethodError ) )
@@ -232,13 +268,23 @@ internal sealed partial class LavaApplicationBuilderSkill
                 return helper.ErrorResult;
             }
 
+            // Once an administrator has authored their own Execute rules on
+            // the endpoint, the audience belongs to them; rewriting it here
+            // would silently undo a decision made in the admin pages.
+            if ( hasEndpointAudiences && HasHandAuthoredRules( rockContext, endpoint.TypeId, endpoint.Id, Authorization.EXECUTE ) )
+            {
+                helper.AddError( $"An administrator has added their own Execute security rules to the '{endpointSlug}' endpoint, so its audiences cannot be changed here. Ask the user to adjust them through the Lava Applications admin pages." );
+
+                return helper.ErrorResult;
+            }
+
             endpoint.CodeTemplate = codeTemplate;
 
             // Security mode, commands and content type are left alone when
             // the definition does not mention them, so a template-only edit
             // cannot quietly change who is allowed to run the endpoint or
-            // what it may do.
-            if ( definition.SecurityMode.IsNotNullOrWhiteSpace() )
+            // what it may do. Audiences imply EndpointExecute.
+            if ( definition.SecurityMode.IsNotNullOrWhiteSpace() || hasEndpointAudiences )
             {
                 endpoint.SecurityMode = securityMode;
             }
@@ -269,6 +315,13 @@ internal sealed partial class LavaApplicationBuilderSkill
         if ( helper.HasErrors )
         {
             return helper.ErrorResult;
+        }
+
+        // The endpoint has to be saved before it can be rigged, because the
+        // Auth rows reference its Id.
+        if ( endpointAudienceGrants != null )
+        {
+            SetAudienceRules( rockContext, endpoint.TypeId, endpoint.Id, Authorization.EXECUTE, endpointAudienceGrants );
         }
 
         var url = GetEndpointUrl( application.Slug, endpoint.Slug );
@@ -335,9 +388,13 @@ internal sealed partial class LavaApplicationBuilderSkill
             message promising administrators access they do not have sends
             the user to the wrong fix.
         */
-        if ( isNewEndpoint && endpoint.SecurityMode == LavaEndpointSecurityMode.EndpointExecute )
+        if ( endpointAudienceGrants != null )
         {
-            result.WithInstructions( $"The '{endpoint.Slug}' endpoint uses the EndpointExecute security mode and has no authorization rules, so nobody can call it yet, administrators included. Either grant Execute on the endpoint through the Lava Applications admin pages, or call AddOrUpdateLavaEndpoint again with the definition's securityMode set to ApplicationView so it defers to the application. Tell the user this before they test the page, because the call will fail with a 401 rather than an error they can read." );
+            result.WithInstructions( $"The '{endpoint.Slug}' endpoint now answers for itself (EndpointExecute) and can be executed by {DescribeAudienceGrants( endpointAudienceGrants )}. The application's audience does not apply to it, and in this mode Rock Administrators and Lava Application Developers are not automatically allowed either: an administrator outside these audiences gets a 401. If the user needs to test it as themselves, add their role to definition.audiences. To change the audiences later, call this tool again with a new list; it replaces the current one." );
+        }
+        else if ( isNewEndpoint && endpoint.SecurityMode == LavaEndpointSecurityMode.EndpointExecute )
+        {
+            result.WithInstructions( $"The '{endpoint.Slug}' endpoint uses the EndpointExecute security mode and has no authorization rules, so nobody can call it yet, administrators included. Either call AddOrUpdateLavaEndpoint again with definition.audiences naming who may call it, grant Execute on the endpoint through the Lava Applications admin pages, or set the definition's securityMode to ApplicationView so it defers to the application. Tell the user this before they test the page, because the call will fail with a 401 rather than an error they can read." );
         }
 
         // A write endpoint left in ApplicationView mode is runnable by the
@@ -353,7 +410,7 @@ internal sealed partial class LavaApplicationBuilderSkill
             && endpoint.SecurityMode == LavaEndpointSecurityMode.ApplicationView
             && IsWriteCapable( endpoint.EnabledLavaCommands ) )
         {
-            result.WithInstructions( $"The '{endpoint.Slug}' endpoint can write data but uses the ApplicationView security mode, so everyone in the application's read audience can trigger its writes. If the read audience is broader than the people who should write, call AddOrUpdateLavaEndpoint again with the definition's securityMode set to ApplicationEdit, and tell the user that ApplicationEdit endpoints are callable only by Rock Administrators and Lava Application Developers until an administrator grants ExecuteEdit rights on the application." );
+            result.WithInstructions( $"The '{endpoint.Slug}' endpoint can write data but uses the ApplicationView security mode, so everyone in the application's read audience can trigger its writes. If the read audience is broader than the people who should write, call AddOrUpdateLavaEndpoint again with definition.audiences naming the roles that may call this endpoint (which switches it to EndpointExecute), or set the definition's securityMode to ApplicationEdit and tell the user that ApplicationEdit endpoints are callable only by Rock Administrators and Lava Application Developers until an administrator grants ExecuteEdit rights on the application." );
         }
 
         // Only when this call is what asked for SQL: on a new endpoint that

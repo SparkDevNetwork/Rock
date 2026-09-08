@@ -65,7 +65,7 @@ internal sealed partial class LavaApplicationBuilderSkill
             return helper.ErrorResult;
         }
 
-        return Success( CreateApplicationDetailResult( application ) )
+        return Success( CreateApplicationDetailResult( rockContext, application ) )
             .WithHistoryContent( new LavaApplicationReferenceResult
             {
                 Id = application.Id,

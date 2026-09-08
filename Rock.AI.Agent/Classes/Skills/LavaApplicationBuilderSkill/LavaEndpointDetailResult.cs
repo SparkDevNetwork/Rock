@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
+
 namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 
 /// <summary>
@@ -60,6 +62,13 @@ internal class LavaEndpointDetailResult
     /// How the endpoint authorizes execution.
     /// </summary>
     public string SecurityMode { get; set; }
+
+    /// <summary>
+    /// Who may execute this endpoint when it answers for itself
+    /// (EndpointExecute mode), as rigged by this skill. <c>null</c> in the
+    /// application modes, where the application's audience governs.
+    /// </summary>
+    public List<string> Audiences { get; set; }
 
     /// <summary>
     /// The MIME content type the endpoint's response declares.

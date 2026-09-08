@@ -49,6 +49,14 @@ internal class LavaApplicationDetailResult : EntityResultBase
     public bool IsActive { get; set; }
 
     /// <summary>
+    /// Who may execute the application's ApplicationView endpoints, as
+    /// rigged by this skill. Empty when the skill has not set a read
+    /// audience, in which case only Rock Administrators and Lava
+    /// Application Developers can call them.
+    /// </summary>
+    public List<string> ReadAudiences { get; set; }
+
+    /// <summary>
     /// The endpoints the application contains, summarized. Read one in full
     /// with GetLavaEndpoint.
     /// </summary>
