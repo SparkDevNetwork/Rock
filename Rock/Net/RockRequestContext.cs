@@ -956,7 +956,7 @@ namespace Rock.Net
                     // eager-loads a large object graph for person context entities when loading
                     // via Id, Guid or IdKey.
                     // https://github.com/SparkDevNetwork/Rock/blob/59123107b3ce4d38331a22c8d869fc8aeb1611c7/Rock/Web/UI/RockPage.cs#L3054
-                    var personService = new PersonService( new RockContext() );
+                    var personService = new PersonService( RockApp.Current.CreateRockContext() );
                     var eagerQry = personService
                         .GetQueryableByKey( entityKey, allowIntegerIdentifier )
                         .Include( p => p.MaritalStatusValue )
@@ -1442,7 +1442,7 @@ namespace Rock.Net
                 segmentFilterCookieData = new Personalization.SegmentFilterCookieData();
                 segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
-                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                var segmentIdKeys = new PersonalizationSegmentService( RockApp.Current.CreateRockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 

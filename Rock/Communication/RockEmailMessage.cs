@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -210,7 +211,7 @@ namespace Rock.Communication
         /// <param name="systemGuid">The system communication unique identifier.</param>
         public RockEmailMessage( Guid systemGuid ) : this()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemGuid );
 

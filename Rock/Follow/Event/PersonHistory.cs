@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -117,7 +118,7 @@ namespace Rock.Follow.Event
                     //
                     // Populate all the other random variables we need for processing.
                     //
-                    PersonAlias targetPersonAlias = new PersonAliasService( new RockContext() ).Get( targetPersonGuid.AsGuid() );
+                    PersonAlias targetPersonAlias = new PersonAliasService( RockApp.Current.CreateRockContext() ).Get( targetPersonGuid.AsGuid() );
                     DateTime daysBackDate = RockDateTime.Now.AddDays( -daysBack );
                     var person = personAlias.Person;
                     int personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
@@ -127,7 +128,7 @@ namespace Rock.Follow.Event
                     // Start building the basic query. We want all History items that are for
                     // people objects and use the Demographic Changes category.
                     //
-                    var qry = new HistoryService( new RockContext() ).Queryable()
+                    var qry = new HistoryService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( h => h.EntityTypeId == personEntityTypeId && h.EntityId == person.Id && h.CategoryId == categoryId );
 
                     //

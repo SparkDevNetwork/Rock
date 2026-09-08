@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalyticsDimFinancialAccountsController"/> class.
         /// </summary>
-        public AnalyticsDimFinancialAccountsController() : base( new Rock.Model.AnalyticsDimFinancialAccountService( new Rock.Data.RockContext() ) ) { } 
+        public AnalyticsDimFinancialAccountsController() : base( new Rock.Model.AnalyticsDimFinancialAccountService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

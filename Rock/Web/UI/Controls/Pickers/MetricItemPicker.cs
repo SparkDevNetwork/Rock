@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -188,7 +189,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var metric = new MetricService( new RockContext() ).Get( ItemId.AsInteger() );
+            var metric = new MetricService( RockApp.Current.CreateRockContext() ).Get( ItemId.AsInteger() );
             SetValue( metric );
         }
 
@@ -197,7 +198,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var metrics = new MetricService( new RockContext() ).Queryable().Where( m => ItemIds.Contains( m.Id.ToString() ) );
+            var metrics = new MetricService( RockApp.Current.CreateRockContext() ).Queryable().Where( m => ItemIds.Contains( m.Id.ToString() ) );
             this.SetValues( metrics );
         }
     }

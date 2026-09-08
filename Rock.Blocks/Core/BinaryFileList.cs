@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -153,7 +154,7 @@ namespace Rock.Blocks.Core
         {
             if ( _binaryFileType == null && Guid.TryParse( GetAttributeValue( AttributeKey.BinaryFileType ), out var binaryFileTypeGuid ) )
             {
-                var service = new BinaryFileTypeService( new RockContext() );
+                var service = new BinaryFileTypeService( RockApp.Current.CreateRockContext() );
                 _binaryFileType = service.Get( binaryFileTypeGuid );
             }
 
@@ -218,7 +219,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new BinaryFileService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

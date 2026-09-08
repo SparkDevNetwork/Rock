@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Model;
@@ -62,7 +63,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new NotificationMessageListInitializationBox
                 {
@@ -222,7 +223,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetMessages( GetMessagesRequestBag request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return ActionOk( new GetMessagesResponseBag
                 {
@@ -244,7 +245,7 @@ namespace Rock.Blocks.Core
                 return ActionForbidden( "Must be logged in to perform this action." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var messageService = new NotificationMessageService( rockContext );
                 var message = messageService
@@ -303,7 +304,7 @@ namespace Rock.Blocks.Core
                 return ActionForbidden( "Must be logged in to perform this action." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var (ids, guids) = GetIdsOrGuidsForKeys( request.IdKeys, !PageCache.Layout.Site.DisablePredictableIds );
                 var messageService = new NotificationMessageService( rockContext );
@@ -384,7 +385,7 @@ namespace Rock.Blocks.Core
                 return ActionForbidden( "Must be logged in to perform this action." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var messageService = new NotificationMessageService( rockContext );
                 var message = messageService

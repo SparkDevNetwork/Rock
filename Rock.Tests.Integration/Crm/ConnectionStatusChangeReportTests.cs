@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.Data;
 using Rock.Tests.Integration.TestData.Crm;
@@ -74,7 +75,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void FilterByCampus_MatchesExist_ShouldReturnPeopleInMatchedCampusOnly()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Get an unfiltered report and verify that it contains records for Campus "Main".
             // This establishes the baseline for the test.
@@ -105,7 +106,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void FilterByCurrentYear_MatchesExist_ShouldReturnChangesInCurrentYearOnly()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var baselineReport = GetBaselineReport( dataContext );
 
             // Get an unfiltered report and verify that it contains records for this year and previous years.
@@ -133,7 +134,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void FilterByStatus_OriginalAndUpdatedStatusSpecified_ShouldReturnMatchingStatusesOnly()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -170,7 +171,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void FilterByStatus_OriginalStatusIsUnspecified_ShouldReturnAllStatuses()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -203,7 +204,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void FilterByStatus_UpdatedStatusUnspecified_ShouldReturnAllStatuses()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -244,7 +245,7 @@ namespace Rock.Tests.Integration.Crm
             // Run a series of monthly reports throughout the year to test performance for various time periods.
             for ( int i = 1; i <= 12; i++ )
             {
-                var dataContext = new RockContext();
+                var dataContext = RockApp.Current.CreateRockContext();
 
                 periodStart = periodStart.AddMonths( monthsToInclude * -1 );
 

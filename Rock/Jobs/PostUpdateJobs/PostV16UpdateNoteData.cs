@@ -24,6 +24,7 @@ using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Configuration;
 
 namespace Rock.Jobs
 {
@@ -69,7 +70,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );
@@ -88,7 +89,7 @@ namespace Rock.Jobs
         /// </summary>
         private void UpdateNoteTypeColor()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400 );
 
@@ -117,7 +118,7 @@ namespace Rock.Jobs
             int? firstId;
             int? lastId;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400 );
 

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="InteractiveExperienceScheduleCampusController"/> class.
         /// </summary>
-        public InteractiveExperienceScheduleCampusController() : base( new Rock.Model.InteractiveExperienceScheduleCampusService( new Rock.Data.RockContext() ) ) { } 
+        public InteractiveExperienceScheduleCampusController() : base( new Rock.Model.InteractiveExperienceScheduleCampusService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -182,7 +183,7 @@ function() {
 
                 var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
 
-                var groupTypeRoles = new GroupTypeRoleService( new RockContext() ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
+                var groupTypeRoles = new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
 
                 bool? groupStatus = null;
                 if ( selectionValues.Length >= 4 )
@@ -230,7 +231,7 @@ function() {
             var groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
             groupTypePicker.CssClass = "js-grouptype-picker";
@@ -291,7 +292,7 @@ function() {
             if ( groupTypeId.HasValue )
             {
                 cblRole.Items.Clear();
-                foreach ( var item in new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupTypeId.Value ) )
+                foreach ( var item in new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).GetByGroupTypeId( groupTypeId.Value ) )
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
@@ -359,7 +360,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 Guid groupTypeGuid = selectionValues[0].AsGuid();
-                var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid );
+                var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( groupTypeGuid );
                 var groupTypePicker = ( controls[0] as GroupTypePicker );
                 if ( groupType != null )
                 {

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="RelatedEntitiesController"/> class.
         /// </summary>
-        public RelatedEntitiesController() : base( new Rock.Model.RelatedEntityService( new Rock.Data.RockContext() ) ) { } 
+        public RelatedEntitiesController() : base( new Rock.Model.RelatedEntityService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

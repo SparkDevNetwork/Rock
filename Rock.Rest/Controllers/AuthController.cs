@@ -18,6 +18,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -128,7 +129,7 @@ namespace Rock.Rest.Controllers
             bool isAuthenticatedFromToken;
             UserLogin userLogin;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 if ( loginParameters.Authorization.IsNotNullOrWhiteSpace() )

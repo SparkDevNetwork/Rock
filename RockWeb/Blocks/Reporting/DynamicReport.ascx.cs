@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -220,7 +221,7 @@ namespace RockWeb.Blocks.Reporting
         protected void ShowFilters( bool setSelection )
         {
             nbFiltersError.Visible = false;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
 
             var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
@@ -399,7 +400,7 @@ namespace RockWeb.Blocks.Reporting
                                     {
                                         // if the format of the filter.Selection has changed, update the dataViewFilter's Selection to match the current format
                                         filter.Selection = normalizedSelection;
-                                        using ( var updateSelectionContext = new RockContext() )
+                                        using ( var updateSelectionContext = RockApp.Current.CreateRockContext() )
                                         {
                                             var dataViewFilter = new DataViewFilterService( updateSelectionContext ).Get( filter.Id );
                                             dataViewFilter.Selection = normalizedSelection;
@@ -503,7 +504,7 @@ namespace RockWeb.Blocks.Reporting
             // when saving.
             var preferences = GetBlockPersonPreferences();
 
-            var dataViewFilterService = new DataViewFilterService( new RockContext() );
+            var dataViewFilterService = new DataViewFilterService( RockApp.Current.CreateRockContext() );
             foreach ( var filterControl in phFilters.ControlsOfTypeRecursive<FilterField>() )
             {
                 string selectionKey = $"{filterControl.DataViewFilterGuid:N}_Selection";
@@ -568,7 +569,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindReportGrid( bool isCommunication = false )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
             var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
             var personIdField = this.GetAttributeValue( "PersonIdField" );
@@ -646,7 +647,7 @@ namespace RockWeb.Blocks.Reporting
             pnlConfigure.Visible = true;
 
             Guid? reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
-            int? reportId = reportGuid != null ? new ReportService( new RockContext() ).GetId( reportGuid.Value ) : null;
+            int? reportId = reportGuid != null ? new ReportService( RockApp.Current.CreateRockContext() ).GetId( reportGuid.Value ) : null;
 
             rpReport.SetValue( reportId );
             txtResultsTitle.Text = this.GetAttributeValue( "ResultsTitle" );
@@ -721,7 +722,7 @@ namespace RockWeb.Blocks.Reporting
             this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
             this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
 
-            Guid? reportGuid = rpReport.SelectedValueAsId().HasValue ? new ReportService( new RockContext() ).GetGuid( rpReport.SelectedValueAsId().Value ) : null;
+            Guid? reportGuid = rpReport.SelectedValueAsId().HasValue ? new ReportService( RockApp.Current.CreateRockContext() ).GetGuid( rpReport.SelectedValueAsId().Value ) : null;
             this.SetAttributeValue( "Report", reportGuid.ToString() );
             this.SetAttributeValue( "PersonIdField", ddlPersonIdField.SelectedValue );
             SaveAttributeValues();
@@ -750,7 +751,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         protected void BindDataFiltersGrid()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
 
             var reportId = rpReport.SelectedValueAsId();

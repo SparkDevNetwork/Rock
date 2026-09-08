@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Web.Cache;
@@ -85,7 +86,7 @@ namespace Rock.Follow
             foreach (var component in MEFComponents )
             {
                 var EventComponentEntityType = component.Value.EntityType;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     Rock.Attribute.Helper.UpdateAttributes( EventComponentEntityType.GetEntityType(), FollowingEventTypeEntityType.Id, "EntityTypeId", EventComponentEntityType.Id.ToString(), rockContext );
                 }

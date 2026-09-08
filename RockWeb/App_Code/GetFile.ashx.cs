@@ -58,7 +58,7 @@ namespace RockWeb
                     int? fileId = IdHasher.Instance.GetId( fileIdKey );
                     if ( fileId.HasValue )
                     {
-                        return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileId.Value );
+                        return new BinaryFileService( RockApp.Current.CreateRockContext() ).BeginGet( cb, context, fileId.Value );
                     }
                 }
 
@@ -66,7 +66,7 @@ namespace RockWeb
                 if ( !string.IsNullOrEmpty( fileGuidString ) )
                 {
                     Guid fileGuid = new Guid( fileGuidString );
-                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileGuid );
+                    return new BinaryFileService( RockApp.Current.CreateRockContext() ).BeginGet( cb, context, fileGuid );
                 }
 
             }
@@ -77,11 +77,11 @@ namespace RockWeb
 
                 if ( fileGuid != Guid.Empty )
                 {
-                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileGuid );
+                    return new BinaryFileService( RockApp.Current.CreateRockContext() ).BeginGet( cb, context, fileGuid );
                 }
                 else if ( fileId != 0 )
                 {
-                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileId );
+                    return new BinaryFileService( RockApp.Current.CreateRockContext() ).BeginGet( cb, context, fileId );
                 }
             }
 
@@ -101,7 +101,7 @@ namespace RockWeb
             {
                 context.Response.Clear();
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 bool requiresViewSecurity;
                 BinaryFile binaryFile = new BinaryFileService( rockContext ).EndGet( result, context, out requiresViewSecurity );

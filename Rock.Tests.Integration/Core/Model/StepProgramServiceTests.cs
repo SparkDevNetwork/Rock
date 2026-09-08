@@ -4,6 +4,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -40,7 +41,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static void CreateTestPeople()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personAliasService = new PersonAliasService( rockContext );
 
@@ -128,7 +129,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static void CreateTestStepProgram()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var stepProgramService = new StepProgramService( rockContext );
             var personService = new PersonService( rockContext );
 
@@ -310,7 +311,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             TestDataHelper.DeletePersonByGuid( PersonGuids );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepService = new StepService( rockContext );
                 var stepQuery = stepService.Queryable().Where( s => s.ForeignKey == ForeignKey );
@@ -318,7 +319,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepProgramService = new StepProgramService( rockContext );
                 var stepProgramQuery = stepProgramService.Queryable().Where( sp => sp.ForeignKey == ForeignKey );
@@ -360,7 +361,7 @@ namespace Rock.Tests.Integration.Core.Model
             var startDate = new DateTime( 2019, 1, 1 );
             var endDate = new DateTime( 2019, 2, 4 );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new StepProgramService( rockContext );
             var stepProgram = service.Queryable().Where( sp => sp.ForeignKey == ForeignKey ).First();
 

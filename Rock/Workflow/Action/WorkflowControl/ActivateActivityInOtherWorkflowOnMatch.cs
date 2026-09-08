@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -91,7 +92,7 @@ namespace Rock.Workflow.Action
             var entityType = EntityTypeCache.Get( typeof( Rock.Model.Workflow ) );
 
             // Use new context so only changes made to the activity by this action are persisted
-            using ( var newRockContext = new RockContext() )
+            using ( var newRockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowIds = new AttributeValueService( newRockContext )
                 .Queryable()

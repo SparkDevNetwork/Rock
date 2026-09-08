@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Reporting;
 using Rock.Field;
@@ -319,7 +320,7 @@ namespace Rock.Reporting.DataFilter.Group
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.AddCssClass( "js-group-type-picker" );
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
             if ( filterMode == FilterMode.SimpleFilter )

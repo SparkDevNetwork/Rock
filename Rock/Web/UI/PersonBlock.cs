@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tasks;
@@ -53,7 +54,7 @@ namespace Rock.Web.UI
 
                 if ( personKey.IsNotNullOrWhiteSpace() )
                 {
-                    Person = new PersonService( new RockContext() ).Get( personKey, !RockPage.Site.DisablePredictableIds );
+                    Person = new PersonService( RockApp.Current.CreateRockContext() ).Get( personKey, !RockPage.Site.DisablePredictableIds );
                     Person?.LoadAttributes();
                 }
 

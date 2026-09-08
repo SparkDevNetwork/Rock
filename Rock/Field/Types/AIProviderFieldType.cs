@@ -21,6 +21,7 @@ using System.Web.UI;
 #endif
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -90,7 +91,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new AIProviderService( rockContext ).Get( guid.Value );
             }
 

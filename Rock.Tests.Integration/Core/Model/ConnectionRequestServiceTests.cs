@@ -4,6 +4,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -99,7 +100,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         /// </summary>
         private static void CreateTestCampuses()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var campusService = new CampusService( rockContext );
 
             var firstCampus = CampusCache.All().First();
@@ -126,7 +127,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             TestDataHelper.DeletePersonByGuid( new List<Guid> { SimonSandsPersonGuidString.AsGuid(),
                 BarryBopPersonGuidString.AsGuid(), KathyKolePersonGuidString.AsGuid(), JerryJenkinsPersonGuidString.AsGuid() } );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Changed order of delete operations. Is it always the second person?
 
@@ -139,7 +140,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 ForeignKey = ForeignKey
             };
 
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
             PersonService.SaveNewPerson( personKathyKole, rockContext );
             rockContext.SaveChanges();
 
@@ -151,7 +152,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 ForeignKey = ForeignKey
             };
 
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
             PersonService.SaveNewPerson( personSimonSands, rockContext );
             rockContext.SaveChanges();
 
@@ -163,7 +164,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 ForeignKey = ForeignKey
             };
 
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
             PersonService.SaveNewPerson( personJerryJenkins, rockContext );
             rockContext.SaveChanges();
 
@@ -178,7 +179,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
 
             //try
             //{
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
             PersonService.SaveNewPerson( personBarryBop, rockContext );
             rockContext.SaveChanges();
             //}
@@ -205,7 +206,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         /// </summary>
         private static void CreateTestConnectorGroups()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectorGroupService = new ConnectionOpportunityConnectorGroupService( rockContext );
             var personAliasService = new PersonAliasService( rockContext );
             var groupTypeCache = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_SERVING_TEAM );
@@ -262,7 +263,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         /// </summary>
         private static void CreateTestConnectionTypes()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionTypeService = new ConnectionTypeService( rockContext );
 
             var typeCareTeamGuid = CareTeamConnectionTypeGuidString.AsGuid();
@@ -384,7 +385,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         /// </summary>
         private static void CreateTestWorkflowTriggers()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionWorkflowService = new ConnectionWorkflowService( rockContext );
             var workflowTypeService = new WorkflowTypeService( rockContext );
             var firstWorkflowTypeId = workflowTypeService.Queryable().FirstOrDefault()?.Id ?? 0;
@@ -420,7 +421,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         /// </summary>
         private static void CreateTestPermissions()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var authService = new AuthService( rockContext );
 
             authService.Add( new Auth
@@ -477,7 +478,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             var campusIds = CampusCache.All().Select( c => c.Id as int? ).ToList();
             campusIds.Add( null );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
             var connectionRequestService = new ConnectionRequestService( rockContext );
 
@@ -636,7 +637,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 YouthProgramConnectionTypeGuidString.AsGuid()
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
             var activityQuery = connectionRequestActivityService.Queryable().Where( cra => typeGuids.Contains( cra.ConnectionOpportunity.ConnectionType.Guid ) );
@@ -720,7 +721,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void CanConnect_RequiredPlacementNotMet()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
             var result = service.CanConnect(
                 new ConnectionRequestViewModel
@@ -744,7 +745,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void CanConnect_RequiredPlacementMet()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.CanConnect(
@@ -769,7 +770,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void CanConnect_NotRequiredPlacementActive()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.CanConnect(
@@ -794,7 +795,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void CanConnect_NotRequiredPlacementInactive()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.CanConnect(
@@ -822,7 +823,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void DoesStatusChangeCauseWorkflows_AlphaToBravo()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusAlphaId, CareTeamStatusBravoId );
@@ -840,7 +841,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void DoesStatusChangeCauseWorkflows_BravoToAlpha()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusBravoId, CareTeamStatusAlphaId );
@@ -858,7 +859,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void DoesStatusChangeCauseWorkflows_BravoToCharlie()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusBravoId, CareTeamStatusCharlieId );
@@ -876,7 +877,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void DoesStatusChangeCauseWorkflows_AlphaToCharlie()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusAlphaId, CareTeamStatusCharlieId );
@@ -894,7 +895,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void DoesStatusChangeCauseWorkflows_CharlieToAlpha()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusCharlieId, CareTeamStatusAlphaId );
@@ -912,7 +913,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void DoesStatusChangeCauseWorkflows_BravoToAlpha_PrayerPartner()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityPrayerPartnerId, CareTeamStatusBravoId, CareTeamStatusAlphaId );
@@ -930,7 +931,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void DoesStatusChangeCauseWorkflows_BravoToCharlie_PrayerPartner()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityPrayerPartnerId, CareTeamStatusBravoId, CareTeamStatusCharlieId );
@@ -953,7 +954,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_MaxRequestsPerCol()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var args = new ConnectionRequestViewModelQueryArgs { };
@@ -988,7 +989,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_AuthDeniesOpportunity()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var args = new ConnectionRequestViewModelQueryArgs { };
@@ -1016,7 +1017,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_EnableRequestSecurityAllowsAssigned()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var args = new ConnectionRequestViewModelQueryArgs { };
@@ -1050,7 +1051,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_GlobalConnector()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var args = new ConnectionRequestViewModelQueryArgs { };
@@ -1080,7 +1081,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_CampusConnector()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
             var campusId = CampusCache.Get( SecondCampusGuidString ).Id;
 
@@ -1112,7 +1113,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_FiltersStates()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var expectedState = ConnectionState.Active;
@@ -1150,7 +1151,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_FiltersPastDueOnly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var args = new ConnectionRequestViewModelQueryArgs
@@ -1200,7 +1201,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_FiltersConnectors()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
 
             var expectedConnector = PersonAliasKathyKoleId;
@@ -1236,7 +1237,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_FiltersDateRange()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
             var expectedYear = 2001;
 
@@ -1273,7 +1274,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_FiltersRequester()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
             var expectedRequester = PersonAliasJerryJenkinsId;
 
@@ -1308,7 +1309,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_FiltersStatus()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
             var expectedStatus = CareTeamStatusCharlieId;
 
@@ -1345,7 +1346,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         [TestMethod]
         public void GetConnectionBoardStatusViewModels_FiltersCampus()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
             var expectedCampusId = CampusCache.Get( SecondCampusGuidString ).Id;
 

@@ -23,6 +23,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -64,7 +65,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( true, true )]
         public void GetQueuedShouldNeverIncludeSentCommunications( bool includeFuture, bool includePendingApproval )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var stopwatch = Stopwatch.StartNew();
@@ -83,7 +84,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( true )]
         public void GetQueuedShouldIncludeOnlyApprovedCommunications( bool includeFuture )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var stopwatch = Stopwatch.StartNew();
@@ -101,7 +102,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( true )]
         public void GetQueuedShouldIncludeApprovedAndPendingApprovalCommunications( bool includeFuture )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var stopwatch = Stopwatch.StartNew();
@@ -121,7 +122,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( true, true )]
         public void GetQueuedShouldIncludeCommunicationsWithListGroupIdsButNoRecipients( bool includeFuture, bool includePendingApproval )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var stopwatch = Stopwatch.StartNew();
@@ -147,7 +148,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( true, true )]
         public void GetQueuedShouldIncludeCommunicationsWithOnlyRecipientsAndListGroupIds( bool includeFuture, bool includePendingApproval )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var stopwatch = Stopwatch.StartNew();
@@ -168,7 +169,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( true )]
         public void GetQueuedShouldOnlyIncludeCommunicationsWithCorrectReviewedDate( bool includePending )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var stopwatch = Stopwatch.StartNew();
@@ -192,7 +193,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( true )]
         public void GetQueuedShouldOnlyIncludeCommunicationsWithCorrectReviewedDateAndFutureDate( bool includePending )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var stopwatch = Stopwatch.StartNew();
@@ -231,7 +232,7 @@ namespace Rock.Tests.Integration.Core.Model
                 beginWindow = beginWindow.AddDays( 1 );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 communicationService.AddRange( communications );
@@ -248,7 +249,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static int GetNewPersonAlias()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personGuid = Guid.NewGuid();
                 var person = new Person
@@ -284,7 +285,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static int GetListGroupId()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupGuid = Guid.NewGuid();
                 var group = new Group

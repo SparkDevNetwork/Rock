@@ -18,6 +18,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Lms;
 
@@ -284,7 +285,7 @@ namespace Rock.Model
                 else
                 {
                     return this.LearningClassId > 0 ?
-                        new LearningClassService( new Data.RockContext() ).Get( this.LearningClassId ) :
+                        new LearningClassService( RockApp.Current.CreateRockContext() ).Get( this.LearningClassId ) :
                         base.ParentAuthority;
                 }
             }

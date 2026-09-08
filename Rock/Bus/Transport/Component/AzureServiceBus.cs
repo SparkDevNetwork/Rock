@@ -22,6 +22,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.ServiceBus;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Security;
@@ -103,7 +104,7 @@ namespace Rock.Bus.Transport
                 messageExpiration = TimeSpan.FromDays( 7 );
 
                 SetAttributeValue( AttributeKey.MessageExpiration, $"{messageExpiration.Days:D2}:{messageExpiration.Hours:D2}:{messageExpiration.Minutes:D2}:{messageExpiration.Seconds:D2}" );
-                this.SaveAttributeValue( AttributeKey.MessageExpiration, new RockContext() );
+                this.SaveAttributeValue( AttributeKey.MessageExpiration, RockApp.Current.CreateRockContext() );
             }
                         
             var enableDeadletterOnMessageExpiration = GetAttributeValue( AttributeKey.DeadLetterOnMessageExpiration ).AsBoolean();

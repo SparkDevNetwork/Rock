@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -370,7 +371,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 var personEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PERSON ).Id;
                 if ( entity.TypeId == personEntityTypeId )
                 {
-                    viewModel.ViewedCount = new PersonService( new RockContext() ).Get( entity.Id )?.ViewedCount;
+                    viewModel.ViewedCount = new PersonService( RockApp.Current.CreateRockContext() ).Get( entity.Id )?.ViewedCount;
                 }
             }
 

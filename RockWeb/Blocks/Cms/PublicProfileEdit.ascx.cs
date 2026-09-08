@@ -23,6 +23,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -626,7 +627,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void ShowViewDetail()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupMemberService = new GroupMemberService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );
 
@@ -894,7 +895,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personGuid = hfEditPersonGuid.Value.AsGuid();
 
             if ( !hfGroupId.Value.AsIntegerOrNull().HasValue )
@@ -1481,7 +1482,7 @@ namespace RockWeb.Blocks.Cms
             lViewPersonContent.Visible = false;
             var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             var groupId = hfGroupId.Value.AsIntegerOrNull();
 
@@ -1853,7 +1854,7 @@ namespace RockWeb.Blocks.Cms
         /// <returns></returns>
         private List<Guid> GetPersonAttributeGuids( int personId )
         {
-            GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
+            GroupMemberService groupMemberService = new GroupMemberService( RockApp.Current.CreateRockContext() );
             List<Guid> attributeGuidList = new List<Guid>();
             var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();

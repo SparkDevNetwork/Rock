@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -52,7 +53,7 @@ namespace Rock.Field.Types
             Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var type = new ConnectionTypeService( rockContext ).GetNoTracking( guid.Value );
                     if ( type != null )
@@ -74,7 +75,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 publicConfigurationValues[VALUES_PUBLIC_KEY] = new ConnectionTypeService( rockContext )
                     .Queryable().AsNoTracking()
@@ -118,7 +119,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ConnectionTypeService( rockContext ).Get( guid.Value );
             }
 
@@ -139,7 +140,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionTypeId = new ConnectionTypeService( rockContext ).GetId( guid.Value );
 
@@ -212,7 +213,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var types = new ConnectionTypeService( new RockContext() )
+            var types = new ConnectionTypeService( RockApp.Current.CreateRockContext() )
                 .Queryable().AsNoTracking()
                 .OrderBy( o => o.Name )
                 .Select( o => new
@@ -278,7 +279,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ConnectionTypeService( new RockContext() ).Get( guid );
+            var item = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -290,7 +291,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ConnectionTypeService( new RockContext() ).Get( id ?? 0 );
+            var item = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

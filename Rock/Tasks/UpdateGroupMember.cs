@@ -21,6 +21,7 @@ using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -45,7 +46,7 @@ namespace Rock.Tasks
                 {
                     // Allow an extended timeout for database access, to cater for situations where there is a large queue
                     // of these tasks to process and we may have to wait.
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     rockContext.Database.SetCommandTimeout( 180 );
 
                     var groupMember = new GroupMemberService( rockContext ).Get( message.GroupMemberGuid.Value );
@@ -88,7 +89,7 @@ namespace Rock.Tasks
 
                     if ( groupTriggers.Any() || groupTypeTriggers.Any() )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             // If there were any group type triggers, will now need to read the group's group type id
                             // and then further filter these triggers by the current transaction's group type

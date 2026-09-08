@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -195,7 +196,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             _showAge = GetAttributeValue( AttributeKey.ShowAge ).AsBoolean();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupId = PageParameter( "GroupId" ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( "GroupId" ) );
             if ( groupId.HasValue )
@@ -421,7 +422,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     // Figure out which ones are in another group
                     var groupMemberPersonIds = GroupMembers.Select( m => m.PersonId ).ToList();
-                    var otherGroupPersonIds = new GroupMemberService( new RockContext() ).Queryable()
+                    var otherGroupPersonIds = new GroupMemberService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( m =>
                             groupMemberPersonIds.Contains( m.PersonId ) &&
                             m.Group.GroupTypeId == _groupType.Id &&
@@ -816,7 +817,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     else
                     {
-                        var rockContext = new RockContext();
+                        var rockContext = RockApp.Current.CreateRockContext();
                         var person = new PersonService( rockContext ).Get( ppPerson.PersonId.Value );
                         if ( person != null )
                         {
@@ -1174,7 +1175,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 confirmExit.Enabled = true;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 try
                 {
@@ -1510,7 +1511,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             var groupId = _group.Id;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMembers = groupMemberService.GetByGroupId( groupId, true );
 

@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -225,7 +226,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var rightBadges = rightBadgeGuids.Select( a => BadgeCache.Get( a ) ).Where( a => a != null ).OrderBy( a => a.Order ).ToList();
 
             // set BadgeEntity using a new RockContext that won't get manually disposed
-            var badgesEntity = new PersonService( new RockContext() ).Get( GetPersonGuid() );
+            var badgesEntity = new PersonService( RockApp.Current.CreateRockContext() ).Get( GetPersonGuid() );
             blBadgesLeft.Entity = badgesEntity;
             blBadgesRight.Entity = badgesEntity;
 
@@ -260,7 +261,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
             else
             {
-                var person = new PersonService( new RockContext() ).Get( personGuid );
+                var person = new PersonService( RockApp.Current.CreateRockContext() ).Get( personGuid );
                 if ( person != null )
                 {
                     BindAttribute( person );
@@ -351,7 +352,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gHistory_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new AttendanceService( rockContext );
                 var attendance = service.Get( e.RowKeyId );
@@ -458,7 +459,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( GetPersonGuid() );
             var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.IsMessagingEnabled );
             if ( phoneNumber == null )
@@ -517,7 +518,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var attendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
 
@@ -650,7 +651,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             int? personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
             if ( personId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     _personGuid = new PersonService( rockContext ).GetGuid( personId.Value );
                 }
@@ -667,7 +668,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             btnReprintLabels.Visible = GetAttributeValue( AttributeKey.AllowLabelReprinting ).AsBoolean();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
 

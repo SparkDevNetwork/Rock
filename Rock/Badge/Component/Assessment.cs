@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -121,7 +122,7 @@ namespace Rock.Badge.Component
             // Need a list of primitive types for assessmentTestsTaken linq
             var availableTypes = assessmentTypes.Select( t => t.Id ).ToList();
 
-            var assessmentTestsTaken = new AssessmentService( new RockContext() )
+            var assessmentTestsTaken = new AssessmentService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .AsNoTracking()
                 .Where( a => a.PersonAlias != null

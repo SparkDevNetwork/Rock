@@ -20,6 +20,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -506,7 +507,7 @@ namespace Rock.Web.UI.Controls
             var systemEmailCategory = CategoryCache.Get( Rock.SystemGuid.Category.SYSTEM_COMMUNICATION_WORKFLOW.AsGuid() );
             if ( systemEmailCategory != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     _ddlNotificationSystemEmail.DataSource = new SystemCommunicationService( rockContext ).Queryable()
                         .Where( e => e.CategoryId == systemEmailCategory.Id )

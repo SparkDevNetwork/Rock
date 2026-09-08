@@ -33,6 +33,7 @@ using Rock.Utility;
 using Rock.Web.UI;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
+using Rock.Configuration;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -92,7 +93,7 @@ namespace RockWeb.Blocks.CheckIn
                         var printFromClient = new List<CheckInLabel>();
                         var printFromServer = new List<CheckInLabel>();
 
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var attendanceService = new AttendanceService( rockContext );
 
@@ -239,7 +240,7 @@ namespace RockWeb.Blocks.CheckIn
                 var personAliasGuid = Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER].Value.AsGuidOrNull();
                 if ( personAliasGuid.HasValue )
                 {
-                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasGuid( personAliasGuid.Value );
+                    var personAlias = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetByAliasGuid( personAliasGuid.Value );
                     if ( personAlias != null )
                     {
                         personAliasId = personAlias.Id;

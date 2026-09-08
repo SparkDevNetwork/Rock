@@ -22,6 +22,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -90,7 +91,7 @@ namespace Rock.Blocks.Core
             var options = new RestActionListOptionsBag();
             var controllerIdParam = PageParameter( PageParameterKey.Controller );
             int controllerId = Rock.Utility.IdHasher.Instance.GetId( controllerIdParam ) ?? controllerIdParam.AsInteger();
-            var controller = new RestControllerService( new RockContext() ).Get( controllerId );
+            var controller = new RestControllerService( RockApp.Current.CreateRockContext() ).Get( controllerId );
 
             if ( controller != null )
             {
@@ -191,7 +192,7 @@ namespace Rock.Blocks.Core
 
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var controllerId = pageReference.GetPageParameter( PageParameterKey.Controller );
                 var controller = new RestControllerService( rockContext ).Get( controllerId );

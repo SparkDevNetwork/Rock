@@ -24,6 +24,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -114,7 +115,7 @@ namespace RockWeb.Blocks.Finance
             var contributionType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             if ( contributionType != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var transactionDetailService = new FinancialTransactionDetailService( rockContext );
                 var qry = transactionDetailService.Queryable().AsNoTracking()
                     .Where( a =>

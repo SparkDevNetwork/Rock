@@ -20,6 +20,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -108,7 +109,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gList_DeleteClick( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             GroupMemberScheduleTemplateService groupMemberScheduleTemplateService = new GroupMemberScheduleTemplateService( rockContext );
             GroupMemberScheduleTemplate groupMemberScheduleTemplate = groupMemberScheduleTemplateService.Get( e.RowKeyId );
             if ( groupMemberScheduleTemplate != null )
@@ -156,7 +157,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         private void BindGrid()
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             var service = new GroupMemberScheduleTemplateService( rockContext );
 
             var qry = service.Queryable().OrderBy( a => a.Name );

@@ -26,6 +26,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using Rock.Configuration;
 
 namespace Rock.Jobs
 {
@@ -56,7 +57,7 @@ namespace Rock.Jobs
             System.Collections.Generic.List<int> mediaInteractionWithoutInteractionIdList;
 
             // First, get a list of all the Interaction IDs that we'll need to update because later each interaction needs to be updated.
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -81,7 +82,7 @@ namespace Rock.Jobs
             // Note that to support SQL 2014, we can't use SQL JSON commands since that isn't supported until SQL 2016.
             foreach ( var mediaInteractionId in mediaInteractionWithoutInteractionIdList )
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( commandTimeout );
                     var mediaInteraction = new InteractionService( rockContext ).Get( mediaInteractionId );
@@ -122,7 +123,7 @@ namespace Rock.Jobs
         /// <param name="jobId">The job identifier.</param>
         public static void DeleteJob( int jobId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );

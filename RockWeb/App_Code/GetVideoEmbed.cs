@@ -62,7 +62,7 @@ namespace RockWeb
             var output = "";
 
             var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
             binaryFileTypeService = new BinaryFileTypeService( rockContext );
 
             binaryFileType = binaryFileTypeService.Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_IMAGE.AsGuid() );

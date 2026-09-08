@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Tasks;
@@ -384,7 +385,7 @@ namespace Rock.Model
 
                 if ( valid )
                 {
-                    var occ = attendance.Occurrence ?? new AttendanceOccurrenceService( new RockContext() ).Get( attendance.OccurrenceId );
+                    var occ = attendance.Occurrence ?? new AttendanceOccurrenceService( RockApp.Current.CreateRockContext() ).Get( attendance.OccurrenceId );
 
                     if ( occ != null )
                     {

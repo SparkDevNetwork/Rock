@@ -24,6 +24,7 @@ using System.Web;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -79,7 +80,7 @@ namespace Rock.Jobs
                 int pendingMembersCount = 0;
 
                 // get groups set to sync
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
 
                 Guid? groupTypeGuid = GetAttributeValue( "GroupType" ).AsGuidOrNull();
                 Guid? systemEmailGuid = GetAttributeValue( "NotificationEmail" ).AsGuidOrNull();

@@ -29,6 +29,7 @@ using System.Web.Http;
 using Microsoft.Extensions.Logging;
 
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -177,7 +178,7 @@ namespace Rock.Rest.Controllers
                 return Ok();
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( string.IsNullOrWhiteSpace( interactionInfo.UserIdKey ) )
             {

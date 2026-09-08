@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -133,7 +134,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// The content channel type identifier
         /// </summary>
-        private int ContentChannelTypeId = new ContentChannelTypeService( new RockContext() ).GetId( Rock.SystemGuid.ContentChannelType.CONTENT_COMPONENT.AsGuid() ) ?? 0;
+        private int ContentChannelTypeId = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).GetId( Rock.SystemGuid.ContentChannelType.CONTENT_COMPONENT.AsGuid() ) ?? 0;
 
         #endregion Fields
 
@@ -180,7 +181,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.LoadViewState( savedState );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             CreateFilterControl( this.ContentChannelTypeId, DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false, rockContext );
         }
 
@@ -273,7 +274,7 @@ namespace RockWeb.Blocks.Cms
             pnlContentChannelItemsList.Visible = allowMultipleContentItems;
             pnlContentChannelItemEdit.CssClass = allowMultipleContentItems ? "col-md-8" : "col-md-12";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var contentChannelItemId = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title ).Select( a => ( int? ) a.Id ).FirstOrDefault();
 
             EditContentChannelItem( contentChannelItemId );
@@ -397,7 +398,7 @@ namespace RockWeb.Blocks.Cms
                     return null;
                 }
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var contentChannelItemService = new ContentChannelItemService( rockContext );
                 IQueryable<ContentChannelItem> contentChannelItemsQuery = contentChannelItemService.Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title );
 
@@ -479,7 +480,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannel contentChannel = null;
             if ( contentChannelGuid.HasValue )
             {
-                contentChannel = new ContentChannelService( new RockContext() ).Get( contentChannelGuid.Value );
+                contentChannel = new ContentChannelService( RockApp.Current.CreateRockContext() ).Get( contentChannelGuid.Value );
             }
 
             if ( contentChannel == null )
@@ -530,7 +531,7 @@ namespace RockWeb.Blocks.Cms
             hfDataFilterId.Value = GetAttributeValue( AttributeKey.FilterId );
 
             int? filterId = hfDataFilterId.Value.AsIntegerOrNull();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var filterService = new DataViewFilterService( rockContext );
             DataViewFilter filter = null;
@@ -557,7 +558,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdContentComponentConfig_SaveClick( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var dataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
             if ( dataViewFilter != null )
@@ -669,7 +670,7 @@ namespace RockWeb.Blocks.Cms
         private void EditContentChannelItem( int? contentChannelItemId )
         {
             var allowMultipleContentItems = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             ContentChannelItem contentChannelItem = null;
             if ( contentChannelItemId.HasValue )
             {
@@ -724,7 +725,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannelCache contentChannel = this.GetContentChannel();
             if ( contentChannel != null )
             {
-                IQueryable<ContentChannelItem> contentChannelItemsQuery = new ContentChannelItemService( new RockContext() ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title );
+                IQueryable<ContentChannelItem> contentChannelItemsQuery = new ContentChannelItemService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title );
 
                 gContentChannelItems.DataSource = contentChannelItemsQuery.AsNoTracking().ToList();
                 gContentChannelItems.DataBind();
@@ -780,7 +781,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void SaveContentChannelItem()
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             ContentChannelItemService contentChannelItemService = new ContentChannelItemService( rockContext );
             ContentChannelItem contentChannelItem = null;
             int contentChannelItemId = hfContentChannelItemId.Value.AsInteger();
@@ -859,7 +860,7 @@ namespace RockWeb.Blocks.Cms
             var contentChannel = this.GetContentChannel();
             if ( contentChannel != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 ContentChannelItemService contentChannelItemService = new ContentChannelItemService( rockContext );
                 var contentChannelItems = contentChannelItemService.Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title ).ToList();
                 contentChannelItemService.Reorder( contentChannelItems, e.OldIndex, e.NewIndex );
@@ -875,7 +876,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gContentChannelItems_DeleteClick( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
             var contentItemAssociationService = new ContentChannelItemAssociationService( rockContext );
             var contentItemSlugService = new ContentChannelItemSlugService( rockContext );

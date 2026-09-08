@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -100,7 +101,7 @@ namespace Rock.Field.Types
         /// </value>
         internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
+            GroupTypeService groupTypeService = new GroupTypeService( RockApp.Current.CreateRockContext() );
             return groupTypeService.Queryable().OrderBy( a => a.Name ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
         }
 

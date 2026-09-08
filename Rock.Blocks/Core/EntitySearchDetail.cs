@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -69,7 +70,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag>();
 
@@ -85,7 +86,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var key = pageReference.GetPageParameter( PageParameterKey.EntitySearchId );
                 var pageParameters = new Dictionary<string, string>();
@@ -302,7 +303,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -377,7 +378,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -401,7 +402,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new EntitySearchService( rockContext );
 
@@ -452,7 +453,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new EntitySearchService( rockContext );
 
@@ -493,7 +494,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Preview( DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new EntitySearchService( rockContext );
 

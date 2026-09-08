@@ -23,6 +23,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -377,7 +378,7 @@ namespace Rock.Web.UI.Controls
             if ( DefinedTypeId.HasValue )
             {
                 definedValues = new Dictionary<string, string>();
-                new DefinedValueService( new RockContext() )
+                new DefinedValueService( RockApp.Current.CreateRockContext() )
                     .GetByDefinedTypeId( DefinedTypeId.Value )
                     .ToList()
                     .ForEach( v => definedValues.Add( v.Id.ToString(), v.Value ) );

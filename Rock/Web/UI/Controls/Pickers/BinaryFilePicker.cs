@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -42,7 +43,7 @@ namespace Rock.Web.UI.Controls
                 this.Items.Add( new ListItem() );
                 if ( value.HasValue )
                 {
-                    var qry = new BinaryFileService( new RockContext() )
+                    var qry = new BinaryFileService( RockApp.Current.CreateRockContext() )
                             .Queryable()
                             .Where( f => f.BinaryFileTypeId == value.Value && !f.IsTemporary )
                             .OrderBy( f => f.FileName )
@@ -70,7 +71,7 @@ namespace Rock.Web.UI.Controls
                 if ( value.HasValue )
                 {
                     this.Items.Add( new ListItem() );
-                    var qry = new BinaryFileService( new RockContext() )
+                    var qry = new BinaryFileService( RockApp.Current.CreateRockContext() )
                             .Queryable()
                             .Where( f => f.BinaryFileType.Guid == value.Value && !f.IsTemporary )
                             .OrderBy( f => f.FileName )

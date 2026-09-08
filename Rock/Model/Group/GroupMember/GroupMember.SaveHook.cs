@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Tasks;
@@ -296,7 +297,7 @@ namespace Rock.Model
                             {
                                 try
                                 {
-                                    using ( var insertRockContext = new RockContext() )
+                                    using ( var insertRockContext = RockApp.Current.CreateRockContext() )
                                     {
                                         insertRockContext.BulkInsert( changes );
                                     }
@@ -325,7 +326,7 @@ namespace Rock.Model
                             {
                                 try
                                 {
-                                    using ( var insertRockContext = new RockContext() )
+                                    using ( var insertRockContext = RockApp.Current.CreateRockContext() )
                                     {
                                         insertRockContext.BulkInsert( groupMemberChanges );
                                     }

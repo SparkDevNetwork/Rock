@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionRequestActivitiesController"/> class.
         /// </summary>
-        public ConnectionRequestActivitiesController() : base( new Rock.Model.ConnectionRequestActivityService( new Rock.Data.RockContext() ) ) { } 
+        public ConnectionRequestActivitiesController() : base( new Rock.Model.ConnectionRequestActivityService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

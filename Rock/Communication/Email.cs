@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web;
 
 using Humanizer;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -45,7 +46,7 @@ namespace Rock.Communication
                 actionVerb = "deactivated";
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // get people who have those emails
                 var personService = new PersonService( rockContext );
@@ -80,7 +81,7 @@ namespace Rock.Communication
 
             string bounceMessage = message.IsNotNullOrWhiteSpace() ? $" ({message})" : "";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // get people who have those emails
                 var personService = new PersonService( rockContext );
@@ -144,7 +145,7 @@ namespace Rock.Communication
 
                 Guid adminGroup = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     personList = new GroupMemberService( rockContext ).Queryable()
                         .Where( m =>

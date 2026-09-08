@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -63,7 +64,7 @@ namespace Rock.Model
                 }
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var layoutService = new LayoutService( rockContext );
 
             // Get a list of the layout filenames already registered 

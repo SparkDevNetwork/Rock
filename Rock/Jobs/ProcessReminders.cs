@@ -27,6 +27,7 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
@@ -166,7 +167,7 @@ namespace Rock.Jobs
             var stopwatch = Stopwatch.StartNew();
             WriteLog( $"Started.", currentDate );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
                 rockContext.Database.SetCommandTimeout( commandTimeout );

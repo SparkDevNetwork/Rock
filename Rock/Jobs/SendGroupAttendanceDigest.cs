@@ -25,6 +25,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -184,7 +185,7 @@ namespace Rock.Jobs
             SystemCommunication systemCommunication;
 
             // Retrieve all of the needed data from the database.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 InitializeServices( rockContext );
 

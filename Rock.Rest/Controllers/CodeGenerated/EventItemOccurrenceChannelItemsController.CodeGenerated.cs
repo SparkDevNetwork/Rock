@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="EventItemOccurrenceChannelItemsController"/> class.
         /// </summary>
-        public EventItemOccurrenceChannelItemsController() : base( new Rock.Model.EventItemOccurrenceChannelItemService( new Rock.Data.RockContext() ) ) { } 
+        public EventItemOccurrenceChannelItemsController() : base( new Rock.Model.EventItemOccurrenceChannelItemService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

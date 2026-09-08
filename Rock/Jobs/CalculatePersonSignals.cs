@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -67,7 +68,7 @@ namespace Rock.Jobs
                  Now, the job identifies people based on whether they still have a TopSignalId.
             */
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 people = new PersonService( rockContext ).Queryable()
                     .AsNoTracking()
@@ -85,7 +86,7 @@ namespace Rock.Jobs
                 var batch = people.Take( 250 ).ToList();
                 people.RemoveRange( 0, batch.Count );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     new PersonService( rockContext ).Queryable()
                         .Where( p => batch.Contains( p.Id ) )

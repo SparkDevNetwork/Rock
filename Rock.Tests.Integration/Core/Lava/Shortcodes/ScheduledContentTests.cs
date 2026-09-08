@@ -16,6 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Lava;
@@ -32,7 +33,7 @@ namespace Rock.Tests.Integration.Core.Lava.Shortcodes
         [TestMethod]
         public void ScheduledContentShortcode_Basic_EmitsCorrectHtml()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var scheduleService = new ScheduleService( rockContext );
             var schedule1630 = scheduleService.GetByIdentifierOrThrow( TestGuids.Schedules.ScheduleSat1630Guid );
 
@@ -57,7 +58,7 @@ ScheduleName:Saturday4:30pm<br>ScheduleLive:true<br>
         [TestMethod]
         public void ScheduledContentShortcode_ContainedInCaptureBlock_EmitsCorrectOutput()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var scheduleService = new ScheduleService( rockContext );
             var schedule = scheduleService.GetByIdentifierOrThrow( TestGuids.Schedules.ScheduleDaily1630Guid );
 
@@ -76,7 +77,7 @@ Schedule Active = {{isScheduleActive}}
         [TestMethod]
         public void ScheduledContentShortcode_WithLookAheadDays_ShowsContentWithinLookAheadPeriod()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var scheduleService = new ScheduleService( rockContext );
 
             var inputTemplate = @"
@@ -118,7 +119,7 @@ Next Occurrence:
         [TestMethod]
         public void ScheduledContentShortcode_WithShowWhenParameter_ShowsContentAppropriateToScheduleStatus()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var scheduleService = new ScheduleService( rockContext );
 
             var now = RockDateTime.Now;

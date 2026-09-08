@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -564,7 +565,7 @@ namespace Rock.Field.Types
                 foreach ( var selectedValue in selectedValues )
                 {
                     var searchValue = "," + selectedValue + ",";
-                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                    var qryToExtract = new AttributeValueService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
                     var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
 
                     if ( comparisonType != ComparisonType.Contains )
@@ -639,7 +640,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new DefinedValueService( rockContext ).Get( guid.Value );
             }
 
@@ -846,7 +847,7 @@ namespace Rock.Field.Types
 
             ddlDefinedType.SelectedIndexChanged += OnQualifierUpdated;
 
-            var definedTypeService = new DefinedTypeService( new RockContext() );
+            var definedTypeService = new DefinedTypeService( RockApp.Current.CreateRockContext() );
             ddlDefinedType.Items.Add( new ListItem() );
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
             {

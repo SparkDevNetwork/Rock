@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -91,7 +92,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    RockContext rockContext = new RockContext();
+                    RockContext rockContext = RockApp.Current.CreateRockContext();
                     Person targetPerson = null;
                     targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
 

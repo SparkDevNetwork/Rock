@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -420,7 +421,7 @@ namespace Rock.Web.UI.Controls
                     _gMatrixItems.Columns.Add( new AttributeField { DataField = attribute.Key, HeaderText = attribute.Name } );
                 }
 
-                AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
+                AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( RockApp.Current.CreateRockContext() );
                 var attributeMatrixTemplateRanges = attributeMatrixTemplateService.GetSelect( this.AttributeMatrixTemplateId.Value, s => new { s.MinimumRows, s.MaximumRows } );
 
                 // If a value is required, make sure we have a minumum row count of at least 1.
@@ -571,7 +572,7 @@ namespace Rock.Web.UI.Controls
             // make a temp attributeMatrixItem to see what Attributes they have
             AttributeMatrixItem attributeMatrixItem = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( matrixItemId > 0 )
                 {
@@ -614,7 +615,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnSaveMatrixItem_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
             AttributeMatrixItem attributeMatrixItem = null;
             int attributeMatrixItemId = _hfMatrixItemId.Value.AsInteger();
@@ -668,7 +669,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( attributeMatrixGuid.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid.Value );
                 if ( attributeMatrix == null )
                 {
@@ -721,7 +722,7 @@ namespace Rock.Web.UI.Controls
         private void gMatrixItems_DeleteClick( object sender, RowEventArgs e )
         {
             int attributeMatrixItemId = e.RowKeyId;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             AttributeMatrixItemService attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
             AttributeMatrixItem attributeMatrixItem = attributeMatrixItemService.Get( attributeMatrixItemId );
             if ( attributeMatrixItem != null )
@@ -741,7 +742,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         private void gMatrixItems_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
             var service = new AttributeMatrixItemService( rockContext );
             var items = service.Queryable().Where( a => a.AttributeMatrixId == attributeMatrix.Id ).OrderBy( i => i.Order ).ToList();

@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -270,7 +271,7 @@ namespace RockWeb.Blocks.Connection
         #region Methods
         private Tuple<string, string> GetConnectionOpportunityTitles()
         {
-            var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).GetNoTracking( _connectionOpportunityGuid );
+            var connectionOpportunity = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() ).GetNoTracking( _connectionOpportunityGuid );
             return new Tuple<string, string>( connectionOpportunity?.Name, connectionOpportunity?.ConnectionType?.Name );
         }
         private IEnumerable<ConnectionState> GetConnectionStates()
@@ -332,7 +333,7 @@ namespace RockWeb.Blocks.Connection
                 pageNumber = _currentRequestsViewModel != null ? _currentRequestsViewModel.PageNumber - 1 : 0;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
 

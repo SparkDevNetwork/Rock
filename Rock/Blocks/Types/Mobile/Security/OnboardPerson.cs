@@ -25,6 +25,7 @@ using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Security.OnboardPerson;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Mobile;
@@ -1089,7 +1090,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( SystemCommunicationGuid ?? Guid.Empty );
 
@@ -1673,7 +1674,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         [BlockAction]
         public BlockActionResult SendCode( SendCodeRequest request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var identityVerificationService = new IdentityVerificationService( rockContext );
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( this.SystemCommunicationGuid ?? Guid.Empty );
@@ -1828,7 +1829,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         [BlockAction]
         public BlockActionResult VerifyCode( VerifyCodeRequest request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var identityVerificationService = new IdentityVerificationService( rockContext );
                 var state = Rock.Security.Encryption.DecryptString( request.State ).FromJsonOrThrow<EncryptedState>();
@@ -1909,7 +1910,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         [BlockAction]
         public BlockActionResult CreatePerson( CreatePersonRequest request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 string username = null;
                 Person person = null;
@@ -2095,7 +2096,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 return ActionUnauthorized( "Must be logged in to perform this action." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext ).Get( RequestContext.CurrentPerson.Id );
                 var username = RequestContext.CurrentUser.UserName;

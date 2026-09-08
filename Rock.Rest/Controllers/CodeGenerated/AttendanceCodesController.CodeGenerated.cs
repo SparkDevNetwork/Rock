@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AttendanceCodesController"/> class.
         /// </summary>
-        public AttendanceCodesController() : base( new Rock.Model.AttendanceCodeService( new Rock.Data.RockContext() ) ) { } 
+        public AttendanceCodesController() : base( new Rock.Model.AttendanceCodeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

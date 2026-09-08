@@ -21,6 +21,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -72,7 +73,7 @@ namespace Rock.Jobs.PostUpdateJobs
         {
             var rootGroupTypeMap = new Dictionary<int, int>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -118,7 +119,7 @@ namespace Rock.Jobs.PostUpdateJobs
         /// <param name="commandTimeout">The SQL command timeout in seconds.</param>
         private void UpdateAttendanceOccurrenceRecords( int groupId, int rootGroupTypeId, int commandTimeout )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -139,7 +140,7 @@ namespace Rock.Jobs.PostUpdateJobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

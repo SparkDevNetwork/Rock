@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlContentsController"/> class.
         /// </summary>
-        public HtmlContentsController() : base( new Rock.Model.HtmlContentService( new Rock.Data.RockContext() ) ) { } 
+        public HtmlContentsController() : base( new Rock.Model.HtmlContentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

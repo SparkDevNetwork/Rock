@@ -23,6 +23,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Logging;
@@ -502,7 +503,7 @@ namespace Rock.Blocks.Prayer
             var currentPersonAliasId = currentPerson?.PrimaryAliasId;
             var campusId = bag.CampusGuid.HasValue ? CampusCache.GetId( bag.CampusGuid.Value ) : null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var prayerRequest = new PrayerRequest
                 {
@@ -691,7 +692,7 @@ namespace Rock.Blocks.Prayer
                 prayerRequestId = prayerRequest.Id;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Load the PrayerRequest from a new context to ensure the latest data is available and navigation properties work correctly.
                 var prayerRequest = new PrayerRequestService( rockContext ).Get( prayerRequestId );
@@ -764,7 +765,7 @@ namespace Rock.Blocks.Prayer
 
             if ( categoryGuid.HasValue )
             {
-                box.Categories = new CategoryService( new RockContext() )
+                box.Categories = new CategoryService( RockApp.Current.CreateRockContext() )
                     .GetByEntityTypeId( this.PrayerRequestEntityTypeId )
                     .Where( c => c.ParentCategory != null && c.ParentCategory.Guid == categoryGuid.Value )
                     .Select( c => new ViewModels.Utility.ListItemBag

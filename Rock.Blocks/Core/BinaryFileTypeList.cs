@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks.Core.BinaryFileTypeList;
 using Rock.Web.Cache;
 
 using static Rock.Blocks.Core.BinaryFileTypeList;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Core
 {
@@ -234,7 +235,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new BinaryFileTypeService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

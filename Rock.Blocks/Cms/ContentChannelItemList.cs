@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -547,11 +548,11 @@ namespace Rock.Blocks.Cms
             {
                 if ( GetAttributeValue( AttributeKey.ContentChannel ).IsNotNullOrWhiteSpace() )
                 {
-                    SelectedContentChannel = new ContentChannelService( new RockContext() ).Get( GetAttributeValue( AttributeKey.ContentChannel ) );
+                    SelectedContentChannel = new ContentChannelService( RockApp.Current.CreateRockContext() ).Get( GetAttributeValue( AttributeKey.ContentChannel ) );
                 }
                 else
                 {
-                    SelectedContentChannel = new ContentChannelService( new RockContext() ).Get( RequestContext.GetPageParameter( "ContentChannelId" ) );
+                    SelectedContentChannel = new ContentChannelService( RockApp.Current.CreateRockContext() ).Get( RequestContext.GetPageParameter( "ContentChannelId" ) );
                 }
             }
 
@@ -593,7 +594,7 @@ namespace Rock.Blocks.Cms
 
             var getGridDataTask = Task.Run( () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     return GetGridDataBag( rockContext );
                 }
@@ -611,7 +612,7 @@ namespace Rock.Blocks.Cms
                 {
                     var mediumDefinedValueGuid = Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid();
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var sql = $@"
 SELECT ic.[EntityId],
@@ -645,7 +646,7 @@ GROUP BY ic.[EntityId];";
                 {
                     var contentChannelItemEntityGuid = Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid();
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var sql = $@"
 SELECT em.[EntityId]

@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Enums.Security;
@@ -799,7 +800,7 @@ namespace Rock.Model
         public void BulkIndexDocuments()
         {
             // get list of sites that with indexing enabled
-            var sites = new SiteService( new RockContext() ).Queryable().Where( s => s.IsIndexEnabled );
+            var sites = new SiteService( RockApp.Current.CreateRockContext() ).Queryable().Where( s => s.IsIndexEnabled );
 
             foreach ( var site in sites )
             {
@@ -853,7 +854,7 @@ namespace Rock.Model
         public ModelFieldFilterConfig GetIndexFilterConfig()
         {
             ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
-            filterConfig.FilterValues = new SiteService( new RockContext() ).Queryable().AsNoTracking().Where( s => s.IsIndexEnabled ).Select( s => s.Name ).ToList();
+            filterConfig.FilterValues = new SiteService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking().Where( s => s.IsIndexEnabled ).Select( s => s.Name ).ToList();
             filterConfig.FilterLabel = "Sites";
             filterConfig.FilterField = "siteName";
 

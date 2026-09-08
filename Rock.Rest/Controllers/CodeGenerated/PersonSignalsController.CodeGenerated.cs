@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonSignalsController"/> class.
         /// </summary>
-        public PersonSignalsController() : base( new Rock.Model.PersonSignalService( new Rock.Data.RockContext() ) ) { } 
+        public PersonSignalsController() : base( new Rock.Model.PersonSignalService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

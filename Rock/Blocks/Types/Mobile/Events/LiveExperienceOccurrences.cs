@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
@@ -157,7 +158,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         {
             var showAll = GetAttributeValue( AttributeKeys.ShowAll ).AsBoolean();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
                 var validOccurrences = showAll

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -65,7 +66,7 @@ namespace Rock.Tasks
 
                     if ( groupTriggers.Any() || groupTypeTriggers.Any() )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             // If there were any group type triggers, will now need to read the group's group type id
                             // and then further filter these triggers by the current txn's group type

@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -665,7 +666,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void registerColumn_Click( object sender, RowEventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( e.RowKeyId );
                 if ( group != null )
@@ -708,7 +709,7 @@ namespace RockWeb.Blocks.Groups
 
             BindGroupTypeLocationGrid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupTypes = new GroupTypeService( rockContext )
                 .Queryable().AsNoTracking().OrderBy( t => t.Order ).ToList();
 
@@ -880,7 +881,7 @@ namespace RockWeb.Blocks.Groups
             Person targetPerson = null;
             Location targetPersonLocation = null;
 
-            targetPerson = new PersonService( new RockContext() ).Queryable().Where( p => p.Guid == targetPersonGuid ).FirstOrDefault();
+            targetPerson = new PersonService( RockApp.Current.CreateRockContext() ).Queryable().Where( p => p.Guid == targetPersonGuid ).FirstOrDefault();
             targetPersonLocation = targetPerson.GetHomeLocation();
 
             if ( targetPerson != null )
@@ -1223,7 +1224,7 @@ namespace RockWeb.Blocks.Groups
             gGroups.Columns[6].Visible = showProximity;  // Distance
 
             // Get query of groups of the selected group type
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
             var groupQry = groupService
                 .Queryable( "GroupLocations.Location" )

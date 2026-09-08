@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -72,7 +73,7 @@ namespace Rock.Blocks.Tv
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<AppleTvAppBag, AppleTvAppDetailOptionsBag>();
 
@@ -205,7 +206,7 @@ namespace Rock.Blocks.Tv
 
             // Get page view retention
             int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
-            bag.PageViewRetentionPeriod = new InteractionChannelService( new RockContext() ).Queryable()
+            bag.PageViewRetentionPeriod = new InteractionChannelService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( c => c.ChannelTypeMediumValueId == channelMediumWebsiteValueId && c.ChannelEntityId == entity.Id )
                     .Select( c => c.RetentionDuration )
                     .FirstOrDefault()?.ToString();
@@ -340,7 +341,7 @@ namespace Rock.Blocks.Tv
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -487,7 +488,7 @@ namespace Rock.Blocks.Tv
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -513,7 +514,7 @@ namespace Rock.Blocks.Tv
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<AppleTvAppBag, AppleTvAppDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new SiteService( rockContext );
 
@@ -627,7 +628,7 @@ namespace Rock.Blocks.Tv
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new SiteService( rockContext );
 
@@ -657,7 +658,7 @@ namespace Rock.Blocks.Tv
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<AppleTvAppBag, AppleTvAppDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -355,7 +356,7 @@ namespace Rock.Reporting.DataSelect.Group
 
             if ( settings.DataViewGuid.HasValue )
             {
-                var dsService = new DataViewService( new RockContext() );
+                var dsService = new DataViewService( RockApp.Current.CreateRockContext() );
 
                 var dataView = dsService.Get( settings.DataViewGuid.Value );
 
@@ -436,7 +437,7 @@ namespace Rock.Reporting.DataSelect.Group
 
                 if ( id != null )
                 {
-                    var dsService = new DataViewService( new RockContext() );
+                    var dsService = new DataViewService( RockApp.Current.CreateRockContext() );
 
                     var dataView = dsService.Get( id.Value );
 

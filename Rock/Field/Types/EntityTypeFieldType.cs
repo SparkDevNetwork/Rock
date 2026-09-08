@@ -22,6 +22,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -151,7 +152,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new EntityTypeService( rockContext ).Get( guid.Value );
             }
 
@@ -292,7 +293,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            entityTypePicker.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().ToList();
+            entityTypePicker.EntityTypes = new EntityTypeService( RockApp.Current.CreateRockContext() ).GetEntities().ToList();
             return entityTypePicker;
         }
 
@@ -363,7 +364,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new EntityTypeService( new RockContext() ).Get( guid );
+            var item = new EntityTypeService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -375,7 +376,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new EntityTypeService( new RockContext() ).Get( id ?? 0 );
+            var item = new EntityTypeService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

@@ -21,6 +21,7 @@ using System.Threading;
 using System.Web;
 using System.Web.Hosting;
 
+using Rock.Configuration;
 using Rock.Lava;
 
 namespace Rock.Model

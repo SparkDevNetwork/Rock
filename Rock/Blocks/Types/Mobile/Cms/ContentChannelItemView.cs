@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -238,7 +239,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             int? contentChannelItemId = contentChannelItemKey.AsIntegerOrNull();
             Guid? contentChannelItemGuid = contentChannelItemKey.AsGuidOrNull();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             if ( contentChannelItemId.HasValue )
             {
                 contentChannelItem = new ContentChannelItemService( rockContext ).Get( contentChannelItemId.Value );

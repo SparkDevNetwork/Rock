@@ -26,6 +26,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Communication.Chat;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
@@ -272,7 +273,7 @@ namespace Rock.Model
 
             // For each occurrence of this person in this group for the roles that might grant them auth,
             // check to see if their role is valid for the group type and if the role grants them authorization
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( int roleId in new GroupMemberService( rockContext )
                     .Queryable().AsNoTracking()
@@ -395,7 +396,7 @@ namespace Rock.Model
         {
             List<IndexModelBase> indexableItems = new List<IndexModelBase>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // return people
             var groups = new GroupService( rockContext )
@@ -429,7 +430,7 @@ namespace Rock.Model
         /// <param name="id"></param>
         public void IndexDocument( int id )
         {
-            var groupEntity = new GroupService( new RockContext() ).Get( id );
+            var groupEntity = new GroupService( RockApp.Current.CreateRockContext() ).Get( id );
             if ( groupEntity == null )
             {
                 return;
@@ -477,7 +478,7 @@ namespace Rock.Model
         public ModelFieldFilterConfig GetIndexFilterConfig()
         {
             ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
-            filterConfig.FilterValues = new GroupTypeService( new RockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
+            filterConfig.FilterValues = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
             filterConfig.FilterLabel = "Group Types";
             filterConfig.FilterField = "groupTypeName";
 
@@ -572,7 +573,7 @@ namespace Rock.Model
             var groupType = GroupTypeCache.Get( group.GroupTypeId );
             if ( groupType?.Roles != null && groupType.Roles.Any() )
             {
-                var groupMemberService = new GroupMemberService( new RockContext() );
+                var groupMemberService = new GroupMemberService( RockApp.Current.CreateRockContext() );
                 foreach ( var role in groupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
                 {
                     int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
@@ -666,7 +667,7 @@ namespace Rock.Model
                 if ( result )
                 {
                     string errorMessage;
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         // validate that a campus is not required
                         var groupType = this.GroupType ?? new GroupTypeService( rockContext ).Queryable().Where( gt => gt.Id == this.GroupTypeId ).FirstOrDefault();

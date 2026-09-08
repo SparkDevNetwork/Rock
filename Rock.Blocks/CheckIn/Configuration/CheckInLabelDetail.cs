@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
@@ -372,7 +373,7 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var key = pageReference.GetPageParameter( PageParameterKey.CheckInLabelId );
                 var pageParameters = new Dictionary<string, string>();

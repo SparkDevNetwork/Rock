@@ -22,6 +22,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -231,7 +232,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityReferences = new List<ReferencedEntity>();
 
@@ -422,7 +423,7 @@ namespace Rock.Field.Types
 
             if ( interactionChannelInteractionComponentPicker != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 Guid? interactionChannelGuid = null;
                 Guid? interactionComponentGuid = null;
 

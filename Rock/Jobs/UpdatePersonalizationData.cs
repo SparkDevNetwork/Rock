@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -79,7 +80,7 @@ namespace Rock.Jobs
             var exceptions = new List<Exception>();
             var resultsBuilder = new StringBuilder();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentDateTime = RockDateTime.Now;
                 var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
@@ -147,7 +148,7 @@ namespace Rock.Jobs
                     this.UpdateLastStatusMessage( $"Personalization Segment ID {pSegmentId}: Persisting..." );
                     using ( var activity = ObservabilityHelper.StartActivity( $"Personalization Segment: {pSegmentId}" ) )
                     {
-                        using ( var persistContext = new RockContext() )
+                        using ( var persistContext = RockApp.Current.CreateRockContext() )
                         {
                             persistContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                             var stopwatch = Stopwatch.StartNew();
@@ -209,7 +210,7 @@ namespace Rock.Jobs
 
             try
             {
-                using ( var cleanupRockContext = new RockContext() )
+                using ( var cleanupRockContext = RockApp.Current.CreateRockContext() )
                 {
                     cleanupRockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                     var cleanedUpCount = new PersonalizationSegmentService( cleanupRockContext ).CleanupPersonAliasPersonalizationDataForSegmentsThatDontExist();

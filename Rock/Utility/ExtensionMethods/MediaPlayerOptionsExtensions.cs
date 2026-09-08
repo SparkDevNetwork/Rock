@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
@@ -53,7 +54,7 @@ namespace Rock
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaElementService = new MediaElementService( rockContext );
                 var interactionService = new InteractionService( rockContext );

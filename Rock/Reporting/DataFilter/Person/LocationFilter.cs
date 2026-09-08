@@ -34,6 +34,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -314,7 +315,7 @@ function() {
                 return result;
             }
 
-            using ( var context = new RockContext() )
+            using ( var context = RockApp.Current.CreateRockContext() )
             {
                 string locationTypeName = null;
                 string street1 = string.IsNullOrWhiteSpace( settings.Street1 ) ? null : settings.Street1;

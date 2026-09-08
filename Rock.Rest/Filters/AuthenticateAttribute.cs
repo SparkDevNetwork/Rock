@@ -28,6 +28,7 @@ using System.Web.Http.Filters;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -179,7 +180,7 @@ namespace Rock.Rest.Filters
                 }
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var authClientService = new AuthClientService( rockContext );
                 var authClient = authClientService.GetByClientId( clientId );
@@ -257,7 +258,7 @@ namespace Rock.Rest.Filters
             // request. Disposing the context here would tear down its
             // ObjectStateManager and break lazy loading of UserLogin's
             // navigation properties for any downstream consumer.
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.Queryable( "Person" )
                 .Where( u => u.ApiKey == authToken )
@@ -336,7 +337,7 @@ namespace Rock.Rest.Filters
             UserLogin userLogin;
             try
             {
-                userLogin = JwtHelper.GetUserLoginByJSONWebToken( new RockContext(), jwtString );
+                userLogin = JwtHelper.GetUserLoginByJSONWebToken( RockApp.Current.CreateRockContext(), jwtString );
             }
             catch ( Microsoft.IdentityModel.Tokens.SecurityTokenMalformedException )
             {

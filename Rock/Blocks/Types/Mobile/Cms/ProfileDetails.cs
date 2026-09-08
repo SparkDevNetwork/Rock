@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -306,7 +307,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new Rock.Common.Mobile.Blocks.Cms.ProfileDetails.Configuration
                 {
@@ -327,7 +328,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [BlockAction]
         public BlockActionResult GetMobilePersonProfileDetails( Guid personGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext ).Get( personGuid );
                 var site = MobileHelper.GetCurrentApplicationSite( true, rockContext );
@@ -350,7 +351,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <returns></returns>
         private MobilePerson UpdateUserProfile( MobilePerson profile, int personId )
         {
-            var rockContext = new Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( rockContext );
             var phoneNumberService = new PhoneNumberService( rockContext );
@@ -497,7 +498,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
              * We have to provide a new RockContext, since EF Core has a caching mechanism that will return the old person with
              * the wrong primary campus.
              */
-            using ( var rockContext2 = new RockContext() )
+            using ( var rockContext2 = RockApp.Current.CreateRockContext() )
             {
                 person = new PersonService( rockContext2 ).Get( person.Id );
 
@@ -541,7 +542,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [BlockAction]
         public object UpdatePersonProfile( MobilePerson profile, Guid personGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personToEdit = new PersonService( rockContext ).Get( personGuid );
                 if ( personToEdit == null )

@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -337,7 +338,7 @@ namespace RockWeb.Blocks.Crm
             {
                 if ( CurrentPersonId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var person = new PersonService( rockContext ).Get( CurrentPersonId.Value );
                         if ( person != null )
@@ -428,7 +429,7 @@ namespace RockWeb.Blocks.Crm
             var workflowTypeId = wtpWorkflow.SelectedValueAsInt();
             if ( workflowTypeId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
                     if ( workflowType != null )
@@ -807,7 +808,7 @@ namespace RockWeb.Blocks.Crm
             Guid? wtGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
             if ( wtGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     wtpWorkflow.SetValue( new WorkflowTypeService( rockContext ).Get( wtGuid.Value ) );
                 }

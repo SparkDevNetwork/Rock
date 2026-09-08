@@ -161,7 +161,7 @@ namespace RockWeb
                     {
                         // check to see if the user is an admin, if so allow them to view the error details
                         var currentPersonId = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson?.Id;
-                        GroupService service = new GroupService( new RockContext() );
+                        GroupService service = new GroupService( RockApp.Current.CreateRockContext() );
                         Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
                         showDetails = currentPersonId.HasValue && adminGroup.Members.Count( m => m.PersonId == currentPersonId.Value ) > 0;
                     }

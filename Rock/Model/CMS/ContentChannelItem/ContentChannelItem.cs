@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Enums.Security;
@@ -398,7 +399,7 @@ namespace Rock.Model
             List<ContentChannelItemIndex> indexableChannelItems = new List<ContentChannelItemIndex>();
 
             // return all approved content channel items that are in content channels that should be indexed
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
                                             .Where( i =>
                                                 i.ContentChannel.IsIndexEnabled
@@ -430,7 +431,7 @@ namespace Rock.Model
         /// <param name="id"></param>
         public void IndexDocument( int id )
         {
-            var itemEntity = new ContentChannelItemService( new RockContext() ).Get( id );
+            var itemEntity = new ContentChannelItemService( RockApp.Current.CreateRockContext() ).Get( id );
 
             // only index if the content channel is set to be indexed
             if ( itemEntity.ContentChannel != null && itemEntity.ContentChannel.IsIndexEnabled )
@@ -477,7 +478,7 @@ namespace Rock.Model
         public ModelFieldFilterConfig GetIndexFilterConfig()
         {
             ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
-            filterConfig.FilterValues = new ContentChannelService( new RockContext() ).Queryable().AsNoTracking().Where( c => c.IsIndexEnabled ).Select( c => c.Name ).ToList();
+            filterConfig.FilterValues = new ContentChannelService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking().Where( c => c.IsIndexEnabled ).Select( c => c.Name ).ToList();
             filterConfig.FilterLabel = "Content Channels";
             filterConfig.FilterField = "contentChannel";
 

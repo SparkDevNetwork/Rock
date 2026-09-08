@@ -73,7 +73,7 @@ namespace Rock.Badge.Component
             var currentPersonId = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson?.Id;
 
             // check for alert note
-            var alertNotesExist = new NoteService( new RockContext() ).Queryable().AsNoTracking()
+            var alertNotesExist = new NoteService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking()
                                 .Where( n => noteTypes.Contains( n.NoteType.Guid )
                                         && n.EntityId.Value == entity.Id
                                         && n.IsAlert == true

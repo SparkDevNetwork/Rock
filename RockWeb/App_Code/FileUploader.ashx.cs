@@ -94,7 +94,7 @@ namespace RockWeb
 
                 if ( !string.IsNullOrWhiteSpace( authToken ) )
                 {
-                    var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
+                    var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
                     var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
                     if ( userLogin != null )
                     {
@@ -315,7 +315,7 @@ namespace RockWeb
             // get BinaryFileType info
             Guid fileTypeGuid = context.Request.QueryString[ParameterKey.FileTypeGuid].AsGuid();
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
 
             var grant = SecurityGrant.FromToken( context.Request.QueryString[ParameterKey.SecurityGrantToken] );

@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -674,7 +675,7 @@ namespace Rock.Web.UI.Controls
             {
                 var currentPerson = rockPage.CurrentPerson;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new NoteService( rockContext );
                 Note note = null;
 
@@ -722,7 +723,7 @@ namespace Rock.Web.UI.Controls
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var noteService = new NoteService( rockContext );
             var note = noteService.Get( noteId.Value );
 
@@ -755,7 +756,7 @@ namespace Rock.Web.UI.Controls
             {
                 var currentPerson = rockPage.CurrentPerson;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var noteService = new NoteService( rockContext );
                 var noteWatchService = new NoteWatchService( rockContext );
 
@@ -853,7 +854,7 @@ namespace Rock.Web.UI.Controls
                 _lbReplyToNoteHidden.RenderControl( writer );
 
                 _mdDeleteWarning.RenderControl( writer );
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     List<Note> viewableNoteList = GetViewableNoteList( rockContext, currentPerson );
 

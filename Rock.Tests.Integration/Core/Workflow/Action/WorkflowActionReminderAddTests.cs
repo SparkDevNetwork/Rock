@@ -24,6 +24,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
@@ -63,7 +64,7 @@ namespace Rock.Tests.Integration.Core.Workflow
         [TestMethod]
         public void ReminderAdd_WithInvalidPersonToRemind_FailsWithErrorMessage()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var newWorkflow = CreateDefaultTestWorkflowInstance( _reminderAddWorkflowType1Guid.AsGuid(), null, null );
 
@@ -79,7 +80,7 @@ namespace Rock.Tests.Integration.Core.Workflow
         [TestMethod]
         public void ReminderAdd_WithInvalidReminderDate_FailsWithErrorMessage()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var newWorkflow = CreateDefaultTestWorkflowInstance( _reminderAddWorkflowType1Guid.AsGuid(), null, null );
 
@@ -95,7 +96,7 @@ namespace Rock.Tests.Integration.Core.Workflow
         [TestMethod]
         public void ReminderAdd_WithUnspecifiedReminderDate_DefaultsToNow()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Assign a unique note value to identify the reminder.
             var reminderCode = Guid.NewGuid().ToString();
@@ -122,7 +123,7 @@ namespace Rock.Tests.Integration.Core.Workflow
         [TestMethod]
         public void ReminderAdd_ReminderDateAsWorkflowAttribute_ReturnsDateFromWorkflowAttribute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Assign a unique note value to identify the reminder.
             var reminderCode = Guid.NewGuid().ToString();
@@ -149,7 +150,7 @@ namespace Rock.Tests.Integration.Core.Workflow
         [TestMethod]
         public void ReminderAdd_ReminderDateAsActivityAttribute_ReturnsDateFromActivityAttribute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var reminderCode = Guid.NewGuid().ToString();
             var note = $"Reminder Code: {reminderCode}";
@@ -181,7 +182,7 @@ namespace Rock.Tests.Integration.Core.Workflow
         private List<string> ExecuteTestWorkflow( Rock.Model.Workflow workflow, bool throwOnFailure )
         {
             // Execute the Workflow
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var workflowService = new WorkflowService( rockContext );
 
             List<string> messages;
@@ -204,7 +205,7 @@ namespace Rock.Tests.Integration.Core.Workflow
         /// <returns></returns>
         private Rock.Model.Workflow CreateDefaultTestWorkflowInstance( Guid workflowTypeGuid, DateTime? reminderDate, string note )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Create a new Workflow instance and set its attributes.
             var workflowTypeCache = WorkflowTypeCache.Get( workflowTypeGuid );
@@ -253,7 +254,7 @@ namespace Rock.Tests.Integration.Core.Workflow
         /// <param name="reminderDateIsActivityAttribute"></param>
         private static void CreateWorkflowTypeWithAddReminderAction( string workflowName, Guid workflowGuid, bool reminderDateIsActivityAttribute )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             //
             // Create New Workflow Type.

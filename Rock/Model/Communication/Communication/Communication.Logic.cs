@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Observability;
 using Rock.Utility;
@@ -173,7 +174,7 @@ namespace Rock.Model
         public void UpdateSendingRecipients()
         {
             var expirationDate = RockDateTime.Now.AddDays( -2 );
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // If any recipients have been in "Sending" status (or reset to "Pending" status from "Sending") for 2 days, set the status to failed, instead.
                 var expiredSendingRecipients = GetRecipientsQry( rockContext ).Where( a => ( a.Status == CommunicationRecipientStatus.Sending || a.Status == CommunicationRecipientStatus.Pending ) && a.FirstSendAttemptDateTime <= expirationDate ).ToList();
@@ -931,7 +932,7 @@ WHERE r.[RowNumber] > 1;";
             }
 
             // Only alter the recipient list if Rock hasn't already begun sending to recipients.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var hasSendingBegun = GetOrSetHasSendingBegun( communication.Id, rockContext );
 
@@ -1002,7 +1003,7 @@ WHERE r.[RowNumber] > 1;";
                 throw new AggregateException( aggregateExceptions );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 

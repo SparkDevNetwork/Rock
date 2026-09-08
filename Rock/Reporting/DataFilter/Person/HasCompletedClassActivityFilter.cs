@@ -26,6 +26,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.Expressions;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -190,7 +191,7 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             if ( selectionConfig != null && selectionConfig.LearningClassActivityGuid.HasValue )
             {
-                var activity = new LearningClassActivityService( new RockContext() ).Get( selectionConfig.LearningClassActivityGuid.Value );
+                var activity = new LearningClassActivityService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.LearningClassActivityGuid.Value );
                 var dateRangeString = string.Empty;
                 if ( selectionConfig.SlidingDateRangeDelimitedValues.IsNotNullOrWhiteSpace() )
                 {
@@ -434,7 +435,7 @@ function() {
             var nbPoints = controls[5] as NumberBox;
             var slidingDateRangePicker = controls[7] as SlidingDateRangePicker;
 
-            var upstreamGuids = new LearningClassActivityService( new RockContext() )
+            var upstreamGuids = new LearningClassActivityService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( la => la.Guid == selectionConfig.LearningClassActivityGuid )
                 .Select( la => new
@@ -575,7 +576,7 @@ function() {
             // If there's no course selected hide the activity dropdown and wait for a selection.
             if ( selectedCourseGuid.HasValue )
             {
-                var classes = new LearningClassService( new RockContext() )
+                var classes = new LearningClassService( RockApp.Current.CreateRockContext() )
                     .Queryable()
                     .Where( lc => lc.LearningCourse.Guid == selectedCourseGuid )
                     .OrderBy( lc => lc.Order )
@@ -602,7 +603,7 @@ function() {
             // If there's no course selected hide the activity dropdown and wait for a selection.
             if ( selectedClassGuid.HasValue )
             {
-                var activities = new LearningClassActivityService( new RockContext() )
+                var activities = new LearningClassActivityService( RockApp.Current.CreateRockContext() )
                     .Queryable()
                     .Where( la => la.LearningClass.Guid == selectedClassGuid )
                     .OrderBy( la => la.Order )

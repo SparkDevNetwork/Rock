@@ -26,6 +26,7 @@ using System.ComponentModel;
 using Rock.Common.Mobile.ViewModel;
 using System.Linq;
 using Rock.ClientService.Connection.ConnectionOpportunity;
+using Rock.Configuration;
 using Rock.Model.Connection.ConnectionOpportunity.Options;
 using Rock.Security;
 using Rock.Common.Mobile.Blocks.Connection.AddConnectionRequestLegacy;
@@ -689,7 +690,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult GetConnectionTypes( GetConnectionTypesRequestBag requestBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
 
@@ -724,7 +725,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 return ActionBadRequest( "The connection type identifier key is required." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionType = new ConnectionTypeService( rockContext ).GetNoTracking( requestBag.ConnectionTypeId );
 
@@ -767,7 +768,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 return ActionBadRequest( "The connection opportunity identifier key is required." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var opportunity = new ConnectionOpportunityService( rockContext )
                     .Get( requestBag.ConnectionOpportunityId );
@@ -824,7 +825,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult SaveConnectionRequest( SaveConnectionRequestRequestBag requestBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var saveResult = SaveConnectionRequest( requestBag, rockContext );
 

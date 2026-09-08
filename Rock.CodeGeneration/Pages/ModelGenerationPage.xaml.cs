@@ -1527,6 +1527,7 @@ GO
             sb.AppendLine( "//" );
             sb.AppendLine( "" );
 
+            sb.AppendLine( $"using Rock.Configuration;" );
             sb.AppendLine( $"using {type.Namespace};" );
             sb.AppendLine( $"using Rock.SystemGuid;" );
             sb.AppendLine( "" );
@@ -1553,7 +1554,7 @@ GO
             sb.AppendLine( "        /// <summary>" );
             sb.AppendLine( $"        /// Initializes a new instance of the <see cref=\"{ pluralizedName}Controller\"/> class." );
             sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( $"        public {pluralizedName}Controller() : base( new {type.Namespace}.{type.Name}Service( new {dbContextFullName}() ) ) {{ }} " );
+            sb.AppendLine( $"        public {pluralizedName}Controller() : base( new {type.Namespace}.{type.Name}Service( RockApp.Current.CreateRockContext() ) ) {{ }} " );
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 

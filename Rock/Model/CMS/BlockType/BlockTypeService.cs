@@ -28,6 +28,7 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Logging;
@@ -155,7 +156,7 @@ namespace Rock.Model
                         {
                             if ( BlockTypeCache.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
                             {
-                                using ( var rockContext = new RockContext() )
+                                using ( var rockContext = RockApp.Current.CreateRockContext() )
                                 {
                                     var blockTypeCache = BlockTypeCache.Get( blockTypeId );
                                     Type blockCompiledType = blockTypeCache.GetCompiledType();
@@ -184,7 +185,7 @@ namespace Rock.Model
             var rockBlockTypes = Reflection.FindTypes( typeof( Blocks.IRockBlockType ) );
 
             List<Type> registeredTypes;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 registeredTypes = new BlockTypeService( rockContext )
                     .Queryable()
@@ -208,7 +209,7 @@ namespace Rock.Model
                     // Attempt to load the control
                     try
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var entityTypeId = EntityTypeCache.Get( type, true, rockContext ).Id;
                             var blockTypeService = new BlockTypeService( rockContext );
@@ -519,7 +520,7 @@ namespace Rock.Model
             }
             else
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     registeredPaths = new BlockTypeService( rockContext )
                         .Queryable().AsNoTracking()
@@ -567,7 +568,7 @@ namespace Rock.Model
 
                     if ( blockCompiledType != null && typeof( Web.UI.RockBlock ).IsAssignableFrom( blockCompiledType ) )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var blockTypeService = new BlockTypeService( rockContext );
                             var blockType = blockTypeService.Queryable()

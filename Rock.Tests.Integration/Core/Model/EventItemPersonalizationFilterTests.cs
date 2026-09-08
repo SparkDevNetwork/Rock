@@ -28,6 +28,7 @@ using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 using static Rock.Tests.Integration.TestData.EventsDataManager;
+using Rock.Configuration;
 
 namespace Rock.Tests.Integration.Core.Model
 {
@@ -184,7 +185,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             // This is the behavior of a site that has personalization disabled: the matched id lists are
             // always empty, so every tagged event is hidden while untagged events remain visible.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var visibleEventGuids = GetTestOccurrenceQuery( rockContext )
                 .FilterByPersonalization( rockContext, true, true, new List<int>(), new List<int>() )
@@ -197,7 +198,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void FilterByPersonalization_WithNullMatchedIdentifiers_ExcludesEveryTaggedEvent()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var visibleEventGuids = GetTestOccurrenceQuery( rockContext )
                 .FilterByPersonalization( rockContext, true, true, null, null )
@@ -216,7 +217,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private void AssertVisibleEvents( bool filterByPersonalizationSegments, bool filterByRequestFilters, string[] expectedEventGuids )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var matchedSegmentIds = new List<int> { GetSegmentId( PersonalizationDataManager.Constants.SegmentAllMenGuid ) };
             var matchedRequestFilterIds = new List<int> { GetRequestFilterId( PersonalizationDataManager.Constants.FilterQueryParameter1Guid ) };
@@ -249,7 +250,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static void AddTestSchedule()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var isScheduleMissing = new ScheduleService( rockContext ).Get( TestScheduleGuid.AsGuid() ) == null;
             if ( !isScheduleMissing )
@@ -272,7 +273,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static void AddEventItemWithOccurrence( string eventItemGuid, string occurrenceGuid, string eventName )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var isEventItemMissing = new EventItemService( rockContext ).Get( eventItemGuid.AsGuid() ) == null;
             if ( isEventItemMissing )
@@ -315,7 +316,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static void SetPersonalizationSegments( string eventItemGuid, params string[] segmentGuids )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var eventItem = new EventItemService( rockContext ).Get( eventItemGuid.AsGuid() );
             var segmentService = new PersonalizationSegmentService( rockContext );
@@ -332,7 +333,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static void SetPersonalizationRequestFilters( string eventItemGuid, params string[] requestFilterGuids )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var eventItem = new EventItemService( rockContext ).Get( eventItemGuid.AsGuid() );
             var requestFilterService = new RequestFilterService( rockContext );
@@ -346,12 +347,12 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static int GetSegmentId( string segmentGuid )
         {
-            return new PersonalizationSegmentService( new RockContext() ).GetNoTracking( segmentGuid.AsGuid() ).Id;
+            return new PersonalizationSegmentService( RockApp.Current.CreateRockContext() ).GetNoTracking( segmentGuid.AsGuid() ).Id;
         }
 
         private static int GetRequestFilterId( string requestFilterGuid )
         {
-            return new RequestFilterService( new RockContext() ).GetNoTracking( requestFilterGuid.AsGuid() ).Id;
+            return new RequestFilterService( RockApp.Current.CreateRockContext() ).GetNoTracking( requestFilterGuid.AsGuid() ).Id;
         }
 
         #endregion

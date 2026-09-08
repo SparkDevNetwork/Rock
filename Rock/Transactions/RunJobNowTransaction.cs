@@ -15,6 +15,7 @@
 // </copyright>
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -45,7 +46,7 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
 

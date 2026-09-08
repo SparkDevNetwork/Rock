@@ -526,7 +526,7 @@ namespace Rock.Blocks.Store
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.ExecuteSqlCommand( sqlScript );
                 }

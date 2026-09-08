@@ -24,6 +24,7 @@ using PayPal.Payments.Common.Utility;
 using PayPal.Payments.DataObjects;
 using PayPal.Payments.Transactions;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -238,7 +239,7 @@ namespace Rock.PayFlowPro
                         if ( paymentInfo is ReferencePaymentInfo )
                         {
                             var reference = paymentInfo as ReferencePaymentInfo;
-                            var rockContext = new RockContext();
+                            var rockContext = RockApp.Current.CreateRockContext();
                             var savedAccount = new FinancialPersonSavedAccountService( rockContext )
                                 .Queryable()
                                 .Where( s =>
@@ -827,7 +828,7 @@ namespace Rock.PayFlowPro
 
             if ( financialGatewayId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var gateway = new FinancialGatewayService( rockContext ).Get( financialGatewayId.Value );
                     gateway.LoadAttributes( rockContext );

@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -186,7 +187,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedValueId = new DefinedValueService( rockContext ).GetId( guid.Value );
 
@@ -264,7 +265,7 @@ namespace Rock.Field.Types
             ddlGroupType.Label = "Group Type";
             ddlGroupType.Help = "The Group Type to select location types from.";
 
-            Rock.Model.GroupTypeService groupTypeService = new Model.GroupTypeService( new RockContext() );
+            Rock.Model.GroupTypeService groupTypeService = new Model.GroupTypeService( RockApp.Current.CreateRockContext() );
             foreach ( var groupType in groupTypeService.Queryable().AsNoTracking().OrderBy( g => g.Name ).Select( a => new { a.Name, a.Guid } ) )
             {
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString() ) );

@@ -18,6 +18,7 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -64,7 +65,7 @@ namespace Rock.Model
         /// <param name="streakId">The streak identifier.</param>
         public static void RefreshStreakDenormalizedProperties( int streakId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakService = new StreakService( rockContext );
             var streakTypeService = new StreakTypeService( rockContext );
 

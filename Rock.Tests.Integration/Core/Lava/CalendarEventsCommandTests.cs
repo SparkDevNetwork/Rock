@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -153,7 +154,7 @@ namespace Rock.Tests.Integration.Core.Lava
         [TestMethod]
         public void CalendarEventsCommand_WithAudienceAsId_RetrievesEventsWithMatchingAudience()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var audienceGuid = SystemGuid.DefinedType.CONTENT_CHANNEL_AUDIENCE_TYPE.AsGuid();
 
@@ -215,7 +216,7 @@ namespace Rock.Tests.Integration.Core.Lava
         [TestMethod]
         public void CalendarEventsCommand_WithCampusAsId_RetrievesEventsWithMatchingCampus()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var campusId = new CampusService( rockContext ).Queryable()
                 .FirstOrDefault().Id;
@@ -242,7 +243,7 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var campusId = new CampusService( rockContext ).Get( MainCampusGuidString.AsGuid() ).Id;
 
             var template = GetTestTemplate( $"calendarid:'Public' campusids:'{campusId}' startdate:'{effectiveDate:yyyy-MM-dd}'" );

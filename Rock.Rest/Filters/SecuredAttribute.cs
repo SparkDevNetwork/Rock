@@ -25,6 +25,7 @@ using System.Web.Http.Filters;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -242,7 +243,7 @@ namespace Rock.Rest.Filters
 
                 if ( appId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var appUser = Mobile.MobileHelper.GetMobileApplicationUser( appId.Value, mobileApiKey, rockContext );
 

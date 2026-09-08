@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -33,7 +34,7 @@ namespace Rock.Tests.Integration.TestData
             public static Service<T> GetEntityService<T>( RockContext rockContext = null )
                 where T : Rock.Data.Entity<T>, new()
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext );
 
                 return service as Service<T>;
@@ -42,7 +43,7 @@ namespace Rock.Tests.Integration.TestData
             public static T GetEntityByIdentifierOrThrow<T>( string identifier, RockContext rockContext = null )
                 where T : Rock.Data.Entity<T>, new()
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 var service = GetEntityService<T>( rockContext );
 
                 var entity = service.GetByIdentifierOrThrow( identifier );
@@ -106,7 +107,7 @@ namespace Rock.Tests.Integration.TestData
                 Group group = null;
 
                 // Use a new context because the Group will be immediately persisted.
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 rockContext.WrapTransaction( () =>
                 {
                     var groupService = new GroupService( rockContext );
@@ -486,7 +487,7 @@ namespace Rock.Tests.Integration.TestData
                 var result = new AddGroupRequirementTypeActionResult();
                 GroupRequirementType groupRequirementType = null;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 rockContext.WrapTransaction( () =>
                 {
                     var groupRequirementTypeService = new GroupRequirementTypeService( rockContext );
@@ -586,7 +587,7 @@ namespace Rock.Tests.Integration.TestData
             /// <returns></returns>
             public static bool SetPersonBackgroundCheck( string personIdentifier, DateTime? backgroundCheckDate, bool? isPass )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
 
                 var person = personService.GetByIdentifierOrThrow( personIdentifier );
@@ -617,7 +618,7 @@ namespace Rock.Tests.Integration.TestData
             /// <returns></returns>
             public static bool SetPersonConnectionStatus( string personIdentifier, string connectionStatusIdentifier )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
 
                 var person = personService.GetByIdentifierOrThrow( personIdentifier );

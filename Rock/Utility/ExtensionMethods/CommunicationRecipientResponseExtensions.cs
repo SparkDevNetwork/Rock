@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -66,7 +67,7 @@ namespace Rock
 
             if ( loadAttachments )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Load attachments from either the CommunicationAttachment
                     // table or the CommunicationResponseAttachment table.
@@ -120,7 +121,7 @@ namespace Rock
 
             // Load the attachments for all responses in two queries rather
             // than executing a query for every single response.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Communication recipient responses can have duplicate communication IDs,
                 // so we want to ensure that we get each unique communication ID with all of

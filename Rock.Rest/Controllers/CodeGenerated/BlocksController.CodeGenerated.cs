@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BlocksController"/> class.
         /// </summary>
-        public BlocksController() : base( new Rock.Model.BlockService( new Rock.Data.RockContext() ) ) { } 
+        public BlocksController() : base( new Rock.Model.BlockService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

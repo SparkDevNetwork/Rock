@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Financial;
@@ -231,7 +232,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var registrationInstanceId = GetRegistrationInstanceIdFromPage();
                     if ( !registrationInstanceId.HasValue )
                     {
@@ -299,7 +300,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( _registrationTemplate == null )
                 {
-                    _registrationTemplate = new RegistrationTemplateService( new RockContext() )
+                    _registrationTemplate = new RegistrationTemplateService( RockApp.Current.CreateRockContext() )
                         .Queryable().Where( a => a.Id == this.RegistrationTemplateId )
                         .Include( a => a.FinancialGateway )
                         .Include( a => a.Discounts )
@@ -509,7 +510,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( RegistrationId.HasValue )
                 {
@@ -610,7 +611,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationId.HasValue )
             {
                 Registration registration = null;
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
 
                 var registrationService = new RegistrationService( rockContext );
 
@@ -766,7 +767,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     int instanceId = GetRegistrationInstanceIdFromPage() ?? 0;
                     templateId = new RegistrationInstanceService( rockContext )
@@ -859,7 +860,7 @@ namespace RockWeb.Blocks.Event
             int? instanceId = ddlNewRegistrationInstance.SelectedValueAsInt();
             if ( instanceId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
                     if ( instance != null )
@@ -886,7 +887,7 @@ namespace RockWeb.Blocks.Event
         protected void btnMoveRegistration_Click( object sender, EventArgs e )
         {
             // set the new registration id
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationService = new RegistrationService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -1020,7 +1021,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( ppPerson.PersonId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var person = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
@@ -1104,7 +1105,7 @@ namespace RockWeb.Blocks.Event
 
                 var changes = new History.HistoryChangeList();
                 changes.AddChange( History.HistoryVerb.Sent, History.HistoryChangeType.Record, "Confirmation" ).SetRelatedData( "Resent", null, null );
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     HistoryService.SaveChanges(
                         rockContext,
@@ -1135,7 +1136,7 @@ namespace RockWeb.Blocks.Event
                     ppPayer.SetValue( null );
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     dvpCurrencyType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ).Id;
                     dvpCreditCardType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ).Id;
@@ -1209,7 +1210,7 @@ namespace RockWeb.Blocks.Event
 
                 try
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     rockContext.WrapTransaction( () =>
                     {
                         string errorMessage = string.Empty;
@@ -1274,7 +1275,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( Registration.PersonId.HasValue )
                     {
-                        Registration.SavePersonNotesAndHistory( new PersonService( new RockContext() ).Get( Registration.PersonId.Value ), CurrentPersonAliasId, previousRegistrantPersonIds );
+                        Registration.SavePersonNotesAndHistory( new PersonService( RockApp.Current.CreateRockContext() ).Get( Registration.PersonId.Value ), CurrentPersonAliasId, previousRegistrantPersonIds );
                     }
 
                     AddRegistrantToGroup( registrantId.Value );
@@ -1293,7 +1294,7 @@ namespace RockWeb.Blocks.Event
                 this.RegistrationTemplate.GroupTypeId.HasValue &&
                 Registration.GroupId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantId );
                     if ( registrant != null && registrant.PersonId.HasValue && !registrant.GroupMemberId.HasValue )
@@ -1363,7 +1364,7 @@ namespace RockWeb.Blocks.Event
                 int? registrantId = lb.ID.Substring( 24 ).AsIntegerOrNull();
                 if ( registrantId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var personService = new PersonService( rockContext );
                         var signatureDocumentTemplateService = new SignatureDocumentTemplateService( rockContext );
@@ -1448,7 +1449,7 @@ namespace RockWeb.Blocks.Event
                 int? registrantId = lb.ID.Substring( 19 ).AsIntegerOrNull();
                 if ( registrantId.HasValue )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
 
                     var registrantService = new RegistrationRegistrantService( rockContext );
                     RegistrationRegistrant registrant = registrantService.Get( registrantId.Value );
@@ -1540,7 +1541,7 @@ namespace RockWeb.Blocks.Event
                 RegistrationInstanceId = GetRegistrationInstanceIdFromPage();
                 RegistrationId = GetRegistrationIdFromPage();
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( RegistrationId.HasValue )
                 {
@@ -1593,7 +1594,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( registrationId.HasValue && registrationId.Value != 0 )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                 var registration = new RegistrationService( rockContext )
                     .Queryable()
@@ -1634,7 +1635,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         public void ShowDetail( int registrationId, int? registrationInstanceId )
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             if ( Registration == null && !registrationId.Equals( 0 ) )
             {
@@ -1782,7 +1783,7 @@ namespace RockWeb.Blocks.Event
             SetCostLabels( registration );
             SetEditMode( false );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
             {
@@ -2296,7 +2297,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( Registration != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var currencyTypes = new Dictionary<int, string>();
                     var creditCardTypes = new Dictionary<int, string>();
@@ -2394,7 +2395,7 @@ namespace RockWeb.Blocks.Event
             int? currentValue = ddlNewRegistrationInstance.SelectedValueAsInt();
 
             // list other registration instances
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var otherRegistrationInstances = new RegistrationInstanceService( rockContext ).Queryable()
                         .Where( i =>
@@ -2635,7 +2636,7 @@ namespace RockWeb.Blocks.Event
                 && paymentPlan.PlannedAmountRemaining != registration.BalanceDue;
 
             var paymentPlanFinancialScheduledTransactionId = registration.PaymentPlanFinancialScheduledTransactionId.Value;
-            var lastTransactionDate = new FinancialTransactionService( new RockContext() )
+            var lastTransactionDate = new FinancialTransactionService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( a =>
                     a.ScheduledTransactionId.HasValue
@@ -3299,7 +3300,7 @@ namespace RockWeb.Blocks.Event
                     .ToList() ?? new List<DefinedValueCache>();
             }
             var paymentPlanFinancialScheduledTransactionId = this.Registration.PaymentPlanFinancialScheduledTransactionId;
-            var lastTransactionDate = new FinancialTransactionService( new RockContext() )
+            var lastTransactionDate = new FinancialTransactionService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( a =>
                     a.ScheduledTransactionId.HasValue
@@ -3482,7 +3483,7 @@ namespace RockWeb.Blocks.Event
                 return false;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var financialScheduledTransaction = financialScheduledTransactionService
@@ -3672,10 +3673,10 @@ namespace RockWeb.Blocks.Event
             nbPaneAccountError.Visible = false;
             nbPaneAccountWarning.Visible = false;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
-                var registrationService = new Rock.Model.RegistrationService( new RockContext() );
+                var registrationService = new Rock.Model.RegistrationService( RockApp.Current.CreateRockContext() );
 
                 var success = registrationService.TryCancelPaymentPlan( this.Registration, financialScheduledTransactionService, out var error, out var warning );
 

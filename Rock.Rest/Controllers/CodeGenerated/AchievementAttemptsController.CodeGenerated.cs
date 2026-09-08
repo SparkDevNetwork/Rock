@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AchievementAttemptsController"/> class.
         /// </summary>
-        public AchievementAttemptsController() : base( new Rock.Model.AchievementAttemptService( new Rock.Data.RockContext() ) ) { } 
+        public AchievementAttemptsController() : base( new Rock.Model.AchievementAttemptService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

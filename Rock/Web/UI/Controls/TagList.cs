@@ -22,6 +22,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -256,7 +257,7 @@ Rock.controls.tagList.initialize({{
         {
             var serializedTags = new List<string>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var taggedItemService = new TaggedItemService( rockContext );
                 var itemList = taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInactiveTags )
@@ -315,7 +316,7 @@ Rock.controls.tagList.initialize({{
 
             if ( EntityGuid != Guid.Empty )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var tagService = new TagService( rockContext );
                 var taggedItemService = new TaggedItemService( rockContext );
                 var person = currentPersonId.HasValue ? new PersonService( rockContext ).Get( currentPersonId.Value ) : null;

@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
+using Rock.Configuration;
 #endif
 namespace Rock.Field.Types
 {
@@ -45,7 +46,7 @@ namespace Rock.Field.Types
 
             GroupMemberRequirement groupMemberRequirement = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Guid? guid = privateValue.AsGuidOrNull();
                 if ( guid.HasValue )
@@ -100,7 +101,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
@@ -124,7 +125,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // This is a complex reference. See below in the GetReferencedProperties()
                 // method for a more detailed description of the paths we need. This query
@@ -257,7 +258,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new GroupMemberRequirementService( rockContext ).GetId( guid );
             }
@@ -271,7 +272,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var itemGuid = new GroupMemberRequirementService( rockContext ).GetGuid( id ?? 0 );
                 string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;

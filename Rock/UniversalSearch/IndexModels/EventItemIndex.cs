@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
@@ -237,7 +238,7 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             // Otherwise we're checking security
-            var eventItem = new EventItemService( new Data.RockContext() ).Get( ( int ) this.Id );
+            var eventItem = new EventItemService( RockApp.Current.CreateRockContext() ).Get( ( int ) this.Id );
 
             // Check if item in database has been deleted
             if ( eventItem == null )

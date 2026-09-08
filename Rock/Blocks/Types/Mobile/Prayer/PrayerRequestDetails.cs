@@ -24,6 +24,7 @@ using RestSharp.Extensions;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -558,7 +559,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             string fieldsContent;
             var parameters = new Dictionary<string, string>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Guid? requestGuid = RequestContext.GetPageParameter( PageParameterKeys.RequestGuid ).AsGuidOrNull();
                 PrayerRequest request = null;
@@ -654,7 +655,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 string firstName, lastName, email;
                 if ( usePassedInRequestor )
                 {
-                    rockContext = rockContext ?? new RockContext();
+                    rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                     var person = new PersonService( rockContext )
                         .Get( requestorPersonGuid.Value );
@@ -753,7 +754,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <returns>The response to send back to the client.</returns>
         private CallbackResponse SaveRequest( Dictionary<string, object> parameters )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var prayerRequestService = new PrayerRequestService( rockContext );
                 PrayerRequest prayerRequest;

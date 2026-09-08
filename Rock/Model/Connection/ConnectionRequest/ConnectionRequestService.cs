@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model.Connection.ConnectionRequest.Options;
@@ -1125,7 +1126,7 @@ namespace Rock.Model
         internal ConnectionRequest CreateConnectionRequestWithDefaultConnector( int connectionOpportunityId, int personAliasId, int? campusId = null, ConnectionStatus status = null, RockContext rockContext = null )
         {
             // create a new RockContent if null was provided
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
             status = status ?? connectionOpportunityService.GetStatuses( connectionOpportunityId )

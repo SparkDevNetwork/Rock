@@ -18,6 +18,7 @@
 using System;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -47,7 +48,7 @@ namespace Rock.RealTime.Topics
                 throw new RealTimeException( "Phone number was not found." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = Context.CurrentPersonId.HasValue
                     ? new PersonService( rockContext ).Get( Context.CurrentPersonId.Value )

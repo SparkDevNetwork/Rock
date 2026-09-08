@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
@@ -224,7 +225,7 @@ namespace Rock.UniversalSearch.IndexModels
             // if url was not passed in use default from content channel
             if ( displayOptions == null || !displayOptions.ContainsKey( "ChannelItem-Url" ) )
             {
-                var channel = new ContentChannelService( new RockContext() ).Get( this.ContentChannelId );
+                var channel = new ContentChannelService( RockApp.Current.CreateRockContext() ).Get( this.ContentChannelId );
                 if ( channel != null )
                 {
                     url = channel.ItemUrl;

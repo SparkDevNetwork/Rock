@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="SmsPipelinesController"/> class.
         /// </summary>
-        public SmsPipelinesController() : base( new Rock.Model.SmsPipelineService( new Rock.Data.RockContext() ) ) { } 
+        public SmsPipelinesController() : base( new Rock.Model.SmsPipelineService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

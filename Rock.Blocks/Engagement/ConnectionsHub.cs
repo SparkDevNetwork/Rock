@@ -3,6 +3,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Web.UI;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Engagement.ConnectionsHub;
 using Rock.ViewModels.Blocks;
@@ -31,7 +32,6 @@ using System.Threading.Tasks;
 using Rock.AI.Classes.ChatCompletions;
 using static Rock.Model.ConnectionType.ConnectionTypeAdditionalSettings;
 using Rock.Model.Connection.ConnectionType.Options;
-using Rock.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Rock.AI;
 
@@ -1612,7 +1612,7 @@ namespace Rock.Blocks.Engagement
                 {
                     try
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var request = new ConnectionRequestService( rockContext ).Get( requestId );
                             var wfType = WorkflowTypeCache.Get( workflowTypeId );

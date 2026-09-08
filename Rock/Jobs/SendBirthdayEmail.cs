@@ -24,6 +24,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -62,7 +63,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             Guid? systemEmailGuid = GetAttributeValue( "BirthdayEmail" ).AsGuidOrNull();

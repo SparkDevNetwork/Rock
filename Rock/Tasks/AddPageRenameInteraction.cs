@@ -16,6 +16,7 @@
 //
 using System;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -41,7 +42,7 @@ namespace Rock.Tasks
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionComponentService = new InteractionComponentService( rockContext );
             var componentQuery = interactionComponentService.QueryByPage( pageCache );
 

@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -136,7 +137,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var box = new SignUpDetailInitializationBox();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SetBoxInitialState( box, rockContext );
             }

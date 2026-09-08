@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tasks;
@@ -249,7 +250,7 @@ namespace RockWeb.Blocks.Communication
             nbResult.Visible = false;
 
             // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var testCommunication = SetupCommunication( rockContext );
                 var pushData = testCommunication.PushData.FromJsonOrNull<PushData>();
@@ -345,7 +346,7 @@ namespace RockWeb.Blocks.Communication
                             rockContext.SaveChanges( disablePrePostProcessing: true );
 
                             // Delete any Person History that was created for the Test Communication
-                            using ( var historyContext = new RockContext() )
+                            using ( var historyContext = RockApp.Current.CreateRockContext() )
                             {
                                 var categoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid() ).Id;
                                 var communicationEntityTypeId = EntityTypeCache.Get<Rock.Model.Communication>().Id;
@@ -469,7 +470,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns><c>true</c> if any templates were displayed.</returns>
         private bool BindTemplatePicker()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var templateQuery = new CommunicationTemplateService( rockContext )
                 .Queryable()
@@ -560,7 +561,7 @@ namespace RockWeb.Blocks.Communication
         private void InitializeFieldsFromCommunicationTemplate( int communicationTemplateId )
         {
             hfSelectedCommunicationTemplateId.Value = communicationTemplateId.ToString();
-            var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
+            var communicationTemplate = new CommunicationTemplateService( RockApp.Current.CreateRockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
             var pushCommunication = new CommunicationDetails
             {
@@ -672,7 +673,7 @@ namespace RockWeb.Blocks.Communication
         {
             nbPushTestResult.Visible = false;
 
-            var communication = SetupCommunication( new RockContext() );
+            var communication = SetupCommunication( RockApp.Current.CreateRockContext() );
             nbPushValidation.Visible = false;
             if ( !VerifyPushSettingsAreValid( communication ) )
             {
@@ -690,7 +691,7 @@ namespace RockWeb.Blocks.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         protected void lbPushEditorSend_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var communicationService = new CommunicationService( rockContext );
             var communication = SetupCommunication( rockContext );
 

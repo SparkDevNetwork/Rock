@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -296,7 +297,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !DefaultInteractionChannelId.HasValue && ( !InteractionChannelId.HasValue || InteractionChannelId.Value == 0 ) )
                     {
-                        var rockContext = new RockContext();
+                        var rockContext = RockApp.Current.CreateRockContext();
                         var interactionComponentService = new InteractionComponentService( rockContext );
                         var component = interactionComponentService.Queryable().AsNoTracking().FirstOrDefault( st => st.Id == componentId );
 

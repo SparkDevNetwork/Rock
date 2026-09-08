@@ -80,7 +80,7 @@ namespace Rock.Tv
                     return null;
                 }
 
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                 // Get user login for the app and verify that it matches the request's key
                 var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
@@ -205,7 +205,7 @@ namespace Rock.Tv
                 username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
 
                 var userLogin = UserLoginService.Create(
-                                new RockContext(),
+                                RockApp.Current.CreateRockContext(),
                                 person,
                                 AuthenticationServiceType.Internal,
                                 EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,

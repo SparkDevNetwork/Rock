@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.MergeTemplates;
@@ -87,7 +88,7 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<MergeTemplateBag, MergeTemplateDetailOptionsBag>();
 
@@ -407,7 +408,7 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -555,7 +556,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -581,7 +582,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<MergeTemplateBag, MergeTemplateDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new MergeTemplateService( rockContext );
 
@@ -634,7 +635,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new MergeTemplateService( rockContext );
 
@@ -675,7 +676,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<MergeTemplateBag, MergeTemplateDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -723,7 +724,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult ValidateFile( ListItemBag binaryFile, Guid? mergeTemplateTypeGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileId = binaryFile.GetEntityId<BinaryFile>( rockContext ) ?? 0;
                 var bag = GetMergeTemplateValidationBag( binaryFileId, mergeTemplateTypeGuid, rockContext );

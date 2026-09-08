@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Engagement;
@@ -2434,7 +2435,7 @@ namespace Rock.Blocks.Engagement
             var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
 
             var parameters = GetStepFlowParameters( maxLevels, dateRange, startingStepTypeIds );
-            var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
+            var flowEdgeData = new DbService( RockApp.Current.CreateRockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
             var flowEdgeResults = new List<SankeyDiagramEdgeBag>();
 
             foreach ( DataRow flowEdgeRow in flowEdgeData.Rows )

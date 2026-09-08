@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -227,7 +228,7 @@ namespace RockWeb.Blocks.CheckIn
                     if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
                     {
                         // Need to load a fully hydrated person because the person.Person is only a clone.
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             Person p = new PersonService( rockContext ).Get( person.Person.Id );
                             if ( p != null )

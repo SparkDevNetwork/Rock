@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Web.Cache;
@@ -54,7 +55,7 @@ namespace Rock.Financial
 
             // Create any attributes that need to be created
             int financialGatewayEntityTypeId = EntityTypeCache.Get( typeof( Model.FinancialGateway ) ).Id;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var gatewayComponent in this.Components )
                 {

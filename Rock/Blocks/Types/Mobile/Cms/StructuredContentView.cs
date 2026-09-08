@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -107,7 +108,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [BlockAction]
         public object GetStructuredContent( Guid itemGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelItemService = new ContentChannelItemService( rockContext );
                 var noteTypeId = NoteTypeCache.Get( SystemGuid.NoteType.CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE ).Id;
@@ -152,7 +153,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelItemService = new ContentChannelItemService( rockContext );
                 var noteService = new NoteService( rockContext );

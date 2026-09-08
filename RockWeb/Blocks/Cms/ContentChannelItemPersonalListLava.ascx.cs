@@ -24,6 +24,7 @@ using System.Data.Entity;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -169,7 +170,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void DisplayItems()
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             Guid? contentChannelGuid = GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
             ContentChannel contentChannel = null;

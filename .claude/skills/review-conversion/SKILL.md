@@ -213,7 +213,7 @@ Note: these may also exist in the original WebForms block. Flag them regardless 
 - Missing `.Value` on nullable types
 - Incorrect entity lookups (Id vs IdKey, Person vs PersonAlias)
 - `parseInt()` in TypeScript without NaN handling
-- `new RockContext()` instead of base class context
+- `new RockContext()` — use the base class context, or `RockApp.Current.CreateRockContext()` if a separate one is truly needed (never `new RockContext()`)
 - `DateTime` instead of `RockDateTime`
 - Incorrect async/await patterns
 

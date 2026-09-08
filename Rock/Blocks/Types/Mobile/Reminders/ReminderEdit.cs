@@ -23,6 +23,7 @@ using System.Linq;
 using System.ComponentModel;
 using Rock.Common.Mobile.Blocks.Reminders;
 using Rock.Common.Mobile.Blocks.Reminders.ReminderEdit;
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Common.Mobile.ViewModel;
 
@@ -369,7 +370,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             }
             else if ( entityType != null && entityType.Guid == Rock.SystemGuid.EntityType.CONNECTION_REQUEST.AsGuid() )
             {
-                var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( bag.EntityGuid );
+                var connectionRequest = new ConnectionRequestService( RockApp.Current.CreateRockContext() ).Get( bag.EntityGuid );
 
                 var connectionRequestText = connectionRequest.ConnectionOpportunity?.Name ?? string.Empty;
 
@@ -403,7 +404,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <returns></returns>
         private ResponseBag GetReminderEditBag( Guid? reminderGuid, Guid? entityTypeGuid, Guid? entityGuid = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var reminderTypeService = new ReminderTypeService( rockContext );
@@ -514,7 +515,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 return ActionForbidden();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var linkedNoteGuid = RequestContext.GetPageParameter( PageParameterKey.LinkedNoteGuid ).AsGuidOrNull();
                 var linkedNoteTypeGuid = RequestContext.GetPageParameter( PageParameterKey.LinkedNoteTypeGuid ).AsGuidOrNull();

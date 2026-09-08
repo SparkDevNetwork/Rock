@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -60,7 +61,7 @@ namespace Rock.Jobs
             // NOTE: Be sure to use RockDateTime.Now otherwise DateTime.Now will use SysDateTime()
             //       which would be the time on the SQL server!
 
-            var workflowIdsToProcess = new WorkflowService( new RockContext() )
+            var workflowIdsToProcess = new WorkflowService( RockApp.Current.CreateRockContext() )
                 .GetActive()
                 .Where( wf => ( wf.WorkflowType.IsActive == true || !wf.WorkflowType.IsActive.HasValue ) )
                 .Where( wf =>
@@ -75,7 +76,7 @@ namespace Rock.Jobs
                 try
                 {
                     // create a new rockContext and service for every workflow to prevent a build-up of Context.ChangeTracker.Entries()
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var workflowService = new WorkflowService( rockContext );
                     var workflow = workflowService.Queryable().FirstOrDefault( a => a.Id == workflowId );
                     if ( workflow != null )

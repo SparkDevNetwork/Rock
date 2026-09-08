@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -337,7 +338,7 @@ namespace Rock.Web.UI.Controls
                 return _ddlMediaAccount.SelectedValue.AsIntegerOrNull();
             }
 
-            set => SetMediaAccountIdInternal( value, new RockContext() );
+            set => SetMediaAccountIdInternal( value, RockApp.Current.CreateRockContext() );
         }
 
         /// <summary>
@@ -354,7 +355,7 @@ namespace Rock.Web.UI.Controls
                 return _ddlMediaFolder.SelectedValue.AsIntegerOrNull();
             }
 
-            set => SetMediaFolderIdInternal( value, new RockContext() );
+            set => SetMediaFolderIdInternal( value, RockApp.Current.CreateRockContext() );
         }
 
         /// <summary>
@@ -371,7 +372,7 @@ namespace Rock.Web.UI.Controls
                 return _ddlMediaElement.SelectedValue.AsIntegerOrNull();
             }
 
-            set => SetMediaElementIdInternal( value, new RockContext() );
+            set => SetMediaElementIdInternal( value, RockApp.Current.CreateRockContext() );
         }
 
         #endregion
@@ -609,7 +610,7 @@ namespace Rock.Web.UI.Controls
             _ddlMediaAccount.Items.Clear();
             _ddlMediaAccount.Items.Add( Rock.Constants.None.ListItem );
 
-            var mediaAccountService = new Rock.Model.MediaAccountService( new RockContext() );
+            var mediaAccountService = new Rock.Model.MediaAccountService( RockApp.Current.CreateRockContext() );
 
             // Get all media accounts that are active.
             var mediaAccounts = mediaAccountService.Queryable()
@@ -700,7 +701,7 @@ namespace Rock.Web.UI.Controls
                 {
                     Task.WhenAny( task, Task.Delay( 7500 ) ).GetAwaiter().GetResult();
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var originalFolderId = MediaFolderId;
                         var originalElementId = MediaElementId;
@@ -732,7 +733,7 @@ namespace Rock.Web.UI.Controls
         {
             int accountId = _ddlMediaAccount.SelectedValue.AsInteger();
 
-            LoadMediaFolders( accountId, new RockContext() );
+            LoadMediaFolders( accountId, RockApp.Current.CreateRockContext() );
         }
 
         /// <summary>
@@ -744,7 +745,7 @@ namespace Rock.Web.UI.Controls
         {
             int folderId = _ddlMediaFolder.SelectedValue.AsInteger();
 
-            LoadMediaElements( folderId, new RockContext() );
+            LoadMediaElements( folderId, RockApp.Current.CreateRockContext() );
         }
 
         #endregion

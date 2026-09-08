@@ -19,6 +19,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Media;
 
@@ -52,7 +53,7 @@ namespace Rock.Model
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
         public static async Task<SyncOperationResult> SyncMediaInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaAccount = new MediaAccountService( rockContext ).Get( mediaAccountId );
 
@@ -95,7 +96,7 @@ namespace Rock.Model
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
         public static async Task<SyncOperationResult> SyncAnalyticsInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaAccount = new MediaAccountService( rockContext ).GetNoTracking( mediaAccountId );
 
@@ -129,7 +130,7 @@ namespace Rock.Model
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
         public static async Task<SyncOperationResult> RefreshMediaInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaAccount = new MediaAccountService( rockContext ).Get( mediaAccountId );
 

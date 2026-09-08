@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Cms.ContentCollection;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Cms;
@@ -95,7 +96,7 @@ namespace Rock.Jobs
             };
 
             // Clear out the cached filter values so they get rebuilt.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentCollectionService = new ContentCollectionService( rockContext );
                 var contentCollections = contentCollectionService.Queryable().ToList();
@@ -143,7 +144,7 @@ namespace Rock.Jobs
                 // Try to update the last index values.
                 try
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var updateContentCollection = new ContentCollectionService( rockContext ).Get( contentCollection.Id );
 

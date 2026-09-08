@@ -28,6 +28,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Microsoft.SqlServer.Types;
 
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -842,7 +843,7 @@ namespace Rock.Web.UI.Controls
                 Guid guid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
                 if ( !guid.Equals( Guid.Empty ) )
                 {
-                    var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
+                    var location = new Rock.Model.LocationService( RockApp.Current.CreateRockContext() ).Get( guid );
                     if (location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Longitude != null )
                     {
                         CenterPoint = location.GeoPoint;

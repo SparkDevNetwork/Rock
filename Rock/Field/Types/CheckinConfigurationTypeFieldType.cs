@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -45,7 +46,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
            
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 GroupTypeService groupTypeService = new GroupTypeService( rockContext );
                 int? groupTypePurposeCheckinTemplateValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
@@ -92,7 +93,7 @@ namespace Rock.Field.Types
         /// </value>
         internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
+            GroupTypeService groupTypeService = new GroupTypeService( RockApp.Current.CreateRockContext() );
             int? groupTypePurposeCheckinTemplateValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
             return groupTypeService.Queryable()
                 .Where( a => a.GroupTypePurposeValueId.HasValue && a.GroupTypePurposeValueId.Value == groupTypePurposeCheckinTemplateValueId )

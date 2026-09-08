@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -471,7 +472,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( e.Key == "Requester" )
                 {
@@ -560,7 +561,7 @@ namespace RockWeb.Blocks.Connection
 
         protected void gRequests_Delete( object sender, RowEventArgs e )
         {
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new ConnectionRequestService( rockContext );
                 var connectionRequest = service.Get( e.RowKeyId );
@@ -638,7 +639,7 @@ namespace RockWeb.Blocks.Connection
         {
             SummaryState = new List<ConnectionTypeSummary>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var opportunitiesQuery = new ConnectionOpportunityService( rockContext ).Queryable();
 
             var typeFilter = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
@@ -909,7 +910,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void SetFilter()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 sdrpLastActivityDateRange.DelimitedValues = rFilter.GetFilterPreference( "LastActivityDateRange" );
                 var personService = new PersonService( rockContext );
@@ -988,7 +989,7 @@ namespace RockWeb.Blocks.Connection
                 gRequests.IsDeleteEnabled = opportunitySummary.CanEdit;
                 gRequests.ColumnsOfType<DeleteField>().First().Visible = opportunitySummary.CanEdit;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Get queryable of all requests that belong to the selected opportunity, and user is authorized to view (based on security or connector group)
                     var requestsQuery = new ConnectionRequestService( rockContext )

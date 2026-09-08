@@ -23,6 +23,7 @@ using System.Web.UI;
 using Newtonsoft.Json.Linq;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -48,7 +49,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var guids = privateValue.SplitDelimitedValues();
                     var categories = new CategoryService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
@@ -307,7 +308,7 @@ namespace Rock.Field.Types
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var categories = new CategoryService( rockContext ).Queryable().AsNoTracking().Where( c => ids.Contains( c.Id ) );
 
@@ -351,7 +352,7 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    var categories = new CategoryService( new RockContext() ).Queryable().Where( c => guids.Contains( c.Guid ) );
+                    var categories = new CategoryService( RockApp.Current.CreateRockContext() ).Queryable().Where( c => guids.Contains( c.Guid ) );
                     picker.SetValues( categories );
                 }
             }

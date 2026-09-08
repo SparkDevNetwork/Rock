@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -53,7 +54,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var report = new ReportService( rockContext ).GetNoTracking( guid.Value );
                     if ( report != null )
@@ -86,7 +87,7 @@ namespace Rock.Field.Types
 
             if ( usage != ConfigurationValueUsage.View )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     publicConfigurationValues[VALUES_PUBLIC_KEY] = new ReportService( rockContext )
                         .Queryable()
@@ -144,7 +145,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ReportService( rockContext ).Get( guid.Value );
             }
 
@@ -165,7 +166,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reportId = new ReportService( rockContext ).GetId( guid.Value );
 
@@ -240,7 +241,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id, EnhanceForLongLists = true };
             editControl.Items.Add( new ListItem() );
 
-            var reports = new ReportService( new RockContext() ).Queryable().OrderBy( d => d.Name );
+            var reports = new ReportService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( d => d.Name );
             if ( reports.Any() )
             {
                 foreach ( var report in reports )
@@ -296,7 +297,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ReportService( new RockContext() ).Get( guid );
+            var item = new ReportService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -308,7 +309,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ReportService( new RockContext() ).Get( id ?? 0 );
+            var item = new ReportService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

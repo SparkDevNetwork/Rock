@@ -25,6 +25,7 @@ using Humanizer;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -67,7 +68,7 @@ namespace Rock.Jobs
             //    + the registration has a cost
             //    + the registration has been closed within the last xx days (to prevent eternal nagging)
 
-            using ( RockContext rockContext = new RockContext())
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext())
             {
                 int sendCount = 0;
                 int registrationInstanceCount = 0;

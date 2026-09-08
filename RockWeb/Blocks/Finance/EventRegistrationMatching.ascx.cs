@@ -25,6 +25,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -268,7 +269,7 @@ namespace RockWeb.Blocks.Finance
             if ( ddlRegistration != null && ddlRegistration.SelectedValue.AsIntegerOrNull().HasValue )
             {
                 int? financialTransactionDetailId = ddlRegistration.ID.Replace( "ddlRegistration_", string.Empty ).AsInteger();
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var financialTransactionDetail = new FinancialTransactionDetailService( rockContext ).Get( financialTransactionDetailId.Value );
                 var registrationEntityTypeId = EntityTypeCache.GetId<Registration>();
                 financialTransactionDetail.EntityTypeId = registrationEntityTypeId;
@@ -297,7 +298,7 @@ namespace RockWeb.Blocks.Finance
             if ( lbDelete != null )
             {
                 int? financialTransactionDetailId = lbDelete.ID.Replace( "lbDelete_", string.Empty ).AsInteger();
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var financialTransactionDetail = new FinancialTransactionDetailService( rockContext ).Get( financialTransactionDetailId.Value );
                 financialTransactionDetail.EntityTypeId = null;
                 financialTransactionDetail.EntityId = null;
@@ -324,7 +325,7 @@ namespace RockWeb.Blocks.Finance
                 var registrationInstanceId = RegistrationInstanceId;
                 ddlRegistrationInstance.Items.Add( new ListItem() );
 
-                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( new RockContext() );
+                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( RockApp.Current.CreateRockContext() );
                 var registrationInstances = registrationInstanceService.Queryable().Where( r => r.RegistrationTemplateId == RegistrationTemplateId.Value && r.IsActive ).OrderBy( a => a.Name ).ToList();
 
                 foreach ( var r in registrationInstances )
@@ -342,7 +343,7 @@ namespace RockWeb.Blocks.Finance
         private void BindHtmlGrid()
         {
             _financialTransactionDetailList = null;
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             List<DataControlField> tableColumns = new List<DataControlField>();
             tableColumns.Add( new RockLiteralField { ID = "lPerson", HeaderText = "Person" } );
@@ -530,7 +531,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadDropDowns()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialBatchList = new FinancialBatchService( rockContext ).Queryable()
                 .Where( a => a.Status == BatchStatus.Open ).OrderBy( a => a.Name ).Select( a => new
                 {
@@ -557,7 +558,7 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var registrationService = new RegistrationService( rockContext );
 
             var registationListForInstance = registrationService

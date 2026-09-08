@@ -24,6 +24,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -166,7 +167,7 @@ namespace Rock.Jobs
                 return new FinancialPersonSavedAccountService.RemoveExpiredSavedAccountsResult();
             }
 
-            var service = new FinancialPersonSavedAccountService( new RockContext() );
+            var service = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() );
             return service.RemoveExpiredSavedAccounts( removedExpiredSavedAccountDays.Value );
         }
 
@@ -177,7 +178,7 @@ namespace Rock.Jobs
         /// <exception cref="Exception">Expiring credit card email is missing.</exception>
         private SendExpiredCreditCardNoticesResult SendExpiredCreditCardNotices()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get the details for the email that we'll be sending out.
             Guid? systemEmailGuid = GetAttributeValue( AttributeKey.ExpiringCreditCardEmail ).AsGuidOrNull();

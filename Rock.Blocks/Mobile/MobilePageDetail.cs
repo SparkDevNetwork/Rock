@@ -38,6 +38,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 
 using DisplayInNavWhen = Rock.Model.DisplayInNavWhen;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Mobile
 {
@@ -1322,7 +1323,7 @@ namespace Rock.Blocks.Mobile
             // Build within a throwaway context: if the build fails it can leave
             // its own context corrupted, so isolate it from the block's shared
             // RockContext.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var siteService = new SiteService( rockContext );
                 await siteService.BuildMobileApplicationAsync( site.Id );

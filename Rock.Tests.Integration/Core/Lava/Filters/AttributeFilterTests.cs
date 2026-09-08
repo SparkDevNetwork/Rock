@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -42,7 +43,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var tedDeckerPerson = new PersonService( rockContext ).Queryable().First( x => x.Guid == tedDeckerGuid );
 
@@ -83,7 +84,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( rockContext );
 

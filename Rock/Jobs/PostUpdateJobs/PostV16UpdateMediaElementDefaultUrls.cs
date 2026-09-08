@@ -22,6 +22,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -60,7 +61,7 @@ namespace Rock.Jobs.PostUpdateJobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );
@@ -81,7 +82,7 @@ namespace Rock.Jobs.PostUpdateJobs
         {
             List<int> mediaElementIds;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400 );
 
@@ -95,7 +96,7 @@ namespace Rock.Jobs.PostUpdateJobs
                 var ids = mediaElementIds.Take( 250 ).ToList();
                 mediaElementIds = mediaElementIds.Skip( 250 ).ToList();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mediaElementService = new MediaElementService( rockContext );
                     var mediaElements = mediaElementService.Queryable()

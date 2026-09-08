@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Rock.Bus.Message;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Tasks;
@@ -373,7 +374,7 @@ namespace Rock.Model
             var failedPayments = new List<FinancialTransaction>();
 
             int? defaultAccountId = null;
-            using ( var rockContext2 = new RockContext() )
+            using ( var rockContext2 = RockApp.Current.CreateRockContext() )
             {
                 defaultAccountId = new FinancialAccountService( rockContext2 ).Queryable()
                     .Where( a =>
@@ -394,7 +395,7 @@ namespace Rock.Model
 
             foreach ( var payment in payments.Where( p => p.Amount > 0.0M ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     totalPayments++;
 
@@ -706,7 +707,7 @@ namespace Rock.Model
             {
                 foreach ( var transaction in transactionsWithAttributes )
                 {
-                    using ( var rockContext3 = new RockContext() )
+                    using ( var rockContext3 = RockApp.Current.CreateRockContext() )
                     {
                         transaction.SaveAttributeValues( rockContext3 );
                         rockContext3.SaveChanges();
@@ -828,7 +829,7 @@ namespace Rock.Model
                     ( totalFailures == 1 ? "payment was" : "payments were" ) );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var batches = new FinancialBatchService( rockContext )
                     .Queryable().AsNoTracking()
@@ -881,7 +882,7 @@ namespace Rock.Model
         {
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     string workflowName = transaction.TransactionCode;
                     if ( transaction.AuthorizedPersonAliasId != null )

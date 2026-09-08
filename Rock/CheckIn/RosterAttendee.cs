@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -797,12 +798,12 @@ namespace Rock.CheckIn
             {
                 // If there is a checkin area filter, limit to group types within the selected check-in area.
                 // this will help get the best path if a checkin area belongs to more than one checkin type
-                checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetCheckinAreaDescendantsPath( selectedCheckinArea.Id )
+                checkinAreaPathsLookup = new GroupTypeService( RockApp.Current.CreateRockContext() ).GetCheckinAreaDescendantsPath( selectedCheckinArea.Id )
                     .ToDictionary( k => k.GroupTypeId, v => v );
             }
             else
             {
-                checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetAllCheckinAreaPaths()
+                checkinAreaPathsLookup = new GroupTypeService( RockApp.Current.CreateRockContext() ).GetAllCheckinAreaPaths()
                     .ToDictionary( k => k.GroupTypeId, v => v );
             }
 

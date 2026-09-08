@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueHistoricalsController"/> class.
         /// </summary>
-        public AttributeValueHistoricalsController() : base( new Rock.Model.AttributeValueHistoricalService( new Rock.Data.RockContext() ) ) { } 
+        public AttributeValueHistoricalsController() : base( new Rock.Model.AttributeValueHistoricalService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

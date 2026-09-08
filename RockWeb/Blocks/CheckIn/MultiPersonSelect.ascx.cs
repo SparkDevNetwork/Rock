@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -249,7 +250,7 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         // Because auto-checkin bypasses any other workflow processing, the check for previous check-ins needs to be done manually
                         bool preventDuplicate = !IsOverride && CurrentCheckInState.CheckInType.PreventDuplicateCheckin;
-                        using ( var rockContext = new Rock.Data.RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             Rock.Workflow.Action.CheckIn.SetAvailableSchedules.ProcessForFamily( rockContext, family );
                             Rock.Workflow.Action.CheckIn.FilterByPreviousCheckin.ProcessForFamily( rockContext, family, preventDuplicate );

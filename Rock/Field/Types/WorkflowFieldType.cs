@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.SecurityGrantRules;
@@ -105,7 +106,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( privateValue, out guid ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var workflow = new WorkflowService( rockContext ).GetNoTracking( guid );
                     if ( workflow != null )
@@ -136,7 +137,7 @@ namespace Rock.Field.Types
                 var guid = privateValue.AsGuidOrNull();
                 ListItemBag workflow = null;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     if ( guid.HasValue )
                     {
@@ -206,7 +207,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new WorkflowService( rockContext ).Get( guid.Value );
             }
 
@@ -227,7 +228,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowId = new WorkflowService( rockContext ).GetId( guid.Value );
 
@@ -330,7 +331,7 @@ namespace Rock.Field.Types
 
             ddl.Items.Add( new ListItem() );
 
-            var workflowTypeService = new WorkflowTypeService( new RockContext() );
+            var workflowTypeService = new WorkflowTypeService( RockApp.Current.CreateRockContext() );
             var workflowTypes = workflowTypeService.Queryable().OrderBy( a => a.Name ).ToList();
             workflowTypes.ForEach( g =>
                 ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) )
@@ -428,7 +429,7 @@ namespace Rock.Field.Types
             {
                 if ( workflowPicker.WorkflowId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var workflowGuid = new WorkflowService( rockContext ).GetGuid( workflowPicker.WorkflowId.Value );
                         if ( workflowGuid != null )
@@ -456,7 +457,7 @@ namespace Rock.Field.Types
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    var workflowId = new WorkflowService( new RockContext() ).GetId( guid.Value );
+                    var workflowId = new WorkflowService( RockApp.Current.CreateRockContext() ).GetId( guid.Value );
                     if ( workflowId != null )
                     {
                         workflowPicker.WorkflowId = workflowId;
@@ -485,7 +486,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            return new WorkflowService( new RockContext() ).GetId( guid );
+            return new WorkflowService( RockApp.Current.CreateRockContext() ).GetId( guid );
         }
 
         /// <summary>
@@ -496,7 +497,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var itemGuid = new WorkflowService( new RockContext() ).GetGuid( id ?? 0 );
+            var itemGuid = new WorkflowService( RockApp.Current.CreateRockContext() ).GetGuid( id ?? 0 );
             string guidValue = itemGuid?.ToString() ?? string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

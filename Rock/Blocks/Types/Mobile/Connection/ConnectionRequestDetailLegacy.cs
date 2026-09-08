@@ -39,6 +39,7 @@ using ConnectionState = Rock.Model.ConnectionState;
 using DueStatus = Rock.Common.Mobile.Enums.DueStatus;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -218,7 +219,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </summary>
         private static bool CheckReminderConfiguration()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestEntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
 
@@ -798,7 +799,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>A list of group placement view models.</returns>
         private static List<PlacementGroupItemViewModel> GetRequestPlacementGroups( ConnectionRequest request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionOpportunityGroupConfigQuery = new ConnectionOpportunityGroupConfigService( rockContext ).Queryable()
                     .Where( c => c.ConnectionOpportunityId == request.ConnectionOpportunityId );
@@ -1527,7 +1528,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult GetRequestDetails( string connectionRequestGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
@@ -1565,7 +1566,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult GetRequestEditDetails( string connectionRequestGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
@@ -1604,7 +1605,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult UpdateRequest( string connectionRequestGuid, RequestSaveViewModel requestDetails )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionStatusService = new ConnectionStatusService( rockContext );
@@ -1816,7 +1817,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult GetActivityOptions( string connectionRequestGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var requestActivityBag = GetConnectionRequestActivityBag( rockContext, connectionRequestGuid, null, false );
 
@@ -1843,7 +1844,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult GetExistingActivityOptions( string connectionRequestGuid, Guid activityGuid, bool readOnly )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var requestActivityBag = GetConnectionRequestActivityBag( rockContext, connectionRequestGuid, activityGuid, readOnly );
 
@@ -1898,7 +1899,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult AddActivity( string connectionRequestGuid, ActivityViewModel activity )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
@@ -2003,7 +2004,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult UpdateActivity( Guid activityGuid, string connectionRequestGuid, ActivityViewModel activity )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var activityService = new ConnectionRequestActivityService( rockContext );
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
@@ -2098,7 +2099,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult DeleteActivity( Guid activityGuid, string connectionRequestGuid, int currentPersonAliasId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // only allow deleting if current user created the activity, and not a system activity
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
@@ -2146,7 +2147,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult LaunchWorkflow( string connectionRequestGuid, Guid connectionWorkflowGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionWorkflowService = new ConnectionWorkflowService( rockContext );
@@ -2197,7 +2198,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [RockObsolete( "1.13.3" )]
         public BlockActionResult GetPlacementGroupMemberAttributes( string connectionRequestGuid, Guid groupGuid, Guid groupMemberRoleGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var groupService = new GroupService( rockContext );
@@ -2298,7 +2299,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult GetPlacementGroupMemberAttributesAndValues( string connectionRequestGuid, Guid groupGuid, Guid groupMemberRoleGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var groupService = new GroupService( rockContext );
@@ -2401,7 +2402,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult MarkRequestConnected( string connectionRequestGuid, Dictionary<Guid, bool> manualRequirements )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionStatusService = new ConnectionStatusService( rockContext );
@@ -2443,7 +2444,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult GetRequestTransferDetails( string connectionRequestKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
@@ -2471,7 +2472,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult TransferRequest( string connectionRequestKey, ConnectionRequestTransferOptions options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
@@ -2513,7 +2514,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult GetConnectorsForTransferOption( Guid opportunityGuid, Guid? campusGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the list of connectors.
                 var connectorPersonData = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()

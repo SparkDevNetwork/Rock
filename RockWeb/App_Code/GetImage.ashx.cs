@@ -61,7 +61,7 @@ namespace RockWeb
 
                 if ( isBinaryFile )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         ProcessBinaryFileRequest( context, rockContext );
                     }

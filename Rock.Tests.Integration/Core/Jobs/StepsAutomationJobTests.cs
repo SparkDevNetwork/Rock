@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
@@ -72,7 +73,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         /// </summary>
         private static void CreateTestPeople()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personAliasService = new PersonAliasService( rockContext );
 
@@ -157,7 +158,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         /// </summary>
         private static void CreateTestDataView()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
             var dataViewFilterService = new DataViewFilterService( rockContext );
 
@@ -217,7 +218,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         /// </summary>
         private static void CreateTestStepProgram()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var stepProgramService = new StepProgramService( rockContext );
 
             var dataViewService = new DataViewService( rockContext );
@@ -303,7 +304,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             TestDataHelper.DeletePersonByGuid( personGuidList );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var stepProgramService = new StepProgramService( rockContext );
             var stepProgramQuery = stepProgramService.Queryable().Where( sp => sp.ForeignKey == ForeignKey );
@@ -336,7 +337,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var job = new StepsAutomation();
             job.ExecuteInternal( testAttributeValues );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var stepProgramService = new StepProgramService( rockContext );
             var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );
 
@@ -374,7 +375,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             // Add an in-progress step that should be made complete by the job
             var stepGuid = Guid.NewGuid();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepProgramService = new StepProgramService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -405,7 +406,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             job.ExecuteInternal( testAttributeValues );
 
             // Refresh the data from the database
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepProgramService = new StepProgramService( rockContext );
                 var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );
@@ -454,7 +455,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var stepGuid = Guid.NewGuid();
             var stepCompletedDateTime = new DateTime( 2000, 1, 1 );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepProgramService = new StepProgramService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -486,7 +487,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             job.ExecuteInternal( testAttributeValues );
 
             // Refresh the data from the database
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepProgramService = new StepProgramService( rockContext );
                 var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );
@@ -538,7 +539,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var stepCompletedDateTime = new DateTime( 2000, 1, 1 );
             int stepTypeId;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepProgramService = new StepProgramService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -571,7 +572,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             job.ExecuteInternal( testAttributeValues );
 
             // Refresh the data from the database
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepProgramService = new StepProgramService( rockContext );
                 var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );

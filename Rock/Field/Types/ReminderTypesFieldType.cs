@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -97,7 +98,7 @@ namespace Rock.Field.Types
         /// </value>
         internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var reminderTypesQuery = new ReminderTypeService( new Data.RockContext() ).Queryable();
+            var reminderTypesQuery = new ReminderTypeService( RockApp.Current.CreateRockContext() ).Queryable();
 
             int? entityTypeId = null;
             if ( configurationValues != null && configurationValues.TryGetValue( ReminderTypesFieldAttribute.ENTITY_TYPE_KEY, out var entityTypeIdValue ) )

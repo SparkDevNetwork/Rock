@@ -27,6 +27,7 @@ using System.Web.Http;
 using System.Web.Http.OData;
 
 using Rock.BulkExport;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -114,7 +115,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "D1F55DCD-AE00-4C82-B35A-F4C59496D3E8" )]
         public Person GetCurrentPerson()
         {
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = GetPerson();
             if ( person == null )
             {
@@ -137,7 +138,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "A6D9B02B-814C-4A92-9D6A-723B168CFABB" )]
         public IQueryable<Person> GetByEmail( string email )
         {
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             return new PersonService( rockContext ).GetByEmail( email, true ).Include( a => a.Aliases );
         }
 
@@ -153,7 +154,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "4470749A-9F47-46AB-B89E-ADABE9517A2A" )]
         public IQueryable<Person> GetByPhoneNumber( string number )
         {
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             return new PersonService( rockContext ).GetByPhonePartial( number, true ).Include( a => a.Aliases );
         }
 
@@ -362,7 +363,7 @@ namespace Rock.Rest.Controllers
             [FromUri] Guid? interactionChannelGuid = null,
             [FromUri] Guid? interactionComponentGuid = null )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Default to the current person if the person id was not specified
             if ( !personId.HasValue )
@@ -1319,7 +1320,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "EB110632-B6B3-4AE4-8A0F-9711B8C85F4C" )]
         public PersonSearchResult GetPopupHtml( string personId, bool emailAsLink )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 Person person = null;
@@ -1468,7 +1469,7 @@ namespace Rock.Rest.Controllers
                 AttributeReturnType = attributeReturnType
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             return personService.GetPeopleExport( page, actualPageSize, exportOptions );

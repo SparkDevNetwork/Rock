@@ -23,6 +23,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -274,7 +275,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                 return new List<Subscription>();
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             //
             // Get all the lists this person is already a member of.
@@ -431,7 +432,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         [BlockAction]
         public void UpdateSubscription( Guid communicationListGuid, bool subscribed )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var group = new GroupService( rockContext ).Get( communicationListGuid );
@@ -516,7 +517,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         [BlockAction]
         public BlockActionResult UpdateCommunicationPreference( Guid communicationListGuid, CommunicationType communicationType )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var group = new GroupService( rockContext ).Get( communicationListGuid );

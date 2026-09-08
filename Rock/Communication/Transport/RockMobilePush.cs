@@ -29,6 +29,7 @@ using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -214,7 +215,7 @@ namespace Rock.Communication.Transport
                             }
 
                             List<string> to;
-                            using ( var recipientRockContext = new RockContext() )
+                            using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
                             {
                                 to = GetDeviceRegistrationIds( recipientRockContext, recipient, pushMessage.Data?.MobileApplicationId );
                             }
@@ -233,7 +234,7 @@ namespace Rock.Communication.Transport
                     try
                     {
                         List<string> to;
-                        using ( var recipientRockContext = new RockContext() )
+                        using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
                         {
                             to = recipients
                                 .SelectMany( r => GetDeviceRegistrationIds( recipientRockContext, r, pushMessage.Data?.MobileApplicationId ) )
@@ -263,7 +264,7 @@ namespace Rock.Communication.Transport
         {
             var pushData = communication.PushData.FromJsonOrNull<PushData>();
 
-            using ( var communicationRockContext = new RockContext() )
+            using ( var communicationRockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
@@ -304,7 +305,7 @@ namespace Rock.Communication.Transport
                     while ( recipientFound )
                     {
                         // make a new rockContext per recipient
-                        var recipientRockContext = new RockContext();
+                        var recipientRockContext = RockApp.Current.CreateRockContext();
                         var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
                         if ( recipient != null )
                         {
@@ -717,7 +718,7 @@ namespace Rock.Communication.Transport
             {
                 Task.Run( () =>
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var personalDeviceService = new PersonalDeviceService( rockContext );
                     int contextCount = 0;
 
@@ -746,7 +747,7 @@ namespace Rock.Communication.Transport
                             rockContext.SaveChanges();
                             rockContext.Dispose();
 
-                            rockContext = new RockContext();
+                            rockContext = RockApp.Current.CreateRockContext();
                             personalDeviceService = new PersonalDeviceService( rockContext );
                         }
                     }
@@ -798,7 +799,7 @@ namespace Rock.Communication.Transport
             {
                 Task.Run( () =>
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var personalDeviceService = new PersonalDeviceService( rockContext );
                     int contextCount = 0;
 
@@ -827,7 +828,7 @@ namespace Rock.Communication.Transport
                             rockContext.SaveChanges();
                             rockContext.Dispose();
 
-                            rockContext = new RockContext();
+                            rockContext = RockApp.Current.CreateRockContext();
                             personalDeviceService = new PersonalDeviceService( rockContext );
                         }
                     }
@@ -878,7 +879,7 @@ namespace Rock.Communication.Transport
                             }
 
                             List<string> to;
-                            using ( var recipientRockContext = new RockContext() )
+                            using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
                             {
                                 to = GetDeviceRegistrationIds( recipientRockContext, recipient, pushMessage.Data?.MobileApplicationId );
                             }
@@ -897,7 +898,7 @@ namespace Rock.Communication.Transport
                     try
                     {
                         List<string> to;
-                        using ( var recipientRockContext = new RockContext() )
+                        using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
                         {
                             to = recipients
                                 .SelectMany( r => GetDeviceRegistrationIds( recipientRockContext, r, pushMessage.Data?.MobileApplicationId ) )
@@ -929,7 +930,7 @@ namespace Rock.Communication.Transport
         {
             var pushData = communication.PushData.FromJsonOrNull<PushData>();
 
-            using ( var communicationRockContext = new RockContext() )
+            using ( var communicationRockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
@@ -973,7 +974,7 @@ namespace Rock.Communication.Transport
                     while ( recipientFound )
                     {
                         // make a new rockContext per recipient
-                        var recipientRockContext = new RockContext();
+                        var recipientRockContext = RockApp.Current.CreateRockContext();
                         var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
                         if ( recipient != null )
                         {

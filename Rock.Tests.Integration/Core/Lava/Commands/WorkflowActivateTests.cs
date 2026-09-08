@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -131,7 +132,7 @@ Activity: Assign Worker
             var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
             var workflow = Rock.Model.Workflow.Activate( workflowType, name );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var workflowService = new WorkflowService( rockContext );
 
             workflowService.Add( workflow );

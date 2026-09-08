@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Blocks;
+using Rock.Configuration;
 using Rock.Core;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -185,7 +186,7 @@ namespace RockWeb.Blocks.Core
                     var blockType = BlockTypeCache.Get( blockTypeId );
                     if ( blockType != null && !blockType.IsInstancePropertiesVerified )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var blockCompiledType = _block.BlockType.GetCompiledType();
                             int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
@@ -516,7 +517,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.WrapTransaction( () =>
             {
                 var blockService = new Rock.Model.BlockService( rockContext );

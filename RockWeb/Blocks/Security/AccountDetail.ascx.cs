@@ -24,6 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -134,7 +135,7 @@ namespace RockWeb.Blocks.Security
                     {
                         var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
 
-                        RockContext rockContext = new RockContext();
+                        RockContext rockContext = RockApp.Current.CreateRockContext();
                         var address = new GroupLocationService( rockContext ).Queryable()
                                             .Where( l => l.Group.GroupTypeId == familyGroupType.Id
                                                  && l.GroupLocationTypeValueId == addressTypeDv.Id

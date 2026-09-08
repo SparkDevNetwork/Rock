@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -230,7 +231,7 @@ namespace Rock.Blocks.Bus
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var rockQueue = GetQueue();
 

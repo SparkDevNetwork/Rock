@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Model;
@@ -306,7 +307,7 @@ namespace Rock.Reporting.DataSelect.Person
             var slidingDateRangePicker = controls.GetByName<SlidingDateRangePicker>( _CtlSlidingDateRange );
             var cblStatuses = controls.GetByName<CheckBoxList>( _CtlStatuses );
 
-            var programGuid = new LearningCourseService( new RockContext() )
+            var programGuid = new LearningCourseService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( lc => lc.Guid == selectionConfig.LearningCourseGuid )
                 .Select( lc => ( Guid? ) lc.LearningProgram.Guid )

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -175,7 +176,7 @@ namespace Rock.Tests.Integration.TestFramework.Lava
             }
             else
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
 
                 person = personService.Get( personIdentifier );

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using SixLabors.ImageSharp.PixelFormats;
@@ -28,7 +29,6 @@ using System.Data.Entity;
 using Microsoft.Ajax.Utilities;
 using Rock.Security;
 using Rock.Net;
-using Rock.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Rock.Drawing
@@ -84,7 +84,7 @@ namespace Rock.Drawing
         /// </exception>
         public static Image GetPersonImageFromBinaryFileService( int photoId )
         {
-            var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
+            var binaryFile = new BinaryFileService( RockApp.Current.CreateRockContext() ).Get( photoId );
 
             if ( binaryFile == null )
             {

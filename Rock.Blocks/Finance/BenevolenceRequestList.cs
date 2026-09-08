@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -196,7 +197,7 @@ namespace Rock.Blocks.Finance
         private List<ListItemBag> GetCaseWorkers()
         {
             var groupGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuid();
-            return new GroupMemberService( new RockContext() ).Queryable( "Person" )
+            return new GroupMemberService( RockApp.Current.CreateRockContext() ).Queryable( "Person" )
                 .Where( gm => gm.Group.Guid == groupGuid )
                 .Select( gm => gm.Person )
                 .ToList()

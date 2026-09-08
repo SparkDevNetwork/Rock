@@ -29,6 +29,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Financial;
@@ -577,7 +578,7 @@ UPDATE [{analyticsTableName}]
         /// <returns>A configured RockContext instance.</returns>
         private RockContext GetNewConfiguredDataContext()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             dataContext.Database.SetCommandTimeout( _commandTimeout );
 
@@ -1312,7 +1313,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
 
         private void ProcessGivingUnitAnalytics()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             var givingLeaderPersonQry = new PersonService( rockContext ).Queryable().Where( p => p.GivingLeaderId == p.Id );

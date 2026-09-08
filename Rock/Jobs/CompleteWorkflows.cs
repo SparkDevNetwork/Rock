@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -65,7 +66,7 @@ namespace Rock.Jobs
             int? expirationAge = GetAttributeValue( "ExpirationAge" ).AsIntegerOrNull();
             string closeStatus = GetAttributeValue( "CloseStatus" );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var workflowService = new WorkflowService( rockContext );
 
             var qry = workflowService.Queryable().AsNoTracking()
@@ -84,7 +85,7 @@ namespace Rock.Jobs
 
             foreach(var workflowId in workflowIds )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
                 workflowService = new WorkflowService( rockContext );
 
                 var workflow = workflowService.Get( workflowId );

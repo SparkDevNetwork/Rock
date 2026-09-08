@@ -26,6 +26,7 @@ using Rock;
 using Rock.AI.Agent;
 using Rock.AI.Agent.Mcp;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
@@ -510,7 +511,7 @@ namespace Rock.Blocks.AI
             }
 
             // Ensure navigation properties will work now.
-            using ( var rockContext2 = new RockContext() )
+            using ( var rockContext2 = RockApp.Current.CreateRockContext() )
             {
                 entity = new AIAgentService( rockContext2 ).Get( entity.Id );
 

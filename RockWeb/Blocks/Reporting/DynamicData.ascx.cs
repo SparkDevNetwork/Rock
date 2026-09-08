@@ -26,6 +26,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -418,7 +419,7 @@ namespace RockWeb.Blocks.Reporting
                         && pageCache.Guid != Rock.SystemGuid.Page.PAGE_MAP.AsGuid() // Don't allow editing the title of the page if the page is the internal page editor (Issue #5542)
                    )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var service = new PageService( rockContext );
                     var page = service.Get( pageCache.Id );
                     page.InternalName = tbName.Text;

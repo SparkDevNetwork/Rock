@@ -90,7 +90,7 @@ namespace Rock.Model
             }
 
             // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             try
             {
@@ -359,7 +359,7 @@ namespace Rock.Model
         /// <param name="jobId">The job identifier.</param>
         public static void DeleteJob( int jobId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );
@@ -415,7 +415,7 @@ namespace Rock.Model
 
         internal static void InitializeJobScheduler()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // create scheduler
                 ISchedulerFactory schedulerFactory = new StdSchedulerFactory();

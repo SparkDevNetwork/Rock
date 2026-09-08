@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Financial;
@@ -715,7 +716,7 @@ namespace RockWeb.Blocks.Finance
                 page.PageNavigate += page_PageNavigate;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SetTargetPerson( rockContext );
                 SetGatewayOptions( rockContext );
@@ -766,7 +767,7 @@ namespace RockWeb.Blocks.Finance
             if ( _allowAccountsInUrl )
             {
                 string accountParameterType = string.Empty;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.AccountIds ) ) )
                     {
@@ -1049,7 +1050,7 @@ namespace RockWeb.Blocks.Finance
                 oneTime = false;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 BindSavedAccounts( rockContext, oneTime );
             }
@@ -1271,7 +1272,7 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( phCreateLogin.Visible )
                 {
@@ -1753,7 +1754,7 @@ namespace RockWeb.Blocks.Finance
             // Resolve the text field merge fields
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 IEntity transactionEntity = GetTransactionEntity();
                 if ( transactionEntity != null )
@@ -1919,7 +1920,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void GetAccounts()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var selectedGuids = GetAttributeValues( AttributeKey.Accounts ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
 
@@ -2050,7 +2051,7 @@ namespace RockWeb.Blocks.Finance
                 if ( hfBusinessesLoaded.Value != contactPersonId.ToString() )
                 {
                     cblBusiness.Items.Clear();
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var personService = new PersonService( rockContext );
                         var businesses = personService.GetBusinesses( contactPersonId ).ToList();
@@ -2102,7 +2103,7 @@ namespace RockWeb.Blocks.Finance
                 txtCurrentName.Text = person.FullName;
                 txtEmail.Text = person.Email;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
 
                 if ( DisplayPhone )
@@ -2168,7 +2169,7 @@ namespace RockWeb.Blocks.Finance
             int? businessId = cblBusiness.SelectedValueAsInt();
             if ( businessId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personService = new PersonService( rockContext );
                     var business = personService.Get( businessId.Value );
@@ -2223,7 +2224,7 @@ namespace RockWeb.Blocks.Finance
         private Person GetPerson( bool create )
         {
             Person person = null;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             Group familyGroup = null;
@@ -2345,7 +2346,7 @@ namespace RockWeb.Blocks.Finance
         private Person GetBusinessContact()
         {
             Person person = null;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             // Check to see if there's only one person with same email, first name, and last name
@@ -2417,7 +2418,7 @@ namespace RockWeb.Blocks.Finance
             bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( person != null && givingAsBusiness )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
                 var groupService = new GroupService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -2552,7 +2553,7 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionGuid.Value );
             var personService = new PersonService( rockContext );
 
@@ -2817,7 +2818,7 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private bool ProcessStep1( out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             bool isACHTxn = hfPaymentTab.Value == "ACH";
             var financialGateway = isACHTxn ? _achGateway : _ccGateway;
@@ -2967,7 +2968,7 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private ReferencePaymentInfo GetReferenceInfo( int savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
+            var savedAccount = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
                 return savedAccount.GetReferencePayment();
@@ -3021,7 +3022,7 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private bool ProcessConfirmation( out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
                 var transactionGuid = hfTransactionGuid.Value.AsGuid();
@@ -3130,7 +3131,7 @@ namespace RockWeb.Blocks.Finance
 
         private bool ProcessStep3( string resultQueryString, out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var transactionGuid = hfTransactionGuid.Value.AsGuid();
 
@@ -3341,7 +3342,7 @@ namespace RockWeb.Blocks.Finance
 
         private void DeleteOldTransaction( int scheduledTransactionId )
         {
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
                 var currentTransaction = fstService.Get( scheduledTransactionId );

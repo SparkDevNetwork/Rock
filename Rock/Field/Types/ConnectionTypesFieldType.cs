@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -44,7 +45,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 publicConfigurationValues[VALUES_PUBLIC_KEY] = new ConnectionTypeService( rockContext )
                     .Queryable().AsNoTracking()
@@ -88,7 +89,7 @@ namespace Rock.Field.Types
         /// </value>
         internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new ConnectionTypeService( new RockContext() )
+            return new ConnectionTypeService( RockApp.Current.CreateRockContext() )
                 .Queryable().AsNoTracking()
                 .OrderBy( o => o.Name )
                 .Select( o => new

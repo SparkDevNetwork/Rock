@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Extension;
 using Rock.Web.Cache;
 
@@ -146,7 +147,7 @@ namespace Rock.Workflow
             {
                 foreach ( var component in this.Components )
                 {
-                    using ( var rockContext = new Rock.Data.RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var actionComponent = component.Value.Value;
                         var type = actionComponent.GetType();

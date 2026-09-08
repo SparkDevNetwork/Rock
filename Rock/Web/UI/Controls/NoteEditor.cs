@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -853,7 +854,7 @@ $@"Rock.controls.noteEditor.initialize({{
 
             var currentPerson = rockPage.CurrentPerson;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new NoteService( rockContext );
             Note note = null;
 

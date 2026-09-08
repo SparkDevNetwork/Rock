@@ -25,6 +25,7 @@ using EntityFramework.Utilities;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -159,7 +160,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         public static void GenerateAnalyticsSourceDateData( int fiscalStartMonth, bool givingMonthUseSundayDate, DateTime startDate, DateTime endDate )
         {
             // remove all the rows and rebuild
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -328,7 +329,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 generateDate = generateDate.AddDays( 1 );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
                 EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourceDate>() ).InsertAll( generatedDates );

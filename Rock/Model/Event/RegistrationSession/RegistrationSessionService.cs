@@ -19,6 +19,7 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model.Event.RegistrationInstance.Options;
 
@@ -36,7 +37,7 @@ namespace Rock.Model
         /// <returns>The <see cref="RegistrationSession"/> that was renewed or <c>null</c> if it could not be found.</returns>
         public static RegistrationSession TryToRenewSession( Guid sessionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationSessionService = new RegistrationSessionService( rockContext );
                 var registrationService = new RegistrationService( rockContext );
@@ -159,7 +160,7 @@ namespace Rock.Model
         /// <returns>The <see cref="RegistrationSession"/> that was created or updated; or <c>null</c> if an error occurred.</returns>
         public static RegistrationSession CreateOrUpdateSession( Guid sessionGuid, Func<RegistrationSession> createSession, Action<RegistrationSession> updateSession, bool creditAlreadyReservedSpots, out string errorMessage )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationSessionService = new RegistrationSessionService( rockContext );
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -306,7 +307,7 @@ namespace Rock.Model
         /// <param name="sessionGuid">The session unique identifier.</param>
         public static void CloseAndRemoveSession( Guid sessionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

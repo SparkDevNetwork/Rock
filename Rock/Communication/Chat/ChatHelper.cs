@@ -340,7 +340,7 @@ namespace Rock.Communication.Chat
             }
             else
             {
-                RockContext = new RockContext();
+                RockContext = RockApp.Current.CreateRockContext();
                 ShouldDisposeRockContext = true;
             }
 

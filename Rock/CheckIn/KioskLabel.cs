@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -169,7 +170,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         private static KioskLabel Create( Guid guid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var file = new BinaryFileService( rockContext ).Get( guid );
                 if ( file != null )

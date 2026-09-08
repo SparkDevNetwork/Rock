@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Tests.Integration.TestData.Cms.Shortcodes;
@@ -385,7 +386,7 @@ This is some literal text containing an invalid shortcode: {[ panel title:'Examp
                      shortcodeTemplate )
                 .WithEnabledCommands( "execute" );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             shortCodeDataManager.SaveDynamicShortcode( shortcodeDefinition, rockContext );
 
             var input = @"

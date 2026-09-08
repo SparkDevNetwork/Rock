@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Collections.Generic;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Data;
 using Rock.ViewModels.Controls;
@@ -132,7 +133,7 @@ namespace Rock.Blocks.Engagement.Steps
         /// </returns>
         public override object GetObsidianBlockInitialization()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var campusClientService = new Rock.ClientService.Core.Campus.CampusClientService( rockContext, RequestContext.CurrentPerson );
             Campuses = campusClientService.GetCampusesAsListItems();
 
@@ -202,7 +203,7 @@ namespace Rock.Blocks.Engagement.Steps
             }
 
             var parameters = GetParameters( maxLevels, dateRange, campus );
-            var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
+            var flowEdgeData = new DbService( RockApp.Current.CreateRockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
             var flowEdgeResults = new List<SankeyDiagramEdgeBag>();
 
             foreach ( DataRow flowEdgeRow in flowEdgeData.Rows )

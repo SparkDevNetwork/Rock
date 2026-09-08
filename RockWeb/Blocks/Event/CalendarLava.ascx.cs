@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -241,7 +242,7 @@ namespace RockWeb.Blocks.Event
 
             _firstDayOfWeek = GetAttributeValue( "StartofWeekDay" ).ConvertToEnum<DayOfWeek>();
 
-            var eventCalendar = new EventCalendarService( new RockContext() ).Get( GetAttributeValue( "EventCalendar" ).AsGuid() );
+            var eventCalendar = new EventCalendarService( RockApp.Current.CreateRockContext() ).Get( GetAttributeValue( "EventCalendar" ).AsGuid() );
             if ( eventCalendar != null )
             {
                 _calendarId = eventCalendar.Id;
@@ -439,7 +440,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
 
             // Grab events

@@ -21,6 +21,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -75,7 +76,7 @@ namespace Rock.Tests.Integration.TestData
             /// <returns></returns>
             public static List<Rock.Model.Attribute> AddEntityAttributes( List<AddEntityAttributeArgs> args, RockContext rockContext = null )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                 var attributeService = new AttributeService( rockContext );
                 var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
@@ -170,7 +171,7 @@ namespace Rock.Tests.Integration.TestData
             /// <returns></returns>
             public static List<Rock.Model.DefinedValue> AddCacheTags( List<AddCacheTagArgs> args, RockContext rockContext = null )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                 var cachedTagDefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ) ?? 0;
 

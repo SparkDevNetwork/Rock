@@ -22,6 +22,7 @@ using System.Reflection;
 
 using Rock.AI.Agent;
 using Rock.AI.Agent.Annotations;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Observability;
 using Rock.SystemGuid;
@@ -40,7 +41,7 @@ namespace Rock.Model
         {
             using ( ObservabilityHelper.StartActivity( "Register AI Skills" ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Load all skills at once for performance.
                     var existingSkills = new AISkillService( rockContext ).Queryable().ToList();

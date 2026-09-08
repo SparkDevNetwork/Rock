@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -455,7 +456,7 @@ namespace RockWeb.Blocks.Core
         private List<RelatedEntity> GetExistingRelationships()
         {
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var relatedEntityService = new RelatedEntityService( rockContext );
 
             // Get entity type for person alias. If either the source or target use person alias
@@ -604,7 +605,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void AddRelationship()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var relatedEntityService = new RelatedEntityService( rockContext );
 
             var relatedEntity = new RelatedEntity();
@@ -650,7 +651,7 @@ namespace RockWeb.Blocks.Core
                 confirmationMessage = parms[2];
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var relatedEntityService = new RelatedEntityService( rockContext );
 
             var relatedEntity = relatedEntityService.Get( relationshipGuid );
@@ -680,7 +681,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void DeleteExistingRelationship()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var relatedEntityService = new RelatedEntityService( rockContext );
 
             var relatedEntity = relatedEntityService.Get( this.CurrentRelationshipId );

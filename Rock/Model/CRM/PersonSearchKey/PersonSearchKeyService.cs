@@ -18,6 +18,7 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -58,7 +59,7 @@ namespace Rock.Model
         /// </returns>
         public static string GenerateRandomAlternateId( bool verifyUnique = true, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             string key = string.Empty;
 

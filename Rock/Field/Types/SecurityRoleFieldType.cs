@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -56,7 +57,7 @@ namespace Rock.Field.Types
             Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var group = new GroupService( rockContext ).GetNoTracking( guid.Value );
                     if ( group != null )
@@ -78,7 +79,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 publicConfigurationValues[VALUES_PUBLIC_KEY] = new GroupService( rockContext )
                     .Queryable().AsNoTracking()
@@ -112,7 +113,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupId = new GroupService( rockContext ).GetId( guid.Value );
 
@@ -188,7 +189,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var roles = new GroupService( new RockContext() ).Queryable().Where( g => g.IsSecurityRole ).OrderBy( t => t.Name );
+            var roles = new GroupService( RockApp.Current.CreateRockContext() ).Queryable().Where( g => g.IsSecurityRole ).OrderBy( t => t.Name );
             if ( roles.Any() )
             {
                 foreach ( var role in roles )

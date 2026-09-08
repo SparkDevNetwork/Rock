@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -441,7 +442,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var page = new PageService( new RockContext() ).Get( int.Parse( ItemId ) );
+            var page = new PageService( RockApp.Current.CreateRockContext() ).Get( int.Parse( ItemId ) );
 
             this.SetValue( page );
         }
@@ -451,7 +452,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var pages = new PageService( new RockContext() ).Queryable().Where( p => ItemIds.Contains( p.Id.ToString() ) );
+            var pages = new PageService( RockApp.Current.CreateRockContext() ).Queryable().Where( p => ItemIds.Contains( p.Id.ToString() ) );
             this.SetValues( pages );
         }
 
@@ -548,7 +549,7 @@ namespace Rock.Web.UI.Controls
 
             if ( pageId.HasValue )
             {
-                var currentPage = new PageService( new RockContext() ).Get( pageId.Value );
+                var currentPage = new PageService( RockApp.Current.CreateRockContext() ).Get( pageId.Value );
                 this.SetValue( currentPage );
             }
 
@@ -580,7 +581,7 @@ namespace Rock.Web.UI.Controls
 
             // pluck the selectedValueId of the Page Params in case the ViewState is shut off
             int selectedValueId = this.Page.Request.Params[_rblSelectPageRoute.UniqueID].AsInteger();
-            PageRoute pageRoute = new PageRouteService( new RockContext() ).Get( selectedValueId );
+            PageRoute pageRoute = new PageRouteService( RockApp.Current.CreateRockContext() ).Get( selectedValueId );
             SetValue( pageRoute );
         }
 
@@ -635,7 +636,7 @@ namespace Rock.Web.UI.Controls
             //// Value is in format "Page.Guid,PageRoute.Guid"
             //// If only a Page is specified, this is just a reference to a page without a special route
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( IsPageRoute )
                 {
@@ -675,7 +676,7 @@ namespace Rock.Web.UI.Controls
             //// If only the Page.Guid is specified this is just a reference to a page without a special route
             //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
 
-            using var rockContext = new RockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
 
             if ( valuePair.Length == 2 )
             {

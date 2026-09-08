@@ -31,6 +31,7 @@ using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 using static Rock.Jobs.SendNoteNotifications;
+using Rock.Configuration;
 
 namespace Rock.Tests.Integration.Crm.Notes
 {
@@ -96,7 +97,7 @@ namespace Rock.Tests.Integration.Crm.Notes
             ExecuteSendNoteNotificationsJob( settings: null, sendResults: out _, logEvents: out _ );
 
             var noteManager = NoteDataManager.Instance;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var person1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.BrianJones );
             var personStaff1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.AlishaMarble );
@@ -144,7 +145,7 @@ namespace Rock.Tests.Integration.Crm.Notes
             ExecuteSendNoteNotificationsJob( settings: null, sendResults: out _, logEvents: out _ );
 
             var noteManager = NoteDataManager.Instance;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var person1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.BrianJones );
             var person2 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.ThomasMiller );
@@ -200,7 +201,7 @@ namespace Rock.Tests.Integration.Crm.Notes
             ExecuteSendNoteNotificationsJob( settings: null, sendResults: out _, logEvents: out _ );
 
             var noteManager = NoteDataManager.Instance;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var person1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.BrianJones );
             var personStaff1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.AlishaMarble );
@@ -246,7 +247,7 @@ namespace Rock.Tests.Integration.Crm.Notes
             ExecuteSendNoteNotificationsJob( settings: null, sendResults: out _, logEvents: out _ );
 
             var noteManager = NoteDataManager.Instance;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var person1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.BrianJones );
             var personStaff1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.AlishaMarble );
@@ -292,7 +293,7 @@ namespace Rock.Tests.Integration.Crm.Notes
         public void SendNoteUpdateNotifications_ReplyToWatchedNoteHavingDifferentNoteType_GeneratesNotification()
         {
             var noteManager = NoteDataManager.Instance;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var person1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.BrianJones );
             var personStaff1 = TestDataHelper.GetTestPerson( TestGuids.TestPeople.AlishaMarble );
@@ -370,7 +371,7 @@ namespace Rock.Tests.Integration.Crm.Notes
         private static void CreateNotesTestData()
         {
             var noteManager = NoteDataManager.Instance;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personAlex = TestDataHelper.GetTestPerson( TestGuids.TestPeople.AlexDecker );
             var personAlisha = TestDataHelper.GetTestPerson( TestGuids.TestPeople.AlishaMarble );

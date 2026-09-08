@@ -21,6 +21,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -44,7 +45,7 @@ namespace Rock.Tests.Integration.Reporting.ReportBuilder
         [TestMethod]
         public void AllPersonAttributeColumnsCanBuild()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
 
@@ -107,7 +108,7 @@ namespace Rock.Tests.Integration.Reporting.ReportBuilder
         [TestMethod]
         public void UnauthorizedUserCannotViewAttributeColumnOutput()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
 

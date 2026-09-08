@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Cms.ContentCollection;
 using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Cms.ContentCollectionView;
 using Rock.Model;
@@ -388,7 +389,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentCollection = ContentCollectionCache.Get( GetAttributeValue( AttributeKey.ContentCollection ).AsGuid() );
 
@@ -1301,7 +1302,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return GetSecurityGrantToken();
             }
@@ -1481,7 +1482,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetCustomSettings()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 {
@@ -1537,7 +1538,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult SaveCustomSettings( CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 {

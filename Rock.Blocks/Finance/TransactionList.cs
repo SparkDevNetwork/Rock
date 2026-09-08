@@ -38,6 +38,7 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using static Rock.Blocks.Finance.TransactionList;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Finance
 {
@@ -578,7 +579,7 @@ namespace Rock.Blocks.Finance
                 return new List<ListItemBag>();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentBatchId = _batch.Id;
 

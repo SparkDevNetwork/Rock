@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared.Utility;
@@ -60,7 +61,7 @@ namespace Rock.Tests.Integration.TestData.Crm
         /// </summary>
         public void RemoveTestDataFromCurrentDatabase()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // History table has no dependencies, so use SQL delete for efficiency.
             var recordsDeleted = dataContext.Database.ExecuteSqlCommand( "delete from [History] where [SourceOfChange] = @p0 ", _TestDataSourceOfChange );
@@ -73,7 +74,7 @@ namespace Rock.Tests.Integration.TestData.Crm
         /// </summary>
         public void AddSampleDataForConnectionStatusChangeHistory()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             //this.ThrowIfTestHistoryDataExists( dataContext, _TestDataSourceOfChange );
 
@@ -156,7 +157,7 @@ namespace Rock.Tests.Integration.TestData.Crm
         /// </summary>
         public void AddBulkConnectionStatusChangeHistory()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             //this.ThrowIfTestHistoryDataExists( dataContext, _TestDataSourceOfChange );
 

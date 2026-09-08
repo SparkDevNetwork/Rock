@@ -17,6 +17,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -43,7 +44,7 @@ namespace Rock.Model
                 {
                     if ( this.Status == BatchStatus.Closed )
                     {
-                        var rockContext = new RockContext();
+                        var rockContext = RockApp.Current.CreateRockContext();
                         if ( this.ControlAmount != this.GetTotalTransactionAmount( rockContext ) )
                         {
                             ValidationResults.Add( new ValidationResult( "Control variance must be 0 before closing a batch." ) );

@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -85,7 +86,7 @@ namespace Rock.Communication
         {
             var results = new SendMessageResult();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // The group members are the message recipients
                 var groupMemberViews = new GroupMemberService( rockContext )

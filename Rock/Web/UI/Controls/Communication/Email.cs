@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -127,7 +128,7 @@ namespace Rock.Web.UI.Controls.Communication
                 var fileIds = new List<int>();
                 hfAttachments.Value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add(v.AsInteger()));
 
-                new BinaryFileService( new RockContext() ).Queryable()
+                new BinaryFileService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( f => fileIds.Contains( f.Id ) )
                     .Select( f => new
                     {

@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Rest.Controls;
@@ -61,7 +62,7 @@ namespace Rock.Field.Types
                 return publicConfig;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var AttributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).GetNoTracking( attributeMatrixTemplateId );
 
@@ -91,7 +92,7 @@ namespace Rock.Field.Types
                 return privateConfig;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var AttributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).GetNoTracking( attributeMatrixTemplateGuid ?? Guid.Empty );
 
@@ -111,7 +112,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
-            var list = new AttributeMatrixTemplateService( new RockContext() ).Queryable().OrderBy( a => a.Name ).Select( a => new ListItemBag
+            var list = new AttributeMatrixTemplateService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( a => a.Name ).Select( a => new ListItemBag
             {
                 Value = a.Guid.ToString(),
                 Text = a.Name
@@ -145,7 +146,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var matrixItems = new List<AttributeMatrixEditorPublicItemBag>();
                 var attributes = new Dictionary<string, PublicAttributeBag>();
@@ -256,7 +257,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateId = privateConfigurationValues.GetValueOrNull( ATTRIBUTE_MATRIX_TEMPLATE )?.AsIntegerOrNull() ?? 0;
                 var attributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).Get( templateId );
@@ -361,7 +362,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributeMatrixService = new AttributeMatrixService( rockContext );
                 AttributeMatrix attributeMatrix = null;
@@ -507,7 +508,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new AttributeMatrixService( rockContext ).Get( guid.Value );
             }
 
@@ -571,7 +572,7 @@ namespace Rock.Field.Types
             ddlMatrixTemplate.Label = "Attribute Matrix Template";
             ddlMatrixTemplate.Help = "The Attribute Matrix Template that defines this matrix attribute";
 
-            var list = new AttributeMatrixTemplateService( new RockContext() ).Queryable().OrderBy( a => a.Name ).Select( a => new
+            var list = new AttributeMatrixTemplateService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( a => a.Name ).Select( a => new
             {
                 a.Id,
                 a.Name
@@ -682,7 +683,7 @@ namespace Rock.Field.Types
                 {
                     if ( attributeMatrixEditor.AttributeMatrixGuid.HasValue )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var attributeMatrix = new AttributeMatrixService( rockContext ).GetNoTracking( attributeMatrixEditor.AttributeMatrixGuid.Value );
                             return attributeMatrix.Guid.ToString();
@@ -705,7 +706,7 @@ namespace Rock.Field.Types
             AttributeMatrixEditor attributeMatrixEditor = control as AttributeMatrixEditor;
             if ( attributeMatrixEditor != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 AttributeMatrixTemplate attributeMatrixTemplate = null;
                 if ( attributeMatrixEditor.AttributeMatrixTemplateId.HasValue )
                 {
@@ -767,7 +768,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new AttributeMatrixService( new RockContext() ).Get( guid );
+            var item = new AttributeMatrixService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -779,7 +780,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new AttributeMatrixService( new RockContext() ).Get( id ?? 0 );
+            var item = new AttributeMatrixService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

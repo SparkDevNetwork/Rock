@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -99,7 +100,7 @@ namespace Rock.Blocks.Cms
 
             if ( contentChannelId != null )
             {
-                var contentChannelName = new ContentChannelService( new RockContext() ).GetSelect( contentChannelId.Value, c => c.Name );
+                var contentChannelName = new ContentChannelService( RockApp.Current.CreateRockContext() ).GetSelect( contentChannelId.Value, c => c.Name );
                 var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
                 breadCrumbs.Add( new BreadCrumbLink( contentChannelName ?? "New Content Channel", breadCrumbPageRef ) );
             }
@@ -1047,7 +1048,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetContentChannelStatus( string guid )
         {
-            var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( guid.AsGuid() );
+            var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( guid.AsGuid() );
             return ActionOk( new { contentChannelType?.DisableStatus, contentChannelType?.DisableContentField } );
         }
 

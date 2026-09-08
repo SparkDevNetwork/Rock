@@ -18,6 +18,7 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -37,7 +38,7 @@ namespace Rock.Model
         /// <param name="mediaElementId">The media element identifier.</param>
         internal static void TriggerPostSaveTasks( int mediaElementId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaElement = new MediaElementService( rockContext ).Queryable()
                     .Include( m => m.MediaFolder )
@@ -62,7 +63,7 @@ namespace Rock.Model
         /// <param name="mediaElementId">The media element identifier.</param>
         public static void AddSyncedContentChannelItem( int mediaElementId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaElement = new MediaElementService( rockContext ).Queryable()
                     .Include( m => m.MediaFolder )

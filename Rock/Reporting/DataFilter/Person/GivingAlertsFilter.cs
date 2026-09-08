@@ -30,6 +30,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter
 {
@@ -224,7 +225,7 @@ function() {
                     var alertTypeNames = new List<string>();
                     foreach ( var transactionAlertTypeId in selectionConfig.TransactionAlertTypeIds )
                     {
-                        var transactionAlertType = new FinancialTransactionAlertTypeService( new RockContext() )
+                        var transactionAlertType = new FinancialTransactionAlertTypeService( RockApp.Current.CreateRockContext() )
                             .Get( transactionAlertTypeId );
                         if ( transactionAlertType != null )
                         {
@@ -266,7 +267,7 @@ function() {
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var rlbGivingAlerts = new RockListBox();
             rlbGivingAlerts.Label = "Alert Name";

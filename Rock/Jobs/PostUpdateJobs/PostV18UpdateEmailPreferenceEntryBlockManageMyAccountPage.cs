@@ -16,6 +16,7 @@
 //
 using System.ComponentModel;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -32,7 +33,7 @@ namespace Rock.Jobs
         /// <inheritdoc />
         public override void Execute()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobMigration = new JobMigration( rockContext );
                 var migrationHelper = new MigrationHelper( jobMigration );
@@ -102,7 +103,7 @@ WHERE [PageId] = @EmailPreferencePageId
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

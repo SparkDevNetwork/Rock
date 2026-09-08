@@ -67,7 +67,7 @@ The next reader of the cache entry triggers a fetch from the database, which now
 
 These TTLs exist for memory hygiene, not correctness. Code that depends on a non-TTL cache entry being permanent is wrong.
 
-**`new RockContext()` is forbidden inside cache classes.** Use `RockApp.Current.CreateRockContext()` (per commits `b7f1eaa9e0`, `18c8ecbd47`, both 2025-10-27). The factory indirection makes cache code testable; direct construction defeats it.
+**`new RockContext()` is forbidden inside cache classes.** Use `RockApp.Current.CreateRockContext()` (per commits `b7f1eaa9e0`, `18c8ecbd47`, both 2025-10-27). The factory indirection makes cache code testable; direct construction defeats it. Cache classes were the first place this was enforced, but the factory is now the preferred construction in all code. See [rock-context-lifecycle.md](rock-context-lifecycle.md).
 
 **`UpdateCachedEntity(int entityId, EntityState entityState)` has overrides for entities that need the entity itself.** `GroupLocationCache.UpdateCachedEntity(GroupLocation entity, EntityState entityState)` ([line 206](../../Rock/Web/Cache/Entities/GroupLocationCache.cs)) takes the entity because it has to refresh an alternate index (`_byLocationIdCache`) when `LocationId` changes. The base id-only signature is hidden with `throw new NotSupportedException` to force callers to use the entity-aware overload.
 
@@ -124,7 +124,7 @@ Each layer adds capabilities at the right level: ItemCache is a generic key-valu
 
 ### `new RockContext()` forbidden in cache code
 
-The `RockApp.Current.CreateRockContext()` indirection enables testing with substituted contexts. Direct construction defeats the substitution and forces every cache test to talk to a real database.
+The `RockApp.Current.CreateRockContext()` indirection enables testing with substituted contexts. Direct construction defeats the substitution and forces every cache test to talk to a real database. Cache code enforces this strictly; the factory is now the default construction everywhere.
 
 ## Considered but Rejected
 

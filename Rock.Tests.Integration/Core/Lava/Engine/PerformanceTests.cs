@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -122,7 +123,7 @@ Ted's other contact numbers are: (623) 555-3322,(623) 555-2444.'
 
         private Person GetWhereFilterTestPersonTedDecker()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personTedDecker = new PersonService( rockContext ).Queryable()
                 .FirstOrDefault( x => x.LastName == "Decker" && x.NickName == "Ted" );

@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -200,7 +201,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             var groupAttendanceFilterSelection = selection.FromJsonOrNull<GroupAttendanceFilterSelection>();
             var groupsList = string.Empty;
             var selectedSchedules = string.Empty;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 groupsList = new GroupService( rockContext )
                     .GetByGuids( groupAttendanceFilterSelection.GroupGuids )
@@ -388,7 +389,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
 
             // convert the date range from pipe-delimited to comma since we use pipe delimited for the selection values
             var dateRangeCommaDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace( '|', ',' );
-            var groupGuids = new GroupService( new RockContext() ).GetByIds( pGroupPicker.ItemIds.AsIntegerList() ).Select( a => a.Guid ).ToList();
+            var groupGuids = new GroupService( RockApp.Current.CreateRockContext() ).GetByIds( pGroupPicker.ItemIds.AsIntegerList() ).Select( a => a.Guid ).ToList();
 
             var groupAttendanceFilterSelection = new GroupAttendanceFilterSelection
             {
@@ -420,7 +421,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             var slidingDateRangePicker = controls[4] as SlidingDateRangePicker;
             var schedulePicker = controls[5] as SchedulePicker;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groups = new GroupService( rockContext ).GetByGuids( groupAttendanceFilterSelection.GroupGuids );
                 pGroupPicker.SetValues( groups );
@@ -501,7 +502,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
 
         private List<int> GetGroupIds( List<Guid> groupGuids, bool includeChildGroups )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupService = new GroupService( rockContext );
 

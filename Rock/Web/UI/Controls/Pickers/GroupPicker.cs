@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -269,7 +270,7 @@ namespace Rock.Web.UI.Controls
             Group group = null;
             if ( groupId.HasValue && groupId > 0 )
             {
-                group = new GroupService( new RockContext() ).Get( groupId.Value );
+                group = new GroupService( RockApp.Current.CreateRockContext() ).Get( groupId.Value );
             }
 
             SetValue( group );
@@ -283,7 +284,7 @@ namespace Rock.Web.UI.Controls
             var groupIds = ItemIds.Where( i => i != "0" ).AsIntegerList();
             if ( groupIds.Any() )
             {
-                var groups = new GroupService( new RockContext() )
+                var groups = new GroupService( RockApp.Current.CreateRockContext() )
                     .Queryable()
                     .Where( g => groupIds.Contains( g.Id ) )
                     .ToList();

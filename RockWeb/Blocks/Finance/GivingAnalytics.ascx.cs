@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Chart;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -246,7 +247,7 @@ btnCopyToClipboard.ClientID );
 
             if ( chartStyleDefinedValueGuid.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var definedValue = DefinedValueCache.Get( chartStyleDefinedValueGuid.Value );
                 if ( definedValue != null )
                 {

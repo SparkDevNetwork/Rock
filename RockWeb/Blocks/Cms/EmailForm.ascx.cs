@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -456,7 +457,7 @@ namespace RockWeb.Blocks.Cms
                 mergeFields.Add( "FormFields", formFields );
 
                 // get attachments
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() );
                 for ( int i = 0; i < Request.Files.Count; i++ )

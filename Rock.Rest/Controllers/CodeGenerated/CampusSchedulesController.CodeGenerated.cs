@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusSchedulesController"/> class.
         /// </summary>
-        public CampusSchedulesController() : base( new Rock.Model.CampusScheduleService( new Rock.Data.RockContext() ) ) { } 
+        public CampusSchedulesController() : base( new Rock.Model.CampusScheduleService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

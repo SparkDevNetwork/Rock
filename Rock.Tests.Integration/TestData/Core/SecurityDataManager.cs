@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -170,7 +171,7 @@ namespace Rock.Tests.Integration.TestData.Core
         /// <returns></returns>
         public bool DeleteSecurityRole( string roleGroupIdentifier )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
             var roleGroup = groupService.Get( roleGroupIdentifier );
 

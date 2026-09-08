@@ -17,6 +17,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -52,7 +53,7 @@ namespace Rock.Model
         {
             get
             {
-                var fileService = new BinaryFileService( new RockContext() );
+                var fileService = new BinaryFileService( RockApp.Current.CreateRockContext() );
                 var qry = fileService.Queryable()
                     .Where( f => f.BinaryFileTypeId.HasValue && f.BinaryFileTypeId == this.Id );
                 return qry;

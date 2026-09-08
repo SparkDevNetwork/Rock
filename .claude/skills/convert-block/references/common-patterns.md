@@ -331,7 +331,7 @@ Consult these blocks when you're unsure about a specific pattern. They are the s
 
 ## Enum Management
 
-See **CLAUDE.md → Enums** for file location, namespace, and `[EnumDomain]` attribute rules.
+See **`.claude/rules/code-conventions.md` → Enums** for file location, namespace, and `[EnumDomain]` attribute rules. In short: new enums use `namespace Rock.Enums.[Domain]` with NO `[EnumDomain]` attribute; the `Rock.Model` namespace + `[EnumDomain]` combination is a legacy pattern.
 
 ### Using existing enums in TypeScript
 ```typescript
@@ -341,8 +341,9 @@ import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 const myEnumItems = enumToListItemBag(MyEnumDescription);
 ```
 
-### Migrating an enum from `Rock/` to `Rock.Enums/`
-1. Create it in `Rock.Enums/` with the same values + namespace + `[EnumDomain]`.
+### Migrating an existing enum from `Rock/` to `Rock.Enums/`
+Relocating an **existing** public enum is a backward-compatibility move — keep its original namespace so referencing code and plugins do not break. A legacy enum that was `Rock.Model.EnumName` therefore keeps `namespace Rock.Model` and its `[EnumDomain]` attribute (this is the one case where a file under `Rock.Enums/` legitimately uses the `Rock.Model` namespace). This differs from authoring a brand-new enum, which uses `namespace Rock.Enums.[Domain]` with no attribute.
+1. Create it in `Rock.Enums/` with the same values, the same namespace, and (for a `Rock.Model` enum) its existing `[EnumDomain]`.
 2. Delete the old file.
 3. Add `[assembly: TypeForwardedTo( typeof( Rock.Model.EnumName ) )]` in `Rock/Properties/AssemblyInfo.cs`.
 

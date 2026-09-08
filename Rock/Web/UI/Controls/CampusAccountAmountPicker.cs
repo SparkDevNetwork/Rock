@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -735,7 +736,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void BindAccounts()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var selectableAccountIds = this.SelectableAccountIds.ToList();
 
             IQueryable<FinancialAccount> accountsQry;

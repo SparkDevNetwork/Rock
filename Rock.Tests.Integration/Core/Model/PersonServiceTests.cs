@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Bus;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -63,7 +64,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void CreatePersonWithPrimaryAndPreviousEmails()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var person = personService.Get( PersonGuid.PersonWithPrimaryAndPreviousEmailsGuid );
@@ -124,7 +125,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void CreatePersonWithPrimaryEmailAndProtectionProfile( Guid guid, string email, AccountProtectionProfile accountProtectionProfile )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var person = personService.Get( guid );
@@ -152,7 +153,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void CreatePersonWithNoEmails()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var person = personService.Get( PersonGuid.PersonWithNoEmailsGuid );
@@ -181,7 +182,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void CreatePersonWithPrimaryEmailButDifferentName()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var person = personService.Get( PersonGuid.PersonWithPrimaryEmailButDifferentNameGuid );
@@ -214,7 +215,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonWithPrimaryEmailShouldMatch()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personWithPrimaryAndPreviousEmails = personService.Get( PersonGuid.PersonWithPrimaryAndPreviousEmailsGuid );
             var emailSearch = Email.PrimaryEmail;
@@ -238,7 +239,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonWithPrimaryEmailShouldMatchCaseInsensitive()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personWithPrimaryAndPreviousEmails = personService.Get( PersonGuid.PersonWithPrimaryAndPreviousEmailsGuid );
             var emailSearch = Email.PrimaryEmail.ToUpperInvariant();
@@ -279,7 +280,7 @@ namespace Rock.Tests.Integration.Core.Model
             // Give time for cache to update.
             Thread.Sleep( 50 );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var person = personService.Get( personGuid.AsGuid() );
@@ -302,7 +303,7 @@ namespace Rock.Tests.Integration.Core.Model
             // Give time for cache to update.
             Thread.Sleep( 50 );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var person = personService.Get( personGuid.AsGuid() );
@@ -323,7 +324,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonWithPrimaryEmailShouldNotMatchIfAccountProtectionProfileDisabled()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personWithPrimaryAndPreviousEmails = personService.Get( PersonGuid.PersonWithPrimaryAndPreviousEmailsGuid );
             var emailSearch = Email.PrimaryEmail;
@@ -346,7 +347,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonWithPreviousEmailShouldMatch()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personWithPrimaryAndPreviousEmails = personService.Get( PersonGuid.PersonWithPrimaryAndPreviousEmailsGuid );
             var emailSearch = Email.PreviousEmail1;
@@ -370,7 +371,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonWithNoEmailShouldNotMatch()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personWithNoEmails = personService.Get( PersonGuid.PersonWithNoEmailsGuid );
 
@@ -397,7 +398,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonWithPrimaryEmailButDifferentNameShouldNotMatch()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personWithPrimaryEmailButDifferentName = personService.Get( PersonGuid.PersonWithPrimaryEmailButDifferentNameGuid );
             var personWithPrimaryEmail = personService.Get( PersonGuid.PersonWithPrimaryAndPreviousEmailsGuid );
@@ -425,7 +426,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void ShouldAssignAppropriateValueToAgeClassification()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var personTurnedAdult = new Person

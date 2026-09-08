@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -75,7 +76,7 @@ namespace Rock.Blocks.Core
             {
                 return new DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag>();
             }
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag>();
                 var entity = GetInitialEntity( rockContext );
@@ -399,7 +400,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -494,7 +495,7 @@ namespace Rock.Blocks.Core
                 return ActionNotFound();
             }
 
-            var copiedEntity = new ScheduleService( new RockContext() ).Copy( key );
+            var copiedEntity = new ScheduleService( RockApp.Current.CreateRockContext() ).Copy( key );
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
             {
@@ -511,7 +512,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -538,7 +539,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ScheduleService( rockContext );
 
@@ -595,7 +596,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ScheduleService( rockContext );
 
@@ -633,7 +634,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

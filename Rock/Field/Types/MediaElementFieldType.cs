@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
@@ -79,7 +80,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( usage == ConfigurationValueUsage.View )
                 {
@@ -139,7 +140,7 @@ namespace Rock.Field.Types
         {
             var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( publicConfigurationValues.TryGetValue( CONFIG_LIMIT_TO_ACCOUNT, out string accountBag ) )
                 {
@@ -179,7 +180,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaElementName = new MediaElementService( rockContext ).GetSelect( mediaElementGuid.Value, me => me.Name );
 
@@ -241,7 +242,7 @@ namespace Rock.Field.Types
                 return (string.Empty, string.Empty);
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaInfo = new MediaElementService( rockContext ).Queryable()
                     .Where( a => a.Guid == mediaElementGuid.Value )
@@ -305,7 +306,7 @@ namespace Rock.Field.Types
 
             if ( mediaElementGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mediaElementInfo = new MediaElementService( rockContext ).Queryable()
                         .Where( a => a.Guid == mediaElementGuid.Value )
@@ -361,7 +362,7 @@ namespace Rock.Field.Types
 
             if ( mediaElementGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     publicValue = new MediaElementService( rockContext ).GetSelect( mediaElementGuid.Value, m => m.Name );
                 }
@@ -470,7 +471,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            return new MediaElementService( rockContext ?? new RockContext() ).Get( mediaGuid.Value );
+            return new MediaElementService( rockContext ?? RockApp.Current.CreateRockContext() ).Get( mediaGuid.Value );
         }
 
         #endregion
@@ -487,7 +488,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaElementId = new MediaElementService( rockContext ).GetId( guid.Value );
 
@@ -764,7 +765,7 @@ namespace Rock.Field.Types
         {
             if ( control is MediaElementPicker mediaElementPicker )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( mediaElementPicker.MediaElementId.IsNotNullOrZero() )
                 {
@@ -800,7 +801,7 @@ namespace Rock.Field.Types
 
             if ( mediaElementGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mediaElementInfo = new MediaElementService( rockContext ).Queryable()
                         .Where( a => a.Guid == mediaElementGuid.Value )
@@ -861,7 +862,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new MediaElementService( rockContext ).GetId( mediaGuid.Value );
             }
@@ -877,7 +878,7 @@ namespace Rock.Field.Types
         {
             if ( id.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mediaGuid = new MediaElementService( rockContext ).GetGuid( id.Value );
 

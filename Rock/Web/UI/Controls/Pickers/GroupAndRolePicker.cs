@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Web.UI.Controls
@@ -326,7 +327,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !GroupTypeId.HasValue )
                     {
-                        var group = new Rock.Model.GroupService( new RockContext() ).Get( groupId );
+                        var group = new Rock.Model.GroupService( RockApp.Current.CreateRockContext() ).Get( groupId );
                         if ( group != null &&
                             _ddlGroupType.SelectedValue != group.GroupTypeId.ToString() )
                         {
@@ -382,7 +383,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !GroupTypeId.HasValue )
                     {
-                        var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( groupRoleId );
+                        var groupRole = new Rock.Model.GroupTypeRoleService( RockApp.Current.CreateRockContext() ).Get( groupRoleId );
                         if ( groupRole != null &&
                             _ddlGroupType.SelectedValue != groupRole.GroupTypeId.ToString() )
                         {
@@ -557,7 +558,7 @@ namespace Rock.Web.UI.Controls
             _ddlGroupType.Items.Clear();
             _ddlGroupType.Items.Add( Rock.Constants.None.ListItem );
 
-            var groupTypeService = new Rock.Model.GroupTypeService( new RockContext() );
+            var groupTypeService = new Rock.Model.GroupTypeService( RockApp.Current.CreateRockContext() );
 
             // get all group types that have the ShowInGroupList flag set
             var groupTypes = groupTypeService.Queryable().Where( a => a.ShowInGroupList ).OrderBy( a => a.Name ).ToList();
@@ -585,7 +586,7 @@ namespace Rock.Web.UI.Controls
             {
                 _ddlGroup.Items.Add( new ListItem() );
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var groupService = new Rock.Model.GroupService( rockContext );
                 var groups = groupService.Queryable().Where( r => r.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Name ).ToList();
 

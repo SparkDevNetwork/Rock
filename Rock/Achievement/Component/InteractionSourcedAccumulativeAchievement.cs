@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Dynamic;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -556,7 +557,7 @@ namespace Rock.Achievement.Component
         /// <returns></returns>
         private List<DateTime> GetInteractionDatesByPerson( AchievementTypeCache achievementTypeCache, int personAliasId, DateTime minDate, DateTime maxDate )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var query = GetSourceEntitiesQuery( achievementTypeCache, rockContext ) as IQueryable<Interaction>;
             var dayAfterMaxDate = maxDate.AddDays( 1 );
 

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -38,7 +39,7 @@ namespace Rock.Reporting
         /// <param name="currentUrl">The current URL.</param>
         public static void CreateAccount(string accountName, string accountDescription, string clientId, string clientSecret, string redirectUrl, string currentUrl)
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var definedTypeService = new DefinedTypeService(rockContext);
             var definedValueService = new DefinedValueService(rockContext);
 

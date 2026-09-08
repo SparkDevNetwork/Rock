@@ -18,6 +18,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -40,7 +41,7 @@ namespace Rock.Tests.Integration.Core
         [TestMethod]
         public void InheritedAttributes_ParentEntityAttributeValues_IncludesChildEntityAttributeValues()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemService = new EventItemService( rockContext );
 
             // Verify the values of the test Attribute for Event A and Event B.
@@ -61,7 +62,7 @@ namespace Rock.Tests.Integration.Core
         [Ignore( "SaveAttributeValues() does not correctly save inherited values." )]
         public void InheritedAttributes_SetAttributeOnParentEntity_SetsValueForChildEntity()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemService = new EventItemService( rockContext );
             var eventCalendarService = new EventCalendarItemService( rockContext );
 
@@ -107,7 +108,7 @@ namespace Rock.Tests.Integration.Core
         /// </summary>
         private static void InitializeInheritedAttributesTestData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var eventCalendarPublicId = EventCalendarCache.All().First( x => x.Name == "Public" ).Id;
             var eventCalendarInternalId = EventCalendarCache.All().First( x => x.Name == "Internal" ).Id;
@@ -213,7 +214,7 @@ SET IDENTITY_INSERT [EventItem] OFF
             rockContext.SaveChanges();
 
             // Set Attribute Values.
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
             AttributeCache.Clear();
 
             // Set Attribute Values for Event B.

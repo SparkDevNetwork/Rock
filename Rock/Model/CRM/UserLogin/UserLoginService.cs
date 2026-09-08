@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Utility;
@@ -223,7 +224,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new UserLoginService( new RockContext() ).Exists( userName ) )
+            if ( new UserLoginService( RockApp.Current.CreateRockContext() ).Exists( userName ) )
             {
                 errorTitle = "Invalid Username";
                 errorMessage = "The selected Username is already being used. Please select a different Username";

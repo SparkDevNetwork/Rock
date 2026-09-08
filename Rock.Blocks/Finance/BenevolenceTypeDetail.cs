@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -493,7 +494,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult IsExistingWorkflow( BenevolenceWorkflowBag workflowBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 BenevolenceWorkflow findWorkFlow = null;
                 var entityId = RequestContext.GetPageParameter( PageParameterKey.BenevolenceTypeId );

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AttendanceOccurrencesController"/> class.
         /// </summary>
-        public AttendanceOccurrencesController() : base( new Rock.Model.AttendanceOccurrenceService( new Rock.Data.RockContext() ) ) { } 
+        public AttendanceOccurrencesController() : base( new Rock.Model.AttendanceOccurrenceService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

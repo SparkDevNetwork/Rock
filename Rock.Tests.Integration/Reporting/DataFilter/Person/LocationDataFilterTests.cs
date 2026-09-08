@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
@@ -58,7 +59,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         private IQueryable<IEntity> GetPersonQueryWithLocationFilter( LocationFilter.FilterSettings settings )
         {
             var settingsFilter = new LocationFilter();
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
             var parameterExpression = personService.ParameterExpression;

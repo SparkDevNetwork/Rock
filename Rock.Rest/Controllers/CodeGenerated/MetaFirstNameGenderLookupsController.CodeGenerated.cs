@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="MetaFirstNameGenderLookupsController"/> class.
         /// </summary>
-        public MetaFirstNameGenderLookupsController() : base( new Rock.Model.MetaFirstNameGenderLookupService( new Rock.Data.RockContext() ) ) { } 
+        public MetaFirstNameGenderLookupsController() : base( new Rock.Model.MetaFirstNameGenderLookupService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

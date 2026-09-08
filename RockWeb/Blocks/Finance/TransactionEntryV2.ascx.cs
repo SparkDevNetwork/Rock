@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Financial;
@@ -890,7 +891,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 if ( _financialGateway == null )
                 {
-                    RockContext rockContext = new RockContext();
+                    RockContext rockContext = RockApp.Current.CreateRockContext();
                     var financialGatewayGuid = this.GetAttributeValue( AttributeKey.FinancialGateway ).AsGuid();
                     _financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayGuid );
                 }
@@ -1375,7 +1376,7 @@ mission. We are so grateful for your commitment.</p>
             }
 
             var currencyTypeValueIdACH = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
-            var financialPersonSavedAccountCurrencyTypeValueId = new FinancialPersonSavedAccountService( new RockContext() )
+            var financialPersonSavedAccountCurrencyTypeValueId = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() )
                 .GetSelect( financialPersonSavedAccountId, s => s.FinancialPaymentDetail.CurrencyTypeValueId );
             var isAch = financialPersonSavedAccountCurrencyTypeValueId.HasValue && financialPersonSavedAccountCurrencyTypeValueId.Value == currencyTypeValueIdACH;
             return isAch;
@@ -1493,7 +1494,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var targetPerson = GetTargetPerson( rockContext );
 
             if ( targetPerson == null )
@@ -1560,7 +1561,7 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
         protected void DeleteScheduledTransaction( int scheduledTransactionId )
         {
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 FinancialScheduledTransactionService financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var scheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
@@ -1607,7 +1608,7 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void UpdatePersonalInformationFromSelectedBusiness()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             int? selectedBusinessPersonId = cblSelectBusiness.SelectedValue.AsIntegerOrNull();
             Person personAsBusiness = null;
@@ -1676,7 +1677,7 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveAccount_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var targetPerson = GetTargetPerson( rockContext );
 
@@ -1860,7 +1861,7 @@ mission. We are so grateful for your commitment.</p>
             introMessageMergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
             if ( transactionEntity != null && LavaHelper.IsLavaTemplate( introMessageTemplate ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 introMessageMergeFields.Add( "TransactionEntity", transactionEntity );
                 var transactionEntityTypeId = transactionEntity.TypeId;
 
@@ -1970,7 +1971,7 @@ mission. We are so grateful for your commitment.</p>
         private void ConfigureCampusAccountAmountPicker()
         {
             var allowAccountsInUrl = this.GetAttributeValue( AttributeKey.AllowAccountOptionsInURL ).AsBoolean();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             List<int> selectableAccountIds = FinancialAccountCache.GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
 
@@ -2094,7 +2095,7 @@ mission. We are so grateful for your commitment.</p>
                         var accountGLCode = accountOptionParts[0];
                         if ( accountGLCode.IsNotNullOrWhiteSpace() )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 parameterAccountOption.AccountId = new FinancialAccountService( rockContext )
                                     .Queryable()
@@ -2135,7 +2136,7 @@ mission. We are so grateful for your commitment.</p>
             if ( personActionId.IsNotNullOrWhiteSpace() )
             {
                 // If a person key was supplied then try to get that person
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 targetPerson = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "transaction" );
 
                 if ( allowImpersonation )
@@ -2187,7 +2188,7 @@ mission. We are so grateful for your commitment.</p>
                 tbFirstName.Text = targetPerson.FirstName;
                 tbLastName.Text = targetPerson.LastName;
                 tbEmailIndividual.Text = targetPerson.Email;
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var addressTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
                 var addressTypeId = DefinedValueCache.GetId( addressTypeGuid );
 
@@ -2309,7 +2310,7 @@ mission. We are so grateful for your commitment.</p>
             if ( firstName.IsNotNullOrWhiteSpace() && lastName.IsNotNullOrWhiteSpace() && email.IsNotNullOrWhiteSpace() )
             {
                 var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, pnbPhoneIndividual.Number );
-                var matchingPerson = new PersonService( new RockContext() ).FindPerson( personQuery, true );
+                var matchingPerson = new PersonService( RockApp.Current.CreateRockContext() ).FindPerson( personQuery, true );
                 if ( matchingPerson != null )
                 {
                     return matchingPerson;
@@ -2332,7 +2333,7 @@ mission. We are so grateful for your commitment.</p>
             if ( firstName.IsNotNullOrWhiteSpace() && lastName.IsNotNullOrWhiteSpace() && email.IsNotNullOrWhiteSpace() )
             {
                 var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, pnbPhoneIndividual.Number );
-                var matchingPerson = new PersonService( new RockContext() ).FindPerson( personQuery, true );
+                var matchingPerson = new PersonService( RockApp.Current.CreateRockContext() ).FindPerson( personQuery, true );
                 if ( matchingPerson != null )
                 {
                     return matchingPerson;
@@ -2364,7 +2365,7 @@ mission. We are so grateful for your commitment.</p>
 
             var business = _createPersonOrBusiness( true, null, businessName, email );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             personService.AddContactToBusiness( business.Id, contactPerson.Id );
             rockContext.SaveChanges();
@@ -2379,7 +2380,7 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         private Person _createPersonOrBusiness( bool createBusiness, string firstName, string lastName, string email )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.PersonConnectionStatus ).AsGuid() );
             DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.PersonRecordStatus ).AsGuid() );
 
@@ -2535,7 +2536,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( primaryFamily != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 // fetch primaryFamily using rockContext so that any changes will get saved
                 primaryFamily = new GroupService( rockContext ).Get( primaryFamily.Id );
@@ -2568,7 +2569,7 @@ mission. We are so grateful for your commitment.</p>
             ddlPersonSavedAccount.Items.Clear();
             pnlSavedAccounts.Visible = false;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var targetPerson = GetTargetPerson( rockContext );
 
             // No person, no accounts
@@ -2832,7 +2833,7 @@ mission. We are so grateful for your commitment.</p>
             }
 
             var transactionGuid = hfTransactionGuid.Value.AsGuid();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // to make duplicate transactions impossible, make sure that our Transaction hasn't already been processed as a regular or scheduled transaction
             bool transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().Any( a => a.Guid == transactionGuid );
@@ -3114,7 +3115,7 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         protected void ShowTransactionSummary()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var transactionGuid = hfTransactionGuid.Value.AsGuid();
 
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
@@ -3183,7 +3184,7 @@ mission. We are so grateful for your commitment.</p>
         {
             FinancialGateway financialGateway = this.FinancialGateway;
             IHostedGatewayComponent gateway = this.FinancialGatewayComponent;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
             transaction.Guid = hfTransactionGuid.Value.AsGuid();
@@ -3393,7 +3394,7 @@ mission. We are so grateful for your commitment.</p>
         {
             FinancialGateway financialGateway = this.FinancialGateway;
             IHostedGatewayComponent gateway = this.FinancialGatewayComponent;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
             scheduledTransaction.Guid = hfTransactionGuid.Value.AsGuid();
@@ -3589,7 +3590,7 @@ mission. We are so grateful for your commitment.</p>
                     .Where( a => a.Amount.HasValue && a.Amount != 0.00M ).Select( a => a.AccountId )
                     .ToList();
 
-                var accounts = new FinancialAccountService( new RockContext() ).GetByIds( amountAccountIds ).ToList();
+                var accounts = new FinancialAccountService( RockApp.Current.CreateRockContext() ).GetByIds( amountAccountIds ).ToList();
                 var amountSummaryMergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 amountSummaryMergeFields.Add( "Accounts", accounts );
 
@@ -3712,7 +3713,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetInclude( scheduledTransactionGuid.Value, s => s.AuthorizedPersonAlias.Person );
             var personService = new PersonService( rockContext );
 
@@ -3791,7 +3792,7 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
         private void DeleteTransferredScheduledTransaction( int scheduledTransactionId )
         {
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
                 var currentTransaction = fstService.Get( scheduledTransactionId );

@@ -25,6 +25,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Model;
@@ -164,7 +165,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             if ( selectionConfig != null && selectionConfig.LearningCourseGuid.HasValue )
             {
-                var course = new LearningCourseService( new RockContext() ).Get( selectionConfig.LearningCourseGuid.Value );
+                var course = new LearningCourseService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.LearningCourseGuid.Value );
                 var dateRangeString = SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
                 var statuses = selectionConfig.LearningCompletionStatuses;
                 var passFailText = "";
@@ -261,7 +262,7 @@ namespace Rock.Reporting.DataFilter.Person
             // If there's a program selected filter to courses for that program.
             if ( selectedProgramGuid.HasValue )
             {
-                var courses = new LearningCourseService( new RockContext() )
+                var courses = new LearningCourseService( RockApp.Current.CreateRockContext() )
                     .Queryable()
                     .Where( lc => lc.IsActive && lc.LearningProgram.Guid == selectedProgramGuid )
                     .OrderBy( lc => lc.Order )
@@ -358,7 +359,7 @@ namespace Rock.Reporting.DataFilter.Person
             var slidingDateRangePicker = controls[2] as SlidingDateRangePicker;
             var cblStatuses = controls[3] as CheckBoxList;
 
-            var programGuid = new LearningCourseService( new RockContext() )
+            var programGuid = new LearningCourseService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( lc => lc.Guid == selectionConfig.LearningCourseGuid )
                 .Select( lc => ( Guid? ) lc.LearningProgram.Guid )

@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -201,7 +202,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 return GetNotFoundContent();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationRecipientService = new CommunicationRecipientService( rockContext );
                 var recipient = communicationRecipientService.Queryable()

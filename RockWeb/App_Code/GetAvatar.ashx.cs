@@ -212,7 +212,7 @@ namespace RockWeb
         /// <returns></returns>
         private bool IsPersonAllowedRefeshCache()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
 
             return RoleCache.AllRoles()
@@ -397,7 +397,7 @@ namespace RockWeb
 
                 if ( settings.PersonGuid.HasValue )
                 {
-                    person = new PersonService( new RockContext() ).Get( settings.PersonGuid.Value );
+                    person = new PersonService( RockApp.Current.CreateRockContext() ).Get( settings.PersonGuid.Value );
                 }
             }
 
@@ -408,7 +408,7 @@ namespace RockWeb
 
                 if ( settings.PersonId.HasValue )
                 {
-                    person = new PersonService( new RockContext() ).Get( settings.PersonId.Value );
+                    person = new PersonService( RockApp.Current.CreateRockContext() ).Get( settings.PersonId.Value );
                 }
             }
 
@@ -419,7 +419,7 @@ namespace RockWeb
 
                 if ( personAliasGuid.HasValue )
                 {
-                    person = new PersonAliasService( new RockContext() ).GetPerson( personAliasGuid.Value );
+                    person = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetPerson( personAliasGuid.Value );
                     settings.PersonId = person?.Id;
                 }
             }
@@ -431,7 +431,7 @@ namespace RockWeb
 
                 if ( personAliasId.HasValue )
                 {
-                    person = new PersonAliasService( new RockContext() ).GetPerson( personAliasId.Value );
+                    person = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetPerson( personAliasId.Value );
                     settings.PersonId = person?.Id;
                 }
             }

@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Utility;
@@ -314,7 +315,7 @@ namespace Rock.Model
                     var ageClassification = personPhotoImageTagArgs.AgeClassification;
                     if ( personId.HasValue && !ageClassification.HasValue )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             ageClassification = new PersonService( rockContext ).GetSelect( personId.Value, s => s.AgeClassification );
                         }

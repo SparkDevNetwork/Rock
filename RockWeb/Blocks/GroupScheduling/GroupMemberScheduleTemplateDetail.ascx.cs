@@ -17,6 +17,7 @@ using System;
 using System.ComponentModel;
 using System.Web.UI;
 using Rock;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -84,7 +85,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             var groupMemberScheduleTemplateService = new GroupMemberScheduleTemplateService( rockContext );
 
             GroupMemberScheduleTemplate groupMemberScheduleTemplate;
@@ -142,7 +143,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             if ( !groupMemberScheduleTemplateId.Equals( 0 ) )
             {
-                groupMemberScheduleTemplate = new GroupMemberScheduleTemplateService( new RockContext() ).Get( groupMemberScheduleTemplateId );
+                groupMemberScheduleTemplate = new GroupMemberScheduleTemplateService( RockApp.Current.CreateRockContext() ).Get( groupMemberScheduleTemplateId );
                 lActionTitle.Text = ActionTitle.Edit( GroupMemberScheduleTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
                 pdAuditDetails.SetEntity( groupMemberScheduleTemplate, ResolveRockUrl( "~" ) );
             }

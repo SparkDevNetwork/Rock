@@ -21,14 +21,22 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
  * Response payload for the GetGroupRoles block action. Carries the
  * picked group's group type identifier (so follow-up lookups can be
- * scoped to the same type) plus the role options for the role dropdown.
+ * scoped to the same type), the role options for the role dropdown, and
+ * the default role the dropdown pre-selects.
  */
 export type GroupRolesResponseBag = {
+    /**
+     * Gets or sets the unique identifier of the group type's default role, or null when
+     * the group type has no default role.
+     */
+    defaultGroupRoleGuid?: Guid | null;
+
     /** Gets or sets the unique identifier of the group's group type. */
     groupTypeGuid?: string | null;
 

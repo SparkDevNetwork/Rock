@@ -20,6 +20,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -86,7 +87,7 @@ namespace Rock.Rest.v2.Models.Actions
                 return BadRequest( $"If either {nameof( request.EntityTypeId )} or {nameof( request.EntityId )} are specified then both must be specified." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowType = WorkflowTypeCache.Get( workflowTypeId, true );
 
@@ -199,7 +200,7 @@ namespace Rock.Rest.v2.Models.Actions
         /// <returns>A response bag that describes the results of the workflow.</returns>
         private static LaunchWorkflowResponseBag LaunchWorkflowNow( WorkflowTypeCache workflowType, IEntity entity, LaunchWorkflowOptionsBag request, int? initiatorPersonAliasId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflow = Rock.Model.Workflow.Activate( workflowType, request?.Name, rockContext );
                 workflow.InitiatorPersonAliasId = initiatorPersonAliasId;

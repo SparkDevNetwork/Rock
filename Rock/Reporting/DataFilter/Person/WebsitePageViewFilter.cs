@@ -31,6 +31,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Interaction
 {
@@ -413,7 +414,7 @@ function() {
             var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
             var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
 
-            var channels = new InteractionChannelService( new RockContext() )
+            var channels = new InteractionChannelService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )

@@ -30,6 +30,7 @@ using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 using static Rock.Tests.Integration.TestData.EventsDataManager;
+using Rock.Configuration;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -178,7 +179,7 @@ namespace Rock.Tests.Integration.Core.Lava
         /// </summary>
         private void AssertTemplateOutputContainsTaggedEvent( string template, string enabledCommands, bool isTaggedEventExpected )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.BillMarble.AsGuid() );
 
             Assert.IsNotNull( person, "Expected test data not found." );
@@ -215,7 +216,7 @@ namespace Rock.Tests.Integration.Core.Lava
         /// </summary>
         private static void AddTaggedEvent()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var isScheduleMissing = new ScheduleService( rockContext ).Get( TaggedEventScheduleGuid.AsGuid() ) == null;
             if ( isScheduleMissing )

@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -252,7 +253,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <returns>A string containing the XAML content to be displayed.</returns>
         private string BuildContent()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<PrayerRequest> prayerRequests = new List<PrayerRequest>();
 
@@ -329,7 +330,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </returns>
         private CallbackResponse DeleteRequest( Guid requestGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var prayerRequestService = new PrayerRequestService( rockContext );
                 var prayerRequest = prayerRequestService.Get( requestGuid );

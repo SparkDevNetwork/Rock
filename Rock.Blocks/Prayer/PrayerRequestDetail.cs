@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Prayer
 {
@@ -151,7 +152,7 @@ namespace Rock.Blocks.Prayer
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<PrayerRequestBag, PrayerRequestDetailOptionsBag>();
 
@@ -515,7 +516,7 @@ namespace Rock.Blocks.Prayer
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -597,7 +598,7 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -623,7 +624,7 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult GetPersonName( string personAliasGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var person = personAliasService.Get( personAliasGuid ).Person;
@@ -647,7 +648,7 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<PrayerRequestBag, PrayerRequestDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new PrayerRequestService( rockContext );
 
@@ -709,7 +710,7 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new PrayerRequestService( rockContext );
 
@@ -748,7 +749,7 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<PrayerRequestBag, PrayerRequestDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

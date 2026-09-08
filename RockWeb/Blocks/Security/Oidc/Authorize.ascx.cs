@@ -28,6 +28,7 @@ using Owin;
 using Owin.Security.OpenIdConnect.Extensions;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
@@ -330,7 +331,7 @@ namespace RockWeb.Blocks.Security.Oidc
             var owinContext = Context.GetOwinContext();
             var request = owinContext.GetOpenIdConnectRequest();
             var requestedScopes = request.GetScopes();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var authClient = GetAuthClient();
 
             var parsedAllowedClientClaims = authClient?.AllowedClaims.FromJsonOrNull<List<string>>();
@@ -385,7 +386,7 @@ namespace RockWeb.Blocks.Security.Oidc
         {
             if ( _authClient == null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var authClientService = new AuthClientService( rockContext );
                 var authClientId = PageParameter( PageParamKey.ClientId );
                 _authClient = authClientService.GetByClientId( authClientId );
@@ -414,7 +415,7 @@ namespace RockWeb.Blocks.Security.Oidc
             IDictionary<string, string> clientAllowedClaims = null;
 
             List<string> clientAllowedScopes = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 clientAllowedScopes = RockIdentityHelper.NarrowRequestedScopesToApprovedScopes( rockContext, authClient, requestedScopes ).ToList();
                 clientAllowedClaims = RockIdentityHelper.GetAllowedClientClaims( rockContext, authClient, clientAllowedScopes );

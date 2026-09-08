@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -307,7 +308,7 @@ namespace RockWeb.Blocks.GroupScheduling
             var allGroupIds = new List<int>();
             allGroupIds.AddRange( pickedGroupIds );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Only use teh ShowChildGroups option when there is 1 group selected
             if ( rosterConfiguration.IncludeChildGroups && pickedGroupIds.Count == 1 )
@@ -485,7 +486,7 @@ namespace RockWeb.Blocks.GroupScheduling
             var pickerGroupIds = gpGroups.SelectedIds.ToList();
             bool showChildGroupsCheckbox =
                 pickerGroupIds.Count == 1
-                && new GroupService( new RockContext() ).Queryable().Where( a => a.ParentGroupId.HasValue && pickerGroupIds.Contains( a.ParentGroupId.Value ) ).Any();
+                && new GroupService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.ParentGroupId.HasValue && pickerGroupIds.Contains( a.ParentGroupId.Value ) ).Any();
             cbIncludeChildGroups.Visible = showChildGroupsCheckbox;
         }
 
@@ -516,7 +517,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var includedGroupsQuery = GetSelectedSchedulingGroupsQuery( rockContext );
 
             var groupSchedulesQuery = includedGroupsQuery.GetGroupSchedulingSchedules();
@@ -604,7 +605,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var includedGroupsQuery = GetSelectedSchedulingGroupsQuery( rockContext );
 
             var groupLocationService = new GroupLocationService( rockContext );

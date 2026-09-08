@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -45,7 +46,7 @@ namespace Rock.Tests.Integration.Core.Model
                 Guid = personGuid,
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( person );
@@ -88,7 +89,7 @@ namespace Rock.Tests.Integration.Core.Model
                 AccountProtectionProfile = AccountProtectionProfile.Extreme
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( person );
@@ -159,7 +160,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             List<GroupMember> deceasedList = new List<GroupMember>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 deceasedList = new GroupMemberService( rockContext ).Queryable( true ).ToList();
             }
@@ -177,7 +178,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             List<GroupMember> deceasedList = new List<GroupMember>();
             List<Person> deceasedpersonList = new List<Person>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 deceasedList = new GroupMemberService( rockContext ).Queryable( true ).ToList();
 

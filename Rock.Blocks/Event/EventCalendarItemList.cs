@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -263,7 +264,7 @@ namespace Rock.Blocks.Event
             if ( eventCalendar != null )
             {
                 int entityTypeId = new EventCalendarItem().TypeId;
-                foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                foreach ( var attributeModel in new AttributeService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
@@ -312,7 +313,7 @@ namespace Rock.Blocks.Event
 
             if ( eventCalendarId.HasValue )
             {
-                _eventCalendar = new EventCalendarService( new RockContext() ).Queryable()
+                _eventCalendar = new EventCalendarService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( g => g.Id == eventCalendarId )
                     .FirstOrDefault();
             }
@@ -349,7 +350,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new EventCalendarItemService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

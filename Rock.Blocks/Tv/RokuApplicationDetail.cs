@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -398,7 +399,7 @@ namespace Rock.Blocks.Tv
             }
 
             int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
-            var retentionDuration = new InteractionChannelService( new RockContext() ).Queryable()
+            var retentionDuration = new InteractionChannelService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( c => c.ChannelTypeMediumValueId == channelMediumWebsiteValueId && c.ChannelEntityId == site.Id )
                     .Select( c => c.RetentionDuration )
                     .FirstOrDefault();

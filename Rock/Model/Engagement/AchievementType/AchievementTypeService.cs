@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -74,14 +75,14 @@ namespace Rock.Model
                 throw new ArgumentException( $"The AchievementComponent did not resolve for record id {achievementTypeId}" );
             }
 
-            var sourceEntitiesQuery = achievementComponent.GetSourceEntitiesQuery( achievementTypeCache, new RockContext() )
+            var sourceEntitiesQuery = achievementComponent.GetSourceEntitiesQuery( achievementTypeCache, RockApp.Current.CreateRockContext() )
                 .AsNoTracking()
                 .ToList();
 
             foreach ( var sourceEntity in sourceEntitiesQuery )
             {
                 // Process each streak in it's own data context to avoid the data context changes getting too big and slow
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // This is a bulk process, so don't send real-time events.
                     rockContext.IsRealTimeEnabled = false;

@@ -1,4 +1,5 @@
 ﻿using Rock;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Data;
@@ -50,7 +51,7 @@ namespace Rock.Blocks.Finance
         #region Methods
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
                 var dataset = PersistedDatasetCache.Get( datasetGuid );
@@ -185,7 +186,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult RefreshData()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
                 var dataset = new PersistedDatasetService( rockContext )

@@ -22,6 +22,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter;
@@ -105,7 +106,7 @@ namespace Rock.Reporting
 
             var currentPerson = bindGridOptions?.CurrentPerson;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( !report.IsAuthorized( Authorization.VIEW, currentPerson ) )
             {

@@ -25,6 +25,7 @@ using System.Web.Http.Controllers;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.SystemGuid;
@@ -145,7 +146,7 @@ namespace Rock.Model
             // Controller Class Name => New Format Id => Old Format Id
             var controllerApiIdMap = new Dictionary<string, Dictionary<string, string>>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var restControllerService = new RestControllerService( rockContext );
             var discoveredControllers = new List<DiscoveredControllerFromReflection>();
             logger.LogDebug( $"\t{sw.ElapsedMilliseconds} ms Getting GetApiExplorer..." );

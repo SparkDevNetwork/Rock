@@ -19,6 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
+using Rock.Configuration;
 using Rock.Core.EntitySearch;
 using Rock.Data;
 using Rock.ViewModels.Core;
@@ -45,7 +46,7 @@ namespace Rock.Model
             var entityType = entitySearch.EntityType.GetEntityType()
                 ?? throw new Exception( $"Entity type {entitySearch.EntityType.Name} was not found." );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemQuery = new EntitySearchSystemQuery
                 {
@@ -74,7 +75,7 @@ namespace Rock.Model
         /// <returns>A list of dynamic objects that represents the results.</returns>
         public static EntitySearchResultsBag GetSearchResults( EntitySearch entitySearch, EntitySearchQueryBag userQuery, Person currentPerson )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return GetSearchResults( entitySearch, userQuery, currentPerson, rockContext );
             }

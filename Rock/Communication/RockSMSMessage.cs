@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -150,7 +151,7 @@ namespace Rock.Communication
             // If the response recipient exists use it
             if ( FromSystemPhoneNumber.AssignedToPersonAliasId.HasValue )
             {
-                person = new Rock.Model.PersonAliasService( new Data.RockContext() )
+                person = new Rock.Model.PersonAliasService( RockApp.Current.CreateRockContext() )
                     .GetPerson( FromSystemPhoneNumber.AssignedToPersonAliasId.Value );
             }
 

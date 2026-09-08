@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Security;
@@ -307,7 +308,7 @@ namespace Rock.Blocks.Connection
         [BlockAction]
         public BlockActionResult SaveCelebrationStory( string key, string text, Guid? authorPersonAliasGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var note = new NoteService( rockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 

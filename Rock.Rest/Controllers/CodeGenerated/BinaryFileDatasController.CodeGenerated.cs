@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileDatasController"/> class.
         /// </summary>
-        public BinaryFileDatasController() : base( new Rock.Model.BinaryFileDataService( new Rock.Data.RockContext() ) ) { } 
+        public BinaryFileDatasController() : base( new Rock.Model.BinaryFileDataService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

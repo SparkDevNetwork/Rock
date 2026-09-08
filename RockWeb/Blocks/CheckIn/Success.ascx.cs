@@ -34,6 +34,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
+using Rock.Configuration;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -589,7 +590,7 @@ namespace RockWeb.Blocks.CheckIn
                 return sessionGuids;
             }
 
-            return new AttendanceService( new RockContext() ).Queryable().AsNoTracking()
+            return new AttendanceService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking()
                 .Where( a => sessionGuids.Contains( a.AttendanceCheckInSession.Guid ) )
                 .Select( a => a.AttendanceCheckInSession.Guid ).Distinct().ToList();
         }

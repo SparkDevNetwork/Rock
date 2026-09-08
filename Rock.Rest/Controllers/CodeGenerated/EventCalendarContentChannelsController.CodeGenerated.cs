@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="EventCalendarContentChannelsController"/> class.
         /// </summary>
-        public EventCalendarContentChannelsController() : base( new Rock.Model.EventCalendarContentChannelService( new Rock.Data.RockContext() ) ) { } 
+        public EventCalendarContentChannelsController() : base( new Rock.Model.EventCalendarContentChannelService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

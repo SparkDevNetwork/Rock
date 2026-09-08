@@ -46,6 +46,7 @@ using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Web.Cache;
 
 using Document = Lucene.Net.Documents.Document;
+using Rock.Configuration;
 
 namespace Rock.UniversalSearch.IndexComponents
 {
@@ -535,7 +536,7 @@ namespace Rock.UniversalSearch.IndexComponents
             List<Type> indexModelTypes = new List<Type>();
             Dictionary<string, Analyzer> combinedFieldAnalyzers = new Dictionary<string, Analyzer>();
 
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( entities == null || entities.Count == 0 )
                 {

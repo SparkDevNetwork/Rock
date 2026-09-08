@@ -26,6 +26,7 @@ using System.Net;
 using System.Reflection;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
@@ -205,7 +206,7 @@ namespace Rock.Tests.Integration.TestFramework.Database
             }
 
             // Create EF service for plugin migrations
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var pluginMigrationService = new PluginMigrationService( rockContext );
 
             // Get the versions that have already been installed

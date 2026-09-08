@@ -33,6 +33,7 @@ using Rock.Web.UI.Controls;
 
 // This is to get the enums without the prefix
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -263,7 +264,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlNoteType.Label = "Note Type";
             filterControl.Controls.Add( ddlNoteType );
 
-            var noteTypeService = new NoteTypeService( new RockContext() );
+            var noteTypeService = new NoteTypeService( RockApp.Current.CreateRockContext() );
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var noteTypes = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson )
                 .OrderBy( a => a.Order )

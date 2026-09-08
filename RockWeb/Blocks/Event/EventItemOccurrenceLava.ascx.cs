@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
@@ -99,7 +100,7 @@ namespace RockWeb.Blocks.Event
             int? eventCampusId = PageParameter( pageReference, "EventOccurrenceId" ).AsIntegerOrNull();
             if ( eventCampusId != null )
             {
-                EventItemOccurrence eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( eventCampusId.Value );
+                EventItemOccurrence eventItemOccurrence = new EventItemOccurrenceService( RockApp.Current.CreateRockContext() ).Get( eventCampusId.Value );
                 if ( eventItemOccurrence != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( eventItemOccurrence.EventItem.Name, pageReference ) );
@@ -146,7 +147,7 @@ namespace RockWeb.Blocks.Event
             EventItemOccurrence eventItemOccurrence = null;
             Dictionary<int, int> registrationCounts = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
                 var qry = eventItemOccurrenceService

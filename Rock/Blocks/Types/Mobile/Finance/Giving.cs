@@ -29,6 +29,7 @@ using Rock.ClientService.Finance.FinancialPersonSavedAccount;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Common.Mobile.Blocks.Finance.Giving;
 using Rock.Common.Mobile.ViewModel;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -1277,7 +1278,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <param name="savedAccountId">The saved account unique identifier.</param>
         private ReferencePaymentInfo GetSavedAccountReferenceInfo( string savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
+            var savedAccount = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
                 return savedAccount.GetReferencePayment();

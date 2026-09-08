@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Lava;
@@ -386,7 +387,7 @@ namespace Rock.Model
         /// <param name="contentChannelId">The content channel identifier.</param>
         public void DeleteIndexedDocumentsByContentChannel( int contentChannelId )
         {
-            var contentChannelItemIds = new ContentChannelItemService( new RockContext() ).Queryable()
+            var contentChannelItemIds = new ContentChannelItemService( RockApp.Current.CreateRockContext() ).Queryable()
                                     .Where( i => i.ContentChannelId == contentChannelId ).Select( a => a.Id ).ToList();
 
             int contentChannelItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.ContentChannelItem>().Value;
@@ -410,7 +411,7 @@ namespace Rock.Model
         public void BulkIndexDocumentsByContentChannel( int contentChannelId )
         {
             // return all approved content channel items that are in content channels that should be indexed
-            var contentChannelItemIds = new ContentChannelItemService( new RockContext() )
+            var contentChannelItemIds = new ContentChannelItemService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( i => i.ContentChannelId == contentChannelId
                     && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) )

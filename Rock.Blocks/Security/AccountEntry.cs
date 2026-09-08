@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Security.AccountEntry;
@@ -426,7 +427,7 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Captcha was not valid." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = GetSelectedDuplicatePerson( bag.PersonId, bag.Email, bag.LastName, rockContext );
                 if ( person == null )
@@ -495,7 +496,7 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Captcha was not valid." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var config = GetInitializationBox( box.State );
 
@@ -1134,7 +1135,7 @@ namespace Rock.Blocks.Security
                 };
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAttributes = GetAttributeCategoryAttributes( rockContext );
 

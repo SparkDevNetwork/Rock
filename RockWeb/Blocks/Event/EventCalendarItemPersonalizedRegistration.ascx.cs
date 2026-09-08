@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Humanizer;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -132,7 +133,7 @@ namespace RockWeb.Blocks.Event
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            _rockContext = new RockContext();
+            _rockContext = RockApp.Current.CreateRockContext();
         }
 
         /// <summary>
@@ -169,7 +170,7 @@ namespace RockWeb.Blocks.Event
 
         protected void lbRegister_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // get the person who was passed in for the registration registrar
             Person person = null;

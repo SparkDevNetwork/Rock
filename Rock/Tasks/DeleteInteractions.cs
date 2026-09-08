@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -39,7 +40,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( commandTimeout );
             var interactionComponentService = new InteractionComponentService( rockContext );
             var interactionService = new InteractionService( rockContext );
@@ -75,7 +76,7 @@ namespace Rock.Tasks
             // Also, this helps prevent new record inserts waiting the batch operation (if Snapshot Isolation is disabled)
             var chunkQuery = recordsToDeleteQuery.Take( batchAmount );
 
-            using ( var bulkDeleteContext = new RockContext() )
+            using ( var bulkDeleteContext = RockApp.Current.CreateRockContext() )
             {
                 bulkDeleteContext.Database.SetCommandTimeout( commandTimeout );
                 var keepDeleting = true;

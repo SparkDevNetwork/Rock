@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -63,7 +64,7 @@ namespace Rock.Blocks.Utility
                 .ToList();
             var pipelines = new List<ListItemBag>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 pipelines = new SmsPipelineService( rockContext )
                     .Queryable()

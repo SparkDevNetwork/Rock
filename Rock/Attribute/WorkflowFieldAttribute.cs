@@ -48,7 +48,7 @@ namespace Rock.Attribute
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( workflowTypeGuid, out guid ) )
                 {
-                    using ( var rockContext = new Rock.Data.RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var workflowType = new Rock.Model.WorkflowTypeService( rockContext ).Get( guid );
                         if ( workflowType != null )

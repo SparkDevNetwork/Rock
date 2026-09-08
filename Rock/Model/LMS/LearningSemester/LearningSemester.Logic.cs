@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -38,7 +39,7 @@ namespace Rock.Model
                 else
                 {
                     return this.LearningProgramId > 0 ?
-                        new LearningProgramService( new Data.RockContext() ).Get( this.LearningProgramId ) :
+                        new LearningProgramService( RockApp.Current.CreateRockContext() ).Get( this.LearningProgramId ) :
                         base.ParentAuthority;
                 }
             }

@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
@@ -54,7 +55,7 @@ namespace Rock.Tests.Integration.TestData.Reporting
 
             DataView newDataView = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
             if ( args.Guid != null )
             {
@@ -118,7 +119,7 @@ namespace Rock.Tests.Integration.TestData.Reporting
         public bool DeleteDataView( Guid dataViewGuid )
         {
             bool success = false;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.WrapTransaction( () =>
             {
                 success = DeleteDataView( rockContext, dataViewGuid );
@@ -210,7 +211,7 @@ namespace Rock.Tests.Integration.TestData.Reporting
                 return;
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
             {
@@ -353,7 +354,7 @@ namespace Rock.Tests.Integration.TestData.Reporting
 
         public DataView GetDataView( int dataViewId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
 
             var newDataView = dataViewService.Get( dataViewId );

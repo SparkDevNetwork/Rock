@@ -20,6 +20,7 @@ using System.Net;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.RegisterAccount;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -304,7 +305,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionBadRequest( errorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var checkForDuplicates = GetAttributeValue( AttributeKeys.CheckForDuplicates ).AsBoolean();
                 Person person = null;
@@ -383,7 +384,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [BlockAction]
         public BlockActionResult MobileLogin( string username, string password, bool rememberMe, Guid? personalDeviceGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 var (state, userLogin) = userLoginService.GetAuthenticatedUserLogin( username, password );

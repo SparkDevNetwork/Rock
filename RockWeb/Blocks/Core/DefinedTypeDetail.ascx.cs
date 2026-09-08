@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -184,7 +185,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveType_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             DefinedType definedType = null;
             DefinedTypeService typeService = new DefinedTypeService( rockContext );
@@ -230,7 +231,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
             DefinedType definedType = definedTypeService.Get( int.Parse( hfDefinedTypeId.Value ) );
 
@@ -273,7 +274,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 // Cancelling on Edit.  Return to Details
-                DefinedTypeService definedTypeService = new DefinedTypeService( new RockContext() );
+                DefinedTypeService definedTypeService = new DefinedTypeService( RockApp.Current.CreateRockContext() );
                 DefinedType definedType = definedTypeService.Get( hfDefinedTypeId.ValueAsInt() );
                 ShowReadonlyDetails( definedType );
             }
@@ -363,7 +364,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            DefinedTypeService definedTypeService = new DefinedTypeService( new RockContext() );
+            DefinedTypeService definedTypeService = new DefinedTypeService( RockApp.Current.CreateRockContext() );
             DefinedType definedType = definedTypeService.Get( hfDefinedTypeId.ValueAsInt() );
             ShowEditDetails( definedType );
         }
@@ -392,7 +393,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !definedTypeId.Equals( 0 ) )
             {
-                definedType = new DefinedTypeService( new RockContext() ).Get( definedTypeId );
+                definedType = new DefinedTypeService( RockApp.Current.CreateRockContext() ).Get( definedTypeId );
                 pdAuditDetails.SetEntity( definedType, ResolveRockUrl( "~" ) );
             }
 
@@ -496,12 +497,12 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                AttributeService attributeService = new AttributeService( new RockContext() );
+                AttributeService attributeService = new AttributeService( RockApp.Current.CreateRockContext() );
                 attribute = attributeService.Get( attributeGuid );
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
 
-            edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( new RockContext() )
+            edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
@@ -525,7 +526,7 @@ namespace RockWeb.Blocks.Core
         {
             string qualifierValue = hfDefinedTypeId.Value;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             int order = 0;
@@ -578,7 +579,7 @@ namespace RockWeb.Blocks.Core
         protected void gDefinedTypeAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = ( Guid ) e.RowKeyValue;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             AttributeService attributeService = new AttributeService( rockContext );
             Attribute attribute = attributeService.Get( attributeGuid );
 
@@ -651,7 +652,7 @@ namespace RockWeb.Blocks.Core
         private void BindDefinedTypeAttributesGrid()
         {
             string qualifierValue = hfDefinedTypeId.Value;
-            var attributes = new AttributeService( new RockContext() )
+            var attributes = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&

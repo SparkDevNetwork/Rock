@@ -42,7 +42,7 @@ namespace Rock.Attribute
         public MatrixFieldAttribute( string attributeMatrixTemplateGuid, string name, string description = "", bool required = true, string category = "", int order = 0, string key = null )
             : base( SystemGuid.FieldType.MATRIX.AsGuid(), name, description, required, null, category, order, key )
         {
-            var attributeMatrixTemplate = new AttributeMatrixTemplateService( new Data.RockContext() ).Get( attributeMatrixTemplateGuid.AsGuid() );
+            var attributeMatrixTemplate = new AttributeMatrixTemplateService( RockApp.Current.CreateRockContext() ).Get( attributeMatrixTemplateGuid.AsGuid() );
             if ( attributeMatrixTemplate != null )
             {
                 FieldConfigurationValues.AddOrReplace( "attributematrixtemplate", new Field.ConfigurationValue( attributeMatrixTemplate.Id.ToString() ) );

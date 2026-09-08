@@ -1983,7 +1983,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 if ( recipients.Any() )
                 {
                     // Create communication
-                    var communicationRockContext = new RockContext();
+                    var communicationRockContext = RockApp.Current.CreateRockContext();
                     var communicationService = new Rock.Model.CommunicationService( communicationRockContext );
                     var communication = new Rock.Model.Communication();
                     communication.Status = Model.CommunicationStatus.Transient;
@@ -2025,7 +2025,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     communicationRockContext.SaveChanges();
 
                     var personIds = recipients.Select( r => r.Key ).ToList();
-                    var personAliasService = new Rock.Model.PersonAliasService( new Rock.Data.RockContext() );
+                    var personAliasService = new Rock.Model.PersonAliasService( RockApp.Current.CreateRockContext() );
 
                     // Get the primary aliases
                     List<Rock.Model.PersonAlias> primaryAliasList = new List<Model.PersonAlias>( personIds.Count );
@@ -2058,7 +2058,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     } ).ToList();
 
                     // BulkInsert to quickly insert the CommunicationRecipient records. Note: This is much faster, but will bypass EF and Rock processing.
-                    var communicationRecipientRockContext = new RockContext();
+                    var communicationRecipientRockContext = RockApp.Current.CreateRockContext();
                     communicationRecipientRockContext.BulkInsert( communicationRecipientList );
 
                     // Get the URL to communication page
@@ -3639,7 +3639,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
                 if ( entitySetItems.Any() )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var service = new Rock.Model.EntitySetService( rockContext );
                     service.Add( entitySet );
                     rockContext.SaveChanges();
@@ -3815,7 +3815,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
             if ( entitySetItems.Any() )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new Rock.Model.EntitySetService( rockContext );
                 service.Add( entitySet );
                 rockContext.SaveChanges();
@@ -4197,7 +4197,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
             if ( entitySetItems.Any() )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new Rock.Model.EntitySetService( rockContext );
                 service.Add( entitySet );
                 rockContext.SaveChanges();
