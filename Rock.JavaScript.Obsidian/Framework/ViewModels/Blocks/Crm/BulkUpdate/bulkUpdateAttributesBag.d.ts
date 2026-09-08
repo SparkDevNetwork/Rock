@@ -21,31 +21,20 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** Represents an Attribute Category for the Bulk Update block. */
-export type BulkUpdateAttributeCategoryBag = {
-    /** Gets or sets the valid attributes configured for bulk updating within this category. */
+/**
+ * Represents a set of attributes available for bulk updating along with the starting values for
+ * any of them whose editor cannot render from a blank value.
+ */
+export type BulkUpdateAttributesBag = {
+    /** Gets or sets the attributes available for bulk updating, in display order. */
     attributes?: PublicAttributeBag[] | null;
 
-    /** Gets or sets the description of the attribute category. */
-    description?: string | null;
-
-    /** Gets or sets the unique identifier of the attribute category. */
-    guid: Guid;
-
-    /** Gets or sets the icon CSS class for the attribute category. */
-    iconCssClass?: string | null;
-
     /**
-     * Gets or sets the starting value for each Matrix attribute in this category, keyed by
-     * attribute key. The Matrix editor reads its column definitions out of the value, so it
-     * cannot start from an empty string. No other field type belongs here; every one of them
-     * starts blank.
+     * Gets or sets the starting value for each Matrix attribute, keyed by attribute key. The
+     * Matrix editor reads its column definitions out of the value, so it cannot start from an
+     * empty string. No other field type belongs here; every one of them starts blank.
      */
     matrixAttributeValues?: Record<string, string> | null;
-
-    /** Gets or sets the name of the attribute category. */
-    name?: string | null;
 };

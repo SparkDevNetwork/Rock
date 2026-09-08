@@ -17,8 +17,12 @@
 
 import { Ref, nextTick } from "vue";
 import { BulkUpdateActionSpecifier } from "@Obsidian/Enums/Crm/bulkUpdateActionSpecifier";
+import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { areEqual } from "@Obsidian/Utility/guid";
+import { pluralConditional } from "@Obsidian/Utility/stringUtils";
+import { MatrixFieldDataBag } from "@Obsidian/ViewModels/Rest/Controls/matrixFieldDataBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { AttributeUpdateItem, BulkUpdateBlockActionInvoker, ChangeLine, ChangeSegment } from "./types.partial";
 
@@ -41,7 +45,8 @@ export function changeChip(value: string): ChangeSegment {
  * in the public "edit" format the attribute editor produced (e.g. a JSON
  * envelope for a DefinedValue), so it is run through the field type's
  * getTextValue to recover the human-readable text. Falls back to the raw value
- * when the field type cannot be resolved or yields no text.
+ * when the field type cannot be resolved or yields no text. Matrix values are
+ * summarized by their item count instead.
  *
  * @param attribute The attribute the value belongs to.
  * @param value The public "edit" value entered by the user.
@@ -52,9 +57,104 @@ export function formatAttributeValue(attribute: PublicAttributeBag, value: strin
         return "";
     }
 
+    if (areEqual(attribute.fieldTypeGuid, FieldType.Matrix)) {
+        return formatMatrixValue(value);
+    }
+
     const fieldType = attribute.fieldTypeGuid ? getFieldType(attribute.fieldTypeGuid) : null;
 
     return fieldType?.getTextValue(value, attribute.configurationValues ?? {}) || value;
+}
+
+/**
+ * Summarizes a matrix editor value by its item count. Used only when the value
+ * cannot be rendered as a table. The value is a JSON bag of items plus the
+ * editor's attribute definitions, so it carries no display text of its own and
+ * is non-empty even when the matrix has no items.
+ *
+ * @param value The public "edit" value produced by the matrix editor.
+ * @returns The item count text, or an empty string when there are no items.
+ */
+function formatMatrixValue(value: string): string {
+    const itemCount = parseMatrixValue(value)?.matrixItems?.length ?? 0;
+
+    if (itemCount === 0) {
+        return "";
+    }
+
+    return `${itemCount} ${pluralConditional(itemCount, "item", "items")}`;
+}
+
+/**
+ * Parses a matrix editor value. An unparseable value reads as empty rather
+ * than as raw text, which is also how the server treats one when saving.
+ *
+ * @param value The public "edit" value produced by the matrix editor.
+ * @returns The parsed value, or null when it cannot be read.
+ */
+function parseMatrixValue(value: string): MatrixFieldDataBag | null {
+    try {
+        return (JSON.parse(value) as MatrixFieldDataBag) ?? null;
+    }
+    catch {
+        return null;
+    }
+}
+
+/**
+ * Builds the table segment for a Matrix attribute's value, laid out with the
+ * same columns and row order as the grid the operator entered it in. Each cell
+ * holds a public view value that the column's own field type renders, so a
+ * defined value, person or file reads the way it does in the editor rather than
+ * as raw data.
+ *
+ * @param attribute The attribute the value belongs to.
+ * @param value The public "edit" value entered by the operator.
+ * @returns The table segment, or null when the attribute is not a Matrix or has no items.
+ */
+function changeMatrix(attribute: PublicAttributeBag, value: string): ChangeSegment | null {
+    if (!value || !areEqual(attribute.fieldTypeGuid, FieldType.Matrix)) {
+        return null;
+    }
+
+    const matrixData = parseMatrixValue(value);
+    const items = matrixData?.matrixItems ?? [];
+
+    if (items.length === 0) {
+        return null;
+    }
+
+    // The editor sorts its columns by order alone and shows its rows in array
+    // order, so both are mirrored here rather than re-sorted.
+    const columns = Object.values(matrixData?.attributes ?? {})
+        .sort((first, second) => (first.order ?? 0) - (second.order ?? 0));
+
+    return {
+        text: "",
+        isChip: false,
+        matrix: {
+            columns,
+            rows: items.map(item => item.viewValues ?? {})
+        }
+    };
+}
+
+/**
+ * Builds the per-attribute opt-in items, giving each one its starting value.
+ * Only Matrix attributes have one, because the Matrix editor reads its column
+ * definitions out of the value and cannot render from an empty string. Every
+ * other attribute starts blank.
+ *
+ * @param attributes The attributes to build items for, in display order.
+ * @param attributeValues The starting values keyed by attribute key.
+ * @returns One inactive item per attribute.
+ */
+export function createAttributeUpdateItems(attributes: PublicAttributeBag[], attributeValues: Record<string, string> | null | undefined): AttributeUpdateItem[] {
+    return attributes.map(attribute => ({
+        attribute,
+        isActive: false,
+        value: (attribute.key && attributeValues?.[attribute.key]) || ""
+    }));
 }
 
 /**
@@ -88,8 +188,35 @@ export function collectActiveAttributeValues(
 }
 
 /**
+ * Builds one change-summary line for an attribute. A Matrix attribute holding
+ * items renders its rows as a table; everything else renders as text, with a
+ * blank value reading as a clear.
+ *
+ * @param attribute The attribute being updated.
+ * @param value The public "edit" value entered by the operator.
+ * @param prefix Label prefix prepended to the line, blank for Person attributes.
+ * @returns The summary line.
+ */
+export function attributeChangeLine(attribute: PublicAttributeBag, value: string, prefix: string): ChangeLine {
+    const name = attribute.name || "Attribute";
+    const label = prefix ? `${prefix} ` : "";
+    const matrixSegment = changeMatrix(attribute, value);
+
+    if (matrixSegment) {
+        return [changeText(`Update ${label}`), changeChip(name), changeText(" to value of:"), matrixSegment];
+    }
+
+    const displayValue = formatAttributeValue(attribute, value);
+
+    return displayValue
+        ? [changeText(`Update ${label}`), changeChip(name), changeText(" to value of "), changeChip(displayValue), changeText(".")]
+        : [changeText(`Clear ${label}`), changeChip(name), changeText(".")];
+}
+
+/**
  * Builds the change-summary lines for an Add or Update attribute action.
- * Add: emits a line per entered value. Update: emits a line per toggled item.
+ * Add: emits a line per value that formats to display text. Update: emits a
+ * line per toggled item.
  *
  * @param action The bulk-update action discriminator (Add, Update, Remove).
  * @param addValues The user-entered values keyed by attribute key (Add path).
@@ -109,21 +236,20 @@ export function summarizeActiveAttributes(
 
     if (action === BulkUpdateActionSpecifier.Add) {
         for (const [key, value] of Object.entries(addValues)) {
-            if (value) {
-                const attribute = attrDict[key];
-                const name = attribute?.name || key;
-                const displayValue = attribute ? formatAttributeValue(attribute, value) : value;
-                lines.push([changeText(`Update ${prefix} `), changeChip(name), changeText(" to value of "), changeChip(displayValue), changeText(".")]);
+            const attribute = attrDict[key];
+
+            // An attribute the operator never filled in contributes no line.
+            if (!attribute || !formatAttributeValue(attribute, value)) {
+                continue;
             }
+
+            lines.push(attributeChangeLine(attribute, value, prefix));
         }
     }
     else if (action === BulkUpdateActionSpecifier.Update) {
         for (const item of updateItems) {
             if (item.isActive) {
-                const name = item.attribute.name ?? "";
-                lines.push(item.value
-                    ? [changeText(`Update ${prefix} `), changeChip(name), changeText(" to value of "), changeChip(formatAttributeValue(item.attribute, item.value)), changeText(".")]
-                    : [changeText(`Clear ${prefix} `), changeChip(name), changeText(".")]);
+                lines.push(attributeChangeLine(item.attribute, item.value, prefix));
             }
         }
     }
