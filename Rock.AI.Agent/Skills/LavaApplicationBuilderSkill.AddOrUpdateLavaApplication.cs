@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -65,7 +66,8 @@ internal sealed partial class LavaApplicationBuilderSkill
     [AgentToolPreamble( "Saving the Lava application." )]
     [AgentUsage( "Create one application per block, named after the dashboard, then pass its slug to every AddOrUpdateLavaEndpoint call so security is rigged once for the whole block." )]
     [AgentUsage( "The slug cannot be changed after creation; it is the address every component's useLavaApp binding uses. To rename what the user sees, update the name." )]
-    [AgentUsage( "audience decides who may call the application's endpoints and is required when adding. Ask the user who the page is for: pass 'Public' for anonymous visitors, 'AllAuthenticatedPeople' for anyone who is logged in, or a security role name for restricted data. If a role name does not match, the error lists the roles to choose from." )]
+    [AgentUsage( "audiences decides who may call the application's endpoints and is required when adding. Ask the user who the page is for, then pass one or more values: 'Public' for anonymous visitors, 'AllAuthenticatedPeople' for anyone who is logged in, or security role names for restricted data. Several roles can be granted at once, for example ['RSR - Staff Workers', 'Worship Team Leaders']. When the user describes people rather than naming a role, call ResolveAudience first to map the description onto exact values. If a value does not match, the error lists the roles to choose from." )]
+    [AgentUsage( "Never choose 'Public' on the user's behalf. It exposes the application's read endpoints to anonymous visitors and must come from the user." )]
     [AgentToolGuid( "26C5F1A8-3D94-4E67-90B2-7A45D8E1C6F3" )]
     public AgentToolResult AddOrUpdateLavaApplication(
         [Description( "Required when editing an existing Lava application. Do not provide when adding a new one." )]
@@ -80,8 +82,8 @@ internal sealed partial class LavaApplicationBuilderSkill
         [Description( "What the application is for." )]
         SetOrClear<string> description = null,
 
-        [Description( "Who may call the application's read endpoints: 'Public' (everyone, including anonymous visitors), 'AllAuthenticatedPeople' (anyone who is logged in), or the name of a security role. Required when adding. On an update, provide it only to change the audience." )]
-        string audience = null,
+        [Description( "Who may call the application's read endpoints, as one or more values: 'Public' (everyone, including anonymous visitors), 'AllAuthenticatedPeople' (anyone who is logged in), or the exact names of security roles. Every value is granted, so ['Staff', 'Volunteers'] opens the endpoints to members of either role. Required when adding. On an update, provide it only to replace the audience; the new list replaces the old one entirely." )]
+        List<string> audiences = null,
 
         [Description( "Whether the application and its endpoints can be called." )]
         bool? isActive = null )
@@ -90,6 +92,7 @@ internal sealed partial class LavaApplicationBuilderSkill
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
 
         var isAdd = lavaApplicationIdKey.IsNullOrWhiteSpace();
+        var hasAudiences = audiences?.Any( a => a.IsNotNullOrWhiteSpace() ) == true;
         var applicationService = new LavaApplicationService( rockContext );
         LavaApplication application = null;
 
@@ -119,9 +122,9 @@ internal sealed partial class LavaApplicationBuilderSkill
             // reliably known, and an application with no execute-view rules
             // works for the administrator building it (the cache's role
             // override) while returning 401 to every real visitor.
-            if ( audience.IsNullOrWhiteSpace() )
+            if ( !hasAudiences )
             {
-                helper.AddError( $"An audience is required when adding a Lava application, so its endpoints are callable by the people the page is for. Pass '{PublicAudienceKeyword}', '{AllAuthenticatedAudienceKeyword}', or the name of a security role." );
+                helper.AddError( $"At least one audience is required when adding a Lava application, so its endpoints are callable by the people the page is for. Pass '{PublicAudienceKeyword}', '{AllAuthenticatedAudienceKeyword}', or one or more security role names. Call {nameof( ResolveAudience )} to map a description of the people the page is for onto those values." );
             }
         }
         else
@@ -146,16 +149,16 @@ internal sealed partial class LavaApplicationBuilderSkill
                 // Once an administrator has authored their own execute-view
                 // rules, the audience belongs to them; rewriting it here
                 // would silently undo a decision made in the admin pages.
-                if ( audience.IsNotNullOrWhiteSpace() && HasHandAuthoredReadRules( rockContext, application ) )
+                if ( hasAudiences && HasHandAuthoredReadRules( rockContext, application ) )
                 {
                     helper.AddError( $"An administrator has added their own security rules to the '{application.Slug}' Lava application, so its audience cannot be changed here. Ask the user to adjust the ExecuteView rules through the Lava Applications admin pages." );
                 }
             }
         }
 
-        AudienceGrant audienceGrant = null;
+        List<AudienceGrant> audienceGrants = null;
 
-        if ( audience.IsNotNullOrWhiteSpace() && !TryResolveAudience( rockContext, audience, out audienceGrant, out var audienceError ) )
+        if ( hasAudiences && !TryResolveAudiences( rockContext, audiences, out audienceGrants, out var audienceError ) )
         {
             helper.AddError( audienceError );
         }
@@ -228,9 +231,9 @@ internal sealed partial class LavaApplicationBuilderSkill
         // The application has to be saved before it can be rigged, because
         // the Auth rows reference its Id. Failures above mean no rigging,
         // and rigging failures surface as the tool call's own exception.
-        if ( audienceGrant != null )
+        if ( audienceGrants != null )
         {
-            SetApplicationReadAudience( rockContext, application, audienceGrant );
+            SetApplicationReadAudience( rockContext, application, audienceGrants );
         }
 
         var result = Success( CreateApplicationDetailResult( application ) )
@@ -245,9 +248,9 @@ internal sealed partial class LavaApplicationBuilderSkill
         // Spell out what was and was not granted, because the read and
         // write boundaries differ: the audience covers ApplicationView
         // endpoints only, and the two override roles always pass.
-        if ( audienceGrant != null )
+        if ( audienceGrants != null )
         {
-            result.WithInstructions( $"The application's read endpoints (security mode ApplicationView) can be executed by {audienceGrant.Description}. Rock Administrators and Lava Application Developers can always execute them, so verify the page as a person outside those roles. Write access was not granted: an endpoint using the ApplicationEdit security mode is callable only by those two roles until an administrator grants ExecuteEdit rights through the Lava Applications admin pages. To change the audience later, call this tool again with a different audience value." );
+            result.WithInstructions( $"The application's read endpoints (security mode ApplicationView) can be executed by {DescribeAudienceGrants( audienceGrants )}. Rock Administrators and Lava Application Developers can always execute them, so verify the page as a person outside those roles. Write access was not granted: an endpoint using the ApplicationEdit security mode is callable only by those two roles until an administrator grants ExecuteEdit rights through the Lava Applications admin pages. To change the audience later, call this tool again with a new audiences list; it replaces the current one." );
         }
 
         if ( isAdd )

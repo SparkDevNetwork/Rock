@@ -229,23 +229,113 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
 
         Reason: Resolve-or-suggest inside the tool replaces a separate role
         discovery tool.
+
+        9/8/2026 - CLAUDE
+
+        Two changes on top of that. An application can now be opened to
+        several audiences at once (a page for both staff and a volunteer
+        team is the common case), so the resolver takes a list and every
+        value has to resolve before anything is rigged. And the recovery
+        hint turned out not to be enough on its own: a user says "the
+        worship team leaders" and the model has to guess a role name to get
+        the hint, so ResolveAudience exists to turn that description into
+        candidate values up front. Role loading is shared so the tool and
+        the resolver see the same roles.
+
+        Reason: Multi-role audiences and description-to-role mapping.
     */
+
+    /// <summary>
+    /// Reads the active security roles of this instance, alphabetically.
+    /// Shared by audience resolution and by <c>ResolveAudience</c> so both
+    /// see the same roles.
+    /// </summary>
+    /// <param name="rockContext">The context to read security roles from.</param>
+    /// <returns>The active security roles.</returns>
+    private static List<SecurityRole> GetSecurityRoles( RockContext rockContext )
+    {
+        return new GroupService( rockContext )
+            .Queryable()
+            .Where( g => g.IsSecurityRole && g.IsActive )
+            .OrderBy( g => g.Name )
+            .Select( g => new SecurityRole
+            {
+                Id = g.Id,
+                Name = g.Name,
+                Description = g.Description
+            } )
+            .ToList();
+    }
+
+    /// <summary>
+    /// Resolves every audience value the caller supplied to the grants they
+    /// name, so an application can be opened to several roles at once. Every
+    /// value has to resolve; one unresolvable value fails the whole set, with
+    /// candidates, so nothing is rigged half-way.
+    /// </summary>
+    /// <param name="rockContext">The context to read security roles from.</param>
+    /// <param name="audiences">The audience values the caller supplied.</param>
+    /// <param name="grants">The resolved grants, de-duplicated, when <c>true</c> is returned.</param>
+    /// <param name="errorMessage">The explanation of every value that failed, when <c>false</c> is returned.</param>
+    /// <returns><c>true</c> when every audience resolved to exactly one grant.</returns>
+    private static bool TryResolveAudiences( RockContext rockContext, List<string> audiences, out List<AudienceGrant> grants, out string errorMessage )
+    {
+        grants = new List<AudienceGrant>();
+        errorMessage = null;
+
+        var roles = GetSecurityRoles( rockContext );
+        var errors = new List<string>();
+
+        foreach ( var audience in audiences.Where( a => a.IsNotNullOrWhiteSpace() ) )
+        {
+            if ( !TryResolveAudience( roles, audience, out var grant, out var audienceError ) )
+            {
+                errors.Add( audienceError );
+                continue;
+            }
+
+            // The same role named twice, or Public alongside a role it
+            // already covers, must not produce duplicate Auth rows.
+            var isDuplicate = grants.Any( g => g.SpecialRole == grant.SpecialRole && g.GroupId == grant.GroupId );
+
+            if ( !isDuplicate )
+            {
+                grants.Add( grant );
+            }
+        }
+
+        if ( errors.Any() )
+        {
+            errorMessage = string.Join( "\n\n", errors );
+
+            return false;
+        }
+
+        if ( !grants.Any() )
+        {
+            errorMessage = $"At least one audience is required. Pass '{PublicAudienceKeyword}', '{AllAuthenticatedAudienceKeyword}', or one or more security role names. Call {nameof( ResolveAudience )} to map a description of the people the page is for onto those values.";
+
+            return false;
+        }
+
+        return true;
+    }
 
     /// <summary>
     /// Resolves an audience value to the authorization grant it names:
     /// everyone, all authenticated people, or a single security role.
     /// </summary>
-    /// <param name="rockContext">The context to read security roles from.</param>
+    /// <param name="roles">The active security roles, from <see cref="GetSecurityRoles"/>.</param>
     /// <param name="audience">The audience value the caller supplied.</param>
     /// <param name="grant">The resolved grant when <c>true</c> is returned.</param>
     /// <param name="errorMessage">The explanation, including candidate roles, when <c>false</c> is returned.</param>
     /// <returns><c>true</c> when the audience resolved to exactly one grant.</returns>
-    private static bool TryResolveAudience( RockContext rockContext, string audience, out AudienceGrant grant, out string errorMessage )
+    private static bool TryResolveAudience( List<SecurityRole> roles, string audience, out AudienceGrant grant, out string errorMessage )
     {
         grant = null;
         errorMessage = null;
 
-        var normalizedAudience = audience.Replace( " ", string.Empty );
+        var normalizedAudience = audience.Trim().Replace( " ", string.Empty );
 
         if ( normalizedAudience.Equals( PublicAudienceKeyword, StringComparison.OrdinalIgnoreCase ) )
         {
@@ -274,18 +364,14 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
 
         // Anything else names a security role. Exact name matches win so a
         // role whose name contains another role's name stays addressable.
-        var roles = new GroupService( rockContext )
-            .Queryable()
-            .Where( g => g.IsSecurityRole && g.IsActive )
-            .Select( g => new { g.Id, g.Name, g.Description } )
-            .ToList();
+        var trimmedAudience = audience.Trim();
 
         var exactMatches = roles
-            .Where( r => r.Name.Equals( audience, StringComparison.OrdinalIgnoreCase ) )
+            .Where( r => r.Name.Equals( trimmedAudience, StringComparison.OrdinalIgnoreCase ) )
             .ToList();
         var matches = exactMatches.Any()
             ? exactMatches
-            : roles.Where( r => r.Name.IndexOf( audience, StringComparison.OrdinalIgnoreCase ) >= 0 ).ToList();
+            : roles.Where( r => r.Name.IndexOf( trimmedAudience, StringComparison.OrdinalIgnoreCase ) >= 0 ).ToList();
 
         if ( matches.Count == 1 )
         {
@@ -301,19 +387,41 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         // Zero or many. Both errors carry the roles to choose from, with
         // descriptions, so the retry does not need another discovery call.
         var candidates = ( matches.Count > 1 ? matches : roles )
-            .OrderBy( r => r.Name )
             .Take( MaxAudienceRoleSuggestions )
             .Select( r => r.Description.IsNotNullOrWhiteSpace() ? $"'{r.Name}': {r.Description}" : $"'{r.Name}'" )
             .ToList();
 
         var problem = matches.Count > 1
-            ? $"The audience '{audience}' matches more than one security role."
-            : $"No security role matches the audience '{audience}'.";
+            ? $"The audience '{trimmedAudience}' matches more than one security role."
+            : $"No security role matches the audience '{trimmedAudience}'.";
 
-        errorMessage = $"{problem} Pass '{PublicAudienceKeyword}', '{AllAuthenticatedAudienceKeyword}', or one of these security role names:\n"
+        errorMessage = $"{problem} Pass '{PublicAudienceKeyword}', '{AllAuthenticatedAudienceKeyword}', or one of these security role names, or call {nameof( ResolveAudience )} with a description of the people the page is for:\n"
             + string.Join( "\n", candidates );
 
         return false;
+    }
+
+    /// <summary>
+    /// Describes a set of grants back to the user as one phrase, for example
+    /// "members of the 'Staff' security role and anyone who is logged in".
+    /// </summary>
+    /// <param name="grants">The grants to describe.</param>
+    /// <returns>The combined phrase.</returns>
+    private static string DescribeAudienceGrants( List<AudienceGrant> grants )
+    {
+        var descriptions = grants.Select( g => g.Description ).ToList();
+
+        if ( descriptions.Count <= 1 )
+        {
+            return descriptions.FirstOrDefault() ?? string.Empty;
+        }
+
+        if ( descriptions.Count == 2 )
+        {
+            return $"{descriptions[0]} and {descriptions[1]}";
+        }
+
+        return string.Join( ", ", descriptions.Take( descriptions.Count - 1 ) ) + $", and {descriptions.Last()}";
     }
 
     /// <summary>
@@ -356,13 +464,13 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
 
     /// <summary>
     /// Replaces the skill-owned execute-view rules on the application with
-    /// rules granting the resolved audience, leaving any person-authored
+    /// one allow rule per resolved audience, leaving any person-authored
     /// rules untouched.
     /// </summary>
     /// <param name="rockContext">The context to write the rules with.</param>
     /// <param name="application">The application being rigged. Must already be saved.</param>
-    /// <param name="grant">The audience to grant execute-view to.</param>
-    private static void SetApplicationReadAudience( RockContext rockContext, LavaApplication application, AudienceGrant grant )
+    /// <param name="grants">The audiences to grant execute-view to. Must contain at least one grant.</param>
+    private static void SetApplicationReadAudience( RockContext rockContext, LavaApplication application, List<AudienceGrant> grants )
     {
         var authService = new AuthService( rockContext );
 
@@ -377,28 +485,41 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
             authService.Delete( rule );
         }
 
-        authService.Add( new Auth
-        {
-            EntityTypeId = application.TypeId,
-            EntityId = application.Id,
-            Order = 0,
-            Action = LavaApplication.EXECUTE_VIEW,
-            AllowOrDeny = "A",
-            SpecialRole = grant.SpecialRole,
-            GroupId = grant.GroupId,
-            ForeignKey = AgentProvenanceKey
-        } );
+        // Public covers every other grant, so when it is present it is the
+        // only rule written; the narrower rules would never be evaluated and
+        // would only clutter the Security dialog.
+        var isPublic = grants.Any( g => g.SpecialRole == SpecialRole.AllUsers );
+        var effectiveGrants = isPublic
+            ? grants.Where( g => g.SpecialRole == SpecialRole.AllUsers ).Take( 1 ).ToList()
+            : grants;
 
-        // A deny-all tail after an allow-all rule would never be reached, so
-        // the public audience is a single rule. The narrower audiences get
-        // the tail to make the boundary visible in the Security dialog.
-        if ( grant.SpecialRole != SpecialRole.AllUsers )
+        var order = 0;
+
+        foreach ( var grant in effectiveGrants )
         {
             authService.Add( new Auth
             {
                 EntityTypeId = application.TypeId,
                 EntityId = application.Id,
-                Order = 1,
+                Order = order++,
+                Action = LavaApplication.EXECUTE_VIEW,
+                AllowOrDeny = "A",
+                SpecialRole = grant.SpecialRole,
+                GroupId = grant.GroupId,
+                ForeignKey = AgentProvenanceKey
+            } );
+        }
+
+        // A deny-all tail after an allow-all rule would never be reached, so
+        // the public audience is a single rule. The narrower audiences get
+        // the tail to make the boundary visible in the Security dialog.
+        if ( !isPublic )
+        {
+            authService.Add( new Auth
+            {
+                EntityTypeId = application.TypeId,
+                EntityId = application.Id,
+                Order = order,
                 Action = LavaApplication.EXECUTE_VIEW,
                 AllowOrDeny = "D",
                 SpecialRole = SpecialRole.AllUsers,
@@ -1058,6 +1179,29 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         /// <summary>
         /// The human-readable phrase describing who the grant covers, used
         /// in the tool's follow-up instructions.
+        /// </summary>
+        public string Description { get; set; }
+    }
+
+    /// <summary>
+    /// An active security role, as read by <see cref="GetSecurityRoles"/>.
+    /// Only the fields audience resolution and suggestion need.
+    /// </summary>
+    private sealed class SecurityRole
+    {
+        /// <summary>
+        /// The identifier of the security role group.
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// The name of the security role, which is the value an audience
+        /// names it by.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// The description of the security role, or <c>null</c>.
         /// </summary>
         public string Description { get; set; }
     }

@@ -437,6 +437,12 @@ Give the user the page URL and tell them to check it as a representative non-adm
 
             AddOrUpdateCodeAISkillTool(
                 LavaApplicationBuilderSkillGuid,
+                "Resolve Audience",
+                "Lists this instance's security roles and maps a plain-English description of who a page is for onto the exact audience values AddOrUpdateLavaApplication accepts.",
+                "248182EA-2B76-4127-A864-BE48F8E15585" );
+
+            AddOrUpdateCodeAISkillTool(
+                LavaApplicationBuilderSkillGuid,
                 "Add Or Update Lava Endpoint",
                 "Adds a new Lava endpoint or updates an existing one, keyed by slug and HTTP method, within an existing Lava application. Returns the result of test-executing the template.",
                 "5F1E8C29-A47B-4D63-B905-E26A1D79F4C8" );
@@ -691,6 +697,7 @@ END" );
         {
             "26C5F1A8-3D94-4E67-90B2-7A45D8E1C6F3", // Add Or Update Lava Application
             "B83A2D64-15F7-4C09-8E51-9C3B6F04D7A2", // Get Lava Application
+            "248182EA-2B76-4127-A864-BE48F8E15585", // Resolve Audience
             "5F1E8C29-A47B-4D63-B905-E26A1D79F4C8", // Add Or Update Lava Endpoint
             "E64B9F07-2C58-41DA-A83F-05D9C7B24E61", // Get Lava Endpoint
             "49A7D3E1-8F60-4B25-96C4-B1E5A08D3F72", // Delete Lava Endpoint
