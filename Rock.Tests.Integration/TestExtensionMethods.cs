@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Tests.Integration
@@ -38,7 +39,7 @@ namespace Rock.Tests.Integration
         public static T GetByIdentifier<T>( object identifier, RockContext rockContext = null )
             where T : Rock.Data.Entity<T>, new()
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
 
@@ -56,7 +57,7 @@ namespace Rock.Tests.Integration
         public static T GetByIdentifierOrThrow<T>( object identifier, RockContext rockContext = null )
             where T : Rock.Data.Entity<T>, new()
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
 
@@ -74,7 +75,7 @@ namespace Rock.Tests.Integration
         public static T GetByName<T>( object identifier, string nameProperty = "Name", RockContext rockContext = null )
             where T : Rock.Data.Entity<T>, new()
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
 
@@ -92,7 +93,7 @@ namespace Rock.Tests.Integration
         public static T GetByNameOrThrow<T>( object identifier, string nameProperty = "Name", RockContext rockContext = null )
             where T : Rock.Data.Entity<T>, new()
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
 

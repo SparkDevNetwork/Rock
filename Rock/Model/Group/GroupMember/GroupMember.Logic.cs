@@ -25,6 +25,7 @@ using System.Linq;
 using Humanizer;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Security;
@@ -135,7 +136,7 @@ namespace Rock.Model
                 }
 
                 // now check if they are auth'd to EDIT or MANAGE_MEMBERS on this GroupMember's Group
-                var group = this.Group ?? new GroupService( new RockContext() ).Get( this.GroupId );
+                var group = this.Group ?? new GroupService( RockApp.Current.CreateRockContext() ).Get( this.GroupId );
 
                 if ( group != null )
                 {
@@ -165,7 +166,7 @@ namespace Rock.Model
         {
             get
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     return this.IsValidGroupMember( rockContext );
                 }

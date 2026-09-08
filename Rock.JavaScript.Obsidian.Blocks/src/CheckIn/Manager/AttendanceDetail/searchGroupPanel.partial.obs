@@ -1,0 +1,55 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <template v-if="detail.isSearchResultGroupVisible">
+            <!--
+                RockLiteral only exposes labelCssClass, so we cannot pass
+                mb-spacing-none through to the outer .form-group. Wrapping in
+                a class that targets the immediate .form-group child collapses
+                the 15px form-group bottom margin so the adult list sits close
+                to the "Search Group Name" value, matching the WebForms layout.
+            -->
+            <div class="search-group-name-literal">
+                <RockLiteral label="Search Group Name">{{ detail.searchResultGroupName }}</RockLiteral>
+            </div>
+
+            <ul class="ml-spacing-md mt-spacing-none mb-spacing-md">
+                <li v-for="(adult, index) in (detail.searchGroupAdults ?? [])"
+                    :key="index"
+                    class="mb-spacing-xs">
+                    <a :href="adult.profileUrl ?? '#'">{{ adult.fullName }}</a>
+                    <span v-if="adult.mobileNumberFormatted"
+                          class="d-block text-sm text-muted leading-snug">
+                        {{ adult.mobileNumberFormatted }} <span class="text-muted">Mobile</span>
+                    </span>
+                </li>
+            </ul>
+        </template>
+
+        <RockLiteral v-if="detail.searchTypeText" label="Search Type">{{ detail.searchTypeText }}</RockLiteral>
+        <RockLiteral v-if="detail.searchValue" label="Search Value">{{ detail.searchValue }}</RockLiteral>
+    </div>
+</template>
+
+<style scoped>
+/*
+    :deep() so scoped-style rewriting still targets the .form-group emitted
+    by the child RockLiteral component (not authored in this file).
+*/
+.search-group-name-literal :deep(.form-group) {
+    margin-bottom: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import { AttendanceDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailBag";
+
+    defineProps({
+        detail: {
+            type: Object as PropType<AttendanceDetailBag>,
+            required: true
+        }
+    });
+</script>

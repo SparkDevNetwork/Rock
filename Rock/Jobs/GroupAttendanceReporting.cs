@@ -22,6 +22,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -129,7 +130,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
             var groupDataView = DataViewCache.Get( groupDataViewGuid.Value );
             if ( groupDataView == null )
@@ -193,7 +194,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
                 var personId = personAttributeValues.Key;
                 var attributeValues = personAttributeValues.Value;
                 Person person;
-                using ( var updateAttributesContext = new RockContext() )
+                using ( var updateAttributesContext = RockApp.Current.CreateRockContext() )
                 {
                     var personService = new PersonService( updateAttributesContext );
                     person = personService.Get( personId );
@@ -342,7 +343,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var attributeService = new AttributeService( rockContext );
 

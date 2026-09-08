@@ -23,6 +23,7 @@ using System.Text;
 using System.Web;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -227,7 +228,7 @@ namespace Rock.Jobs
             var errors = new List<string>();
             List<int> noteIdsToProcessNoteWatchesList = new List<int>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var noteService = new NoteService( rockContext );
                 var noteWatchService = new NoteWatchService( rockContext );
@@ -253,7 +254,7 @@ namespace Rock.Jobs
 
             // make a list of notifications to send to each personId
             Dictionary<int, NoteWatchPersonToNotifyList> personNotificationDigestList = new Dictionary<int, NoteWatchPersonToNotifyList>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( int noteId in noteIdsToProcessNoteWatchesList )
                 {
@@ -313,7 +314,7 @@ namespace Rock.Jobs
                 }
             }
 
-            using ( var rockUpdateContext = new RockContext() )
+            using ( var rockUpdateContext = RockApp.Current.CreateRockContext() )
             {
                 var notesToMarkNotified = new NoteService( rockUpdateContext ).Queryable().Where( a => noteIdsToProcessNoteWatchesList.Contains( a.Id ) );
 

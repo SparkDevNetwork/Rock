@@ -19,6 +19,7 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -63,7 +64,7 @@ namespace Rock.Tasks
                 achievementTypeCache.AchievementStepStatusId.HasValue &&
                 achievementTypeCache.AchievementStepTypeId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var achievementAttemptService = new AchievementAttemptService( rockContext );
                 var achieverEntityId = achievementAttemptService.Queryable()
                     .AsNoTracking()
@@ -131,7 +132,7 @@ namespace Rock.Tasks
                 return _achievementAttempt;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new AchievementAttemptService( rockContext );
             _achievementAttempt = service.Get( message.AchievementAttemptGuid );
             return _achievementAttempt;
@@ -148,7 +149,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         private void AddStep( int stepTypeId, int stepStatusId, int personAliasId, Message message )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var stepService = new StepService( rockContext );
             var stepProgramService = new StepProgramService( rockContext );
 

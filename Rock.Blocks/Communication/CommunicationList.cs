@@ -314,8 +314,8 @@ FROM (
         , SUM(CASE WHEN cr.[Status] = {CommunicationRecipientStatus.Opened.ConvertToInt()} THEN 1 ELSE 0 END) AS [OpenedCount]
         , SUM(CASE WHEN cr.[Status] = {CommunicationRecipientStatus.Failed.ConvertToInt()} THEN 1 ELSE 0 END) AS [FailedCount]
         , SUM(CASE WHEN cr.[UnsubscribeDateTime] IS NOT NULL THEN 1 ELSE 0 END) AS [UnsubscribedCount]
-    FROM [CommunicationRecipient] cr
-    INNER JOIN [Communication] c ON c.[Id] = cr.[CommunicationId]
+    FROM [Communication] c
+    LEFT OUTER JOIN [CommunicationRecipient] cr ON cr.[CommunicationId] = c.[Id]
     LEFT OUTER JOIN [PersonAlias] paSender ON paSender.[Id] = c.[SenderPersonAliasId]
     LEFT OUTER JOIN [Person] pSender ON pSender.[Id] = paSender.[PersonId]
     LEFT OUTER JOIN [DefinedValue] dvTopic ON dvTopic.[Id] = c.[CommunicationTopicValueId]

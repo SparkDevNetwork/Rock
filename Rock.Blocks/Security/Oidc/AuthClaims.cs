@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -94,7 +95,7 @@ namespace Rock.Blocks.Security.Oidc
             }
             else
             {
-                var scope = new AuthScopeService( new RockContext() ).Get( scopeKey, !PageCache.Layout.Site.DisablePredictableIds );
+                var scope = new AuthScopeService( RockApp.Current.CreateRockContext() ).Get( scopeKey, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( scope == null )
                 {
                     options.ErrorMessage = "No Auth Scope Id was specified.";

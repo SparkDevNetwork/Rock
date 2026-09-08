@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using Quartz;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -87,7 +88,7 @@ namespace Rock.Jobs
 
             int highestAttributeValueId = 0;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
                 highestAttributeValueId = new AttributeValueService( rockContext ).Queryable()
@@ -157,7 +158,7 @@ WHERE [AV].[Id] >= @LowerId
             var upperId = new SqlParameter( "@UpperId", highestAttributeValueId.HasValue ? ( object ) highestAttributeValueId.Value : DBNull.Value );
             var personFieldTypeGuid = new SqlParameter( "@PersonFieldTypeGuid", SystemGuid.FieldType.PERSON.AsGuid() );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 

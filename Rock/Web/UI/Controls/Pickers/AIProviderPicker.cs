@@ -28,6 +28,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Control than can be used to select an AI provider.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     class AIProviderPicker : RockDropDownList
     {
         public bool ShowAll

@@ -19,7 +19,7 @@ namespace Rock.Data
     /// <summary>
     /// <para>Apply this to your plugin entities so that they can be loaded using RockContext</para>
     /// <para>Example:</para>
-    /// <para>    var rockContext = new RockContext();</para>
+    /// <para>    var rockContext = RockApp.Current.CreateRockContext();</para>
     /// <para>    var potlockQry = new Service&lt;Potlock&gt;( rockContext ).Queryable();</para>
     /// <para> NOTE: This should <b>not</b> be used in Rock core, only plugins.</para>
     /// </summary>

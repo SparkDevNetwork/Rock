@@ -23,6 +23,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -217,7 +218,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowList()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var channelQry = new InteractionChannelService( rockContext )
                     .Queryable().AsNoTracking();
@@ -288,7 +289,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private int? GetPersonId()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personId = new PersonService( rockContext ).GetSelect(
                     PageParameter( PageParameterKey.PersonId ),

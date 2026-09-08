@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -38,7 +39,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void CreatePersonWithProtectionProfile( Guid guid, AccountProtectionProfile accountProtectionProfile )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var person = personService.Get( guid );
@@ -67,7 +68,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonWithLowAccountProtectionProfileShouldGetAToken()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personWithLowAccountProtectionProfile = personService.Get( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid() );
 
@@ -80,7 +81,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void PersonWithExtremeAccountProtectionProfileShouldNotGetAToken()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personWithExtremeAccountProtectionProfile = personService.Get( PersonGuid.PersonWithExtremeAccountProtectionProfileGuid.AsGuid() );
 
@@ -92,7 +93,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void WithLegacyFallbackValidTokenShouldAllowLogin()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personTokenService = new PersonTokenService( rockContext );
             var personWithLowAccountProtectionProfile = personService.Get( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid() );
@@ -112,7 +113,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void WithLegacyFallbackInvalidTokenShouldNotAllowLogin()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personTokenService = new PersonTokenService( rockContext );
             var token = "TokenProhibited";
 
@@ -127,7 +128,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void WithoutLegacyFallbackValidTokenShouldAllowLogin()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personTokenService = new PersonTokenService( rockContext );
             var personWithLowAccountProtectionProfile = personService.Get( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid() );
@@ -147,7 +148,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void WithoutLegacyFallbackInvalidTokenShouldNotAllowLogin()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personTokenService = new PersonTokenService( rockContext );
             var token = "TokenProhibited";
 

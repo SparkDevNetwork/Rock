@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
@@ -61,7 +62,7 @@ namespace Rock.Jobs
             string selectedEntitiesSetting = GetAttributeValue( "EntityFilter" );
             bool allEntities = GetAttributeValue( "IndexAllEntities" ).AsBoolean();
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             var selectedEntityTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
 

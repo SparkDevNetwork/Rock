@@ -238,6 +238,10 @@ namespace Rock.Tests.Shared.TestFramework
 
             private readonly RockApp _previousApp;
 
+            private readonly DateTime? _previousTestDateTimeUtc;
+
+            private readonly TimeZoneInfo _previousTestOrgTimeZone;
+
             /// <summary>
             /// Initializes a new instance of the RockAppScope class.
             /// </summary>
@@ -247,7 +251,93 @@ namespace Rock.Tests.Shared.TestFramework
                 App = app;
                 _previousApp = RockApp.Current;
 
+                // Snapshot the current date/time overrides so any changes made within
+                // this scope are reverted when it is disposed. These are normally null.
+                _previousTestDateTimeUtc = RockDateTime.TestCurrentDateTimeUtcOverride;
+                _previousTestOrgTimeZone = RockDateTime.TestOrgTimeZoneInfoOverride;
+
                 RockApp.Current = app;
+            }
+
+            /// <summary>
+            /// Overrides the organization time zone for the duration of this scope. This
+            /// determines the time zone used to calculate <see cref="RockDateTime.Now"/>.
+            /// </summary>
+            /// <param name="timeZone">The organization time zone to use.</param>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope SetOrgTimeZone( TimeZoneInfo timeZone )
+            {
+                RockDateTime.TestOrgTimeZoneInfoOverride = timeZone;
+
+                return this;
+            }
+
+            /// <summary>
+            /// Freezes <see cref="RockDateTime.Now"/> at the specified organization
+            /// wall-clock time for the duration of this scope. The value is interpreted
+            /// in the organization time zone currently in effect, so pin the time zone
+            /// first (via <see cref="SetOrgTimeZone"/> or the two-argument overload) when
+            /// the result needs to be deterministic across environments.
+            /// </summary>
+            /// <param name="organizationDateTime">The organization-local date and time to freeze at.</param>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope SetCurrentDateTime( DateTime organizationDateTime )
+            {
+                // Interpret the value as a wall-clock time in the organization time zone
+                // and convert it to the UTC instant that the override actually stores.
+                var unspecified = DateTime.SpecifyKind( organizationDateTime, DateTimeKind.Unspecified );
+
+                RockDateTime.TestCurrentDateTimeUtcOverride = TimeZoneInfo.ConvertTimeToUtc( unspecified, RockDateTime.OrgTimeZoneInfo );
+
+                return this;
+            }
+
+            /// <summary>
+            /// Sets the organization time zone and freezes <see cref="RockDateTime.Now"/>
+            /// at the specified organization wall-clock time, in a single call. This is
+            /// the recommended way to make a date/time-sensitive test deterministic.
+            /// </summary>
+            /// <param name="organizationDateTime">The organization-local date and time to freeze at.</param>
+            /// <param name="organizationTimeZone">The organization time zone the value is expressed in.</param>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope SetCurrentDateTime( DateTime organizationDateTime, TimeZoneInfo organizationTimeZone )
+            {
+                SetOrgTimeZone( organizationTimeZone );
+
+                return SetCurrentDateTime( organizationDateTime );
+            }
+
+            /// <summary>
+            /// Freezes the current instant at the specified UTC date and time for the
+            /// duration of this scope. Use this overload when the test already reasons in
+            /// UTC; otherwise prefer <see cref="SetCurrentDateTime(DateTime, TimeZoneInfo)"/>.
+            /// </summary>
+            /// <param name="utcDateTime">The UTC instant to freeze at.</param>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope SetCurrentDateTimeUtc( DateTime utcDateTime )
+            {
+                // Normalize to a UTC-kind value so the downstream time zone conversion
+                // treats it as UTC. A Local value is converted; anything else is labeled.
+                var utc = utcDateTime.Kind == DateTimeKind.Local
+                    ? utcDateTime.ToUniversalTime()
+                    : DateTime.SpecifyKind( utcDateTime, DateTimeKind.Utc );
+
+                RockDateTime.TestCurrentDateTimeUtcOverride = utc;
+
+                return this;
+            }
+
+            /// <summary>
+            /// Clears any frozen current instant set within this scope, restoring
+            /// <see cref="RockDateTime.Now"/> to the real system clock. The organization
+            /// time zone override, if any, is left in place.
+            /// </summary>
+            /// <returns>This scope, to allow calls to be chained.</returns>
+            public RockAppScope ClearCurrentDateTime()
+            {
+                RockDateTime.TestCurrentDateTimeUtcOverride = null;
+
+                return this;
             }
 
             /// <inheritdoc/>
@@ -255,6 +345,10 @@ namespace Rock.Tests.Shared.TestFramework
             {
                 if ( ReferenceEquals( RockApp.Current, App ) )
                 {
+                    // Revert any date/time overrides made within this scope.
+                    RockDateTime.TestCurrentDateTimeUtcOverride = _previousTestDateTimeUtc;
+                    RockDateTime.TestOrgTimeZoneInfoOverride = _previousTestOrgTimeZone;
+
                     RockCache.ClearAllCachedItems( false );
                     RockApp.Current = _previousApp;
                 }

@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -59,7 +60,7 @@ namespace Rock.Field.Types
         /// </value>
         internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new BinaryFileTypeService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToDictionary( c => c.Guid.ToString(), c => c.Name );
+            return new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( a => a.Name ).ToDictionary( c => c.Guid.ToString(), c => c.Name );
         }
 
         #region IEntityReferenceFieldType
@@ -74,7 +75,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var fileTypeIds = new BinaryFileTypeService( rockContext )
                     .Queryable()

@@ -1059,6 +1059,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The AI service to use for the Category.
         /// </summary>
+        [Obsolete( "This attribute is deprecated and will be removed in the future." )]
+        [RockObsolete( "21.0" )]
         public const string AI_AUTOMATION_AI_PROVIDER = "6A1991F6-AB4A-4B92-9790-0E2ED62C079F";
 
         /// <summary>

@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -139,7 +140,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             // Add empty selection as first item.
             ddlProperty.Items.Add( new ListItem() );
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( RockApp.Current.CreateRockContext() );
             foreach ( var entityField in groupAttributeEntityFields )
             {
                 // Add the field to the dropdown of available fields
@@ -192,7 +193,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         {
             var attributeGuid = selection.AsGuid();
 
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( RockApp.Current.CreateRockContext() );
 
             var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
             if ( entityField != null )
@@ -225,7 +226,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var attributeGuid = selection.AsGuid();
 
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( RockApp.Current.CreateRockContext() );
 
             var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
             if ( entityField != null )

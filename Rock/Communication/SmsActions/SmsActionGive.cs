@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -946,7 +947,7 @@ namespace Rock.Communication.SmsActions
             /// </summary>
             public RockContext RockContext
             {
-                get => _rockContext ?? ( _rockContext = new RockContext() );
+                get => _rockContext ?? ( _rockContext = RockApp.Current.CreateRockContext() );
             }
             private RockContext _rockContext = null;
 

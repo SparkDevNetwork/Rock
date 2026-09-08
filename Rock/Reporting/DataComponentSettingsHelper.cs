@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -40,7 +41,7 @@ namespace Rock.Reporting
                 return null;
             }
 
-            context = context ?? new RockContext();
+            context = context ?? RockApp.Current.CreateRockContext();
 
             var dsService = new DataViewService( context );
 
@@ -93,7 +94,7 @@ namespace Rock.Reporting
                 return null;
             }
 
-            var dsService = new DataViewService( new RockContext() );
+            var dsService = new DataViewService( RockApp.Current.CreateRockContext() );
 
             return dsService.GetGuid( id.Value );
         }
@@ -120,7 +121,7 @@ namespace Rock.Reporting
                 return null;
             }
 
-            var dsService = new DataViewService( new RockContext() );
+            var dsService = new DataViewService( RockApp.Current.CreateRockContext() );
 
             return dsService.GetId( dataViewGuid.Value );
         }

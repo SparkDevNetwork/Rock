@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -55,7 +56,7 @@ namespace Rock.Model
                 var result = base.IsValid;
                 if ( result )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         result = this.IsValidDocument( rockContext, out string errorMessage );
                     }
@@ -134,7 +135,7 @@ namespace Rock.Model
         {
             List<IndexModelBase> indexableItems = new List<IndexModelBase>();
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             // return people
             var documents = new DocumentService( rockContext ).Queryable().AsNoTracking();
@@ -182,7 +183,7 @@ namespace Rock.Model
         /// <param name="id"></param>
         public void IndexDocument( int id )
         {
-            var documentEntity = new DocumentService( new RockContext() ).Get( id );
+            var documentEntity = new DocumentService( RockApp.Current.CreateRockContext() ).Get( id );
 
             var indexItem = DocumentIndex.LoadByModel( documentEntity );
             IndexContainer.IndexDocument( indexItem );

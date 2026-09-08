@@ -22,6 +22,7 @@ using System.Linq;
 using Newtonsoft.Json;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Workflow.Action;
 using Rock.Web.Cache;
@@ -172,7 +173,7 @@ public class Mailgun : IHttpHandler
 
     private void ProcessRequest()
     {
-        using ( var rockContext = new Rock.Data.RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             // We need to get the transport type now that there are two
             var emailMediumEntity = EntityTypeCache.Get( "Rock.Communication.Medium.Email" );

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -169,7 +170,7 @@ namespace Rock.Tests.Integration.TestData.Crm
         {
             var result = new AddPersonActionResult();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             Rock.Model.Person person = null;
             Rock.Model.Group familyGroup = null;
@@ -273,7 +274,7 @@ namespace Rock.Tests.Integration.TestData.Crm
 
         public void SetPersonAttribute( UpdateEntityAttributeValueActionArgs args )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var person = personService.GetByIdentifierOrThrow( args.UpdateTargetIdentifier );
@@ -296,7 +297,7 @@ namespace Rock.Tests.Integration.TestData.Crm
 
         public void AddPersonAttribute( AddPersonAttributeActionArgs args )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var argsAdd = new TestDataHelper.Core.AddEntityAttributeArgs
             {
@@ -332,7 +333,7 @@ namespace Rock.Tests.Integration.TestData.Crm
         /// <param name="args"></param>
         public ActionResult UpdatePersonAddPreviousName( UpdatePersonAddPreviousNameActionArgs args )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             return UpdatePersonAddPreviousName( rockContext, args );
         }
 
@@ -462,7 +463,7 @@ namespace Rock.Tests.Integration.TestData.Crm
         /// <returns></returns>
         public bool DeletePerson( string identifier )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var person = personService.Get( identifier );
 

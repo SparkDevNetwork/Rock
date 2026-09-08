@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -49,7 +50,7 @@ namespace Rock.Web.UI.Controls
             this.Items.Clear();
             this.Items.Add( new ListItem() );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var financialStatementTemplate in new FinancialStatementTemplateService( rockContext )
                     .Queryable().Where( s => s.IsActive == true ).OrderBy(a => a.Name).ToList() )

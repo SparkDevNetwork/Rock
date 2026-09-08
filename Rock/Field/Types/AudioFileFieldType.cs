@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -56,7 +57,7 @@ namespace Rock.Field.Types
             var binaryFileGuid = privateValue.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var binaryFileInfo = binaryFileService.Queryable().AsNoTracking().Where( a => a.Guid == binaryFileGuid.Value )
@@ -118,7 +119,7 @@ namespace Rock.Field.Types
             var binaryFileGuid = privateValue.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var filename = binaryFileService
@@ -147,7 +148,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( privateValue ) && Guid.TryParse( privateValue, out Guid guidValue ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileInfo = new BinaryFileService( rockContext )
                         .Queryable()
@@ -180,7 +181,7 @@ namespace Rock.Field.Types
             var binaryFileGuid = value.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var mimeType = binaryFileService.Queryable().AsNoTracking().Where( a => a.Guid == binaryFileGuid.Value )
@@ -222,7 +223,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileId = new BinaryFileService( rockContext ).GetId( binaryFileGuid.Value );
 

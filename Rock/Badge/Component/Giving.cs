@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -104,7 +105,7 @@ namespace Rock.Badge.Component
 
             var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "Person", person );
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 mergeFields.Add( "Badge", badge );
                 mergeFields.Add( "DateRange", new { Dates = dateRange, Summary = dateRangeSummary } );

@@ -43,6 +43,14 @@ export type SchedulePickerGetChildrenOptionsBag = {
      */
     includeCategoryGuids?: Guid[] | null;
 
+    /**
+     * When true, restrict the results to schedules that are
+     * eligible for check-in (schedules whose
+     * CheckInStartOffsetMinutes is set). Useful for pickers that
+     * only want to surface check-in-configured schedules.
+     */
+    includeCheckInSchedulesOnly: boolean;
+
     /** Whether to include schedules marked as inactive in the results. */
     includeInactiveItems: boolean;
 

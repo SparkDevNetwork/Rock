@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -196,7 +197,7 @@ $(document).ready(function() {
             if ( !Page.IsPostBack )
             {
                 string dataViewId = PageParameter( PageParameterKey.DataViewId );
-                var dataView = new DataViewService( new RockContext() ).Get( dataViewId, !PageCache.Layout.Site.DisablePredictableIds );
+                var dataView = new DataViewService( RockApp.Current.CreateRockContext() ).Get( dataViewId, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( dataView != null || dataViewId == "0" )
                 {
@@ -218,7 +219,7 @@ $(document).ready(function() {
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             int? entityTypeId = ViewState[ViewStateKey.EntityTypeId] as int?;
             var dataViewFilter = DataViewFilter.FromJson( ViewState[ViewStateKey.DataViewFilter].ToString() );
 
@@ -249,7 +250,7 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var service = new DataViewService( new RockContext() );
+            var service = new DataViewService( RockApp.Current.CreateRockContext() );
             var item = service.Get( hfDataViewId.Value, true );
             BindReadOnlyContextControls( service.ReadOnlyContextEnabled, item.DisableUseOfReadOnlyContext );
             ShowEditDetails( item );
@@ -265,7 +266,7 @@ $(document).ready(function() {
             // Create a new Data View using the current item as a template.
             var id = int.Parse( hfDataViewId.Value );
 
-            var dataViewService = new DataViewService( new RockContext() );
+            var dataViewService = new DataViewService( RockApp.Current.CreateRockContext() );
 
             var newItem = dataViewService.GetNewFromTemplate( id );
 
@@ -302,7 +303,7 @@ $(document).ready(function() {
 
             DataView dataView = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             DataViewService service = new DataViewService( rockContext );
 
             int dataViewId = hfDataViewId.Value.AsInteger();
@@ -536,7 +537,7 @@ $(document).ready(function() {
             else
             {
                 // Canceling on Edit.  Return to Details
-                DataViewService service = new DataViewService( new RockContext() );
+                DataViewService service = new DataViewService( RockApp.Current.CreateRockContext() );
                 DataView item = service.Get( dataViewId );
                 ShowReadonlyDetails( item );
             }
@@ -549,7 +550,7 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
             var dataView = dataViewService.Get( hfDataViewId.Value, true );
             if ( dataView == null )
@@ -628,7 +629,7 @@ $(document).ready(function() {
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
             var dataView = dataViewService.Get( dataViewId );
 
@@ -652,7 +653,7 @@ $(document).ready(function() {
         /// </summary>
         private void LoadDropDowns( DataView dataView )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
                 .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
@@ -707,7 +708,7 @@ $(document).ready(function() {
         {
             pnlDetails.Visible = false;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var dataViewService = new DataViewService( rockContext );
             DataView dataView = null;
@@ -889,7 +890,7 @@ $(document).ready(function() {
 
             lActionTitle.Text = dataView.Name;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             BindDataTransformations( rockContext );
             ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
 
@@ -987,7 +988,7 @@ $(document).ready(function() {
 
             DescriptionList descriptionListDataviews = new DescriptionList();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             DataViewService dataViewService = new DataViewService( rockContext );
 
             // Get any related DataViews (using RelatedDataViewId )
@@ -1243,7 +1244,7 @@ $(document).ready(function() {
             // create an temporary DataView record based on the current edited settings
             // it won't get saved to the database, and won't increment run counts, etc
             DataView dataView = new DataView();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             if ( dataView.TransformEntityTypeId.HasValue )
@@ -1590,7 +1591,7 @@ $(document).ready(function() {
             var dataViewFilter = new DataViewFilter();
             dataViewFilter.Guid = Guid.NewGuid();
             dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             BindDataTransformations( rockContext );
 
@@ -1795,7 +1796,7 @@ $(document).ready(function() {
             var filterEntityType = EntityTypeCache.Get( componentGuid );
             var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType?.GetEntityType()?.FullName );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var result = component?.ExecuteComponentRequest( request, securityGrant, rockContext, RequestContext );
 

@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Lava;
@@ -471,7 +472,7 @@ namespace Rock.Model
         {
             get
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     return GetCampusId( rockContext );
                 }

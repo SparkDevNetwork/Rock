@@ -1441,6 +1441,8 @@ namespace Rock.SystemGuid
         /// Gets the New Communication page guid
         /// ParentPage: Communications
         /// </summary>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use NEW_COMMUNICATION_OBSIDIAN instead." )]
         public const string NEW_COMMUNICATION = "2A22D08D-73A8-4AAF-AC7E-220E8B2E7857";
 
         /// <summary>

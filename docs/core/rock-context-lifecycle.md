@@ -18,7 +18,7 @@ related_files:
 
 EF gives you a lot of plumbing for free: change tracking, lazy loading of navigation properties, identity map (so the same row queried twice in one context returns the same object), and transactional `SaveChanges`. Rock takes those defaults but adds custom interception for save hooks, attribute loading, history writing, and analytics. `RockContext` exists as the project-specific subclass that wires those custom pieces in. The CLAUDE.md rule "Do not dispose RockContext prematurely; it kills lazy loading for any entities retrieved from that context" is a direct consequence of EF's lazy-loading model: entities hold a reference to the context that loaded them, and disposing the context invalidates that reference.
 
-The `RockApp.Current.CreateRockContext()` factory pattern (added in commits `b7f1eaa9e0` and `18c8ecbd47` on 2025-10-27 across cache classes) exists for testability. Direct `new RockContext()` calls cannot be substituted in tests; the factory indirection lets test infrastructure swap in a different implementation. Cache classes were forbidden from using `new RockContext()` in those commits.
+The `RockApp.Current.CreateRockContext()` factory pattern (first introduced in commits `b7f1eaa9e0` and `18c8ecbd47` on 2025-10-27 across cache classes) exists for testability, and is now the default way to construct a context in **all** code, not just cache classes. Direct `new RockContext()` calls cannot be substituted in tests; the factory indirection lets test infrastructure swap in a different implementation. Cache classes were the first to be forbidden from using `new RockContext()`, in those commits; new code everywhere should prefer the factory.
 
 ## Mental Model
 
@@ -30,7 +30,7 @@ The `RockApp.Current.CreateRockContext()` factory pattern (added in commits `b7f
 
 ```mermaid
 flowchart LR
-    Open["new RockContext()<br/>or<br/>RockApp.Current.CreateRockContext()"] --> Read[Service queries]
+    Open["RockApp.Current.CreateRockContext()<br/>(preferred)"] --> Read[Service queries]
     Read --> Mutate[Entity mutations]
     Mutate --> Save["SaveChanges()<br/><i>fires save hooks</i>"]
     Save --> Dispose["using {} block disposes<br/>or explicit Dispose"]
@@ -38,10 +38,10 @@ flowchart LR
     Lazy -.->|fails if disposed| Disposed[ObjectDisposedException]
 ```
 
-The standard idiom is a `using` block scoped to one logical operation:
+The standard idiom is a `using` block scoped to one logical operation. Construct the context with the `RockApp.Current.CreateRockContext()` factory rather than `new RockContext()`:
 
 ```csharp
-using ( var rockContext = new RockContext() )
+using ( var rockContext = RockApp.Current.CreateRockContext() )
 {
     var group = new GroupService( rockContext ).Get( groupId );
     group.Name = "New name";
@@ -55,9 +55,9 @@ For longer-running operations (a sweep job that processes thousands of rows), th
 
 **Do not dispose `RockContext` prematurely.** Lazy-load navigation properties (`group.GroupType`, `transaction.AuthorizedPersonAlias.Person`) need the context that loaded the parent entity. Disposing before navigating triggers `ObjectDisposedException`. The CLAUDE.md rule is: "Do not dispose RockContext prematurely; it kills lazy loading for any entities retrieved from that context."
 
-**Do not create `RockContext` per iteration in loops.** Each `new RockContext()` opens a new connection pool reservation, runs change-tracking initialization, and fires whatever bus-message subscriptions are wired. In a tight loop this dominates execution time. Pull the data into a list or dictionary first, then iterate over the in-memory collection.
+**Do not create `RockContext` per iteration in loops.** Each new context opens a new connection pool reservation, runs change-tracking initialization, and fires whatever bus-message subscriptions are wired. In a tight loop this dominates execution time. Pull the data into a list or dictionary first, then iterate over the in-memory collection.
 
-**Cache classes use `RockApp.Current.CreateRockContext()`, not `new RockContext()`.** Direct construction in cache code defeats the testability indirection. New cache classes should follow the pattern; existing cache classes were converted in `b7f1eaa9e0` and `18c8ecbd47`.
+**Use `RockApp.Current.CreateRockContext()`, not `new RockContext()`.** Direct construction defeats the testability indirection. This is the default for all new code; cache classes were converted first, in `b7f1eaa9e0` and `18c8ecbd47`, and are the strictest about it, but the factory is now the preferred construction everywhere.
 
 **`RockContext` is not thread-safe.** Do not pass one context across `Task.Run` boundaries that might execute in parallel. Each thread that needs database access creates its own context. EF's documentation is explicit on this; Rock inherits the constraint.
 
@@ -82,7 +82,7 @@ For longer-running operations (a sweep job that processes thousands of rows), th
 **"Read a single entity and modify a field."**
 
 ```csharp
-using ( var rockContext = new RockContext() )
+using ( var rockContext = RockApp.Current.CreateRockContext() )
 {
     var entity = new MyEntityService( rockContext ).Get( id );
     entity.Field = newValue;
@@ -93,7 +93,7 @@ using ( var rockContext = new RockContext() )
 **"Read 1000 entities and update each."** Load once, iterate, save once:
 
 ```csharp
-using ( var rockContext = new RockContext() )
+using ( var rockContext = RockApp.Current.CreateRockContext() )
 {
     var entities = new MyEntityService( rockContext ).Queryable().ToList();
     foreach ( var e in entities ) { /* mutate */ }
@@ -121,9 +121,9 @@ EF's design assumes the context is short-lived. Long-lived contexts grow change-
 
 The alternative (eager-only) would force every query to spell out every navigation. Lazy loading is the more ergonomic default; the cost is the must-stay-alive constraint.
 
-### `RockApp.Current.CreateRockContext()` for cache code
+### `RockApp.Current.CreateRockContext()` as the default construction
 
-Cache code is unit-tested with substituted contexts. Direct `new` defeats the substitution. The factory pattern is enforced in cache code as of 2025-10-27.
+Code is unit-tested with substituted contexts. Direct `new` defeats the substitution. The factory pattern was enforced in cache code first (as of 2025-10-27) and is now the default for constructing a context anywhere.
 
 ### Service classes don't own the context
 
@@ -152,9 +152,9 @@ Rejected (so far). The setup cost of `RockContext` is small compared to query co
 ### Constructors
 
 ```csharp
-new RockContext()                                // default; uses RockApp.Current connection string
-new RockContext( "ConnectionString" )            // explicit connection string or name
-RockApp.Current.CreateRockContext()              // testable factory; required for cache code
+RockApp.Current.CreateRockContext()              // preferred default; testable factory, uses RockApp.Current connection string
+new RockContext()                                // legacy direct construction; not substitutable in tests, avoid in new code
+new RockContext( "ConnectionString" )            // explicit connection string or name (when a custom string is required)
 ```
 
 ### Save Path
@@ -199,7 +199,7 @@ SaveChangesAsync()                               // async variant
 
 ```csharp
 Group group;
-using ( var ctx = new RockContext() )
+using ( var ctx = RockApp.Current.CreateRockContext() )
 {
     group = new GroupService( ctx ).Get( id );
 } // ctx disposed

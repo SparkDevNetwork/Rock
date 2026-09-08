@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -419,7 +420,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( PersonId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         return new PersonAliasService( rockContext ).GetPrimaryAliasId( PersonId.Value );
                     }

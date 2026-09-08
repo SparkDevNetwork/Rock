@@ -357,29 +357,21 @@ namespace Rock.Model
             public string AIApprovalGuidelines { get; set; }
 
             /// <summary>
-            /// The <see cref="Rock.Model.AIProvider"/> to use for AI Approvals.
-            /// </summary>
-            public int? AIProviderId { get; set; }
-
-            /// <summary>
             /// Gets the System and User messages for the AI Approval Chat Completion request for the <paramref name="note"/>.
             /// </summary>
             /// <param name="note">The <see cref="Note"/> to generate the chat completion messages for.</param>
             /// <returns></returns>
-            public List<ChatCompletionsRequestMessage> AIApprovalRequestMessages( Note note )
+            public string GetApprovalRequestText( Note note )
             {
-                return new List<ChatCompletionsRequestMessage>
-                {
-                    new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "Please determine if the note delimited by ```Note Text``` should be approved based on the approval guidance delimited by ```Approval Guidance```. Please answer with only true to approve or false to not approve." },
-                    new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.User, Content = $@"
+                return $@"Please determine if the note delimited by ```Note Text``` should be approved based on the approval guidance delimited by ```Approval Guidance```. Please answer with only true to approve or false to not approve.
+
 ```Approval Guidance```
 {AIApprovalGuidelines}
 ```Approval Guidance```
 
 ```Note Text```
 {note.Text}
-```Note Text```" }
-                };
+```Note Text```";
             }
         }
 

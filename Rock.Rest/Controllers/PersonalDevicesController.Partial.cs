@@ -16,6 +16,7 @@
 //
 using System.Linq;
 using System.Web.Http;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -42,7 +43,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "DDD28018-059B-42D1-8E7D-3E94A957AB44" )]
         public PersonalDevice UpdateByMACAddress( string macAddress, string deviceIdentifier = "", string devicePlatform = "", string deviceVersion = "", int? personAliasId = null )
         {
-            var rockContext = new Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new PersonalDeviceService( rockContext );
 
             // MAC address

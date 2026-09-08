@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -252,7 +253,7 @@ namespace Rock.Model
         /// </returns>
         public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return Activate( activityTypeCache, workflow, rockContext );
             }

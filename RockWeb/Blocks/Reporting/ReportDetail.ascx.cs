@@ -36,6 +36,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Configuration;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -255,7 +256,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( pnlEditDetails.Visible )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 foreach ( var field in ReportFieldsDictionary )
                 {
@@ -328,7 +329,7 @@ namespace RockWeb.Blocks.Reporting
                             var entityTypeId = fieldTypeSelection.FieldSelection.AsIntegerOrNull();
                             if ( entityTypeId.HasValue )
                             {
-                                var dataSelectComponent = this.GetDataSelectComponent( new RockContext(), entityTypeId.Value );
+                                var dataSelectComponent = this.GetDataSelectComponent( RockApp.Current.CreateRockContext(), entityTypeId.Value );
                                 if ( dataSelectComponent != null )
                                 {
                                     if ( dataSelectComponent.SortProperties( string.Empty ) == string.Empty )
@@ -499,7 +500,7 @@ namespace RockWeb.Blocks.Reporting
             ReportFieldType reportFieldType = ReportFieldType.Property;
             string fieldSelection = string.Empty;
             ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, FieldSelection = fieldSelection } );
-            AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true, new RockContext(), true, new ReportField { ShowInGrid = true } );
+            AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true, RockApp.Current.CreateRockContext(), true, new ReportField { ShowInGrid = true } );
             kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), "(untitled)" );
             vMergeFields.CustomValues.Add( reportFieldGuid.ToString(), "(untitled)" );
             vRecipientFields.CustomValues.Add( reportFieldGuid.ToString(), "(untitled)" );
@@ -541,7 +542,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var item = new ReportService( new RockContext() ).Get( int.Parse( hfReportId.Value ) );
+            var item = new ReportService( RockApp.Current.CreateRockContext() ).Get( int.Parse( hfReportId.Value ) );
             ShowEditDetails( item );
         }
 
@@ -555,7 +556,7 @@ namespace RockWeb.Blocks.Reporting
             // Create a new Report using the current item as a template.
             var id = int.Parse( hfReportId.Value );
 
-            var reportService = new ReportService( new RockContext() );
+            var reportService = new ReportService( RockApp.Current.CreateRockContext() );
 
             var newItem = reportService.GetNewFromTemplate( id );
 
@@ -580,7 +581,7 @@ namespace RockWeb.Blocks.Reporting
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             string categoryId = null;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
             var report = reportService.Get( hfReportId.Value.AsInteger() );
 
@@ -640,7 +641,7 @@ namespace RockWeb.Blocks.Reporting
 
             Report report = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             ReportService service = new ReportService( rockContext );
             ReportFieldService reportFieldService = new ReportFieldService( rockContext );
 
@@ -971,7 +972,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void LoadDropDowns()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
                 .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
@@ -1001,7 +1002,7 @@ namespace RockWeb.Blocks.Reporting
         private void LoadFieldsDropDown( RockDropDownList ddlFields )
         {
             int? entityTypeId = etpEntityType.SelectedEntityTypeId;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( entityTypeId.HasValue )
             {
@@ -1139,7 +1140,7 @@ namespace RockWeb.Blocks.Reporting
         {
             pnlDetails.Visible = false;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
             Report report = null;
 
@@ -1321,7 +1322,7 @@ namespace RockWeb.Blocks.Reporting
             tbDescription.Text = report.Description;
             cpCategory.SetValue( report.CategoryId );
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             var dataViewId = report.DataViewId;
             var entityTypeId = report.EntityTypeId;
@@ -1705,7 +1706,7 @@ namespace RockWeb.Blocks.Reporting
                 fieldSelection = fieldSelectionValueParts[1];
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             Guid reportFieldGuid = new Guid( panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ) );
 
@@ -1949,7 +1950,7 @@ namespace RockWeb.Blocks.Reporting
             var filterEntityType = EntityTypeCache.Get( componentGuid );
             var component = DataSelectContainer.GetComponent( filterEntityType?.GetEntityType()?.FullName );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var result = component?.ExecuteComponentRequest( request, securityGrant, rockContext, RequestContext );
 

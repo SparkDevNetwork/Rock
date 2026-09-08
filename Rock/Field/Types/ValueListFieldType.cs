@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
@@ -386,7 +387,7 @@ namespace Rock.Field.Types
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.DataTextField = "Name";
             ddl.DataValueField = "Id";
-            ddl.DataSource = new Rock.Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order ).ToList();
+            ddl.DataSource = new Rock.Model.DefinedTypeService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( d => d.Order ).ToList();
             ddl.DataBind();
             ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             ddl.Label = "Defined Type";

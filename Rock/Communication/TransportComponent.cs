@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -97,7 +98,7 @@ namespace Rock.Communication
                 {
                     // if this communication is being sent to a list, make sure the recipient is still an active member of the list
                     GroupMemberStatus? groupMemberStatus = null;
-                    using ( var rockContext = new Rock.Data.RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         groupMemberStatus = new GroupMemberService( rockContext ).Queryable()
                             .Where( a => a.PersonId == person.Id && a.GroupId == recipient.Communication.ListGroupId )

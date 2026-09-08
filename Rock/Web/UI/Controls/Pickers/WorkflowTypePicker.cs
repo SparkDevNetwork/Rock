@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -129,7 +130,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var workflowType = new WorkflowTypeService( new RockContext() ).Get( int.Parse( ItemId ) );
+            var workflowType = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).Get( int.Parse( ItemId ) );
             SetValue( workflowType );
         }
 
@@ -138,7 +139,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var workflowTypes = new WorkflowTypeService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
+            var workflowTypes = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
             this.SetValues( workflowTypes );
         }
 
@@ -160,7 +161,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         private List<int> GetWorkflowTypeCategoryAncestorIdList( int childCategoryId )
         {
-            CategoryService categoryService = new CategoryService( new RockContext() );
+            CategoryService categoryService = new CategoryService( RockApp.Current.CreateRockContext() );
             var parentCategories = categoryService.GetAllAncestors( childCategoryId );
 
             List<int> parentCategoryIds = parentCategories.Select( p => p.Id ).ToList();

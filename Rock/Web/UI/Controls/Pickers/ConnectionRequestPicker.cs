@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -133,7 +134,7 @@ namespace Rock.Web.UI.Controls
             int? connectionRequestId = ItemId.AsIntegerOrNull();
             if ( connectionRequestId.HasValue )
             {
-                var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( connectionRequestId.Value );
+                var connectionRequest = new ConnectionRequestService( RockApp.Current.CreateRockContext() ).Get( connectionRequestId.Value );
                 SetValue( connectionRequest );
             }
         }
@@ -153,7 +154,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            var connectionRequests = new ConnectionRequestService( new RockContext() ).Queryable().Where( g => connectionRequestIds.Contains( g.Id ) );
+            var connectionRequests = new ConnectionRequestService( RockApp.Current.CreateRockContext() ).Queryable().Where( g => connectionRequestIds.Contains( g.Id ) );
             this.SetValues( connectionRequests );
         }
 

@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -218,7 +219,7 @@ function() {
         {
             string result = "In location geofence";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var location = new LocationService( rockContext ).Get( selection.AsGuid() );
             if ( location != null && !string.IsNullOrWhiteSpace( location.Name ) )
             {
@@ -306,7 +307,7 @@ function() {
             var selections = selection.SplitDelimitedValues();
             Guid locationGuid = selections[0].AsGuid();
 
-            var location = new LocationService( new RockContext() ).Get( locationGuid );
+            var location = new LocationService( RockApp.Current.CreateRockContext() ).Get( locationGuid );
             if ( location != null )
             {
                 LocationPicker locationPicker = controls[0] as LocationPicker;

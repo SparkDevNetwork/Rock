@@ -22,6 +22,7 @@ using System.Reflection;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -67,7 +68,7 @@ namespace Rock.Field.Types
             {
                 entityType = EntityTypeCache.Get( SystemGuid.EntityType.PERSON );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     entityId = new PersonAliasService( rockContext ).GetPersonId( entityId.Value );
                 }
@@ -158,7 +159,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public IEntity GetEntity( string value )
         {
-            return GetEntity( value, new RockContext() );
+            return GetEntity( value, RockApp.Current.CreateRockContext() );
         }
 
         /// <summary>
@@ -267,7 +268,7 @@ namespace Rock.Field.Types
             MethodInfo getMethod;
             object[] parameters;
             Type[] methodParamTypes;
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             if ( entityIdentifier.AsIntegerOrNull().HasValue )
             {

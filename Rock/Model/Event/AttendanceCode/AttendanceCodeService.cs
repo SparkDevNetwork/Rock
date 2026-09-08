@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -123,7 +124,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static AttendanceCode GetNew( int alphaNumericLength, int alphaLength, int numericLength, bool isRandomized )
         {
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new AttendanceCodeService( rockContext );
 

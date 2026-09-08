@@ -16,6 +16,7 @@
 //
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -32,7 +33,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communication = new CommunicationService( rockContext ).Get( message.CommunicationId );
                 Task.Run( async () => await Model.Communication.SendAsync( communication ) );

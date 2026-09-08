@@ -360,6 +360,7 @@ namespace Rock.CheckIn.v2
                 PossibleSchedules = attendee.Opportunities?.Schedules
                     .Select( GetScheduleOpportunityBag )
                     .ToList() ?? new List<ScheduleOpportunityBag>(),
+                PotentialScheduleIds = attendee.PotentialScheduleIds,
             };
         }
 

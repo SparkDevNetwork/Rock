@@ -27,6 +27,7 @@ using dotless.Core.Parser.Functions;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Financial;
@@ -641,7 +642,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
 
             if ( registrationTemplate != null && ( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ) )
@@ -658,7 +659,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var service = new RegistrationTemplateService( rockContext );
             var registrationTemplate = service.Get( hfRegistrationTemplateId.Value.AsInteger() );
@@ -692,7 +693,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var registrationTemplate = new RegistrationTemplateService( rockContext )
                 .Get( hfRegistrationTemplateId.Value.AsInteger() );
 
@@ -860,7 +861,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             ParseControls( true );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
@@ -1485,7 +1486,7 @@ The logged-in person's information will be used to complete the registrar inform
             else
             {
                 // Canceling on Edit. Return to Details.
-                var service = new RegistrationTemplateService( new RockContext() );
+                var service = new RegistrationTemplateService( RockApp.Current.CreateRockContext() );
                 var item = service.Get( int.Parse( hfRegistrationTemplateId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -1839,7 +1840,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( attributeId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var attribute = new AttributeService( rockContext ).Get( attributeId.Value );
                     if ( attribute != null )
@@ -2398,7 +2399,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( registrationTemplate == null )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 registrationTemplate = new RegistrationTemplateService( rockContext )
                     .Queryable( "GroupType.Roles" )
                     .AsNoTracking()
@@ -2423,7 +2424,7 @@ The logged-in person's information will be used to complete the registrar inform
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             RegistrationTemplate registrationTemplate = null;
             if ( registrationTemplateId.HasValue )
@@ -2877,7 +2878,7 @@ The logged-in person's information will be used to complete the registrar inform
                 lRegistrantFormsSummary.Text = $"<div>{None.TextHtml}</div>";
             }
 
-            var registrationAttributeNameList = new AttributeService( new RockContext() )
+            var registrationAttributeNameList = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new Registration().TypeId, true )
                 .AsQueryable()
                 .Where( a =>
@@ -2925,7 +2926,7 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var placementService = new RegistrationTemplatePlacementService( rockContext );
 
@@ -3872,7 +3873,7 @@ The logged-in person's information will be used to complete the registrar inform
                 if ( feeItems.Count > 1 )
                 {
                     var canUseSingleFeeType = true;
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
                     var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
                     var configuredFeeItemIds = feeItems.Select( a => a.Id ).ToList();
@@ -3959,7 +3960,7 @@ The logged-in person's information will be used to complete the registrar inform
             var feeItem = feeItems.FirstOrDefault( a => a.Guid == feeItemGuid );
             if ( feeItem != null )
             {
-                if ( !new RegistrationTemplateFeeItemService( new RockContext() ).CanDelete( feeItem, out var errorMessage ) )
+                if ( !new RegistrationTemplateFeeItemService( RockApp.Current.CreateRockContext() ).CanDelete( feeItem, out var errorMessage ) )
                 {
                     nbFeeItemsConfigurationWarning.Text = errorMessage;
                     nbFeeItemsConfigurationWarning.Visible = true;
@@ -4082,7 +4083,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             var lSharedGroupNames = e.Row.FindControl( "lSharedGroupNames" ) as Literal;
             var sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid );
-            var sharedGroupNameList = new GroupService( new RockContext() )
+            var sharedGroupNameList = new GroupService( RockApp.Current.CreateRockContext() )
                 .GetByIds( sharedGroupIds )
                 .Select( a => a.Name )
                 .ToList();
@@ -4182,7 +4183,7 @@ The logged-in person's information will be used to complete the registrar inform
             var sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationPlacementConfigurationGuid ) ?? new List<int>();
             hfPlacementConfigurationSharedGroupIdList.Value = sharedGroupIds.AsDelimited( "," );
 
-            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() )
+            gPlacementConfigurationSharedGroups.DataSource = new GroupService( RockApp.Current.CreateRockContext() )
                 .GetByIds( sharedGroupIds )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -4298,7 +4299,7 @@ The logged-in person's information will be used to complete the registrar inform
                     return;
                 }
 
-                var placementGroupTypeId = new GroupService( new RockContext() )
+                var placementGroupTypeId = new GroupService( RockApp.Current.CreateRockContext() )
                     .Queryable()
                     .Where( g => g.Id == selectedGroupId.Value )
                     .Select( g => g.GroupTypeId )
@@ -4339,7 +4340,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="sharedGroupIds">The shared group ids.</param>
         private void BindPlacementConfigurationSharedGroups( List<int> sharedGroupIds )
         {
-            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() )
+            gPlacementConfigurationSharedGroups.DataSource = new GroupService( RockApp.Current.CreateRockContext() )
                 .GetByIds( sharedGroupIds )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -4351,7 +4352,7 @@ The logged-in person's information will be used to complete the registrar inform
 
         protected void fgpFinancialGateway_SelectedIndexChanged( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ShowHideBatchPrefixTextbox( rockContext );
                 ShowHidePaymentPlansFeature( GetPaymentPlansFeatureDataFromControls( rockContext ) );
@@ -4383,7 +4384,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbEnablePaymentPlans_CheckedChanged( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ShowHidePaymentPlansFeature( GetPaymentPlansFeatureDataFromControls( rockContext ) );
             }

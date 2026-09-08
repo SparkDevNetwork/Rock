@@ -31,6 +31,13 @@ export type BenevolenceResultBag = {
     /** Gets or sets the amount of benevolence */
     amount?: number | null;
 
+    /**
+     * Gets or sets the condensed display values for each of this result's "Show in Grid" attributes, keyed by
+     * attr_{attributeKey}. Each value contains Html and Text representations in the format
+     * expected by the grid attribute column renderer.
+     */
+    attributeDisplayValues?: Record<string, unknown> | null;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 

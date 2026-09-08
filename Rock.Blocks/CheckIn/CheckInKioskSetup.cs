@@ -151,6 +151,7 @@ namespace Rock.Blocks.CheckIn
             var isAddingFamiliesAllowed = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean();
             var isEditingFamiliesAllowed = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean();
             var allowAddingIndividualsToExistingFamilies = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_INDIVIDUALS_TO_EXISTING_FAMILIES ).ConvertToEnum<AdultsOrChildrenSelectionMode>();
+            var skipScreenBehavior = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_SKIP_SCREEN_BEHAVIOR ).ConvertToEnum<SkipScreenBehavior>( SkipScreenBehavior.ShowWhenNeeded );
 
             var bag = new WebKioskBag
             {
@@ -163,7 +164,8 @@ namespace Rock.Blocks.CheckIn
                 CameraMode = kiosk.CameraBarcodeConfigurationType ?? CameraBarcodeConfiguration.Off,
                 IsRegistrationModeEnabled = isAddingFamiliesAllowed || isEditingFamiliesAllowed,
                 IsAddingFamiliesEnabled = isAddingFamiliesAllowed,
-                IsEditingFamiliesEnabled = isEditingFamiliesAllowed
+                IsEditingFamiliesEnabled = isEditingFamiliesAllowed,
+                SkipScreenBehavior = skipScreenBehavior
             };
 
             return bag;

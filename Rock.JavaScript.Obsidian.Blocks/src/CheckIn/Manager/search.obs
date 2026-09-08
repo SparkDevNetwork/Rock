@@ -1,0 +1,265 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="rootElement" class="checkin-manager">
+        <div class="input-group mb-spacing-lg w-100">
+            <TextBox v-model="searchText"
+                     :inputClasses="'js-search'"
+                     :placeholder="searchPlaceholder"
+                     :spellcheck="false"
+                     @keydown.enter="onSearchEnter">
+                <template #inputGroupPrepend>
+                    <span class="input-group-addon"><i class="ti ti-search"></i></span>
+                </template>
+            </TextBox>
+        </div>
+
+        <NotificationBox v-if="validationMessage" :alertType="AlertType.Warning">
+            {{ validationMessage }}
+        </NotificationBox>
+
+        <div v-if="hasSearched" class="panel panel-block">
+            <div class="panel-body">
+                <div class="grid grid-panel search-results">
+                    <Grid :definition="gridDefinition"
+                          :data="gridDataSource"
+                          keyField="personGuid"
+                          itemTerm="Roster Attendee"
+                          :isTitleHidden="true"
+                          :disablePaging="true"
+                          :showExport="false"
+                          :showMergeTemplate="false"
+                          :showLaunchWorkflow="false"
+                          :isFooterHidden="true"
+                          light
+                          @selectItem="onSelectItem">
+
+                        <Column name="photo"
+                                title=""
+                                :filter="undefined"
+                                visiblePriority="sm"
+                                width="76px">
+                            <template #format="{ row }">
+                                <div v-html="(row as AttendeeRow).photoHtml"></div>
+                            </template>
+                        </Column>
+
+                        <Column name="mobileIcon"
+                                title=""
+                                :filter="undefined"
+                                width="100px"
+                                headerClass="d-sm-none"
+                                itemClass="mobile-icon d-table-cell d-sm-none">
+                            <template #format="{ row }">
+                                <div v-html="(row as AttendeeRow).mobileStatusIconHtml"></div>
+                            </template>
+                        </Column>
+
+                        <Column name="name"
+                                title="Name"
+                                width="17%"
+                                :filter="textValueFilter"
+                                :filterValue="getNameFilterValue"
+                                :quickFilterValue="getNameFilterValue"
+                                :sortValue="getNameFilterValue"
+                                visiblePriority="xs">
+                            <template #format="{ row }">
+                                <div v-html="(row as AttendeeRow).nameHtml"></div>
+                            </template>
+                        </Column>
+
+                        <Column name="badges"
+                                title=""
+                                :filter="undefined"
+                                width="20%"
+                                headerClass="d-none d-sm-table-cell"
+                                itemClass="d-none d-sm-table-cell">
+                            <template #format="{ row }">
+                                <div v-html="(row as AttendeeRow).badgesHtml"></div>
+                            </template>
+                        </Column>
+
+                        <TextColumn name="tag"
+                                    field="tag"
+                                    title="Tag"
+                                    width="12%"
+                                    :filter="textValueFilter"
+                                    headerClass="d-none d-sm-table-cell"
+                                    itemClass="d-none d-sm-table-cell" />
+
+                        <TextColumn name="serviceTimes"
+                                    field="serviceTimes"
+                                    title="Service Times"
+                                    width="20%"
+                                    :filter="textValueFilter"
+                                    headerClass="d-none d-sm-table-cell"
+                                    itemClass="d-none d-sm-table-cell" />
+
+                        <Column name="mobileTagAndSchedules"
+                                title="Tag"
+                                :filter="undefined"
+                                headerClass="d-sm-none"
+                                itemClass="d-table-cell d-sm-none">
+                            <template #format="{ row }">
+                                <div v-html="(row as AttendeeRow).mobileTagAndSchedulesHtml"></div>
+                            </template>
+                        </Column>
+
+                        <Column name="statusTag"
+                                title=""
+                                :filter="undefined"
+                                visiblePriority="sm"
+                                width="25%"
+                                headerClass="justify-content-center">
+
+                            <template #format="{ row }">
+                                <div class="w-100 text-center" v-html="(row as AttendeeRow).desktopStatusTagHtml"></div>
+                            </template>
+                        </Column>
+
+                    </Grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/* Light grids drop the .grid-striped class but rows still carry
+   grid-row-even, so re-apply zebra striping by coloring the cells of even
+   rows. The background must be set on .grid-cell (not .grid-row) because
+   each cell paints its own background. */
+.search-results :deep(.grid-row.grid-row-even .grid-cell) {
+    background-color: var(--color-interface-softer);
+}
+
+/* Center the status glyph within the circular mobile status badge. */
+.search-results :deep(.mobile-icon .badge-circle) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Small gap between adjacent status badges (e.g. Checked-out + Checked-in). */
+.search-results :deep(.badge + .badge) {
+    margin-left: var(--spacing-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, ref } from "vue";
+    import { AttendeeRow, NavigationUrlKey } from "./Search/types.partial";
+    import Grid, { Column, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { SearchOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Search/searchOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const config = useConfigurationValues<ListBlockBox<SearchOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const rootElement = ref<HTMLElement | null>(null);
+    const gridDefinition = computed(() => config.gridDefinition ?? undefined);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    const searchText = ref<string>("");
+
+    // Controls whether the results panel is shown; it stays hidden until the
+    // first search has been performed.
+    const hasSearched = ref(false);
+
+    const validationMessage = ref<string>("");
+    const minimumSearchLength = 3;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const searchPlaceholder = computed<string>(() => {
+        return config.options?.isSearchByCodeEnabled
+            ? "Search by name or tag code"
+            : "Search by name";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Combined value used for the Name column's sort, column filter, and the
+     * grid-wide quick filter. The column renders HTML, so a plain-text value is
+     * required for these to work.
+     */
+    function getNameFilterValue(row: Record<string, unknown>): string {
+        return (row as AttendeeRow).fullName ?? "";
+    }
+
+    /**
+     * Loads the search results from the server for the current search text.
+     */
+    async function loadResults(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetSearchResults", {
+            searchValue: searchText.value
+        });
+
+        if (!result.isSuccess || !result.data) {
+            throw new Error(result.errorMessage ?? "Unable to load search results.");
+        }
+
+        return result.data;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Performs a search when the user presses Enter and the search text meets
+     * the minimum length.
+     */
+    function onSearchEnter(event: Event): void {
+        event.preventDefault();
+
+        if (searchText.value.trim().length < minimumSearchLength) {
+            validationMessage.value = `Please enter at least ${minimumSearchLength} characters to search.`;
+            return;
+        }
+
+        validationMessage.value = "";
+        hasSearched.value = true;
+        gridDataSource.value = loadResults();
+    }
+
+    /**
+     * Navigates to the configured Person Page for the selected attendee row.
+     */
+    async function onSelectItem(personGuid: string): Promise<void> {
+        const url = config.navigationUrls?.[NavigationUrlKey.PersonPage];
+
+        if (!url) {
+            await alert("The 'Person Page' Block Attribute must be defined.");
+            return;
+        }
+
+        window.location.href = url.replace("((Key))", encodeURIComponent(personGuid));
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    // Focus the search box on load so the user can start typing immediately.
+    onMounted(() => {
+        nextTick(() => {
+            rootElement.value?.querySelector<HTMLInputElement>(".js-search")?.focus();
+        });
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

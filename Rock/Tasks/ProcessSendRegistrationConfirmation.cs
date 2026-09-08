@@ -18,6 +18,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -34,7 +35,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 /*
                      3/12/2026 - NA

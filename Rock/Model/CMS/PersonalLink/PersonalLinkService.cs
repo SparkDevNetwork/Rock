@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -172,7 +173,7 @@ namespace Rock.Model
         /// <returns>PersonalLinksData.</returns>
         public static PersonalLinksData GetPersonalLinksData( Person currentPerson )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // get the sections (with the Links) that the user is authorized to view
             var orderedPersonalLinkSectionsWithLinks = new PersonalLinkService( rockContext )

@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -84,7 +85,7 @@ namespace Rock.Field.Types
 
             int? connectionTypeFilterId = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( configurationValues.ContainsKey( CONNECTION_TYPE_FILTER ) )
                 {
@@ -149,7 +150,7 @@ namespace Rock.Field.Types
             Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var opportunityName = new ConnectionOpportunityService( rockContext ).GetSelect( guid.Value, o => o.Name );
 
@@ -189,7 +190,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ConnectionOpportunityService( rockContext ).Get( guid.Value );
             }
 
@@ -220,7 +221,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var opportunityId = new ConnectionOpportunityService( rockContext ).GetId( guid.Value );
 
@@ -302,7 +303,7 @@ namespace Rock.Field.Types
             ddlConnectionTypeFilter.SelectedIndexChanged += OnQualifierUpdated;
             ddlConnectionTypeFilter.AutoPostBack = true;
 
-            var connectionTypeService = new ConnectionTypeService( new RockContext() );
+            var connectionTypeService = new ConnectionTypeService( RockApp.Current.CreateRockContext() );
             ddlConnectionTypeFilter.Items.Add( new ListItem() );
             ddlConnectionTypeFilter.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Id.ToString() } ).ToArray() );
 
@@ -391,7 +392,7 @@ namespace Rock.Field.Types
                 groupTypeFilterId = configurationValues.ContainsKey( CONNECTION_TYPE_FILTER ) ? configurationValues[CONNECTION_TYPE_FILTER].Value.AsIntegerOrNull() : null;
             }
 
-            var opportunities = new ConnectionOpportunityService( new RockContext() )
+            var opportunities = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() )
                 .Queryable().AsNoTracking()
                 .Where( o => o.IsActive || includeInactive )
                 .OrderBy( o => o.ConnectionType.Name )
@@ -466,7 +467,7 @@ namespace Rock.Field.Types
                         if ( listItem == null )
                         {
                             var valueGuid = value.AsGuid();
-                            var connectionOpportunity = new ConnectionOpportunityService( new RockContext() )
+                            var connectionOpportunity = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() )
                                .Queryable().AsNoTracking()
                                .Where( o => o.Guid == valueGuid )
                                .FirstOrDefault();
@@ -491,7 +492,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ConnectionOpportunityService( new RockContext() ).Get( guid );
+            var item = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -503,7 +504,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ConnectionOpportunityService( new RockContext() ).Get( id ?? 0 );
+            var item = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

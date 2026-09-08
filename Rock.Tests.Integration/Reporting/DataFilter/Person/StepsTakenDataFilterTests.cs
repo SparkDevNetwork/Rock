@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
@@ -233,7 +234,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
         {
             var settingsFilter = new StepsTakenFilter();
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
 

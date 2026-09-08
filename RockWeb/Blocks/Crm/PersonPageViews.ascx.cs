@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -221,7 +222,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         public void ShowList()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             int sessionCount = GetAttributeValue( AttributeKey.SessionCount ).AsInteger();
 

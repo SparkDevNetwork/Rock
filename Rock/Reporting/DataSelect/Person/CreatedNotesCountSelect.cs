@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -265,7 +266,7 @@ namespace Rock.Reporting.DataSelect.Person
             cblNoteTypes.Help = "The type of note to filter by. Leave blank to include all note types.";
             parentControl.Controls.Add( cblNoteTypes );
 
-            var noteTypeService = new NoteTypeService( new RockContext() );
+            var noteTypeService = new NoteTypeService( RockApp.Current.CreateRockContext() );
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var noteTypes = noteTypeService.Queryable()
                 .Where( a => a.EntityTypeId == entityTypeIdPerson )

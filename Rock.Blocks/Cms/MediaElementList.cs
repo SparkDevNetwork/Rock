@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -268,7 +269,7 @@ namespace Rock.Blocks.Cms
         private int GetWatchCount( MediaElement mediaElement )
         {
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var watchCount = new InteractionService( rockContext )
                 .Queryable()

@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -375,7 +376,7 @@ namespace Rock.Blocks.Finance
                 return message;
             }
 
-            var activeRegistrations = new FinancialGatewayService( new RockContext() ).GetRegistrationTemplatesForGateway( entity.Id, false ).ToList();
+            var activeRegistrations = new FinancialGatewayService( RockApp.Current.CreateRockContext() ).GetRegistrationTemplatesForGateway( entity.Id, false ).ToList();
             if ( !activeRegistrations.Any() )
             {
                 // This gateway isn't used by any registrations so show the message but don't bother looking for registrations using it.

@@ -30,6 +30,15 @@ using Rock.Web.Cache;
 public partial class Http404Error : System.Web.UI.Page
 {
     /// <summary>
+    /// File extensions for development-only assets (such as source maps) that browser dev
+    /// tools request automatically. These files are only deployed to production in occasional
+    /// debugging scenarios, so a missing one is normally expected. Requests for them get a quiet
+    /// 404 instead of redirecting to the site's "Page Not Found" page (which renders a full page
+    /// and logs a phantom interaction) or being written to the exception log.
+    /// </summary>
+    private static readonly string[] _quietNotFoundExtensions = new[] { ".map" };
+
+    /// <summary>
     /// Handles the Init event of the Page control.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
@@ -37,6 +46,20 @@ public partial class Http404Error : System.Web.UI.Page
     protected void Page_Init(object sender, EventArgs e)
     {
         var proxySafeUri = Request.UrlProxySafe();
+
+        // Development-only assets like source maps (e.g. *.js.map, *.css.map) are fetched
+        // automatically by browser dev tools and are usually not deployed to production. Return a
+        // quiet 404 for these so they neither redirect to the Page Not Found page nor flood the
+        // exception and interaction logs. Missing "real" assets (e.g. *.js) still fall through
+        // to the normal handling below and continue to be logged. When IIS routes the 404 here via
+        // ExecuteURL, the originally requested URL is at the end of the query string, so check that.
+        if ( _quietNotFoundExtensions.Any( extension => proxySafeUri.Query.EndsWith( extension, StringComparison.OrdinalIgnoreCase ) ) )
+        {
+            Response.StatusCode = 404;
+            Response.Flush();
+            Response.End();
+            return;
+        }
 
         // Check to see if exception should be logged
         if ( GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean(true) )

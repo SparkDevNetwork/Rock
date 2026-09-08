@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -266,7 +267,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
                 var shortcodeProvider = new TestLavaDynamicShortcodeProvider();
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var lavaShortCodeService = new LavaShortcodeService( rockContext );
 
                 // Create a new Shortcode.
@@ -366,7 +367,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
                 }
 
                 // Get the shortcode and add it to the cache.
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 var lavaShortcodeService = new LavaShortcodeService( rockContext );
 

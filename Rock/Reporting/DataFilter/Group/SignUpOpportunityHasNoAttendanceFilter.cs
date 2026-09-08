@@ -35,6 +35,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Group
 {
@@ -210,7 +211,7 @@ namespace Rock.Reporting.DataFilter.Group
             groupTypePicker.AddCssClass( "js-group-type-picker" );
             groupTypePicker.UseGuidAsValue = true;
             groupTypePicker.Required = true;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 groupTypePicker.GroupTypes = new GroupTypeService( rockContext )
                     .Queryable()
@@ -345,7 +346,7 @@ function () {
             }
 
             string groupTypeName = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupTypeGuid = selectionConfig.GroupTypeGuid.AsGuidOrNull();
                 if ( groupTypeGuid.HasValue )
@@ -642,7 +643,7 @@ function () {
             // selectionConfig.IncludeProjectTypes. Otherwise, we'll just include the IDs for all Groups missing attendance.
             if ( selectionConfig.IncludeProjectTypes.Any() && groupsMissingAttendance.Any() )
             {
-                groupsMissingAttendance.LoadAttributes( new RockContext() );
+                groupsMissingAttendance.LoadAttributes( RockApp.Current.CreateRockContext() );
                 var selectedProjectTypeGuids = selectionConfig.IncludeProjectTypes.Select( pt => pt.AsGuidOrNull() ).ToList();
 
                 foreach ( var group in groupsMissingAttendance )

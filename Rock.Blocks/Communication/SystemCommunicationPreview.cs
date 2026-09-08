@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Communication.SystemCommunicationPreview;
@@ -142,7 +143,7 @@ namespace Rock.Blocks.Communication
 
         public override object GetObsidianBlockInitialization()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var globalAttributes = GlobalAttributesCache.Get();
 
             // Get System Communication Guid from Block Settings or QueryString.
@@ -358,7 +359,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SetSystemCommunication( SystemCommunicationPreviewInitializationBox box )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var systemCommunicationService = new SystemCommunicationService( rockContext );
             SystemCommunication systemCommunication = null;
 
@@ -454,7 +455,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SendTestEmail( SystemCommunicationPreviewInitializationBox box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemCommunicationService = new SystemCommunicationService( rockContext );
                 var personService = new PersonService( rockContext );

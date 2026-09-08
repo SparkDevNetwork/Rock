@@ -23,6 +23,7 @@ using System.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
@@ -406,7 +407,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
 
         private Person GetWhereFilterTestPersonTedDecker()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personTedDecker = new PersonService( rockContext ).Queryable()
                 .FirstOrDefault( x => x.LastName == "Decker" && x.NickName == "Ted" );
@@ -419,7 +420,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         }
         private Person GetWhereFilterTestPersonSarahSimmons()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personSarahSimmons = new PersonService( rockContext ).Queryable()
                 .FirstOrDefault( x => x.LastName == "Simmons" && x.NickName == "Sarah" );
@@ -918,7 +919,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         {
             // If the new page reference has a specific route, it should be returned in preference
             // to the default "/page/{pageId}" route.
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var routeService = new PageRouteService( dataContext );
 
             var loginRoute = routeService.Queryable()

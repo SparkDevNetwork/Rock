@@ -1,20 +1,20 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="kpi-tile" :class="[`kpi-tile-${variant}`, { 'kpi-tile-borderless': isBorderless }]">
-        <div class="kpi-tile-header" v-ellipsis-tooltip>
+        <div ref="headerElement" class="kpi-tile-header" v-tooltip.overflow="() => getElementText(headerElement)">
             <slot name="label">
                 {{ label }}
             </slot>
             <i v-if="help" class="ti ti-info-circle kpi-tile-help" v-tooltip="help"></i>
         </div>
 
-        <div class="kpi-tile-value" :style="{ color: valueColor }" v-ellipsis-tooltip>
+        <div ref="valueElement" class="kpi-tile-value" :style="{ color: valueColor }" v-tooltip.overflow="() => getElementText(valueElement)">
             <slot name="value">
                 {{ displayValue }}
             </slot>
         </div>
 
-        <div v-if="$slots.footer" class="kpi-tile-footer" v-ellipsis-tooltip>
+        <div v-if="$slots.footer" ref="footerElement" class="kpi-tile-footer" v-tooltip.overflow="() => getElementText(footerElement)">
             <slot name="footer" />
         </div>
     </div>
@@ -41,6 +41,15 @@
 
 .kpi-tile-borderless {
     border: none;
+}
+
+/* The three text rows clip to a single line; the overflow tooltip reveals the full text. */
+.kpi-tile-header,
+.kpi-tile-value,
+.kpi-tile-footer {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .kpi-tile-header {
@@ -70,7 +79,6 @@
 
 <script setup lang="ts">
     import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
-    import { vEllipsisTooltip } from "@Obsidian/Directives/ellipsisTooltip";
     import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     const props = defineProps({
@@ -120,6 +128,10 @@
 
     // #region Values
 
+    const headerElement = ref<HTMLElement | undefined>();
+    const valueElement = ref<HTMLElement | undefined>();
+    const footerElement = ref<HTMLElement | undefined>();
+
     // The tweened value shown while a count-up animation is running.
     const animatedValue = ref<number>(typeof props.value === "number" ? props.value : 0);
 
@@ -146,6 +158,18 @@
     // #endregion Computed Values
 
     // #region Functions
+
+    /**
+     * Gets the rendered text of a row so it can be used as its tooltip content. The
+     * text is read from the element because the rows may be filled by a slot.
+     *
+     * @param element The row element to read.
+     *
+     * @returns The trimmed text of the element.
+     */
+    function getElementText(element: HTMLElement | undefined): string {
+        return element?.textContent?.trim() ?? "";
+    }
 
     /**
      * Tweens the displayed value from its current amount to the target with an ease-out

@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -150,7 +151,7 @@ namespace Rock.Model
                     personAlias.PersonId = person.Id;
 
                     // Use a different context so calling method's changes are not yet saved
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     new PersonAliasService( rockContext ).Add( personAlias );
                     rockContext.SaveChanges();
 
@@ -187,7 +188,7 @@ namespace Rock.Model
                     personAlias.PersonId = person.Id;
 
                     // Use a different context so calling method's changes are not yet saved
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     new PersonAliasService( rockContext ).Add( personAlias );
                     rockContext.SaveChanges();
 

@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 
 using static Rock.Blocks.Cms.MediaAccountList;
 using static Rock.Blocks.Core.BinaryFileTypeList;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Cms
 {
@@ -238,7 +239,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new MediaAccountService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

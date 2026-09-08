@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Web.Cache;
@@ -28,6 +29,8 @@ namespace Rock.AI.Provider
     /// <summary>
     /// The container for AI components.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public class AIProviderContainer : Container<AIProviderComponent, IComponentData>
     {
         /// <summary>
@@ -95,7 +98,7 @@ namespace Rock.AI.Provider
             // Create any attributes that need to be created
             var providerEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.AIProvider ) );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var component in this.Components )
                 {

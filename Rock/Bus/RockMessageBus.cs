@@ -179,7 +179,7 @@ namespace Rock.Bus
             if ( _transportComponent == inMemoryTransport && !inMemoryTransport.IsActive )
             {
                 // Set the in memory transport as active for the UI since it is being used
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     inMemoryTransport.SetAttributeValue( InMemory.BaseAttributeKey.Active, true.ToString() );
                     inMemoryTransport.SaveAttributeValue( InMemory.BaseAttributeKey.Active, rockContext );

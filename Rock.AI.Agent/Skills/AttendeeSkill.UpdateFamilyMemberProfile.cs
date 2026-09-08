@@ -207,7 +207,7 @@ internal sealed partial class AttendeeSkill
         if ( !phoneTypeValueId.HasValue || phoneTypeValue == null || !phoneTypeGuids.Contains( phoneTypeValue.Guid ) )
         {
             var phoneTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_PHONE_TYPE ).DefinedValues
-                .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } )
+                .Select( dv => KeyNameResult.FromCache( dv ) )
                 .ToList();
 
             helper.AddError( "Phone number type must be specified." );

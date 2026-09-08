@@ -115,5 +115,23 @@ namespace Rock.Tests.Net
 
             Assert.AreEqual( expected, info.ToString() );
         }
+
+        /// <summary>
+        /// A request with no User-Agent header yields a null user-agent string
+        /// (e.g. bots and health checks). Parsing must not throw; it should
+        /// return a non-null result classified as "None", matching the empty
+        /// string behavior. Before the null guard in Parse, this threw
+        /// ArgumentNullException from ConcurrentDictionary.GetOrAdd.
+        /// </summary>
+        [TestMethod]
+        public void Parse_NullUserAgent_DoesNotThrowAndReturnsNone()
+        {
+            var parser = new UserAgentParser();
+
+            var info = parser.Parse( null );
+
+            Assert.IsNotNull( info );
+            Assert.AreEqual( "None", info.ClientType );
+        }
     }
 }

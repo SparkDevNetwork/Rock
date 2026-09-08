@@ -17,11 +17,9 @@
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -68,12 +66,25 @@ internal class RockIntelligenceProvider : AgentProviderComponent
     {
         if ( role == ModelServiceRole.High )
         {
-            var model = settings?.Models?.FirstOrDefault( m => m.Type == AIModel.HighType );
+            return GetModelName( AIModel.HighType, settings );
+        }
 
-            if ( model?.Id != null )
-            {
-                return model.Id;
-            }
+        return GetModelName( AIModel.GeneralType, settings );
+    }
+
+    /// <summary>
+    /// Gets the name of the language model to use for the specified role.
+    /// </summary>
+    /// <param name="modelType">The requested model type, this is a special string from <see cref="AIModel"/>.</param>
+    /// <param name="settings">The Rock Intelligence settings.</param>
+    /// <returns>The name of the model to use when processing the request.</returns>
+    internal string GetModelName( string modelType, Settings settings )
+    {
+        var model = settings?.Models?.FirstOrDefault( m => m.Type == modelType );
+
+        if ( model?.Id != null )
+        {
+            return model.Id;
         }
 
         // Medium/General is the default fallback role. If no medium/general
@@ -82,8 +93,7 @@ internal class RockIntelligenceProvider : AgentProviderComponent
             ?? settings?.Models?.FirstOrDefault()?.Id;
     }
 
-    /// <inheritdoc/>
-    public override void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection )
+    internal void AddChatCompletion( string serviceId, string modelId, IServiceCollection serviceCollection )
     {
         var connectedServicesProvider = RockApp.Current.GetService<ConnectedServicesProvider>();
         var config = connectedServicesProvider?.GetConfiguration();
@@ -106,18 +116,32 @@ internal class RockIntelligenceProvider : AgentProviderComponent
                 Endpoint = new Uri( url )
             };
 
-            var agentContext = serviceProvider.GetRequiredService<AgentRequestContext>();
+            var agentContext = serviceProvider.GetService<AgentRequestContext>();
 
-            clientOptions.AddPolicy( new AgentAttributionPolicy( agentContext ), PipelinePosition.PerCall );
+            if ( agentContext?.AgentGuid != null )
+            {
+                clientOptions.AddPolicy( new AgentAttributionPolicy( agentContext.AgentGuid.Value ), PipelinePosition.PerCall );
+            }
 
             return new OpenAIClient( new ApiKeyCredential( apiKey ), clientOptions );
         } );
 
         // A null client tells the connector to resolve one from the service provider.
         serviceCollection.AddOpenAIChatCompletion(
-            serviceId: GetServiceKeyForRole( role ),
-            modelId: GetModelName( role, settings ),
+            serviceId: serviceId,
+            modelId: modelId,
             openAIClient: null );
+    }
+
+    /// <inheritdoc/>
+    public override void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection )
+    {
+        var connectedServicesProvider = RockApp.Current.GetService<ConnectedServicesProvider>();
+        var config = connectedServicesProvider?.GetConfiguration();
+        var bundle = config?.RockIntelligence?.Bundle;
+        var settings = bundle?.Settings;
+
+        AddChatCompletion( GetServiceKeyForRole( role ), GetModelName( role, settings ), serviceCollection );
     }
 
     /// <inheritdoc/>
@@ -198,72 +222,4 @@ internal class RockIntelligenceProvider : AgentProviderComponent
             ReasoningEffort = "low"
         };
     }
-
-    #region Support Classes
-
-    /// <summary>
-    /// Adds attribution headers to every outgoing request so the upstream
-    /// service can identify which Rock agent made the call.
-    /// </summary>
-    private class AgentAttributionPolicy : PipelinePolicy
-    {
-        /// <summary>
-        /// Prefix for the referer header. The agent identifier is appended to it.
-        /// </summary>
-        private const string RefererBase = "https://www.rockrms.com/agent/";
-
-        /// <summary>
-        /// The agent context for the kernel that owns this policy.
-        /// </summary>
-        private readonly AgentRequestContext _agentContext;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="AgentAttributionPolicy"/> class.
-        /// </summary>
-        /// <param name="agentContext">The context describing the agent making the request.</param>
-        public AgentAttributionPolicy( AgentRequestContext agentContext )
-        {
-            _agentContext = agentContext;
-        }
-
-        /// <inheritdoc/>
-        public override void Process( PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex )
-        {
-            SetAttributionHeaders( message );
-
-            ProcessNext( message, pipeline, currentIndex );
-        }
-
-        /// <inheritdoc/>
-        public override ValueTask ProcessAsync( PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex )
-        {
-            SetAttributionHeaders( message );
-
-            return ProcessNextAsync( message, pipeline, currentIndex );
-        }
-
-        /// <summary>
-        /// Writes the attribution headers onto the outgoing request. Both values
-        /// are derived from the agent identifier so that no staff authored text is
-        /// sent to the upstream service.
-        /// </summary>
-        /// <param name="message">The message about to be sent.</param>
-        private void SetAttributionHeaders( PipelineMessage message )
-        {
-            var agentGuid = _agentContext?.AgentGuid;
-
-            if ( message.Request == null || !agentGuid.HasValue )
-            {
-                return;
-            }
-
-            var identifier = agentGuid.Value.ToString( "D" );
-
-            // Set replaces any existing value, so there is no separate remove step.
-            message.Request.Headers.Set( "HTTP-Referer", $"{RefererBase}{identifier}" );
-            message.Request.Headers.Set( "X-Title", identifier );
-        }
-    }
-
-    #endregion
 }

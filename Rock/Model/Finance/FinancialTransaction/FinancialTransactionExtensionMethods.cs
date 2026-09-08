@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -39,7 +40,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static FinancialTransaction ProcessRefund( this FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new FinancialTransactionService( rockContext );
                 var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );

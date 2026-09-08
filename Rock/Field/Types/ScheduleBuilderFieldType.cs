@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -133,7 +134,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduleId = new ScheduleService( rockContext ).GetId( guid.Value );
                 if ( !scheduleId.HasValue )
@@ -177,7 +178,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             return new ScheduleService( rockContext ).Get( guid.Value );
         }
 
@@ -221,7 +222,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduleService = new ScheduleService( rockContext );
 
@@ -384,7 +385,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            var schedule = new ScheduleService( new RockContext() ).Get( guid.Value );
+            var schedule = new ScheduleService( RockApp.Current.CreateRockContext() ).Get( guid.Value );
             return schedule?.Id;
         }
 
@@ -396,7 +397,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var schedule = new ScheduleService( new RockContext() ).Get( id ?? 0 );
+            var schedule = new ScheduleService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             SetEditValue( control, configurationValues, schedule?.Guid.ToString() ?? string.Empty );
         }
 #endif

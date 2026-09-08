@@ -114,7 +114,8 @@ export type BulkUpdateBlockActionInvoker = {
     /**
      * Loads the role dropdown source for the picked group. Includes the
      * group's group-type GUID so the Vue layer can scope follow-up lookups
-     * (e.g. member attributes) to the same type.
+     * (e.g. member attributes) to the same type, and the default role GUID
+     * the dropdown pre-selects.
      */
     getGroupRoles(groupGuid: Guid): Promise<HttpResult<GroupRolesResponseBag>>;
 

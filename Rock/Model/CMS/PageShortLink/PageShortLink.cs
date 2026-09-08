@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Lava;
@@ -145,7 +146,7 @@ namespace Rock.Model
             get
             {
                 string domain = this.Site?.DefaultDomainUri?.ToString()
-                    ?? new SiteService( new RockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
+                    ?? new SiteService( RockApp.Current.CreateRockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
                 return domain.EnsureTrailingForwardslash() + this.Token;
             }
         }

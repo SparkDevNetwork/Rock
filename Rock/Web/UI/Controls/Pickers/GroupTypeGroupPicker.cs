@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Web.UI.Controls
@@ -278,7 +279,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !GroupTypeId.HasValue || GroupTypeId.Value == 0 )
                     {
-                        var group = new Rock.Model.GroupService( new RockContext() ).Get( groupId );
+                        var group = new Rock.Model.GroupService( RockApp.Current.CreateRockContext() ).Get( groupId );
                         if ( group != null &&
                             _ddlGroupType.SelectedValue != group.GroupTypeId.ToString() )
                         {
@@ -465,7 +466,7 @@ namespace Rock.Web.UI.Controls
             _ddlGroupType.Items.Clear();
             _ddlGroupType.Items.Add( Rock.Constants.None.ListItem );
 
-            var groupTypeService = new Rock.Model.GroupTypeService( new RockContext() );
+            var groupTypeService = new Rock.Model.GroupTypeService( RockApp.Current.CreateRockContext() );
 
             // get all group types that have the ShowInGroupList flag set
             var groupTypes = groupTypeService.Queryable().Where( a => a.ShowInGroupList ).OrderBy( a => a.Name ).ToList();
@@ -489,7 +490,7 @@ namespace Rock.Web.UI.Controls
             {
                 _ddlGroup.Items.Add( Rock.Constants.None.ListItem );
 
-                var groupService = new Rock.Model.GroupService( new RockContext() );
+                var groupService = new Rock.Model.GroupService( RockApp.Current.CreateRockContext() );
                 var groups = groupService.Queryable().Where( r => r.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Name ).ToList();
 
                 foreach ( var r in groups )

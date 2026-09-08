@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -158,7 +159,7 @@ namespace Rock.Model
         /// <returns></returns>
         public Guid? CopyPage( int pageId, bool includeChildPages, int? currentPersonAliasId = null )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var pageService = new PageService( rockContext );
             Guid? newPageGuid = null;
 

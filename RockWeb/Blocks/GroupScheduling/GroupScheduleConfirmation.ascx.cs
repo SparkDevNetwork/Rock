@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -258,7 +259,7 @@ namespace RockWeb.Blocks.GroupScheduling
             SetSelectedPersonId();
 
             int? declineReasonValueId = ddlDeclineAllReason.SelectedItem.Value.AsIntegerOrNull();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             var attendanceList = new List<Attendance>();
             foreach ( var attendanceId in attendanceIds )
@@ -335,7 +336,7 @@ namespace RockWeb.Blocks.GroupScheduling
             int? attendanceId = btnConfirmAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 new AttendanceService( rockContext ).ScheduledPersonConfirm( attendanceId.Value );
                 rockContext.SaveChanges();
             }
@@ -354,7 +355,7 @@ namespace RockWeb.Blocks.GroupScheduling
             int? attendanceId = btnDeclineAttend.CommandArgument.AsIntegerOrNull();
             if ( attendanceId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 // Use the value selected in the drop down list if it was set.
                 int? declineReasonValueId = ddlDeclineReason.SelectedItem.Value.AsIntegerOrNull();
@@ -441,7 +442,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var qryPendingConfirmations = new AttendanceService( rockContext )
                 .GetPendingScheduledConfirmations()
                 .AsNoTracking()
@@ -479,7 +480,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var qryPendingConfirmations = new AttendanceService( rockContext )
                 .Queryable()
                 .AsNoTracking()
@@ -657,7 +658,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         private void GetAttendanceByAttendanceIdAndSelectedPersonId()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Is a person selected?
                 if ( _selectedPerson == null )
@@ -744,7 +745,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
                 foreach ( var attendanceId in attendanceIds )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var attendance = new AttendanceService( rockContext ).Queryable()
                             .Where( a => a.Id == attendanceId && a.PersonAlias.PersonId == _selectedPerson.Id )
@@ -809,7 +810,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 string personKey = PageParameter( PageParameterKey.Person );
                 if ( personKey.IsNotNullOrWhiteSpace() )
                 {
-                    _selectedPerson = new PersonService( new RockContext() ).GetByPersonActionIdentifier( personKey, "ScheduleConfirm" );
+                    _selectedPerson = new PersonService( RockApp.Current.CreateRockContext() ).GetByPersonActionIdentifier( personKey, "ScheduleConfirm" );
                     if ( _selectedPerson != null )
                     {
                         hfSelectedPersonId.Value = _selectedPerson.Id.ToString();
@@ -904,7 +905,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 return;
             }
 
-            var attendanceService = new AttendanceService( new RockContext() );
+            var attendanceService = new AttendanceService( RockApp.Current.CreateRockContext() );
             foreach ( var attendanceId in attendanceIds )
             {
                 // Get all the supporting data we'll need to send the email.

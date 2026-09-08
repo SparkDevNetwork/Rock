@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using Rock.Address;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Field.Types;
@@ -182,7 +183,7 @@ namespace Rock.Model
                 if ( !string.Equals( street1, foundLocation.Street1 ) || !string.Equals( street2, foundLocation.Street2 ) || !string.Equals( city, foundLocation.City )
                     || !string.Equals( state, foundLocation.State ) || !string.Equals( postalCode, foundLocation.PostalCode ) || !string.Equals( country, foundLocation.Country ) )
                 {
-                    var context = new RockContext();
+                    var context = RockApp.Current.CreateRockContext();
                     var location = new LocationService( context ).Get( foundLocation.Id );
                     location.Street1 = street1;
                     location.Street2 = street2;
@@ -237,7 +238,7 @@ namespace Rock.Model
                 }
 
                 // Create a new context/service so that save does not affect calling method's context
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var locationService = new LocationService( rockContext );
                 locationService.Add( newLocation );
                 rockContext.SaveChanges();
@@ -320,7 +321,7 @@ namespace Rock.Model
                 };
 
                 // Create a new context/service so that save does not affect calling method's context
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var locationService = new LocationService( rockContext );
                 locationService.Add( newLocation );
                 rockContext.SaveChanges();
@@ -360,7 +361,7 @@ namespace Rock.Model
                 };
 
                 // Create a new context/service so that save does not affect calling method's context
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var locationService = new LocationService( rockContext );
                 locationService.Add( newLocation );
                 rockContext.SaveChanges();
@@ -485,7 +486,7 @@ namespace Rock.Model
             string inputLocation = location.ToString();
 
             // Create new context to save service log without affecting calling method's context
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
 
             bool standardized = location.StandardizeAttemptedDateTime.HasValue && !reVerify;
@@ -645,7 +646,7 @@ namespace Rock.Model
             // Log the results of the service.
             if ( !string.IsNullOrWhiteSpace( resultMsg ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
                 Model.ServiceLog log = new Model.ServiceLog();
                 log.LogDateTime = RockDateTime.Now;
@@ -676,7 +677,7 @@ namespace Rock.Model
             // Log the results of the service.
             if ( !string.IsNullOrWhiteSpace( resultMsg ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
                 Model.ServiceLog log = new Model.ServiceLog();
                 log.LogDateTime = RockDateTime.Now;

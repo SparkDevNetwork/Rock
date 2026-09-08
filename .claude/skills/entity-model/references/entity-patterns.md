@@ -16,7 +16,8 @@ Rock/Model/[Domain]/[EntityName]/
     └── [EntityName]QueryOptions.cs
 ```
 
-**Namespace for entities, services, and enums:** `namespace Rock.Model`
+**Namespace for entities and services:** `namespace Rock.Model`
+**Namespace for enums:** `namespace Rock.Enums.[Domain]` (NOT `Rock.Model` — that is a legacy holdover; see the Enum Definition section below)
 **Namespace for Options POCOs:** `namespace Rock.Model.[Domain].[EntityName].Options`
 
 ---
@@ -337,12 +338,11 @@ If the entity uses a new enum, create it in `Rock.Enums/[Domain]/EnumName.cs`:
 ```csharp
 // <copyright>...</copyright>
 
-namespace Rock.Model
+namespace Rock.Enums.Domain
 {
     /// <summary>
     /// Description of the enum's purpose.
     /// </summary>
-    [Enums.EnumDomain( "Domain" )]
     public enum EnumName
     {
         /// <summary>
@@ -359,8 +359,9 @@ namespace Rock.Model
 ```
 
 **Requirements:**
-- Namespace must be `Rock.Model`
-- Must have `[Enums.EnumDomain( "Domain" )]` attribute
+- Namespace must be `Rock.Enums.[Domain]` (match the folder). NOT `Rock.Model` — that is a legacy holdover.
+- No `[Enums.EnumDomain]` attribute — it is only for legacy enums still in the `Rock.Model` namespace.
+- Reference it from the entity with `using Rock.Enums.[Domain];`
 - XML doc comments on every value
 - Explicit integer values recommended
 - `[Description("Display Text")]` on values is common (requires `using System.ComponentModel;`)
@@ -520,8 +521,8 @@ namespace Rock.Model
 For enums that represent combinable options:
 
 ```csharp
+// In namespace Rock.Enums.[Domain] — no [Enums.EnumDomain] attribute.
 [Flags]
-[Enums.EnumDomain( "Domain" )]
 public enum DaysOfWeekFlags
 {
     /// <summary>
@@ -560,7 +561,7 @@ public enum DaysOfWeekFlags
 Many enums use `[Description]` for display text:
 
 ```csharp
-[Enums.EnumDomain( "AI" )]
+// In namespace Rock.Enums.AI.Agent — no [Enums.EnumDomain] attribute.
 public enum AgentType
 {
     /// <summary>

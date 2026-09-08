@@ -37,6 +37,8 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="ContentTopicService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public ContentTopicService(RockContext context) : base(context)
         {
         }
@@ -49,6 +51,8 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( ContentTopic item, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -66,9 +70,13 @@ namespace Rock.Model
         /// or selecting values. Do <b>not</b> use it for accessing the
         /// attributes after the entity has been loaded.
         /// </summary>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public virtual ICollection<ContentTopicQueryableAttributeValue> ContentTopicAttributeValues { get; set; } 
 
         /// <inheritdoc/>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public class ContentTopicQueryableAttributeValue : QueryableAttributeValue
         {
         }
@@ -85,6 +93,8 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static ContentTopic Clone( this ContentTopic source, bool deepCopy )
         {
             if (deepCopy)
@@ -104,6 +114,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static ContentTopic CloneWithoutIdentity( this ContentTopic source )
         {
             var target = new ContentTopic();
@@ -127,6 +139,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this ContentTopic target, ContentTopic source )
         {
             target.Id = source.Id;

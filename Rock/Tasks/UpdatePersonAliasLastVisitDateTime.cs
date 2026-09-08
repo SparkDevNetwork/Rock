@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -65,7 +66,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var personAlias = personAliasService.Get( message.PersonAliasId );

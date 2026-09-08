@@ -24,6 +24,7 @@ using System.Data.Entity.Core.Objects;
 using System.Web;
 using Humanizer;using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -109,7 +110,7 @@ namespace Rock.Jobs
             var currentDate = RockDateTime.Now.Date;
             var result = new SendMessageResult();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get a list of unique PersonAliasIDs from Assessments where the CreatedDateTime is less than the cut off date and LastReminderDate is null or greater than the reminder date.
                 // Only the latest assessment for each type and person is considered. For example a past DISC assessment that is still pending but a newer one is complete. The past one will
@@ -168,7 +169,7 @@ namespace Rock.Jobs
 
         private SendMessageResult SendReminderEmail( Guid assessmentSystemEmailGuid, int PersonAliasId )
         {
-            var person = new PersonAliasService( new RockContext() ).GetPerson( PersonAliasId );
+            var person = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetPerson( PersonAliasId );
             var result = new SendMessageResult();
             if ( !person.IsEmailActive )
             {

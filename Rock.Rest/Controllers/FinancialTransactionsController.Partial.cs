@@ -27,6 +27,7 @@ using System.Web.Http.OData;
 
 using Rock;
 using Rock.BulkExport;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -265,7 +266,7 @@ namespace Rock.Rest.Controllers
                 EndDateTime = endDateTime
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
             return financialTransactionService.GetFinancialTransactionExport( page, actualPageSize, exportOptions );
         }
@@ -329,7 +330,7 @@ namespace Rock.Rest.Controllers
             }
 
             // Query for the transactions
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var transactionService = new FinancialTransactionService( rockContext );
 
             // Filter by a half-open date range instead of comparing the year part of the

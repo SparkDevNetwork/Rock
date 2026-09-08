@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -166,7 +167,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var item = new MergeTemplateService( new RockContext() ).Get( ItemId.AsInteger() );
+            var item = new MergeTemplateService( RockApp.Current.CreateRockContext() ).Get( ItemId.AsInteger() );
             this.SetValue( item );
         }
 
@@ -176,7 +177,7 @@ namespace Rock.Web.UI.Controls
         protected override void SetValuesOnSelect()
         {
             var itemIds = ItemIds.Select( int.Parse );
-            var items = new MergeTemplateService( new RockContext() ).Queryable().Where( i => itemIds.Contains( i.Id ) );
+            var items = new MergeTemplateService( RockApp.Current.CreateRockContext() ).Queryable().Where( i => itemIds.Contains( i.Id ) );
             this.SetValues( items );
         }
 

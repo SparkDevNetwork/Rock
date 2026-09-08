@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -170,7 +171,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 return ActionForbidden( "Not authorized to view messages for this phone number." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the person via either their Guid.
                 var person = new PersonService( rockContext )
@@ -197,7 +198,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
                 Task.Run( () =>
                 {
-                    using ( var taskRockContext = new RockContext() )
+                    using ( var taskRockContext = RockApp.Current.CreateRockContext() )
                     {
                         new CommunicationResponseService( taskRockContext )
                             .UpdateReadPropertyByFromPersonId( person.Id, rockPhoneNumber );
@@ -253,7 +254,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 
@@ -309,7 +310,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 return ActionNotFound( "Snippet could not be found." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var snippet = new SnippetService( rockContext )
                     .GetAuthorizedSnippets( RequestContext.CurrentPerson,
@@ -379,7 +380,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 return ActionBadRequest( "Must provide either message or attachments." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -415,7 +416,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
                     // Must use a new context in order to get an object that
                     // has valid navigation properties.
-                    using ( var rockContext2 = new RockContext() )
+                    using ( var rockContext2 = RockApp.Current.CreateRockContext() )
                     {
                         var recipientId = communication.Recipients.First().Id;
 
@@ -451,7 +452,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 return ActionBadRequest( "Invalid conversation." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personId = new PersonService( rockContext ).GetId( personGuid.Value );
                 var rockPhoneNumber = SystemPhoneNumberCache.Get( phoneNumberGuid.Value );
@@ -468,7 +469,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
                 Task.Run( () =>
                 {
-                    using ( var taskRockContext = new RockContext() )
+                    using ( var taskRockContext = RockApp.Current.CreateRockContext() )
                     {
                         new CommunicationResponseService( taskRockContext )
                             .UpdateReadPropertyByFromPersonId( personId.Value, rockPhoneNumber );

@@ -23,6 +23,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Connection;
 using Rock.Model;
@@ -222,13 +223,13 @@ namespace Rock.Blocks.Connection
 
             var loadSummariesTask = Task.Run( () =>
             {
-                using var rockContext = new RockContext();
+                using var rockContext = RockApp.Current.CreateRockContext();
                 return LoadConnectionTypeSummaries( rockContext, currentPerson, authorizedConnectionTypeIds, campusId, typeVisibilityPreference );
             } );
 
             var loadFavoritesTask = Task.Run( () =>
             {
-                using var rockContext = new RockContext();
+                using var rockContext = RockApp.Current.CreateRockContext();
                 return LoadFavoriteOpportunityGroups( rockContext, currentPerson, authorizedConnectionTypeIds );
             } );
 

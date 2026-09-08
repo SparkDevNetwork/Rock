@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Mobile;
 using Rock.Data;
 using Rock.Model;
@@ -157,7 +158,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>The <see cref="GetRequestsViewModel"/> that contains the information about the response.</returns>
         private GetRequestsViewModel GetConnectionRequests( Guid connectionOpportunityGuid, GetConnectionRequestsFilterViewModel filterViewModel, int pageNumber )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).GetNoTracking( connectionOpportunityGuid );

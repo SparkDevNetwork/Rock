@@ -21,6 +21,7 @@ using System.Linq;
 using System.ServiceModel.Channels;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -54,7 +55,7 @@ namespace Rock.Jobs
             var jobMigration = new JobMigration( commandTimeout );
             var migrationHelper = new MigrationHelper( jobMigration );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupService = new GroupService( rockContext );
@@ -285,7 +286,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

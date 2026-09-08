@@ -18,6 +18,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -36,7 +37,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
         [TestMethod]
         public void EntityPropertyAccess_ForPersonAttributeValues_ReturnsCorrectValues()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var testPerson = new PersonService( rockContext ).Queryable().First( x => x.NickName == "Ted" && x.LastName == "Decker" );
 

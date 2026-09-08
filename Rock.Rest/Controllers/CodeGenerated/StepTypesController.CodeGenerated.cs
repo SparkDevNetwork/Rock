@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="StepTypesController"/> class.
         /// </summary>
-        public StepTypesController() : base( new Rock.Model.StepTypeService( new Rock.Data.RockContext() ) ) { } 
+        public StepTypesController() : base( new Rock.Model.StepTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -66,7 +66,7 @@
                 visiblePriority="xs">
             <template #format="{ row }">
                 <a v-if="connectionRequestDetailPageUrl && row.connectionRequestIdKey"
-                   :href="connectionRequestDetailPageUrl.replace('((Key))', row.connectionRequestIdKey as string)"
+                   :href="getConnectionRequestUrl(row)"
                    target="_blank"
                    class="btn btn-default btn-sm"
                    title="View Connection Request"
@@ -184,6 +184,16 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Builds the link to a row's connection request. The opportunity travels with the
+     * request so the Connections Hub has a Connection Type to render.
+     */
+    function getConnectionRequestUrl(row: Record<string, unknown>): string {
+        return connectionRequestDetailPageUrl.value
+            .replace("((Key))", row.connectionRequestIdKey as string)
+            .replace("((OpportunityKey))", (row.connectionOpportunityIdKey as string) ?? "");
+    }
 
     /**
      * Marks rows the current person cannot edit so they do not show the clickable cursor.

@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -284,7 +285,7 @@ namespace Rock.Reporting.DataFilter.Person
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var groupGuids = selectionValues[0].Split( ',' ).AsGuidList();
                 var groups = new GroupService( rockContext ).GetByGuids( groupGuids );
 
@@ -594,7 +595,7 @@ namespace Rock.Reporting.DataFilter.Person
             RockCheckBox cbIncludeSelectedGroup = filterField.ControlsOfTypeRecursive<RockCheckBox>().FirstOrDefault( a => a.HasCssClass( "js-include-selected-groups" ) );
             RockCheckBoxList cblRoles = filterField.ControlsOfTypeRecursive<RockCheckBoxList>().FirstOrDefault( a => a.HasCssClass( "js-roles" ) );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupIdList = groupPicker.SelectedValues.AsIntegerList();
             var groupService = new GroupService( rockContext );
@@ -716,7 +717,7 @@ namespace Rock.Reporting.DataFilter.Person
             SlidingDateRangePicker lastAttendanceDateRangePicker = controls[10] as SlidingDateRangePicker;
 
             List<int> groupIdList = groupPicker.SelectedValues.AsIntegerList();
-            var groupGuids = new GroupService( new RockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
+            var groupGuids = new GroupService( RockApp.Current.CreateRockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
 
             //// NOTE: convert slidingdaterange delimitedvalues from pipe to comma delimited
 
@@ -762,7 +763,7 @@ namespace Rock.Reporting.DataFilter.Person
             if ( selectionValues.Length >= 2 )
             {
                 List<Guid> groupGuids = selectionValues[0].Split( ',' ).AsGuidList();
-                var groups = new GroupService( new RockContext() ).GetByGuids( groupGuids );
+                var groups = new GroupService( RockApp.Current.CreateRockContext() ).GetByGuids( groupGuids );
                 if ( groups != null )
                 {
                     groupPicker.SetValues( groups );

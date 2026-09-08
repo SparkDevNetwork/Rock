@@ -72,12 +72,8 @@ internal sealed partial class CoreAdministrationSkill
             Order = category.Order,
             IconCssClass = category.IconCssClass,
             HighlightColor = category.HighlightColor,
-            EntityType = entityType != null
-                ? new KeyNameResult { Id = entityType.Id, Guid = entityType.Guid, Name = entityType.FriendlyName }
-                : null,
-            ParentCategory = parentCategory != null
-                ? new KeyNameResult { Id = parentCategory.Id, Guid = parentCategory.Guid, Name = parentCategory.Name }
-                : null,
+            EntityType = KeyNameResult.FromCache( entityType ),
+            ParentCategory = KeyNameResult.FromCache( parentCategory ),
 
             // Tells a caller whether descending further is worthwhile without
             // spending a second call to find out.

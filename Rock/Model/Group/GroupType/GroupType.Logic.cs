@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
@@ -97,7 +98,7 @@ namespace Rock.Model
         {
             get
             {
-                var groupService = new GroupService( new RockContext() );
+                var groupService = new GroupService( RockApp.Current.CreateRockContext() );
                 var qry = groupService.Queryable().Where( a => a.GroupTypeId.Equals( this.Id ) );
                 return qry;
             }
@@ -119,7 +120,7 @@ namespace Rock.Model
                     // make sure it isn't getting saved with a recursive parent hierarchy
                     var parentIds = new List<int>();
                     parentIds.Add( this.Id );
-                    var parent = this.InheritedGroupTypeId.HasValue ? ( this.InheritedGroupType ?? new GroupTypeService( new RockContext() ).Get( this.InheritedGroupTypeId.Value ) ) : null;
+                    var parent = this.InheritedGroupTypeId.HasValue ? ( this.InheritedGroupType ?? new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( this.InheritedGroupTypeId.Value ) ) : null;
                     while ( parent != null )
                     {
                         if ( parentIds.Contains( parent.Id ) )
@@ -169,7 +170,7 @@ namespace Rock.Model
                 return groupTypeCache.GetInheritedGroupTypeIds();
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var groupTypeService = new GroupTypeService( rockContext );
             var groupTypeIds = new List<int>();
@@ -203,7 +204,7 @@ namespace Rock.Model
         /// <returns></returns>
         public List<int> GetAllDependentGroupTypeIds( Rock.Data.RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var groupTypeService = new GroupTypeService( rockContext );
             var groupTypeIds = new List<int>( 10 );
@@ -310,7 +311,7 @@ namespace Rock.Model
         /// <param name="groupTypeId">The group type identifier.</param>
         public void DeleteIndexedDocumentsByGroupType( int groupTypeId )
         {
-            var groupIds = new GroupService( new RockContext() ).Queryable()
+            var groupIds = new GroupService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( i => i.GroupTypeId == groupTypeId )
                 .Select( a => a.Id ).ToList();
 
@@ -334,7 +335,7 @@ namespace Rock.Model
         /// <param name="groupTypeId">The group type identifier.</param>
         public void BulkIndexDocumentsByGroupType( int groupTypeId )
         {
-            var groupIds = new GroupService( new RockContext() ).Queryable()
+            var groupIds = new GroupService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( i => i.GroupTypeId == groupTypeId )
                 .Select( a => a.Id ).ToList();
 

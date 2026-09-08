@@ -106,7 +106,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "5052e4a9-8cc3-4937-a2d3-9cfec07ed070" )]
         public IActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return Ok( AccountPickerGetChildrenData( options, rockContext ) );
             }
@@ -268,7 +268,7 @@ namespace Rock.Rest.v2
                 return BadRequest( "Search Term is required" );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
                 qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
@@ -314,7 +314,7 @@ namespace Rock.Rest.v2
                 return Ok( new List<ListItemBag>() );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
                 qry = financialAccountService.Queryable().AsNoTracking()
@@ -348,7 +348,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "4a13b6ea-3031-48c2-9cdb-be183ccad9a2" )]
         public IActionResult AccountPickerGetAllowSelectAll()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
                 var count = financialAccountService.Queryable().Count();
@@ -374,7 +374,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "F98E3033-C652-4031-94B3-E7C44ECA51AA" )]
         public IActionResult AchievementTypePickerGetAchievementTypes( [FromBody] AchievementTypePickerGetAchievementTypesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var items = AchievementTypeCache.All( rockContext )
                     .Select( t => new ListItemBag
@@ -407,7 +407,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "3484A62B-8A52-423A-8154-909D9176E4B6" )]
         public IActionResult AdaptiveMessagePickerGetAdaptiveMessages( [FromBody] UniversalItemTreePickerOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -629,7 +629,7 @@ namespace Rock.Rest.v2
             editedLocation.County = options.Locality;
             editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : defaultCountryCode;
 
-            var locationService = new LocationService( new RockContext() );
+            var locationService = new LocationService( RockApp.Current.CreateRockContext() );
 
             string validationMessage;
 
@@ -681,7 +681,7 @@ namespace Rock.Rest.v2
             var orgCountryCode = globalAttributesCache.OrganizationCountry;
             var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
 
-            var locationService = new LocationService( new RockContext() );
+            var locationService = new LocationService( RockApp.Current.CreateRockContext() );
             editedLocation = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country.IsNotNullOrWhiteSpace() ? address.Country : defaultCountryCode, null );
 
             if ( editedLocation == null )
@@ -715,10 +715,12 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+        [RockObsolete( "21.0" )]
         [Rock.SystemGuid.RestActionGuid( "A9403C3A-E66F-4051-B857-30B89C3A65B3" )]
         public IActionResult AIProviderPickerGetAIProviders( [FromBody] AIProviderPickerGetAIProviderOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var items = AIProviderCache.All()
                     .Where( a => a.EntityTypeId.HasValue && a.IsActive )
@@ -748,7 +750,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var items = AssessmentTypeCache.All( rockContext )
                     .Where( at => options.isInactiveIncluded == true || at.IsActive )
@@ -2063,7 +2065,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "665EDE0C-1FEA-4421-B355-4D4F72B7E26E" )]
         public IActionResult AssetStorageProviderPickerGetAssetStorageProviders( [FromBody] AssetStorageProviderPickerGetAssetStorageProvidersOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var items = AssetStorageProviderCache.All()
                     .Where( a => a.EntityTypeId.HasValue && a.IsActive )
@@ -2091,7 +2093,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
         public IActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
                 {
@@ -2129,7 +2131,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "714D83C9-96E4-49D7-81AF-2EED7D5CCD56" )]
         public IActionResult AuditDetailGetAuditDetails( [FromBody] AuditDetailGetAuditDetailsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -2212,7 +2214,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "D9840506-7251-4F41-A1B2-D3168FB3AFDA" )]
         public IActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
                 var entityType = entityTypeCache?.GetEntityType();
@@ -2282,7 +2284,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
         public IActionResult BadgeListGetBadges( [FromBody] BadgeListGetBadgesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
                 var entityType = entityTypeCache?.GetEntityType();
@@ -2362,7 +2364,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "6D50B8E4-985E-4AC6-B491-74B827108882" )]
         public IActionResult BadgePickerGetBadges( [FromBody] BadgePickerGetBadgesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
                 var badges = BadgeCache.All().ToList();
@@ -2397,7 +2399,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Check that user has access to view the BinaryFileType.
                 var authorizedFileTypeGuids = GetAuthorizedBinaryFileTypes( rockContext ).Select( t => t.Guid );
@@ -2447,7 +2449,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "C93E5A06-82DE-4475-88B8-B173C03BFB50" )]
         public IActionResult BinaryFileTypePickerGetBinaryFileTypes( [FromBody] BinaryFileTypePickerGetBinaryFileTypesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var items = GetAuthorizedBinaryFileTypes( rockContext )
                     .OrderBy( f => f.Name )
@@ -2552,7 +2554,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "3D2E0AF9-9E1A-47BD-A1C5-008B6D2A5B22" )]
         public IActionResult CampusPickerGetCampuses( [FromBody] CampusPickerGetCampusesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return Ok( GetCampuses( options, rockContext ) );
             }
@@ -2594,7 +2596,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "9833fcd3-30cf-4bab-840a-27ee497ebfb8" )]
         public IActionResult CampusAccountAmountPickerGetAccounts( [FromBody] CampusAccountAmountPickerGetAccountsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 IQueryable<FinancialAccount> accountsQry;
                 var financialAccountService = new FinancialAccountService( rockContext );
@@ -2814,7 +2816,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedValueService = new DefinedValueService( rockContext );
                 var definedValues = definedValueService.GetByDefinedTypeGuid( options.DefinedTypeGuid )
@@ -2978,7 +2980,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "A1D07211-6C50-463B-98ED-1622DC4D73DD" )]
         public IActionResult CategoryPickerChildTreeItems( [FromBody] CategoryPickerChildTreeItemsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -3066,7 +3068,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "22F2083E-CB15-4D19-893C-4218C6E06323" )]
         public IActionResult ColorPickerGetColorPickerSwatches( ColorPickerGetColorPickerSwatchesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COLOR_PICKER_SWATCHES.AsGuid() );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -3126,7 +3128,7 @@ namespace Rock.Rest.v2
 
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Eager-load related entities needed for authorization checks.
                 var recipientData = new CommunicationRecipientService( rockContext )
@@ -3425,7 +3427,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionTypeService = new ConnectionTypeService( rockContext );
                 var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
@@ -3785,7 +3787,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannel = new ContentChannelService( rockContext ).GetInclude( options.ContentChannelGuid, cc => cc.Items );
 
@@ -3818,7 +3820,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<Guid> excludeContentChannelItems = options.ExcludeContentChannelItems;
 
@@ -3925,7 +3927,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "780F64B8-C695-44BE-9875-7958C1D420B3" )]
         public IActionResult DataFilterGetAvailableTypes( [FromBody] DataFilterGetAvailableTypesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -3961,7 +3963,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "36C2AAE0-FE6C-48D3-B31B-B2BD43B97B9E" )]
         public IActionResult DataFilterGetComponent( [FromBody] DataFilterGetComponentOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -4016,7 +4018,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "982EF174-890D-44A4-8C8D-5C1CC694174E" )]
         public IActionResult DataFilterGetSelection( [FromBody] DataFilterGetSelectionOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -4059,7 +4061,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "FF743B32-D521-4134-BF71-709EC1672552" )]
         public IActionResult DataFilterExecuteComponentRequest( [FromBody] DataFilterExecuteComponentRequestOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -4096,7 +4098,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "149fcd94-cd27-4017-9d4b-a1bc39e2d575" )]
         public IActionResult DataFilterFormatSelection( [FromBody] DataFilterFormatSelectionOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
                 var componentData = options.ComponentData.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
@@ -4218,7 +4220,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1E079A57-9B44-4365-9C9C-2383A9A3F45B" )]
         public IActionResult DataViewPickerGetDataViews( [FromBody] DataViewPickerGetDataViewsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -4320,7 +4322,7 @@ namespace Rock.Rest.v2
         {
             var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
                 var definedValue = new DefinedValue
@@ -4409,7 +4411,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
         public IActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -4464,7 +4466,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( options == null )
                 {
@@ -4553,7 +4555,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
 
@@ -4597,7 +4599,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
 
@@ -4674,7 +4676,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( options == null )
                 {
@@ -4766,7 +4768,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
                 var emailSection = emailSectionService.Get( options.EmailSectionGuid );
@@ -4812,7 +4814,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
 
@@ -4845,7 +4847,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).Get( options.OccurrenceId );
 
@@ -4882,7 +4884,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var previousProxyCreationEnabled = rockContext.Configuration.ProxyCreationEnabled;
                 rockContext.Configuration.ProxyCreationEnabled = false;
@@ -4920,7 +4922,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrence = new AttendanceOccurrenceService( rockContext )
                     .GetOrAdd( bag.OccurrenceDate, bag.GroupId, bag.LocationId, bag.ScheduleId );
@@ -4998,7 +5000,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "7542D4B3-17DC-4640-ACBD-F02784130401" )]
         public IActionResult EntityTagListGetEntityTags( [FromBody] EntityTagListGetEntityTagsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
                 var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
@@ -5036,7 +5038,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "91890D39-6E3E-4623-AAD7-F32E686C784E" )]
         public IActionResult EntityTagListGetAvailableTags( [FromBody] EntityTagListGetAvailableTagsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
                 var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
@@ -5081,7 +5083,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
                 var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
@@ -5155,7 +5157,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "C9CACC7F-68DE-4765-8967-B50EE2949062" )]
         public IActionResult EntityTagListAddEntityTag( [FromBody] EntityTagListAddEntityTagOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
 
@@ -5221,7 +5223,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "6A78D538-87DB-43FE-9150-4E9A3F276AFE" )]
         public IActionResult EntityTagListRemoveEntityTag( [FromBody] EntityTagListRemoveEntityTagOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
                 var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
@@ -5270,7 +5272,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "02886e54-6088-40ea-98be-9157ec2a3369" )]
         public IActionResult EntityTagListSaveTagValues( [FromBody] EntityTagListSaveTagValuesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Person currentPerson = RockRequestContext.CurrentPerson;
                 int? currentPersonId = currentPerson.Id;
@@ -5409,9 +5411,9 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "8E92F72E-235A-4192-9C09-742F94849D62" )]
         public IActionResult EntityPickerGetEntityTypeGuids( [FromBody] EntityPickerGetEntityTypeGuidsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var entityTypeGuids = new EntityTypeService( new RockContext() )
+                var entityTypeGuids = new EntityTypeService( RockApp.Current.CreateRockContext() )
                     .Queryable()
                     .Where( e => e.IsEntity == true && e.SingleValueFieldTypeId.HasValue )
                     .Select( e => e.Guid.ToString() )
@@ -5487,7 +5489,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "AFDD3D40-5856-478B-A41A-0539127F0631" )]
         public IActionResult EntityTypePickerGetEntityTypes( [FromBody] EntityTypePickerGetEntityTypesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var itemQuery = EntityTypeCache.All( rockContext )
                     .Where( t => t.IsEntity );
@@ -5560,7 +5562,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "92d88be0-2971-441a-b582-eec304ce4bc9" )]
         public IActionResult EventCalendarPickerGetEventCalendars()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var calendars = EventCalendarCache.All();
                 var calendarList = new List<ListItemBag>();
@@ -5596,7 +5598,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1D558F8A-08C9-4B62-A3A9-853C9F66B748" )]
         public IActionResult EventItemPickerGetEventItems( [FromBody] EventItemPickerGetEventItemsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var lowerValue = options.DateRangeStart.AsDateTime();
                 var upperValue = options.DateRangeEnd.AsDateTime();
@@ -5647,7 +5649,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1E837165-A003-4CC7-B870-15D7640826EE" )]
         public IActionResult EventItemOccurrencePickerGetEventItemOccurrences( [FromBody] EventItemOccurrencePickerGetEventItemOccurrencesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var lowerValue = options.DateRangeStart.AsDateTime() ?? RockDateTime.Today.AddYears( -1 ).AddDays( 1 );
                 var upperValue = options.DateRangeEnd.AsDateTime() ?? RockDateTime.Today.AddYears( 1 ).AddDays( -1 );
@@ -5850,7 +5852,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "DBF12D3D-09BF-419F-A315-E3B6C0206344" )]
         public IActionResult FinancialGatewayPickerGetFinancialGateways( [FromBody] FinancialGatewayPickerGetFinancialGatewaysOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<ListItemBag> items = new List<ListItemBag> { };
 
@@ -5908,7 +5910,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "4E10F2DC-BD7C-4F75-919C-B3F71868ED24" )]
         public IActionResult FinancialStatementTemplatePickerGetFinancialStatementTemplates()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<ListItemBag> items = new FinancialStatementTemplateService( rockContext )
                     .Queryable()
@@ -5944,7 +5946,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "FA1CC136-A994-4870-9507-818EA7A70F01" )]
         public IActionResult FollowingGetFollowing( [FromBody] FollowingGetFollowingOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( RockRequestContext.CurrentPerson == null )
                 {
@@ -6012,7 +6014,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "8CA2EAFB-E577-4F65-8D96-F42D8D5AAE7A" )]
         public IActionResult FollowingSetFollowing( [FromBody] FollowingSetFollowingOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var followingService = new FollowingService( rockContext );
 
@@ -6152,7 +6154,7 @@ namespace Rock.Rest.v2
 
             if ( !guid.Equals( Guid.Empty ) )
             {
-                var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
+                var location = new Rock.Model.LocationService( RockApp.Current.CreateRockContext() ).Get( guid );
                 if ( location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Longitude != null )
                 {
                     centerLatitude = location.GeoPoint.Latitude;
@@ -6235,7 +6237,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "285de6f4-0bf0-47e4-bda5-bcaa5a18b990" )]
         public IActionResult GroupAndRolePickerGetRoles( [FromBody] GroupAndRolePickerGetRolesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupRoles = new List<ListItemBag>();
                 if ( options.GroupTypeGuid != Guid.Empty )
@@ -6278,7 +6280,7 @@ namespace Rock.Rest.v2
                 return NotFound();
             }
 
-            group = new GroupService( new RockContext() ).Get( options.GroupGuid.Value );
+            group = new GroupService( RockApp.Current.CreateRockContext() ).Get( options.GroupGuid.Value );
 
             if ( group == null || !group.Members.Any() )
             {
@@ -6324,7 +6326,7 @@ namespace Rock.Rest.v2
                 return BadRequest( "GroupRequirementGuid is required." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentPerson = RockRequestContext.CurrentPerson;
                 var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
@@ -6441,7 +6443,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "AE5A418A-645C-4EA5-A870-AA74F7109354" )]
         public IActionResult GroupMemberRequirementCardMarkMetManually( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
@@ -6489,7 +6491,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "DA54A9CE-840F-4629-B270-7FCBAC86312C" )]
         public IActionResult GroupMemberRequirementCardOverrideMarkMet( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
@@ -6558,7 +6560,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "A9202026-CAF8-4B68-BE95-263FAE77F92D" )]
         public IActionResult GroupMemberRequirementCardRunNotMetWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
@@ -6587,7 +6589,7 @@ namespace Rock.Rest.v2
                     Rock.Model.Workflow workflow;
                     if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
                     {
-                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
+                        workflow = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
                         var qryParams = new Dictionary<string, string>
                             {
                                 { "WorkflowTypeGuid", workflowType.Guid.ToString() },
@@ -6624,7 +6626,7 @@ namespace Rock.Rest.v2
 
                         workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
                         workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
-                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+                        var processed = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                         if ( processed )
                         {
@@ -6679,7 +6681,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "CD7F3FAF-975D-4BDA-8A2D-5E236E7942DD" )]
         public IActionResult GroupMemberRequirementCardRunWarningWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
@@ -6708,7 +6710,7 @@ namespace Rock.Rest.v2
                     Rock.Model.Workflow workflow;
                     if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
                     {
-                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
+                        workflow = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
                         var qryParams = new Dictionary<string, string>
                             {
                                 { "WorkflowTypeGuid", workflowType.Guid.ToString() },
@@ -6745,7 +6747,7 @@ namespace Rock.Rest.v2
 
                         workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
                         workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
-                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+                        var processed = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                         if ( processed )
                         {
@@ -6810,7 +6812,7 @@ namespace Rock.Rest.v2
                 CategorizedRequirements = new List<GroupMemberRequirementCategoryBag>()
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupRole = new GroupTypeRoleService( rockContext ).Get( options.GroupRoleGuid );
                 var person = new PersonService( rockContext ).Get( options.PersonGuid );
@@ -6910,7 +6912,7 @@ namespace Rock.Rest.v2
             var groups = new List<ListItemBag>();
             if ( options.GroupTypeGuid != Guid.Empty )
             {
-                var groupService = new Rock.Model.GroupService( new RockContext() );
+                var groupService = new Rock.Model.GroupService( RockApp.Current.CreateRockContext() );
                 groups = groupService.Queryable()
                     .Where( g => g.GroupType.Guid == options.GroupTypeGuid )
                     .OrderBy( g => g.Name )
@@ -6937,7 +6939,7 @@ namespace Rock.Rest.v2
         {
             if ( options.GroupGuid != Guid.Empty )
             {
-                var groupService = new Rock.Model.GroupService( new RockContext() );
+                var groupService = new Rock.Model.GroupService( RockApp.Current.CreateRockContext() );
                 var group = groupService.Get( options.GroupGuid );
 
                 if ( group == null )
@@ -7029,7 +7031,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "c4f5432a-eb1e-4235-a5cd-bde37cc324f7" )]
         public IActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupService = new GroupService( rockContext );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -7526,7 +7528,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "56891c9b-f714-4083-8252-4c73b358aa02" )]
         public IActionResult GroupRolePickerGetGroupTypes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
 
@@ -7571,7 +7573,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "e55374dd-7715-4392-a162-c40f09d25fc9" )]
         public IActionResult GroupRolePickerGetAllForGroupRole( [FromBody] GroupRolePickerGetAllForGroupRoleOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<Guid> excludeGroupRoles = options.ExcludeGroupRoles;
 
@@ -7601,7 +7603,7 @@ namespace Rock.Rest.v2
         /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group roles.</returns>
         private List<ListItemBag> GroupRolePickerGetGroupRolesForGroupType( Guid groupTypeGuid, List<Guid> excludeGroupRoles )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return GroupRolePickerGetGroupRolesForGroupType( groupTypeGuid, excludeGroupRoles, rockContext );
             }
@@ -7647,7 +7649,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "2ED04DE5-EBE2-48E1-AED0-ACE8EEB9C84D" )]
         public IActionResult IconPickerGetIconLibraries( IconPickerGetIconLibrariesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.ICON_LIBRARIES );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -7694,7 +7696,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "ebef7cb7-f20d-40d9-9f70-1f30aff1cd8f" )]
         public IActionResult InteractionChannelInteractionComponentPickerGetChannelFromComponent( [FromBody] InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionComponentService = new InteractionComponentService( rockContext );
                 var component = interactionComponentService.Get( options.InteractionComponentGuid );
@@ -7727,7 +7729,7 @@ namespace Rock.Rest.v2
         public IActionResult InteractionChannelPickerGetInteractionChannels()
         {
             var items = new List<ListItemBag>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionChannelService = new InteractionChannelService( rockContext );
             var channels = interactionChannelService.Queryable().AsNoTracking()
                 .Include( "ChannelTypeMediumValue" )
@@ -7784,7 +7786,7 @@ namespace Rock.Rest.v2
             }
 
             int interactionChannelId = InteractionChannelCache.GetId( options.InteractionChannelGuid.Value ) ?? 0;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionComponentService = new InteractionComponentService( rockContext );
 
             var components = interactionComponentService.Queryable().AsNoTracking()
@@ -7854,7 +7856,7 @@ namespace Rock.Rest.v2
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
             var items = new List<ListItemBag>();
 
-            var learningClasses = new LearningClassActivityService( new RockContext() )
+            var learningClasses = new LearningClassActivityService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( lca => lca.LearningClass.Guid == selectedClassGuid )
                 .OrderBy( lca => lca.Order )
@@ -7897,7 +7899,7 @@ namespace Rock.Rest.v2
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
             var items = new List<ListItemBag>();
 
-            var learningClasses = new LearningClassService( new RockContext() )
+            var learningClasses = new LearningClassService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( lc => lc.LearningCourse.Guid == selectedCourseGuid )
                 .OrderBy( lc => lc.Order )
@@ -7942,7 +7944,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationService = new LocationService( rockContext );
 
@@ -8105,7 +8107,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "DA17BFF5-B9B8-4CD1-AAB4-2F703EDBEF46" )]
         public IActionResult LocationListGetLocations( [FromBody] LocationListGetLocationsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<ListItemBag> locations = null;
                 var locationService = new LocationService( rockContext );
@@ -8192,7 +8194,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "f8342fdb-3e19-4f17-804c-c14fdee87a2b" )]
         public IActionResult LocationListSaveNewLocation( LocationListSaveNewLocationOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationService = new LocationService( rockContext );
 
@@ -8277,7 +8279,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "849e3ac3-f1e1-4efa-b0c8-1a79c4a666c7" )]
         public IActionResult MediaElementPickerGetMediaAccounts()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return Ok( GetMediaAccounts( rockContext ) );
             }
@@ -8298,7 +8300,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "a68493aa-8f41-404f-90dd-fbb2df0309a0" )]
         public IActionResult MediaElementPickerGetMediaFolders( [FromBody] MediaElementPickerGetMediaFoldersOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaAccount = GetMediaAccountByGuid( options.MediaAccountGuid, rockContext );
 
@@ -8326,7 +8328,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "9b922b7e-95b4-4ecf-a6ec-f61b45f5e210" )]
         public IActionResult MediaElementPickerGetMediaElements( [FromBody] MediaElementPickerGetMediaElementsOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaFolder = GetMediaFolderByGuid( options.MediaFolderGuid, rockContext );
 
@@ -8352,7 +8354,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "2cc15018-201e-4f22-b116-06846c70ad0b" )]
         public IActionResult MediaElementPickerGetMediaTree( [FromBody] MediaElementPickerGetMediaTreeOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var accounts = new List<ListItemBag>();
                 var folders = new List<ListItemBag>();
@@ -9015,7 +9017,7 @@ namespace Rock.Rest.v2
 
                                 if ( entityType.IsEntity )
                                 {
-                                    var attributeList = new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id, false ).ToAttributeCacheList();
+                                    var attributeList = new AttributeService( RockApp.Current.CreateRockContext() ).GetByEntityTypeId( entityType.Id, false ).ToAttributeCacheList();
                                     if ( entityTypeQualifiers?.Any() == true )
                                     {
                                         var qualifiedAttributeList = new List<AttributeCache>();
@@ -9202,7 +9204,7 @@ namespace Rock.Rest.v2
 
                             if ( entityType.IsEntity )
                             {
-                                var attributeList = new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id, false ).ToAttributeCacheList();
+                                var attributeList = new AttributeService( RockApp.Current.CreateRockContext() ).GetByEntityTypeId( entityType.Id, false ).ToAttributeCacheList();
                                 if ( entityTypeQualifiers?.Any() == true )
                                 {
                                     var qualifiedAttributeList = new List<AttributeCache>();
@@ -9319,7 +9321,7 @@ namespace Rock.Rest.v2
                 include.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var selectedMergeTemplateGuids = options.ExpandToValues?.AsGuidList();
                 var expandToCategoryGuids = selectedMergeTemplateGuids?.Any() == true
@@ -9378,7 +9380,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "92a11376-6bcd-4299-a54d-946cbde7566b" )]
         public IActionResult MetricCategoryPickerGetChildren( [FromBody] MetricCategoryPickerGetChildrenOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var selectedMetricCategoryGuids = options.ExpandToValues?.AsGuidList();
                 var expandToCategoryGuids = selectedMetricCategoryGuids?.Any() == true
@@ -9436,7 +9438,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "c8e8f26e-a7cd-445a-8d72-6d4484a8ee59" )]
         public IActionResult MetricItemPickerGetChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var items = GetMetricItemPickerChildren( options, rockContext );
 
@@ -9473,7 +9475,7 @@ namespace Rock.Rest.v2
             };
 
             var metricCategories = clientService.GetCategorizedTreeItems( queryOptions );
-            var metricCategoryService = new MetricCategoryService( new RockContext() );
+            var metricCategoryService = new MetricCategoryService( RockApp.Current.CreateRockContext() );
             var convertedMetrics = new List<TreeItemBag>();
 
             // Translate from MetricCategory to Metric.
@@ -9527,7 +9529,7 @@ namespace Rock.Rest.v2
         {
             var isFullSearchAllowed = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ).FullName );
                 var allowFirstNameOnly = searchComponent?.GetAttributeValue( "FirstNameSearch" ).AsBoolean() ?? false;
@@ -9636,7 +9638,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "EE9AB2EA-EE01-4D0F-B626-02D1C8D1ABF4" )]
         public IActionResult PagePickerGetChildren( [FromBody] PagePickerGetChildrenOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var siteType = options.SiteType;
                 var hidePageGuids = options.HidePageGuids ?? new List<Guid>();
@@ -10007,7 +10009,7 @@ namespace Rock.Rest.v2
         {
             var pages = new List<PageCache>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( PageCache page in rootPage.GetPages( rockContext ) )
                 {
@@ -10048,7 +10050,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "39f44203-9944-4dbd-87ca-d23657e0daa5" )]
         public IActionResult PersonLinkGetPopupHtml( [FromBody] PersonLinkGetPopupHtmlOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var result = "No Details Available";
                 var html = new StringBuilder();
@@ -10134,7 +10136,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1947578D-B28F-4956-8666-DCC8C0F2B945" )]
         public IActionResult PersonPickerSearch( [FromBody] PersonPickerSearchOptionsBag options )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Chain to the v1 controller.
             var results = Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
@@ -10253,9 +10255,9 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "26ecd3a7-9c55-4052-afc9-b59e84ab890b" )]
         public IActionResult RegistrationInstancePickerGetRegistrationInstances( [FromBody] RegistrationInstancePickerGetRegistrationInstancesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( new RockContext() );
+                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( RockApp.Current.CreateRockContext() );
                 var registrationInstances = registrationInstanceService.Queryable()
                     .Where( ri => ri.RegistrationTemplate.Guid == options.RegistrationTemplateGuid && ri.IsActive )
                     .OrderBy( ri => ri.Name )
@@ -10281,7 +10283,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "acbccf4f-54d6-4c7c-8201-07fdefe87352" )]
         public IActionResult RegistrationInstancePickerGetRegistrationTemplateForInstance( [FromBody] RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationInstance = new Rock.Model.RegistrationInstanceService( rockContext ).Get( options.RegistrationInstanceGuid );
                 if ( registrationInstance == null )
@@ -10311,7 +10313,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "41eac873-20f3-4456-9fb4-746a1363807e" )]
         public IActionResult RegistrationTemplatePickerGetChildren( [FromBody] RegistrationTemplatePickerGetChildrenOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var selectedRegistrationTemplateGuids = options.ExpandToValues?.AsGuidList();
                 var expandToCategoryGuids = selectedRegistrationTemplateGuids?.Any() == true
@@ -10364,7 +10366,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "4D015951-9B44-4E70-99AD-8D52728ADF3E" )]
         public IActionResult ReminderButtonGetReminders( [FromBody] ReminderButtonGetRemindersOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderViewModels = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
                 var currentPerson = GetPerson();
@@ -10437,12 +10439,12 @@ namespace Rock.Rest.v2
                 return BadRequest();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
                 var contextEntity = Rock.Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityGuid );
 
-                var reminderTypeService = new ReminderTypeService( new RockContext() );
+                var reminderTypeService = new ReminderTypeService( RockApp.Current.CreateRockContext() );
                 var reminderType = reminderTypeService.Get( options.ReminderTypeGuid );
 
                 if ( reminderType == null )
@@ -10512,7 +10514,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "D0720DE1-8417-4E01-8163-A17AB5D7F0BF" )]
         public IActionResult ReminderButtonCompleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.GetInclude( options.ReminderGuid, r => r.PersonAlias );
@@ -10545,7 +10547,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "52CF7D4D-E604-4B2E-B64E-DE865E2E0DF9" )]
         public IActionResult ReminderButtonDeleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.GetInclude( options.ReminderGuid, r => r.PersonAlias );
@@ -10578,7 +10580,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "2B3F7D40-2AD2-432E-8B77-C9F40AC45D2D" )]
         public IActionResult ReminderButtonCancelReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.GetInclude( options.ReminderGuid, r => r.PersonAlias );
@@ -10686,7 +10688,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderTypesQuery = new ReminderTypeService( rockContext ).Queryable();
 
@@ -10767,7 +10769,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "59545f7f-a27b-497c-8376-c85dfc360c11" )]
         public IActionResult ReportPickerGetChildren( [FromBody] ReportPickerGetChildrenOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var selectedReportGuids = options.ExpandToValues?.AsGuidList();
                 var expandToCategoryGuids = selectedReportGuids?.Any() == true
@@ -10846,7 +10848,7 @@ namespace Rock.Rest.v2
             var currentPerson = GetPerson();
             var isAnonymous = currentPerson == null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( isAnonymous )
                 {
@@ -11039,7 +11041,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "60447abf-18f5-4ad1-a191-3a614408653b" )]
         public IActionResult SchedulePickerGetChildren( [FromBody] SchedulePickerGetChildrenOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var selectedScheduleGuids = options.ExpandToValues?.AsGuidList();
                 var expandToCategoryGuids = selectedScheduleGuids?.Any() == true
@@ -11078,8 +11080,96 @@ namespace Rock.Rest.v2
 
                 var items = clientService.GetCategorizedTreeItems( queryOptions );
 
+                // When the caller wants only check-in-eligible schedules,
+                // prune leaf items that don't have a CheckInStartOffsetMinutes
+                // value AND category folders that contain no eligible
+                // descendants anywhere below them. Both sets are computed
+                // from cache — no Schedule table scan required — so this is
+                // a memory-only pass no matter how big Schedule gets.
+                //
+                // The category set is built bottom-up: for every eligible
+                // schedule, walk its CategoryId chain up to the root through
+                // CategoryCache and mark each ancestor's Guid as eligible.
+                // The chain short-circuits when we hit a category we've
+                // already visited (because if it's in the set, everything
+                // above it is too).
+                if ( options.IncludeCheckInSchedulesOnly )
+                {
+                    var eligibleSchedules = NamedScheduleCache.All()
+                        .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                        .ToList();
+
+                    var eligibleLeafGuids = new HashSet<Guid>( eligibleSchedules.Select( s => s.Guid ) );
+
+                    var eligibleCategoryGuids = new HashSet<Guid>();
+                    foreach ( var schedule in eligibleSchedules )
+                    {
+                        var categoryId = schedule.CategoryId;
+                        while ( categoryId.HasValue )
+                        {
+                            var category = CategoryCache.Get( categoryId.Value );
+                            if ( category == null || !eligibleCategoryGuids.Add( category.Guid ) )
+                            {
+                                break;
+                            }
+                            categoryId = category.ParentCategoryId;
+                        }
+                    }
+
+                    items = FilterTreeItems( items, eligibleLeafGuids, eligibleCategoryGuids );
+                }
+
                 return Ok( items );
             }
+        }
+
+        /// <summary>
+        /// Walks the tree-item results, dropping leaf items whose Guid is not
+        /// in <paramref name="allowedLeafGuids"/> and folder items whose Guid
+        /// is not in <paramref name="allowedFolderGuids"/>. Categories that
+        /// have no eligible descendants therefore vanish from the tree
+        /// entirely rather than showing an expander that resolves to
+        /// nothing.
+        /// </summary>
+        /// <param name="items">The tree items returned from the category tree fetch.</param>
+        /// <param name="allowedLeafGuids">The set of leaf-item Guids to keep.</param>
+        /// <param name="allowedFolderGuids">The set of folder-item Guids to keep.</param>
+        /// <returns>The filtered tree.</returns>
+        private static List<TreeItemBag> FilterTreeItems( List<TreeItemBag> items, HashSet<Guid> allowedLeafGuids, HashSet<Guid> allowedFolderGuids )
+        {
+            if ( items == null )
+            {
+                return items;
+            }
+
+            var kept = new List<TreeItemBag>( items.Count );
+
+            foreach ( var item in items )
+            {
+                if ( !Guid.TryParse( item.Value, out var itemGuid ) )
+                {
+                    continue;
+                }
+
+                if ( item.IsFolder )
+                {
+                    if ( !allowedFolderGuids.Contains( itemGuid ) )
+                    {
+                        continue;
+                    }
+
+                    item.Children = FilterTreeItems( item.Children, allowedLeafGuids, allowedFolderGuids );
+                    kept.Add( item );
+                    continue;
+                }
+
+                if ( allowedLeafGuids.Contains( itemGuid ) )
+                {
+                    kept.Add( item );
+                }
+            }
+
+            return kept;
         }
 
         #endregion
@@ -11139,7 +11229,7 @@ namespace Rock.Rest.v2
         {
             var items = new List<ListItemBag>();
 
-            var stepProgramService = new StepProgramService( new RockContext() );
+            var stepProgramService = new StepProgramService( RockApp.Current.CreateRockContext() );
             var stepPrograms = stepProgramService.Queryable().AsNoTracking()
                 .Where( sp => sp.IsActive )
                 .OrderBy( sp => sp.Order )
@@ -11183,7 +11273,7 @@ namespace Rock.Rest.v2
             int stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            var stepStatusService = new StepStatusService( new RockContext() );
+            var stepStatusService = new StepStatusService( RockApp.Current.CreateRockContext() );
             var statuses = stepStatusService.Queryable().AsNoTracking()
                 .Where( ss =>
                     ss.StepProgramId == stepProgramId &&
@@ -11230,7 +11320,7 @@ namespace Rock.Rest.v2
             int stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            var stepTypeService = new StepTypeService( new RockContext() );
+            var stepTypeService = new StepTypeService( RockApp.Current.CreateRockContext() );
             var stepTypes = stepTypeService.Queryable().AsNoTracking()
                 .Where( st =>
                     st.StepProgramId == stepProgramId &&
@@ -11615,7 +11705,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( options.WorkflowTypeGuid == null )
                 {
@@ -11666,7 +11756,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflow = new Rock.Model.WorkflowService( rockContext ).Get( options.WorkflowGuid );
                 if ( workflow == null )
@@ -11706,7 +11796,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "622EE929-7A18-46BE-9AEA-9E0725293612" )]
         public IActionResult WorkflowTypePickerGetWorkflowTypes( [FromBody] WorkflowTypePickerGetWorkflowTypesOptionsBag options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -11843,7 +11933,7 @@ namespace Rock.Rest.v2
         /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
         private List<PublicAttributeBag> GetAttributes( IHasInheritedAttributes model )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Type entityType = model.GetType();
                 if ( entityType.IsDynamicProxyType() )

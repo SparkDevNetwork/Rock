@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -73,7 +74,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
@@ -104,7 +105,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
@@ -141,7 +142,7 @@ namespace Rock.Field.Types
                 return null;
             }
             else {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var locationService = new LocationService( rockContext );
                     var location = locationService.Get( new Guid( privateValue ) );
@@ -246,7 +247,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return GetLocationByGuid( guid, rockContext );
             }
@@ -265,7 +266,7 @@ namespace Rock.Field.Types
 
         private Location GetLocationById( int id )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return GetLocationById( id, rockContext );
             }
@@ -289,7 +290,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationId = new LocationService( rockContext ).GetId( guid.Value );
 

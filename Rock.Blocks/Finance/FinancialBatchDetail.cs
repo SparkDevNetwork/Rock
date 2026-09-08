@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -117,7 +118,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<FinancialBatchBag, FinancialBatchDetailOptionsBag>();
 
@@ -458,7 +459,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -541,7 +542,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -567,7 +568,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<FinancialBatchBag, FinancialBatchDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new FinancialBatchService( rockContext );
 
@@ -676,7 +677,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new FinancialBatchService( rockContext );
 
@@ -706,7 +707,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<FinancialBatchBag, FinancialBatchDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -753,7 +754,7 @@ namespace Rock.Blocks.Finance
 
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var batchId = pageReference.GetPageParameter( PageParameterKey.BatchId );
                 var batchName = new FinancialBatchService( rockContext )

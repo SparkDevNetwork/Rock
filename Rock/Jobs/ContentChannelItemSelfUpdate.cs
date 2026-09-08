@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -81,7 +82,7 @@ namespace Rock.Jobs
 
             var errors = new List<string>();
             List<Exception> exceptions = new List<Exception>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var contentChannelId = new ContentChannelService( rockContext ).GetId( contentChannelGuid.Value );
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( i => i.ContentChannelId == contentChannelId ).ToList();
 

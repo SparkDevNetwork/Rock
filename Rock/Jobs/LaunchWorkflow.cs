@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -68,7 +69,7 @@ namespace Rock.Jobs
                     var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
 
                     List<string> workflowErrors;
-                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
+                    var processed = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Process( workflow, out workflowErrors );
                     this.Result = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
                 }
             }

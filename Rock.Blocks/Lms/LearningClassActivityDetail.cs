@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -734,7 +735,7 @@ namespace Rock.Blocks.Lms
                 return ActionNotFound();
             }
 
-            var copiedEntity = new LearningClassActivityService( new RockContext() ).Copy( key );
+            var copiedEntity = new LearningClassActivityService( RockApp.Current.CreateRockContext() ).Copy( key );
 
             var queryParams = new Dictionary<string, string>
             {

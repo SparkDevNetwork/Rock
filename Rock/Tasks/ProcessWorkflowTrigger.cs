@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -59,7 +60,7 @@ namespace Rock.Tasks
             {
                 foreach ( var triggerGuid in triggerGuids )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var trigger = new WorkflowTriggerService( rockContext ).Get( triggerGuid);
                         if ( trigger != null )

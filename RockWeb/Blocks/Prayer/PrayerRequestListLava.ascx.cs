@@ -22,6 +22,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -188,7 +189,7 @@ namespace RockWeb.Blocks.Prayer
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             var prayerRequestService = new PrayerRequestService( rockContext );
             var qryPrayerRequests = prayerRequestService.Queryable();

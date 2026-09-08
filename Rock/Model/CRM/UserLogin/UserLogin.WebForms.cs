@@ -20,6 +20,7 @@ using System.Threading;
 using System.Web;
 using System.Web.Hosting;
 
+using Rock.Configuration;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -100,7 +101,7 @@ namespace Rock.Model
 
             if ( currentPrincipal.Identity.Name.StartsWith( "rckipid=" ) )
             {
-                var personToken = new PersonTokenService( new Rock.Data.RockContext() ).GetByImpersonationToken( currentPrincipal.Identity.Name.Substring( 8 ) );
+                var personToken = new PersonTokenService( RockApp.Current.CreateRockContext() ).GetByImpersonationToken( currentPrincipal.Identity.Name.Substring( 8 ) );
                 if ( personToken?.PersonAlias?.Person != null )
                 {
                     return personToken.PersonAlias.Person.GetImpersonatedUser()?.UserName ?? currentPrincipal.Identity.Name;

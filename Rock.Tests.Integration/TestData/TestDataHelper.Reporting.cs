@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.Reporting.DataFilter;
@@ -53,7 +54,7 @@ namespace Rock.Tests.Integration.TestData
 
                 DataView newDataView = null;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var dataViewService = new DataViewService( rockContext );
                 if ( args.Guid != null )
                 {
@@ -117,7 +118,7 @@ namespace Rock.Tests.Integration.TestData
             public static bool DeleteDataView( Guid dataViewGuid )
             {
                 bool success = false;
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 rockContext.WrapTransaction( () =>
                 {
                     success = DeleteDataView( rockContext, dataViewGuid );
@@ -210,7 +211,7 @@ namespace Rock.Tests.Integration.TestData
                     return;
                 }
 
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                 foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
                 {
@@ -357,7 +358,7 @@ namespace Rock.Tests.Integration.TestData
             {
                 const string _recordTag = "GroupsTestData";
 
-                var dataContext = new RockContext();
+                var dataContext = RockApp.Current.CreateRockContext();
 
                 // Remove existing Data Views.
                 DeleteDataView( dataContext, TestGuids.DataViews.LocationsInsideArizona.AsGuid() );

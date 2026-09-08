@@ -21,6 +21,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -56,7 +57,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestCleanup]
         public void Cleanup()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var guids = _fileGuids.Values.Select( v => $"'{v}'" ).JoinStrings( "," );
 
@@ -86,7 +87,7 @@ namespace Rock.Tests.Integration.Core.Model
 
                 stream.Position = 0;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
 
@@ -114,7 +115,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             stream.Position = 0;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileTypeService = new BinaryFileTypeService( rockContext );
                 var fileType = binaryFileTypeService.Get( binaryFileTypeGuid.AsGuid() );
@@ -151,7 +152,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             stream.Position = 0;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileTypeService = new BinaryFileTypeService( rockContext );
                 var fileType = binaryFileTypeService.Get( binaryFileTypeGuid.AsGuid() );
@@ -188,7 +189,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             stream.Position = 0;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileTypeService = new BinaryFileTypeService( rockContext );
                 var fileType = binaryFileTypeService.Get( binaryFileTypeGuid.AsGuid() );
@@ -228,7 +229,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             stream.Position = 0;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileTypeService = new BinaryFileTypeService( rockContext );
                 var fileType = binaryFileTypeService.Get( binaryFileTypeGuid.AsGuid() );

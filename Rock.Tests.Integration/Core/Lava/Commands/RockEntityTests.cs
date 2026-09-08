@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Blocks;
@@ -225,7 +226,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 
         private void AddDefinedTypesWithDuplicateAttribute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add Attribute "Count" to multiple Defined Types.
             var definedTypeTitle = DefinedTypeCache.All().FirstOrDefault( c => c.Name == "Title" );
@@ -356,7 +357,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 {% endperson %}
 ";
 
-            var tedDecker = new PersonService( new RockContext() )
+            var tedDecker = new PersonService( RockApp.Current.CreateRockContext() )
                 .Get( TestGuids.TestPeople.TedDecker );
 
             var expectedOutput = $"{tedDecker.NickName} {tedDecker.LastName} ({tedDecker.BirthDate:yyyy-MM-dd})";

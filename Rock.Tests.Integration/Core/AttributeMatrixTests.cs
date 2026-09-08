@@ -22,6 +22,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
@@ -73,7 +74,7 @@ namespace Rock.Tests.Integration.Core
         [TestMethod]
         public void AttributeMatrix_UpdateMatrixAttributeValueForGroup_DoesNotCreateHistoryRecords()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
 
             var deckerGroup = groupService.Get( TestGuids.Groups.SmallGroupDeckerGuid );
@@ -95,7 +96,7 @@ namespace Rock.Tests.Integration.Core
 
         private void VerifyHistoryForMatrixAttributeValueUpdate( IHasAttributes targetEntity, string matrixAttributeKey, string matrixColumnAttributeKey, string newAttributeValue, bool historyRecordShouldExist )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get the Attribute Matrix corresponding to the specified Attribute of the target entity.
             // The link is stored in the Attribute of the target entity, such that the attribute value is the Guid of the Attribute Matrix.
@@ -169,7 +170,7 @@ namespace Rock.Tests.Integration.Core
 
         private static void InitializePersonAttributeMatrixTestData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add an Attribute Matrix for the Person Entity: MatrixA
             var matrixTemplateService = new AttributeMatrixTemplateService( rockContext );
@@ -190,7 +191,7 @@ namespace Rock.Tests.Integration.Core
             // Note that the Attribute Matrix is an independent entity that represents a collection of values
             // corresponding to a template; it is not linked to a target entity by default.
             // In this case, the target entity for the Attribute Matrix is Ted Decker.
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
 
             // Link a new Attribute Matrix to Ted Decker.
             // The link is stored in the Person Attribute, and the attribute value is the Guid of the Attribute Matrix.
@@ -225,7 +226,7 @@ namespace Rock.Tests.Integration.Core
 
         private static void InitializeGroupAttributeMatrixTestData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add an Attribute Matrix for the Group Entity: MatrixA.
             // Note that although the selected matrix template is not appropriate for this Entity Type, it is the only template
@@ -245,7 +246,7 @@ namespace Rock.Tests.Integration.Core
             AddAttributeCategory( attributeId, categoryGroupChangeId );
 
             // Create an Attribute Matrix and set the values for Decker/Attribute1.
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
 
             // Link a new Attribute Matrix to the Decker Group.
             // The link is stored in the Group Attribute, and the attribute value is the Guid of the Attribute Matrix.
@@ -293,7 +294,7 @@ namespace Rock.Tests.Integration.Core
         /// <returns></returns>
         private static AttributeMatrix AddAttributeMatrix( Guid matrixGuid, int matrixTemplateId, List<string> rowValues )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             AttributeMatrix matrix = null;
 
@@ -360,7 +361,7 @@ namespace Rock.Tests.Integration.Core
         /// <returns></returns>
         private static bool DeleteAttributeMatrix( int matrixId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var matrixService = new AttributeMatrixService( rockContext );
 
             var matrix = matrixService.Get( matrixId );
@@ -392,7 +393,7 @@ namespace Rock.Tests.Integration.Core
         /// <param name="targetEntityMatrixAttributeGuid">The entity with which the Matrix Attribute is associated.</param>
         private static int AddMatrixAttributeForEntity( Guid matrixTemplateGuid, int entityTypeId, Guid targetEntityMatrixAttributeGuid, string attributeKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var matrixFieldTypeId = FieldTypeCache.GetId( SystemGuid.FieldType.MATRIX.AsGuid() ).GetValueOrDefault();
 
@@ -432,7 +433,7 @@ namespace Rock.Tests.Integration.Core
 
         private static void AddAttributeCategory( int attributeId, int categoryId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var attributeService = new AttributeService( rockContext );
             var attribute = attributeService.Get( attributeId );

@@ -419,7 +419,7 @@ namespace Rock.Web.HttpModules
                 return false;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var pageCache = PageCache.GetByIdKey( pageIdKey, rockContext );
                 var person = new PersonService( rockContext ).Get( personIdKey, false );

@@ -35,8 +35,9 @@ namespace Rock.ViewModels.Blocks.Core.ExceptionList
         public List<int> TotalExceptionCounts { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of unique exception counts for each day in <see cref="DateLabels"/>.
+        /// Gets or sets the list of distinct exception type counts for each day in <see cref="DateLabels"/>.
+        /// This counts exception types, not the exception groups (type and description) the grid shows a row for.
         /// </summary>
-        public List<int> UniqueExceptionCounts { get; set; }
+        public List<int> UniqueExceptionTypeCounts { get; set; }
     }
 }

@@ -49,7 +49,7 @@ internal sealed partial class PersonSkill
         if ( !phoneTypeValueId.HasValue || phoneTypeValue == null )
         {
             var phoneTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_PHONE_TYPE ).DefinedValues
-                .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } )
+                .Select( dv => KeyNameResult.FromCache( dv ) )
                 .ToList();
 
             return Error( "Lookups Required" )

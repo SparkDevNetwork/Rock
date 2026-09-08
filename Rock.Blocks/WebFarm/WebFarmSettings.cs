@@ -16,6 +16,7 @@
 //
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -108,7 +109,7 @@ namespace Rock.Blocks.WebFarm
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag>();
 
@@ -399,7 +400,7 @@ namespace Rock.Blocks.WebFarm
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Ensure everything is valid before saving.
                 if ( !ValidateWebFarmSettings( box.Entity, rockContext, out var validationMessage ) )

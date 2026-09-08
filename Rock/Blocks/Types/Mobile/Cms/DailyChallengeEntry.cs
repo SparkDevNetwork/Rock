@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -875,7 +876,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var cachedChallenge = GetCachedChallengeOrLoad( ContentChannelGuid ?? Guid.Empty, rockContext );
 
@@ -936,7 +937,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var cachedChallenge = GetCachedChallengeOrLoad( ContentChannelGuid ?? Guid.Empty, rockContext );
 
@@ -984,7 +985,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var cachedChallenge = GetCachedChallengeOrLoad( ContentChannelGuid ?? Guid.Empty, rockContext );
 

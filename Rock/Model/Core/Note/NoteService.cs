@@ -21,9 +21,12 @@ using System.Threading.Tasks;
 
 using AngleSharp.Dom;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Rock.AI;
 using Rock.AI.Classes.ChatCompletions;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Utility;
@@ -338,29 +341,25 @@ FROM [NoteCte];
                 return null;
             }
 
-            // Get the configured component or the first active if none is specified.
-            var aiProvider = noteTypeAIApproval.AIProviderId.HasValue ? AIProviderCache.Get( noteTypeAIApproval.AIProviderId.Value )?.ToEntity() : new AIProviderService( rockContext ).GetActiveProvider();
+            var service = RockApp.Current.GetRequiredService<TextProcessingService>();
 
             // If no AI component is found, return null indicating no request sent.
-            if ( aiProvider == null )
+            if ( !service.IsAvailable )
             {
-                Logger.LogWarning( $"A NoteType (NoteTypeId {noteType.Id}) was configured with AI Approval Settings, but no active provider is configured." );
+                Logger.LogWarning( $"A NoteType (NoteTypeId {noteType.Id}) was configured with AI Approval Settings, but the AI service is not available." );
                 return null;
             }
 
-            // Get the AI Provider component for the AIProvider instance.
-            var aiProviderComponent = aiProvider.GetAIComponent();
-
             // Create the Completions Request with messages then get the first response as a boolean (or null if unable to).
-            var completionsRequest = new ChatCompletionsRequest
+            var completionsRequest = new ChatCompletionRequest
             {
-                Messages = noteTypeAIApproval.AIApprovalRequestMessages( note ),
+                Message = noteTypeAIApproval.GetApprovalRequestText( note ),
             };
 
-            var response = await aiProviderComponent.GetChatCompletions( aiProvider, completionsRequest );
-            var responseText = response.Choices?.FirstOrDefault().Text ?? string.Empty;
+            var response = await service.GetChatCompletionAsync( completionsRequest );
+            var responseText = response.GetText();
 
-            return responseText.ConvertToBooleanOrDefault();
+            return responseText.AsBooleanOrNull();
         }
     }
 }

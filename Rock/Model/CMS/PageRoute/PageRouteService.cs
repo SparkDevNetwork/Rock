@@ -33,5 +33,30 @@ namespace Rock.Model
         {
             return Queryable().Where( t => t.PageId == pageId );
         }
+
+        /*
+            8/31/2026 - CLAUDE
+
+            RockRouteHandler implements System.Web.Routing.IRouteHandler, so the
+            projects that must stay clear of System.Web (Rock.Blocks and
+            Rock.AI.Agent) cannot call ReregisterRoutes directly. Publishing
+            PageRouteWasUpdatedMessage instead looks equivalent but is not: the
+            consumer ignores messages sent by its own node, on the understanding
+            that the publisher already rebuilt its own table, so the publishing
+            node never picks up the change. This shim keeps the System.Web
+            dependency inside Rock and gives those projects the correct call.
+
+            Reason: Route changes saved outside RockWeb did not take effect until an application restart.
+        */
+
+        /// <summary>
+        /// Rebuilds this node's route table so <see cref="PageRoute"/> changes take
+        /// effect immediately, then notifies the other web farm nodes to do the same.
+        /// Call this after saving or deleting page routes.
+        /// </summary>
+        public static void RefreshRouteTable()
+        {
+            Rock.Web.RockRouteHandler.ReregisterRoutes();
+        }
     }
 }

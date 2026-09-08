@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -216,7 +217,7 @@ namespace RockWeb.Blocks.Cms
         {
             dlgLink.Title = "Edit Link";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dv = new DefinedValueService( rockContext ).Get( e.RowKeyId );
                 if ( dv != null )
@@ -260,7 +261,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gLinks_Delete( object sender, RowEventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new DefinedValueService( rockContext );
                 var definedValue = service.Get( e.RowKeyId );
@@ -289,7 +290,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         void gLinks_GridReorder( object sender, GridReorderEventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new DefinedValueService( rockContext );
                 var definedValues = service.Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
@@ -358,7 +359,7 @@ namespace RockWeb.Blocks.Cms
         protected void dlgLink_SaveClick( object sender, EventArgs e )
         {
             DefinedValue definedValue = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new DefinedValueService( rockContext );
                 int? definedValueId = hfDefinedValueId.Value.AsIntegerOrNull();
@@ -496,7 +497,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( _definedType != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var entityType = EntityTypeCache.Get( "Rock.Model.DefinedValue");
                     var definedType = new DefinedTypeService( rockContext ).Get( _definedType.Id );
@@ -562,7 +563,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( _definedType != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var definedValues = new DefinedValueService( rockContext )
                         .Queryable().AsNoTracking()

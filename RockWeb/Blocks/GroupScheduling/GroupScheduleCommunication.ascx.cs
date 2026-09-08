@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
@@ -199,7 +200,7 @@ namespace RockWeb.Blocks.GroupScheduling
         protected void btnCreateCommunication_Click( object sender, EventArgs e )
         {
             // Create communication
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var communicationService = new Rock.Model.CommunicationService( rockContext );
             var communication = new Rock.Model.Communication();
             communication.IsBulkCommunication = false;
@@ -275,7 +276,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             nbCommunicationWarning.Visible = false;
 
-            var personAliasService = new Rock.Model.PersonAliasService( new Rock.Data.RockContext() );
+            var personAliasService = new Rock.Model.PersonAliasService( RockApp.Current.CreateRockContext() );
 
             // Get the primary aliases
             List<Rock.Model.PersonAlias> primaryAliasList = new List<PersonAlias>( personIds.Count );
@@ -307,7 +308,7 @@ namespace RockWeb.Blocks.GroupScheduling
             } ).ToList();
 
             // BulkInsert to quickly insert the CommunicationRecipient records. Note: This is much faster, but will bypass EF and Rock processing.
-            var communicationRecipientRockContext = new RockContext();
+            var communicationRecipientRockContext = RockApp.Current.CreateRockContext();
             communicationRecipientRockContext.BulkInsert( communicationRecipientList );
 
             // Set the communication page to the current route if the block setting does not specify a Communications Page
@@ -411,7 +412,7 @@ namespace RockWeb.Blocks.GroupScheduling
             {
                 InviteStatuses = cblInviteStatus.SelectedValues.ToArray()
             };
-            var groupService = new GroupService( new RockContext() );
+            var groupService = new GroupService( RockApp.Current.CreateRockContext() );
 
             var groupIds = userPreferenceConfiguration.GroupIds ?? new int[0];
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKeys.GroupId ) ) )
@@ -489,7 +490,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         private void UpdateScheduleList()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var includedGroupsQuery = GetSelectedGroupsQuery( rockContext );
 
             if ( !includedGroupsQuery.Any() )
@@ -547,7 +548,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var includedGroupsQuery = GetSelectedGroupsQuery( rockContext );
 
             var groupLocationService = new GroupLocationService( rockContext );

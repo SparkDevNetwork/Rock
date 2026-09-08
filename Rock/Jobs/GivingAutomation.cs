@@ -31,6 +31,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
 using Rock.Bus.Message;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -298,7 +299,7 @@ namespace Rock.Jobs
                                 // If first gift date is missing, try to determine it.
                                 if ( !firstGiftDate.HasValue )
                                 {
-                                    using ( var rockContext = new RockContext() )
+                                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                                     {
                                         firstGiftDate = new FinancialTransactionService( rockContext )
                                             .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
@@ -479,7 +480,7 @@ namespace Rock.Jobs
 
             // We will reclassify anyone who has given since the last run of this job. This also covers all alerts except
             // the "late txn" alert, which needs to find people based on the absence of a gift.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 
@@ -531,7 +532,7 @@ namespace Rock.Jobs
                 return new Dictionary<string, List<Person>>();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 
@@ -563,7 +564,7 @@ namespace Rock.Jobs
         /// <param name="context">The current job context.</param>
         private static List<FinancialTransactionAlertType> GetAlertTypes( GivingAutomationContext context )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 
@@ -600,7 +601,7 @@ namespace Rock.Jobs
                 return new Dictionary<string, List<FinancialTransactionView>>();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 
@@ -643,7 +644,7 @@ namespace Rock.Jobs
                 return new Dictionary<string, List<AlertView>>();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 
@@ -700,7 +701,7 @@ namespace Rock.Jobs
                 return result;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 
@@ -869,7 +870,7 @@ namespace Rock.Jobs
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 
@@ -995,7 +996,7 @@ WHEN NOT MATCHED THEN
 
             if ( alertsToAddToDb.Any() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( context.CommandTimeout );
                     new FinancialTransactionAlertService( rockContext ).AddRange( alertsToAddToDb );
@@ -1381,7 +1382,7 @@ WHEN NOT MATCHED THEN
                     }
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( context.CommandTimeout );
                     new FinancialTransactionAlertService( rockContext ).AddRange( alerts );
@@ -1414,7 +1415,7 @@ WHEN NOT MATCHED THEN
                 return alertsForThisAlertType;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 
@@ -1554,7 +1555,7 @@ WHEN NOT MATCHED THEN
         /// </summary>
         private static Dictionary<string, List<AlertView>> GetRecentAlertsByGivingIdForLateAlerts( GivingAutomationContext context )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( context.CommandTimeout );
 

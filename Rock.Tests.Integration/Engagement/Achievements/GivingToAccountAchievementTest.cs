@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Achievement;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -437,7 +438,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
-            _rockContext = new RockContext();
+            _rockContext = RockApp.Current.CreateRockContext();
             _accountService = new FinancialAccountService( _rockContext );
             _batchService = new FinancialBatchService( _rockContext );
             _transactionService = new FinancialTransactionService( _rockContext );
@@ -517,7 +518,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
 
                 // See Rock.Model.Engagement.AchievementType.AchievementTypeService
                 // Process each streak in it's own data context to avoid the data context changes getting too big and slow
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     component.Process( rockContext, achievementTypeCache, sourceEntity );
                     rockContext.SaveChanges();

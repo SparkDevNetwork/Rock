@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -81,7 +82,7 @@ namespace Rock.Follow.Event
                 {
                     var person = personAlias.Person;
 
-                    DateTime? firstJoined = new GroupMemberService( new RockContext() )
+                    DateTime? firstJoined = new GroupMemberService( RockApp.Current.CreateRockContext() )
                         .Queryable().AsNoTracking()
                         .Where( m =>
                             m.PersonId == personAlias.PersonId &&

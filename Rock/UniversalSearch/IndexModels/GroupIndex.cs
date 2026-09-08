@@ -21,6 +21,7 @@ using System.Text;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -149,7 +150,7 @@ namespace Rock.UniversalSearch.IndexModels
                 groupIndex.GroupTypeName = group.GroupType.Name;
             }
 
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Configuration.AutoDetectChangesEnabled = false;
             
             var groupMemberService = new GroupMemberService( rockContext );
@@ -225,7 +226,7 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             // Check security on the group if security is enabled
-            var group = new GroupService(new Data.RockContext()).Get( (int)this.Id );
+            var group = new GroupService(RockApp.Current.CreateRockContext()).Get( (int)this.Id );
             if ( group != null )
             {
                 result.IsViewAllowed = group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) || isSecurityDisabled;

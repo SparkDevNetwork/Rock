@@ -16,6 +16,7 @@
 //
 using Rock;
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -84,7 +85,7 @@ namespace Rock.Bus.Message
         /// <param name="gatewayCurrencyUnitMultiple">[Optional] The <see cref="Guid"/> of the <see cref="DefinedValue"/> that indicates the "unit multiple" (e.g., 100 for dollars) of the currency specified by the gatway.</param>
         public static void PublishScheduledTransactionEvent( int scheduledTransactionId, string eventType, Guid? gatewaySupportedCardTypesDefinedValueGuid = null, Guid? gatewayCurrencyUnitMultiple = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduleService = new FinancialScheduledTransactionService( rockContext );
                 var gateway = scheduleService.Queryable()

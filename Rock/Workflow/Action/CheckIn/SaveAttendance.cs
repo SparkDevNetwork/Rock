@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -267,7 +268,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <returns></returns>
         private AchievementAttemptService.AchievementAttemptWithPersonAlias[] GetSuccessfullyCompletedAchievementAttempts( RockContext rockContext, int[] attendanceRecordsPersonAliasIds, List<int> configuredAchievementTypeIds )
         {
-            var achievementAttemptService = new AchievementAttemptService( new RockContext() );
+            var achievementAttemptService = new AchievementAttemptService( RockApp.Current.CreateRockContext() );
             var completedAchievementAttempts = achievementAttemptService.GetAchievementAttemptWithAchieverPersonAliasQuery()
                 .Where( x => attendanceRecordsPersonAliasIds.Contains( x.AchieverPersonAlias.Id ) )
                 .Where( a => configuredAchievementTypeIds.Contains( a.AchievementAttempt.AchievementTypeId ) )
@@ -287,7 +288,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <returns></returns>
         private IQueryable<AchievementAttemptService.AchievementAttemptWithPersonAlias> GetAchievementAttemptsWithPersonAliasQuery( RockContext rockContext, int[] attendanceRecordsPersonAliasIds, List<int> configuredAchievementTypeIds )
         {
-            var achievementAttemptService = new AchievementAttemptService( new RockContext() );
+            var achievementAttemptService = new AchievementAttemptService( RockApp.Current.CreateRockContext() );
             IQueryable<AchievementAttemptService.AchievementAttemptWithPersonAlias> achievementAttemptsQuery = achievementAttemptService.GetAchievementAttemptWithAchieverPersonAliasQuery()
                  .Where( a => configuredAchievementTypeIds.Contains( a.AchievementAttempt.AchievementTypeId ) && attendanceRecordsPersonAliasIds.Contains( a.AchieverPersonAlias.Id ) );
 

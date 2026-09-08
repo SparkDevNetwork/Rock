@@ -114,8 +114,8 @@ Key structural requirements:
 ### Enum definitions
 If the entity has enum-typed properties, create the enum file:
 - **File:** `Rock.Enums/[Domain]/[EnumName].cs`
-- **Namespace:** `Rock.Model`
-- **Required attribute:** `[Enums.EnumDomain( "Domain" )]`
+- **Namespace:** `Rock.Enums.[Domain]` (match the folder). Do NOT use `Rock.Model` — that is a legacy holdover.
+- **No `[Enums.EnumDomain]` attribute** — that attribute is only for legacy enums still in the `Rock.Model` namespace. The `Rock.Enums.[Domain]` namespace already conveys the domain.
 - XML doc comment on every enum value
 
 ### Custom service methods
@@ -258,6 +258,6 @@ Result: Severity-based findings report with go/no-go recommendation.
 
 **"FK cascade delete causing issues":** Default to `WillCascadeOnDelete( false )` for most relationships. Only use `true` for true parent-child ownership where deleting the parent should delete all children. PersonAlias audit FKs must always be `false`.
 
-**"Enum not recognized in entity":** Ensure the enum is in `Rock.Enums/[Domain]/` with namespace `Rock.Model` and has the `[Enums.EnumDomain("Domain")]` attribute. The enum project must be referenced by the Rock project.
+**"Enum not recognized in entity":** Ensure the enum is in `Rock.Enums/[Domain]/` with namespace `Rock.Enums.[Domain]` (no `[Enums.EnumDomain]` attribute — that is only for legacy `Rock.Model` enums), and add the matching `using Rock.Enums.[Domain];` to the entity file. The enum project must be referenced by the Rock project.
 
 **"Build error: 'EntityTypeConfiguration' not found":** Add `using System.Data.Entity.ModelConfiguration;` to the entity file's using statements.

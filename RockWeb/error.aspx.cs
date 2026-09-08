@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -156,7 +157,7 @@ namespace RockWeb
                     {
                         // check to see if the user is an admin, if so allow them to view the error details
                         var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
-                        GroupService service = new GroupService( new RockContext() );
+                        GroupService service = new GroupService( RockApp.Current.CreateRockContext() );
                         Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
                         showDetails = userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0;
                     }

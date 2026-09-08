@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -165,7 +166,7 @@ namespace Rock.Jobs
         /// <returns>A new <see cref="RockContext"/>.</returns>
         private RockContext CreateRockContext()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.Database.CommandTimeout = _commandTimeout;
 
@@ -177,7 +178,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

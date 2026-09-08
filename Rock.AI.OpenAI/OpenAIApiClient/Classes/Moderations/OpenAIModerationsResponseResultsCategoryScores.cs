@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Newtonsoft.Json;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
@@ -22,6 +24,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
     /// <summary>
     /// The Response object for moderation results category scores
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIModerationsResponseResultsCategoryScores
     {
         #region Properties

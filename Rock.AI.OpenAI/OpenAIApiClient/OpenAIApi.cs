@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -27,6 +28,8 @@ using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient
 {
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIApi
     {
         private string _openAIApiHost = "https://api.openai.com/v1";

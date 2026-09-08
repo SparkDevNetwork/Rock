@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -720,7 +721,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else if ( instance.ContactPersonAliasId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         contactPerson = new PersonAliasService( rockContext )
                             .Queryable()
@@ -1142,7 +1143,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( _ppContact.PersonId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     Guid workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
                     var contactInfo = new PersonService( rockContext )

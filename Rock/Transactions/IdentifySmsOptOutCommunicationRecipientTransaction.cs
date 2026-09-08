@@ -17,6 +17,7 @@
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Observability;
@@ -55,7 +56,7 @@ namespace Rock.Transactions
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             using ( var activity = ObservabilityHelper.StartActivity( "SMS: Identify SMS Opt-Out Communication Recipient" ) )
             {
                 activity?.AddTag( "rock.sms.from.number", FromNumber );

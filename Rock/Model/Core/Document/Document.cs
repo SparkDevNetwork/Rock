@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Security;
@@ -120,7 +121,7 @@ namespace Rock.Model
             //    }
             //    set
             //    {
-            //        using ( var rockContext = new RockContext() )
+            //        using ( var rockContext = RockApp.Current.CreateRockContext() )
             //        {
             //            var binaryFileService = new BinaryFileService( rockContext );
             //            var binaryFile = binaryFileService.Get( value );

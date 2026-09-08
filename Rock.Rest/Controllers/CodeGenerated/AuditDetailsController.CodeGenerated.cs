@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AuditDetailsController"/> class.
         /// </summary>
-        public AuditDetailsController() : base( new Rock.Model.AuditDetailService( new Rock.Data.RockContext() ) ) { } 
+        public AuditDetailsController() : base( new Rock.Model.AuditDetailService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

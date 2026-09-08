@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -198,7 +199,7 @@ namespace Rock.Workflow.Action
              * before the change was made, and EF will return the in-memory
              * object rather than querying the database again.
              */
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
 
             var mergeFields = GetMergeFields( action );
 

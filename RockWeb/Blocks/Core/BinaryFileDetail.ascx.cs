@@ -21,6 +21,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -153,7 +154,7 @@ namespace RockWeb.Blocks.Core
                     binaryFile.Id = fsFile.BinaryFileId ?? 0;
 
                     // create a rockContext for the workflow so that it can save it's changes, without 
-                    var workflowRockContext = new RockContext();
+                    var workflowRockContext = RockApp.Current.CreateRockContext();
                     var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
@@ -197,7 +198,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="binaryFileTypeId">The binary file type id.</param>
         public void ShowDetail( int binaryFileId, int? binaryFileTypeId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var binaryFileService = new BinaryFileService( rockContext );
             BinaryFile binaryFile = null;
 
@@ -253,7 +254,7 @@ namespace RockWeb.Blocks.Core
 
             if ( binaryFile.BinaryFileTypeId.HasValue )
             {
-                fsFile.BinaryFileTypeGuid = new BinaryFileTypeService( new RockContext() ).Get( binaryFile.BinaryFileTypeId.Value ).Guid;
+                fsFile.BinaryFileTypeGuid = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( binaryFile.BinaryFileTypeId.Value ).Guid;
             }
 
             tbName.Text = binaryFile.FileName;
@@ -323,7 +324,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( OrphanedBinaryFileIdList.Count > 0 )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 BinaryFileService binaryFileService = new BinaryFileService( rockContext );
 
                 foreach ( var id in OrphanedBinaryFileIdList )
@@ -349,7 +350,7 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             BinaryFile binaryFile;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
 
@@ -462,7 +463,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void fsFile_FileUploaded( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var binaryFileService = new BinaryFileService( rockContext );
             BinaryFile binaryFile = null;
             if ( fsFile.BinaryFileId.HasValue )
@@ -511,7 +512,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( fsFile.BinaryFileId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var binaryFile = binaryFileService.Get( fsFile.BinaryFileId.Value );

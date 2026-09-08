@@ -21,6 +21,7 @@ using System.Text;
 
 using Microsoft.Owin;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -133,7 +134,7 @@ namespace Rock.Oidc
                 var databaseAuth = AuthenticationContainer.GetComponent( entityTypeName ) as Rock.Security.Authentication.Database;
                 var encryptedClientSecret = databaseAuth.EncryptString( clientSecret );
 
-                using ( var rockContext = new Data.RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var authClient = new AuthClient
                     {

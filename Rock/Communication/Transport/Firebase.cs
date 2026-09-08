@@ -28,6 +28,7 @@ using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -207,7 +208,7 @@ namespace Rock.Communication.Transport
         /// <param name="mediumAttributes">The medium attributes.</param>
         private void SendPushNotification( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
         {
-            using ( var communicationRockContext = new RockContext() )
+            using ( var communicationRockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
@@ -248,7 +249,7 @@ namespace Rock.Communication.Transport
                     while ( recipientFound )
                     {
                         // make a new rockContext per recipient
-                        var recipientRockContext = new RockContext();
+                        var recipientRockContext = RockApp.Current.CreateRockContext();
                         var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
                         if ( recipient != null )
                         {
@@ -569,7 +570,7 @@ namespace Rock.Communication.Transport
         /// <remarks>This shouldn't be used, you should use <see cref="SendPushNotification(Rock.Model.Communication, int, Dictionary{string, string})" /> instead.</remarks>
         private void SendLegacy( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
         {
-            using ( var communicationRockContext = new RockContext() )
+            using ( var communicationRockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
@@ -613,7 +614,7 @@ namespace Rock.Communication.Transport
                     while ( recipientFound )
                     {
                         // make a new rockContext per recipient
-                        var recipientRockContext = new RockContext();
+                        var recipientRockContext = RockApp.Current.CreateRockContext();
                         var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
                         if ( recipient != null )
                         {

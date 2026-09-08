@@ -1,0 +1,77 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="panel panel-body">
+        <!-- Top row: Group / Location + Tag / Schedule -->
+        <div class="row">
+            <div class="col-sm-6">
+                <RockLiteral label="Group">{{ detail.groupText }}</RockLiteral>
+                <RockLiteral label="Location">{{ detail.locationText }}</RockLiteral>
+            </div>
+            <div class="col-sm-6">
+                <RockLiteral label="Tag">{{ detail.tagText }}</RockLiteral>
+                <RockLiteral label="Schedule">{{ detail.scheduleText }}</RockLiteral>
+            </div>
+        </div>
+
+        <hr />
+
+        <!-- Bottom row: Check-in / Present / Checked-out labels + Change History + Search -->
+        <div class="row">
+            <div class="col-md-6">
+                <RockLiteral v-if="detail.checkInLabel" label="Check-in">{{ detail.checkInLabel }}</RockLiteral>
+                <RockLiteral v-if="detail.presentLabel" label="Present">{{ detail.presentLabel }}</RockLiteral>
+                <RockLiteral v-if="detail.checkedOutLabel" label="Checked-out">{{ detail.checkedOutLabel }}</RockLiteral>
+            </div>
+            <div class="col-md-6">
+                <ChangeHistoryList :history="detail.changeHistory ?? []" />
+
+                <SearchGroupPanel v-if="detail.isSearchSectionVisible" :detail="detail" />
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <RockButton v-if="detail.canEdit"
+                        btnType="primary"
+                        :disabled="isLoadingEdit"
+                        :isLoading="isLoadingEdit"
+                        @click="$emit('edit')">Edit</RockButton>
+            <RockButton v-if="detail.canDelete"
+                        btnType="link"
+                        :disabled="isLoadingDelete"
+                        :isLoading="isLoadingDelete"
+                        @click="$emit('delete')">Delete</RockButton>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ChangeHistoryList from "./changeHistoryList.partial.obs";
+    import SearchGroupPanel from "./searchGroupPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import { AttendanceDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailBag";
+
+    defineProps({
+        detail: {
+            type: Object as PropType<AttendanceDetailBag>,
+            required: true
+        },
+
+        isLoadingEdit: {
+            type: Boolean,
+            default: false
+        },
+
+        isLoadingDelete: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "edit"): void;
+        (e: "delete"): void;
+    }>();
+</script>

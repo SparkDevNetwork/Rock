@@ -26,6 +26,7 @@ using HtmlAgilityPack;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -315,7 +316,7 @@ namespace RockWeb.Blocks.Cms
             bool supportVersioning = GetAttributeValue( AttributeKey.SupportVersions ).AsBoolean();
             bool requireApproval = GetAttributeValue( AttributeKey.RequireApproval ).AsBoolean();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             HtmlContentService htmlContentService = new HtmlContentService( rockContext );
 
             // get settings
@@ -472,7 +473,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void SelectVersion_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            HtmlContent htmlContent = new HtmlContentService( new RockContext() ).Get( e.RowKeyId );
+            HtmlContent htmlContent = new HtmlContentService( RockApp.Current.CreateRockContext() ).Get( e.RowKeyId );
             pnlVersionGrid.Visible = false;
             pnlEdit.Visible = true;
             ShowEditDetail( htmlContent );
@@ -578,7 +579,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            var htmlContentService = new HtmlContentService( new RockContext() );
+            var htmlContentService = new HtmlContentService( RockApp.Current.CreateRockContext() );
             var content = htmlContentService.GetContent( this.BlockId, EntityValue() ).OrderByDescending( a => a.Version ).ThenByDescending( a => a.ModifiedDateTime ).ToList();
 
             var versions = content.Select( v =>
@@ -683,7 +684,7 @@ namespace RockWeb.Blocks.Cms
             lbDeny.Enabled = IsUserAuthorized( "Approve" );
 
             string entityValue = EntityValue();
-            HtmlContent htmlContent = new HtmlContentService( new RockContext() ).GetLatestVersion( this.BlockId, entityValue );
+            HtmlContent htmlContent = new HtmlContentService( RockApp.Current.CreateRockContext() ).GetLatestVersion( this.BlockId, entityValue );
 
             // set Height of editors
             if ( supportsVersioning && requireApproval )
@@ -773,7 +774,7 @@ namespace RockWeb.Blocks.Cms
         private int? GetMaxVersionOfHtmlContent()
         {
             string entityValue = this.EntityValue();
-            int? maxVersion = new HtmlContentService( new RockContext() ).Queryable()
+            int? maxVersion = new HtmlContentService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( c => c.BlockId == this.BlockId && c.EntityValue == entityValue )
                 .Select( c => ( int? ) c.Version ).Max();
             return maxVersion;
@@ -819,7 +820,7 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var htmlContentService = new HtmlContentService( rockContext );
                     var contentHtml = htmlContentService.GetActiveContentHtml( this.BlockId, entityValue );

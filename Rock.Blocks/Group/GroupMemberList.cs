@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -54,7 +55,7 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetGroupMemberList( int groupId, FilterOptions filterOptions, SortProperty sortProperty )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var query = groupMemberService.Queryable()

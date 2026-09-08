@@ -26,6 +26,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -136,7 +137,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupType = GroupTypeCache.Get( GetAttributeValue( AttributeKey.GroupType ).AsGuid() );
             var results = new StringBuilder();
             

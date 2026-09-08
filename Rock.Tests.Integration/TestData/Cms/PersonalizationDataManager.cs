@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Personalization;
@@ -77,7 +78,7 @@ namespace Rock.Tests.Integration.TestData.Crm
 
         private void ConfigurePersonalizationSegments()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personalizationService = new PersonalizationSegmentService( rockContext );
 
             // Segment: All Men
@@ -183,7 +184,7 @@ namespace Rock.Tests.Integration.TestData.Crm
 
         private void ConfigurePersonalizationRequestFilters()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var filterService = new RequestFilterService( rockContext );
 
             // Request Filter: Desktop Device.
@@ -248,7 +249,7 @@ namespace Rock.Tests.Integration.TestData.Crm
 
         private void ConfigurePersonalizationForPeople()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Ted Decker: Male, Married, Attender, Has Given, Small Group.
             AddOrUpdatePersonalizationSegmentForPerson( rockContext, Constants.SegmentAllMenGuid, TestGuids.TestPeople.TedDecker );
@@ -331,7 +332,7 @@ namespace Rock.Tests.Integration.TestData.Crm
 
         private void ConfigurePersonalizationForSite()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var siteManager = new SiteService( rockContext );
             var site = siteManager.GetByIdentifierOrThrow( SystemGuid.Site.EXTERNAL_SITE );
@@ -344,7 +345,7 @@ namespace Rock.Tests.Integration.TestData.Crm
 
         private void SetContentChannelPersonalizationEnabled( string contentChannelIdentifier, bool isEnabled )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var siteManager = new ContentChannelService( rockContext );
             var contentChannel = siteManager.GetByIdentifierOrThrow( contentChannelIdentifier );
@@ -356,7 +357,7 @@ namespace Rock.Tests.Integration.TestData.Crm
 
         private void SetContentChannelItemPersonalizationSegments( string contentChannelItemIdentifier, List<string> segmentIdentifiers )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var itemService = new ContentChannelItemService( rockContext );
             var contentItem = itemService.GetByIdentifierOrThrow( contentChannelItemIdentifier, "Title" );

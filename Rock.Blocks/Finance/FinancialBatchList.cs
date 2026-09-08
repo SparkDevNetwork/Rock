@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -443,7 +444,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new FinancialBatchService( rockContext );
                 var transactionService = new FinancialTransactionService( rockContext );
@@ -510,7 +511,7 @@ namespace Rock.Blocks.Finance
 
             var newStatus = request.Open ? BatchStatus.Open : BatchStatus.Closed;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 string message = null;
                 List<string> errors = null;

@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Rock.Chart;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
@@ -58,7 +59,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             nbMetricWarning.Visible = false;
 
             // Configure the chart for the specified Metric.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var metricService = new MetricService( rockContext );
 
             var metric = metricService.Get( this.MetricId.GetValueOrDefault( 0 ) );

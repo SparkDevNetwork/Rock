@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -666,13 +667,13 @@ namespace Rock.Web.UI.Controls
             var currentPerson = this.RockBlock().CurrentPerson;
 
             // only show the File/Image plugin if they have Auth to the file browser page
-            var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
+            var fileBrowserPage = new Rock.Model.PageService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
             if ( fileBrowserPage != null && currentPerson != null )
             {
                 rockFileBrowserEnabled = fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson );
             }
 
-            var assetManagerPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME.AsGuid() );
+            var assetManagerPage = new Rock.Model.PageService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME.AsGuid() );
             if ( assetManagerPage != null && currentPerson != null && rockAssetManagerEnabled )
             {
                 rockAssetManagerEnabled = assetManagerPage.IsAuthorized( Authorization.VIEW, currentPerson );

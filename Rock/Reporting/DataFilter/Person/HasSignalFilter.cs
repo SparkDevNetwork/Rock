@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -154,7 +155,7 @@ function() {
             if ( selectionValues.Length >= 1 )
             {
                 int signalTypeId = selectionValues[0].AsInteger();
-                var selectedSignalType = new SignalTypeService( new RockContext() ).Get( signalTypeId );
+                var selectedSignalType = new SignalTypeService( RockApp.Current.CreateRockContext() ).Get( signalTypeId );
 
                 if ( selectedSignalType != null )
                 {
@@ -183,7 +184,7 @@ function() {
             ddlSignalType.Label = "Signal Type";
             filterControl.Controls.Add( ddlSignalType );
 
-            var signalTypeService = new SignalTypeService( new RockContext() );
+            var signalTypeService = new SignalTypeService( RockApp.Current.CreateRockContext() );
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var signalTypes = signalTypeService.Queryable()
                 .OrderBy( a => a.Order )

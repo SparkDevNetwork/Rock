@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Reminders
 {
@@ -135,7 +136,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <returns>List&lt;ReminderInfoBag&gt;.</returns>
         private List<ReminderInfoBag> GetReminderBags( Guid personGuid, Guid? entityTypeGuid, Guid? entityGuid, Guid? reminderTypeGuid, int startIndex, int count, List<Guid> excludedReminderTypes, FilterBag filter = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -331,7 +332,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             //
             if ( filter.ReminderType.HasValue )
             {
-                var reminderTypeId = new ReminderTypeService( new RockContext() ).GetId( filter.ReminderType.Value );
+                var reminderTypeId = new ReminderTypeService( RockApp.Current.CreateRockContext() ).GetId( filter.ReminderType.Value );
                 reminders = reminders.Where( r => r.ReminderTypeId == reminderTypeId );
             }
 
@@ -344,7 +345,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <param name="reminderGuid">The reminder GUID.</param>
         private static void DeleteReminderInternal( Guid reminderGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.Get( reminderGuid );
@@ -379,7 +380,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         [BlockAction]
         public BlockActionResult SetReminderCompletion( Guid reminderGuid, bool complete )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
                 var reminder = reminderService.Get( reminderGuid );

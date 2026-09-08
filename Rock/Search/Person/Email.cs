@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Model;
@@ -63,7 +64,7 @@ namespace Rock.Search.Person
         /// <returns>A queryable of entity objects that match the search term.</returns>
         private IQueryable<Model.Person> GetSearchResults( string searchTerm )
         {
-            var personService = new PersonService( new RockContext() );
+            var personService = new PersonService( RockApp.Current.CreateRockContext() );
 
             if ( searchTerm.IsSingleSpecialCharacter() )
             {

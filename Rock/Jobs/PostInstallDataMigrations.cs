@@ -23,6 +23,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -67,7 +68,7 @@ namespace Rock.Jobs
 
         private static void DeleteJob( int jobId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );
@@ -83,7 +84,7 @@ namespace Rock.Jobs
 
         internal void InsertAnalyticsSourceDateData( int commandTimeout )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
                 if ( !rockContext.Set<AnalyticsSourceDate>().AsQueryable().Any() )
@@ -103,7 +104,7 @@ namespace Rock.Jobs
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
                 if ( !rockContext.Set<AnalyticsSourcePostalCode>().AsQueryable().Any() )
@@ -115,7 +116,7 @@ namespace Rock.Jobs
 
         private void InsertIdentityVerificationCodeData( int commandTimeout )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
                 rockContext.Database.ExecuteSqlCommand( "DELETE FROM IdentityVerificationCode" );

@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Core.Campus.Options;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -371,7 +372,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 //
                 // Indicate that we are a dynamic content providing block.
@@ -416,7 +417,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <returns>A string containing the XAML content to be displayed.</returns>
         private string BuildContent( Guid? campusGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var validCampuses = GetValidCampuses( rockContext );
 

@@ -23,6 +23,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.Scheduling;
 using Rock.Enums.Controls;
@@ -231,7 +232,7 @@ namespace Rock.Blocks.Group.Scheduling
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new GroupSchedulerInitializationBox();
 
@@ -2098,7 +2099,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult RefineFilters( GroupSchedulerFiltersBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 RefineFilters( rockContext, ValidateClientFilters( rockContext, bag ), true );
 
@@ -2114,7 +2115,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult ApplyFilters( GroupSchedulerFiltersBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var appliedFilters = ApplyFilters( rockContext, ValidateClientFilters( rockContext, bag ) );
 
@@ -2130,7 +2131,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetResourceSettings( int groupId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var resourceSettings = new GroupSchedulerResourceSettingsBag();
 
@@ -2149,7 +2150,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult ApplyResourceSettings( GroupSchedulerApplyResourceSettingsBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var resourceSettings = ApplyResourceSettings( rockContext, bag ?? new GroupSchedulerApplyResourceSettingsBag() );
 
@@ -2165,7 +2166,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetOrAddAttendanceOccurrence( GroupSchedulerOccurrenceBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 GetOrAddAttendanceOccurrence( rockContext, bag );
 
@@ -2186,7 +2187,7 @@ namespace Rock.Blocks.Group.Scheduling
                 return ActionForbidden( "You are not authorized to clone schedules." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var cloneSettings = GetDefaultOrPersonPreferenceCloneSettings( rockContext, ValidateClientFilters( rockContext, bag ) );
 
@@ -2207,7 +2208,7 @@ namespace Rock.Blocks.Group.Scheduling
                 return ActionForbidden( "You are not authorized to clone schedules." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var response = CloneSchedules( rockContext, bag ?? new GroupSchedulerCloneSettingsBag() );
 
@@ -2228,7 +2229,7 @@ namespace Rock.Blocks.Group.Scheduling
                 return ActionForbidden( "You are not authorized to perform auto scheduling." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var appliedFilters = AutoSchedule( rockContext, ValidateClientFilters( rockContext, bag ) );
 
@@ -2290,7 +2291,7 @@ namespace Rock.Blocks.Group.Scheduling
             // Validate the filters synchronously while we still have request-scoped state available. The
             // background task then operates on the validated bag using its own RockContext.
             GroupSchedulerFiltersBag validatedFilters;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 validatedFilters = ValidateClientFilters( rockContext, bag );
             }
@@ -2331,7 +2332,7 @@ namespace Rock.Blocks.Group.Scheduling
                         progress.StartTask( "Preparing..." );
 
                         GroupSchedulerSendConfirmationsResponseBag response;
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             response = SendConfirmations( rockContext, filters, progress );
                         }
@@ -2389,7 +2390,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetPreferences( GroupSchedulerGetPreferencesBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var preferences = GetPreferences( rockContext, bag ?? new GroupSchedulerGetPreferencesBag() );
 
@@ -2405,7 +2406,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult UpdatePreference( GroupSchedulerUpdatePreferenceBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 UpdatePreference( rockContext, bag ?? new GroupSchedulerUpdatePreferenceBag() );
 

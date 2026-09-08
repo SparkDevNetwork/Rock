@@ -30,6 +30,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -183,12 +184,12 @@ function() {
             if ( selectionConfig != null )
             {
                 var group = GroupCache.Get( selectionConfig.GroupId );
-                var location = new LocationService( new RockContext() ).Get( selectionConfig.LocationId );
+                var location = new LocationService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.LocationId );
 
                 List<Schedule> groupLocationSchedules = new List<Schedule>();
                 if ( selectionConfig.GroupLocationSchedules?.Count > 0)
                 {
-                    groupLocationSchedules = new ScheduleService( new RockContext() )
+                    groupLocationSchedules = new ScheduleService( RockApp.Current.CreateRockContext() )
                         .Queryable()
                         .Where( s => selectionConfig.GroupLocationSchedules.Contains( s.Guid ) )
                         .ToList();
@@ -316,7 +317,7 @@ function() {
             {
                 ddlGroupLocation.Items.Clear();
 
-                var locations = new GroupLocationService( new RockContext() ).Queryable()
+                var locations = new GroupLocationService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( gl => gl.GroupId == groupId )
                     .Select( gl => new ListItem
                     {
@@ -355,7 +356,7 @@ function() {
             {
                 cblGroupScheduleLocations.Items.Clear();
 
-                var groupLocationSchedules = new GroupLocationService( new RockContext() ).Queryable()
+                var groupLocationSchedules = new GroupLocationService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( gl => gl.GroupId == groupId && gl.LocationId == groupLocationId )
                     .SelectMany( gl => gl.Schedules )
                     .Select( s => new ListItem

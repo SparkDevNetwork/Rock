@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Enums;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -869,7 +870,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetRegistrationOptions( Guid? groupGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( GroupGuid ?? groupGuid ?? Guid.Empty );
 
@@ -938,7 +939,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult Register( Guid? groupGuid, PersonDetail person, PersonDetail spouse, List<Guid> familyMembers )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Really? More than 25 people in your family? Go away.
                 if ( familyMembers != null && familyMembers.Count > 25 )

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -331,7 +332,7 @@ namespace Rock.Model
         /// <returns>The ID of the newly created entity set, or null if it was unable to create.</returns>
         internal static int? CreateEntitySetFromItems( List<int> entityItemIds, int entityTypeId, int timeToExpire = 15, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             return CreateEntitySetFromItemIds( entityItemIds, entityTypeId, timeToExpire, rockContext )?.Id;
         }
 
@@ -345,7 +346,7 @@ namespace Rock.Model
         /// <returns>The GUID of the newly created entity set, or null if the entity service for the entity type was not found.</returns>
         internal static Guid? CreateEntitySetFromItems( List<Guid> entityItemGuids, Guid entityTypeGuid, int timeToExpire = 15, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             // Get the entity type from its GUID.
             var entityType = EntityTypeCache.Get( entityTypeGuid );
@@ -394,7 +395,7 @@ namespace Rock.Model
         /// <returns>The Guid and the Id of the entity set that was created, or null if it was unable to create.</returns>
         private static (int Id, Guid Guid)? CreateEntitySetFromItemIds( List<int> entityItemIds, int entityTypeId, int timeToExpire = 15, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             // Create the entity set and set the default expiration date.
             var entitySet = new Rock.Model.EntitySet();

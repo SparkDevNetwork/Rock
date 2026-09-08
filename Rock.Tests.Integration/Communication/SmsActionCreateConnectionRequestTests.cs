@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication;
 using Rock.Communication.SmsActions;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -79,7 +80,7 @@ namespace Rock.Tests.Integration.Communication
             */
             var fieldTypeGuid = new Guid( Rock.SystemGuid.FieldType.CONNECTION_TYPE_SETTINGS );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var fieldTypeService = new FieldTypeService( rockContext );
                 if ( fieldTypeService.Get( fieldTypeGuid ) == null )
@@ -98,7 +99,7 @@ namespace Rock.Tests.Integration.Communication
                 }
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var smsActionEntityTypeId = EntityTypeCache.Get( typeof( SmsAction ) ).Id;
                 var componentEntityTypeId = EntityTypeCache.Get( typeof( SmsActionCreateConnectionRequest ) ).Id;
@@ -126,7 +127,7 @@ namespace Rock.Tests.Integration.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     pipelineId = CreateTestPipeline( rockContext );
                     actionId = CreateTestAction( rockContext, pipelineId, opportunityGuid: OpportunityGuid );
@@ -167,7 +168,7 @@ namespace Rock.Tests.Integration.Communication
             {
                 namelessPerson = EnsureNamelessPerson( "+15555559101" );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     pipelineId = CreateTestPipeline( rockContext );
                     actionId = CreateTestAction( rockContext, pipelineId, opportunityGuid: OpportunityGuid, passNamelessPerson: true );
@@ -202,7 +203,7 @@ namespace Rock.Tests.Integration.Communication
             {
                 namelessPerson = EnsureNamelessPerson( "+15555559102" );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     pipelineId = CreateTestPipeline( rockContext );
                     actionId = CreateTestAction( rockContext, pipelineId, opportunityGuid: OpportunityGuid, passNamelessPerson: false );
@@ -235,7 +236,7 @@ namespace Rock.Tests.Integration.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     pipelineId = CreateTestPipeline( rockContext );
                     actionId = CreateTestAction( rockContext, pipelineId, opportunityGuid: Guid.NewGuid() );
@@ -325,7 +326,7 @@ namespace Rock.Tests.Integration.Communication
 
                 Reason: Prevent ObjectDisposedException when PrimaryAlias lazy-loads.
             */
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new PersonService( rockContext )
                     .Queryable( "Aliases" )
@@ -335,7 +336,7 @@ namespace Rock.Tests.Integration.Communication
 
         private static Person EnsureNamelessPerson( string phoneNumber )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var existing = personService.GetPersonFromMobilePhoneNumber( phoneNumber, createNamelessPersonIfNotFound: true );
@@ -366,7 +367,7 @@ namespace Rock.Tests.Integration.Communication
 
         private static int AssertConnectionRequestCreated( Person fromPerson, Guid opportunityGuid, out ConnectionRequest request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 request = new ConnectionRequestService( rockContext )
                     .Queryable( "ConnectionOpportunity" )
@@ -386,7 +387,7 @@ namespace Rock.Tests.Integration.Communication
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var any = new ConnectionRequestService( rockContext )
                     .Queryable()
@@ -402,7 +403,7 @@ namespace Rock.Tests.Integration.Communication
 
         private static void CleanUp( int connectionRequestId, int actionId, int pipelineId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( connectionRequestId > 0 )
                 {

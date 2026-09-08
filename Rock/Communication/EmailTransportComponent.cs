@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Rock.Communication.Transport;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -146,7 +147,7 @@ namespace Rock.Communication
         /// </remarks>
         public async Task SendAsync( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
         {
-            using ( var communicationRockContext = new RockContext() )
+            using ( var communicationRockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = GetSendableCommunication( communication.Id, communicationRockContext );
@@ -291,7 +292,7 @@ namespace Rock.Communication
         /// <param name="mediumAttributes">The medium attributes.</param>
         public override void Send( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
         {
-            using ( var communicationRockContext = new RockContext() )
+            using ( var communicationRockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
@@ -341,7 +342,7 @@ namespace Rock.Communication
                 var recipientFound = true;
                 while ( recipientFound )
                 {
-                    using ( var recipientRockContext = new RockContext() )
+                    using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
                     {
                         var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
 
@@ -638,7 +639,7 @@ namespace Rock.Communication
             // Attachments
             if ( emailMessage.Attachments.Any() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     foreach ( var binaryFileId in emailMessage.Attachments.Where( a => a != null ).Select( a => a.Id ) )
@@ -1126,7 +1127,7 @@ namespace Rock.Communication
         /// <returns></returns>
         private Rock.Model.CommunicationRecipient GetNextPending( int communicationId, int mediumEntityId, bool isBulkCommunication )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var recipient = Model.Communication.GetNextPending( communicationId, mediumEntityId, rockContext );
                 if ( ValidRecipient( recipient, isBulkCommunication ) )
@@ -1161,7 +1162,7 @@ namespace Rock.Communication
            string organizationEmail )
         {
             var methodTimer = System.Diagnostics.Stopwatch.StartNew();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var recipient = new CommunicationRecipientService( rockContext ).Get( recipientId );
 

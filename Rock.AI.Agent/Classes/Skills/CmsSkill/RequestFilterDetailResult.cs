@@ -1,0 +1,54 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Entity;
+
+namespace Rock.AI.Agent.Classes.Skills.CmsSkill;
+
+/// <summary>
+/// A single request filter in full detail.
+/// </summary>
+internal class RequestFilterDetailResult : EntityResultBase
+{
+    /// <summary>
+    /// The friendly name of the request filter.
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The programmatic key of the request filter.
+    /// </summary>
+    public string RequestFilterKey { get; set; }
+
+    /// <summary>
+    /// The site the request filter is scoped to, or <c>null</c> when it applies to
+    /// all sites.
+    /// </summary>
+    public KeyNameResult Site { get; set; }
+
+    /// <summary>
+    /// Indicates that the request filter is active.
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
+    /// Indicates that the request filter defines matching criteria. The criteria
+    /// themselves are not returned; they are edited through Rock's personalization
+    /// screens.
+    /// </summary>
+    public bool HasFilterCriteria { get; set; }
+}

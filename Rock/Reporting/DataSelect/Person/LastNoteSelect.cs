@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -235,7 +236,7 @@ namespace Rock.Reporting.DataSelect.Person
             ddlNoteType.Label = "Note Type";
             parentControl.Controls.Add( ddlNoteType );
 
-            var noteTypeService = new NoteTypeService( new RockContext() );
+            var noteTypeService = new NoteTypeService( RockApp.Current.CreateRockContext() );
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var noteTypes = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
             {

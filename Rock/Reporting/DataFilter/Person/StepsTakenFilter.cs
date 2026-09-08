@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -341,7 +342,7 @@ function() {
                 return result;
             }
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Step Program
             var stepProgram = this.GetStepProgram( dataContext, settings.StepProgramGuid );
@@ -433,7 +434,7 @@ function() {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Step Program selection
             var stepProgramSingleEntityPicker = new SingleEntityPicker<StepProgram>();
@@ -540,7 +541,7 @@ function() {
         /// <param name="filterField">The filter field.</param>
         private void PopulateStepProgramRelatedSelectionLists( FilterField filterField )
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var programService = new StepProgramService( dataContext );
 
@@ -625,7 +626,7 @@ function() {
 
             int stepProgramId = stepProgramSingleEntityPicker.SelectedValueAsId() ?? 0;
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var stepProgram = GetStepProgram( dataContext, stepProgramId );
 
@@ -665,7 +666,7 @@ function() {
             var settings = new FilterSettings( selection );
 
             // Step Program
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             StepProgram stepProgram = null;
 

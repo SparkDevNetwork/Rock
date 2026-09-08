@@ -4759,6 +4759,9 @@
     if (!isNullOrWhiteSpace(box.options?.connectionRequestIdKey)) {
         onSelectItem(box.options!.connectionRequestIdKey!);
     }
+    else if (box.options?.isAddConnectionRequestRequested && canEditConnectionRequests.value) {
+        onAddItem();
+    }
 
     onConfigurationValuesChanged(useReloadBlock());
 

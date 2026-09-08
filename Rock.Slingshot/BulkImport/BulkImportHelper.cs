@@ -26,6 +26,7 @@ using System.Web;
 
 using Rock;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Slingshot.Model;
@@ -103,7 +104,7 @@ namespace Rock.Slingshot
             var stopwatchTotal = Stopwatch.StartNew();
             var stopwatch = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var sbStats = new StringBuilder();
 
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
@@ -293,7 +294,7 @@ namespace Rock.Slingshot
         {
             var stopwatchTotal = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var qryFinancialAccountsWithForeignIds = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
@@ -426,7 +427,7 @@ namespace Rock.Slingshot
         /// <returns></returns>
         public static List<string> TablesThatHaveForeignSystemKey( string foreignSystemKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var tableList = new List<string>();
 
             // Don't check Attendance ForeignId since it might not have a ForeignId from the source system
@@ -533,7 +534,7 @@ namespace Rock.Slingshot
         /// <returns></returns>
         public static List<string> UsedForeignSystemKeys()
         {
-            return new PersonService( new RockContext() ).Queryable().Where( a => a.ForeignId.HasValue && !string.IsNullOrEmpty( a.ForeignKey ) ).Select( a => a.ForeignKey ).Distinct().ToList();
+            return new PersonService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.ForeignId.HasValue && !string.IsNullOrEmpty( a.ForeignKey ) ).Select( a => a.ForeignKey ).Distinct().ToList();
         }
 
         #endregion FinancialAccountImport
@@ -549,7 +550,7 @@ namespace Rock.Slingshot
         {
             var stopwatchTotal = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var qryFinancialBatchsWithForeignIds = new FinancialBatchService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
@@ -731,7 +732,7 @@ namespace Rock.Slingshot
         {
             var stopwatchTotal = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             int? giverAnonymousPersonAliasId = new PersonService( rockContext ).GetOrCreateAnonymousGiverPerson().Aliases.FirstOrDefault().Id;
 
@@ -966,7 +967,7 @@ namespace Rock.Slingshot
             var stopwatchTotal = Stopwatch.StartNew();
             var stopwatch = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var sbStats = new StringBuilder();
 
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
@@ -1433,7 +1434,7 @@ WHERE gta.GroupTypeId IS NULL" );
         }
         private bool UpdateGroupFromGroupImport( GroupImport groupImport, Group lookupGroup, Dictionary<int, int> personIdLookup, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, string foreignSystemKey, DateTime importDateTime )
         {
-            using ( var rockContextForGroupUpdate = new RockContext() )
+            using ( var rockContextForGroupUpdate = RockApp.Current.CreateRockContext() )
             {
                 new GroupService( rockContextForGroupUpdate ).Attach( lookupGroup );
                 var group = lookupGroup;
@@ -1615,7 +1616,7 @@ WHERE gta.GroupTypeId IS NULL" );
         {
             var stopwatchTotal = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var qryLocationsWithForeignIds = new LocationService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
@@ -1763,7 +1764,7 @@ WHERE gta.GroupTypeId IS NULL" );
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
             var stopwatchTotal = Stopwatch.StartNew();
             var stopwatch = Stopwatch.StartNew();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var qryAllPersons = new PersonService( rockContext ).Queryable( true, true );
             var groupService = new GroupService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
@@ -2244,7 +2245,7 @@ WHERE gta.GroupTypeId IS NULL" );
         /// <returns></returns>
         private bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey, DateTime importDateTime )
         {
-            using ( var rockContextForPersonUpdate = new RockContext() )
+            using ( var rockContextForPersonUpdate = RockApp.Current.CreateRockContext() )
             {
                 new PersonService( rockContextForPersonUpdate ).Attach( lookupPerson );
                 var person = lookupPerson;
@@ -2423,7 +2424,7 @@ WHERE gta.GroupTypeId IS NULL" );
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
             var stopwatchTotal = Stopwatch.StartNew();
             var stopwatch = Stopwatch.StartNew();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var qryAllPersons = new PersonService( rockContext ).Queryable( true, true );
             var groupService = new GroupService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
@@ -2839,7 +2840,7 @@ WHERE gta.GroupTypeId IS NULL" );
         /// <returns></returns>
         private bool UpdateBusinessFromPersonImport( Person lookupBusiness, PersonImport businessImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey, DateTime importDateTime )
         {
-            using ( var rockContextForBusinessUpdate = new RockContext() )
+            using ( var rockContextForBusinessUpdate = RockApp.Current.CreateRockContext() )
             {
                 new PersonService( rockContextForBusinessUpdate ).Attach( lookupBusiness );
                 var business = lookupBusiness;
@@ -2984,7 +2985,7 @@ WHERE gta.GroupTypeId IS NULL" );
         {
             var stopwatchTotal = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var binaryFilesToInsert = new List<BinaryFile>();
             var photoTypeForeignIdBinaryFileGuidDictionary = new Dictionary<PhotoImport.PhotoImportType, Dictionary<int, Guid>>();
@@ -3189,7 +3190,7 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
         {
             var stopwatchTotal = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var qrySchedulesWithForeignIds = new ScheduleService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
@@ -3260,7 +3261,7 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
         {
             var stopwatchTotal = Stopwatch.StartNew();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var qryFinancialPledgesWithForeignIds = new FinancialPledgeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
@@ -3392,7 +3393,7 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
                 return "WARNING: NoteType for one or more notes is not for the specified entityTypeId. No Notes imported.";
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var qryNotesWithForeignIds = new NoteService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.NoteType.EntityTypeId == entityTypeId );
 

@@ -17,6 +17,7 @@
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
@@ -139,7 +140,7 @@ namespace Rock.UniversalSearch.IndexModels
             var knownRelationshipOwnerRoleId = knownRelationshipGroupType.Roles.Where( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ).FirstOrDefault().Id;
             var knownRelationshipBusinessContactId = knownRelationshipGroupType.Roles.Where( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ).FirstOrDefault().Id;
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             var contactGroup = new GroupMemberService( rockContext ).Queryable()
                                         .Where( m =>
                                              m.Group.GroupTypeId == knownRelationshipGroupType.Id

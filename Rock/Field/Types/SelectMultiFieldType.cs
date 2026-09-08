@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -179,7 +180,7 @@ namespace Rock.Field.Types
                 foreach ( var selectedValue in selectedValues )
                 {
                     var searchValue = "," + selectedValue + ",";
-                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                    var qryToExtract = new AttributeValueService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
                     var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
 
                     if ( comparisonType != ComparisonType.Contains )

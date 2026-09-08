@@ -27,6 +27,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -537,7 +538,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return Activate( workflowTypeCache, name, rockContext );
             }

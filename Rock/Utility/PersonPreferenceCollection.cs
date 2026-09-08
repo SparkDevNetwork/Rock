@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -338,7 +339,7 @@ namespace Rock.Utility
         /// <param name="updatedKeys">The updated keys.</param>
         private void SaveUpdatedKeys( List<string> updatedKeys )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personPreferenceService = new PersonPreferenceService( rockContext );
                 var qry = _personId.HasValue

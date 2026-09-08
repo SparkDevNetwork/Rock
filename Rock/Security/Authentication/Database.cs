@@ -26,6 +26,7 @@ using System.Text;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.Authentication.CredentialAuthentication;
@@ -248,7 +249,7 @@ namespace Rock.Security.Authentication
             }
 
             // check if username exists
-            UserLoginService userService = new UserLoginService( new RockContext() );
+            UserLoginService userService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var loginExists = userService.Queryable().Where( l => l.UserName == username ).Any();
             if ( !loginExists )
             {
@@ -397,7 +398,7 @@ namespace Rock.Security.Authentication
                 throw new NotImplementedException( "Could not generate hash from password." );
             }
 
-            using ( var context = new RockContext() )
+            using ( var context = RockApp.Current.CreateRockContext() )
             {
                 var userService = new UserLoginService( context );
                 var contextUser = userService.Get( user.Id );

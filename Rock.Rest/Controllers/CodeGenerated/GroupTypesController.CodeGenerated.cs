@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypesController"/> class.
         /// </summary>
-        public GroupTypesController() : base( new Rock.Model.GroupTypeService( new Rock.Data.RockContext() ) ) { } 
+        public GroupTypesController() : base( new Rock.Model.GroupTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

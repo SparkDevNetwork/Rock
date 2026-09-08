@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Newtonsoft.Json;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
@@ -22,6 +24,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
     /// <summary>
     /// The Error data returned in the response to a failed request.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIChatError
     {
         #region Properties

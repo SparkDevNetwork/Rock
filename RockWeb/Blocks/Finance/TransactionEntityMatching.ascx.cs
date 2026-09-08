@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core.Grid;
 using Rock.Field;
@@ -261,7 +262,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadDropDowns()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialBatchList = new FinancialBatchService( rockContext ).Queryable()
                 .Where( a => a.Status == BatchStatus.Open ).OrderBy( a => a.Name ).Select( a => new
                 {
@@ -289,7 +290,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             int? entityTypeQualifierValue = this.GetAttributeValue( "EntityTypeQualifierValue" ).AsIntegerOrNull();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             Dictionary<int, int?> entityLookup = _financialTransactionDetailList.Where( a => a.EntityId.HasValue ).ToDictionary( k => k.Id, v => v.EntityId );
 
@@ -324,7 +325,7 @@ namespace RockWeb.Blocks.Finance
                         .Distinct()
                         .ToList();
 
-                    var groupsWithMembersList = new GroupService( new RockContext() ).AsNoFilter()
+                    var groupsWithMembersList = new GroupService( RockApp.Current.CreateRockContext() ).AsNoFilter()
                         .Where( a => a.GroupTypeId == groupTypeId.Value
                             && ( ( a.IsActive && !a.IsArchived && a.Members.Any() ) || referencedGroupIds.Contains( a.Id ) ) )
                         .OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking()
@@ -387,7 +388,7 @@ namespace RockWeb.Blocks.Finance
                     // previous implementation hard-coded IsActive into the base filter, which
                     // made the setting a no-op). Archived Groups stay hidden unless referenced.
                     var referencedGroupIds = entityLookup.Values.Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList();
-                    var groupQry = new GroupService( new RockContext() ).AsNoFilter()
+                    var groupQry = new GroupService( RockApp.Current.CreateRockContext() ).AsNoFilter()
                         .Where( a => a.GroupTypeId == groupTypeId.Value
                             && ( !a.IsArchived || referencedGroupIds.Contains( a.Id ) ) );
                     if ( limitToActiveGroups )
@@ -510,7 +511,7 @@ namespace RockWeb.Blocks.Finance
         private void BindHtmlGrid( int? batchId, int? dataViewId )
         {
             _financialTransactionDetailList = null;
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             nbSaveSuccess.Visible = false;
             btnSave.Visible = false;
 
@@ -755,7 +756,7 @@ namespace RockWeb.Blocks.Finance
                     || financialTransactionDetailLookup.EntityId != entityId
                     || _blockTransactionTypeId.HasValue && _blockTransactionTypeId != financialTransactionDetailLookup.Transaction.TransactionTypeValueId )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var financialTransactionDetail = new FinancialTransactionDetailService( rockContext ).Get( financialTransactionDetailId.Value );
                     financialTransactionDetail.EntityTypeId = _transactionEntityType.Id;
                     financialTransactionDetail.EntityId = entityId;
@@ -829,7 +830,7 @@ namespace RockWeb.Blocks.Finance
                 ddlGroupMember.Items.Add( new ListItem() );
                 if ( groupId.HasValue )
                 {
-                    var groupMemberListItems = new GroupMemberService( new RockContext() ).Queryable().Where( a => a.GroupId == groupId.Value )
+                    var groupMemberListItems = new GroupMemberService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.GroupId == groupId.Value )
                         .OrderBy( a => a.Person.FirstName ).ThenBy( a => a.Person.LastName )
                         .Select( a => new
                         {
@@ -857,7 +858,7 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( _transactionEntityType.Id == EntityTypeCache.GetId<GroupMember>() )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var configuredGroupTypeId = GetAttributeValue( "EntityTypeQualifierValue" ).AsInteger();
                     foreach ( var ddlGroupMember in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroupMember_" ) ) )
                     {
@@ -883,7 +884,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else if ( _transactionEntityType.Id == EntityTypeCache.GetId<Group>() )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var configuredGroupTypeId = GetAttributeValue( "EntityTypeQualifierValue" ).AsInteger();
                     foreach ( var ddlGroup in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroup_" ) ) )
                     {
@@ -964,7 +965,7 @@ namespace RockWeb.Blocks.Finance
 
             ddlTransactionType.SetValue( blockTransactionType != null ? blockTransactionType.Id : ( int? ) null );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             gtpGroupType.GroupTypes = new GroupTypeService( rockContext ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().ToList();
             ddlDefinedTypePicker.Items.Clear();

@@ -17,6 +17,7 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 
+using Rock.Configuration;
 using Rock.Lava;
 using Rock.Web.Cache;
 
@@ -52,7 +53,7 @@ namespace Rock.Model
                 else
                 {
                     return this.LearningClassId > 0 ?
-                        new LearningClassService( new Data.RockContext() ).Get( this.LearningClassId ) :
+                        new LearningClassService( RockApp.Current.CreateRockContext() ).Get( this.LearningClassId ) :
                         base.ParentAuthority;
                 }
             }

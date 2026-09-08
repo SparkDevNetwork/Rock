@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Lava;
@@ -452,7 +453,7 @@ namespace Rock.Blocks.Engagement
                 return new List<StepStatus>();
             }
             
-            using (var rockContext = new RockContext())
+            using (var rockContext = RockApp.Current.CreateRockContext())
             {
                 var stepStatusService = new StepStatusService( rockContext );
                 return stepStatusService.Queryable()
@@ -474,7 +475,7 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new StepService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -143,7 +144,7 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            _channelId = new InteractionChannelService( new RockContext() ).GetSelect(
+            _channelId = new InteractionChannelService( RockApp.Current.CreateRockContext() ).GetSelect(
                 PageParameter( PageParameterKey.ChannelId ),
                 c => (int?) c.Id,
                 !PageCache.Layout.Site.DisablePredictableIds
@@ -262,7 +263,7 @@ namespace RockWeb.Blocks.Reporting
 
             int skipCount = pageNumber * sessionCount;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( _channelId.Value );
                 if ( interactionChannel != null )
@@ -422,7 +423,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public int? GetPersonId()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personId = new PersonService( rockContext ).GetSelect(
                     PageParameter( PageParameterKey.PersonId ),

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Lava;
@@ -151,7 +152,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new LiveExperienceOccurrencesInitializationBox
                 {
@@ -240,7 +241,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         {
             var showAll = GetAttributeValue( AttributeKey.ShowAll ).AsBoolean();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
                 var validOccurrences = showAll

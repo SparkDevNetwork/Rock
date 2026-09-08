@@ -17,6 +17,7 @@
 using System.Data;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -35,7 +36,7 @@ namespace Rock.Tasks
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var persistedDatasetService = new PersistedDatasetService( rockContext );
                 var persistedDataset = persistedDatasetService.Queryable().FirstOrDefault( d => d.AccessKey == message.AccessKey );

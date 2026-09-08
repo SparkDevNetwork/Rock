@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.Enums.AI;
 
 namespace Rock.AI.Classes.ChatCompletions
@@ -22,6 +24,8 @@ namespace Rock.AI.Classes.ChatCompletions
     /// <summary>
     /// The class for creating a new request for a chat completion.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public class ChatCompletionsRequestMessage
     {
         /// <summary>

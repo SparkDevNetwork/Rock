@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -85,7 +86,7 @@ namespace Rock.Field.Types
 
             int? connectionTypeFilterId = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( configurationValues.ContainsKey( CONNECTION_TYPE_FILTER_KEY ) )
                 {
@@ -151,7 +152,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var status = new ConnectionStatusService( rockContext ).GetNoTracking( guid.Value );
                     if ( status != null )
@@ -194,7 +195,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ConnectionStatusService( rockContext ).Get( guid.Value );
             }
 
@@ -215,7 +216,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var statusId = new ConnectionStatusService( rockContext ).GetId( guid.Value );
 
@@ -298,7 +299,7 @@ namespace Rock.Field.Types
             ddlConnectionTypeFilter.SelectedIndexChanged += OnQualifierUpdated;
             ddlConnectionTypeFilter.AutoPostBack = true;
 
-            var connectionTypeService = new ConnectionTypeService( new RockContext() );
+            var connectionTypeService = new ConnectionTypeService( RockApp.Current.CreateRockContext() );
             ddlConnectionTypeFilter.Items.Add( new ListItem() );
             ddlConnectionTypeFilter.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Id.ToString() } ).ToArray() );
 
@@ -388,7 +389,7 @@ namespace Rock.Field.Types
                 connectionTypeFilterId = configurationValues.ContainsKey( CONNECTION_TYPE_FILTER_KEY ) ? configurationValues[CONNECTION_TYPE_FILTER_KEY].Value.AsIntegerOrNull() : null;
             }
 
-            var statuses = new ConnectionStatusService( new RockContext() )
+            var statuses = new ConnectionStatusService( RockApp.Current.CreateRockContext() )
                 .Queryable().AsNoTracking()
                 .Where( o => o.IsActive || includeInactive )
                 .OrderBy( o => o.ConnectionType.Name )
@@ -464,7 +465,7 @@ namespace Rock.Field.Types
                         if ( listItem == null )
                         {
                             var valueGuid = value.AsGuid();
-                            var connectionStatus = new ConnectionStatusService( new RockContext() )
+                            var connectionStatus = new ConnectionStatusService( RockApp.Current.CreateRockContext() )
                                .Queryable().AsNoTracking()
                                .Where( o => o.Guid == valueGuid )
                                .FirstOrDefault();
@@ -489,7 +490,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ConnectionStatusService( new RockContext() ).Get( guid );
+            var item = new ConnectionStatusService( RockApp.Current.CreateRockContext() ).Get( guid );
 
             return item != null ? item.Id : ( int? ) null;
         }
@@ -502,7 +503,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ConnectionStatusService( new RockContext() ).Get( id ?? 0 );
+            var item = new ConnectionStatusService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
 
             SetEditValue( control, configurationValues, guidValue );

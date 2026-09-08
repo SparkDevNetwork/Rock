@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -160,7 +161,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>A string containing XAML content.</returns>
         private string BuildContent()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
                 var group = new GroupService( rockContext ).Get( groupGuid );

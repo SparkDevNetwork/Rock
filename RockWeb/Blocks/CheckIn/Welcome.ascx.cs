@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
@@ -658,7 +659,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             var people = new List<ReprintLabelPersonResult>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 bool reversed = false;
@@ -875,7 +876,7 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
         /// <returns></returns>
         private IQueryable<int> PhoneSearch( string numericPhone )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( rockContext );
             var memberService = new GroupMemberService( rockContext );
@@ -1055,7 +1056,7 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
                 return;
             }
 
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.GetByUserName( tbPIN.Text );
 
@@ -1153,7 +1154,7 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
             // Do this only once for efficiency sake vs in the repeater's ItemDataBound
             hfAllowOpenClose.Value = GetAttributeValue( AttributeKey.AllowOpeningAndClosingRooms );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             if ( this.LocalDeviceConfig.CurrentKioskId.HasValue )
             {
                 var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
@@ -1212,7 +1213,7 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
 
             if ( locationId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var location = new LocationService( rockContext ).Get( locationId.Value );
                 if ( location != null )
                 {

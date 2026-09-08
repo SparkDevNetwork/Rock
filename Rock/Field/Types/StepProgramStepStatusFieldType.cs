@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -151,7 +152,7 @@ namespace Rock.Field.Types
 
             if ( stepProgramGuid.HasValue || stepStatusGuid.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( stepProgramGuid.HasValue )
                 {
@@ -181,7 +182,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // These are intentionally out of order to maintain backward compatibility
                 // with the old FormatValue returning the wrong value. When that is fixed
@@ -353,7 +354,7 @@ namespace Rock.Field.Types
 
                 if ( stepProgramGuid.HasValue )
                 {
-                    var stepProgram = new StepProgramService( new RockContext() ).GetNoTracking( stepProgramGuid.Value );
+                    var stepProgram = new StepProgramService( RockApp.Current.CreateRockContext() ).GetNoTracking( stepProgramGuid.Value );
                     editControl.DefaultStepProgramId = stepProgram?.Id;
                 }
             }
@@ -373,7 +374,7 @@ namespace Rock.Field.Types
 
             if ( stepProgramStepStatusPicker != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 Guid? stepProgramGuid = null;
                 Guid? stepStatusGuid = null;
 

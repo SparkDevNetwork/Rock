@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -34,7 +35,7 @@ namespace Rock.Model
             /// <summary>
             /// The anonymous visitor person identifier.
             /// </summary>
-            private static readonly Lazy<int> AnonymousVisitorPersonId = new Lazy<int>( () => new PersonService( new RockContext() ).GetOrCreateAnonymousVisitorPersonId() );
+            private static readonly Lazy<int> AnonymousVisitorPersonId = new Lazy<int>( () => new PersonService( RockApp.Current.CreateRockContext() ).GetOrCreateAnonymousVisitorPersonId() );
 
             /// <inheritdoc/>
             protected override void PreSave()

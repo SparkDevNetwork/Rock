@@ -18,6 +18,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
@@ -169,7 +170,7 @@ namespace Rock.Utility.ContentLibraryApi
         /// </summary>
         private ContentLibraryApiMetadataBox ReadFromCache()
         {
-            var attributeData = new AttributeService( new RockContext() )
+            var attributeData = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetSystemSettings()
                 .Where( a => a.Key == Rock.SystemKey.SystemSetting.CONTENT_LIBRARY_DATA_JSON )
                 .Select( a => new

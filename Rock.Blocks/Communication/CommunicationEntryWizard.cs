@@ -47,6 +47,7 @@ using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.Commu
 using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
 using CommunicationType = Rock.Model.CommunicationType;
 using PushOpenAction = Rock.Utility.PushOpenAction;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Communication
 {
@@ -213,7 +214,8 @@ namespace Rock.Blocks.Communication
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "26917C58-C8A2-4BF5-98CB-378A02761CD7" )]
-    [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0" )]
     public class CommunicationEntryWizard : RockBlockType
     {
         #region Attribute Keys
@@ -1209,7 +1211,7 @@ namespace Rock.Blocks.Communication
             if ( GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
             {
                 // Enable uploading communication attachments without the normal permission restrictions
-                BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
+                BinaryFileType binaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
                 securityGrant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.EDIT ) );
             }
 
@@ -2144,7 +2146,7 @@ namespace Rock.Blocks.Communication
 
             // Create the entity set using a distinct context to ensure the nothing pending in the main context is accidentally saved.
             int? entitySetId = null;
-            using ( var entitySetCreationContext = new RockContext() )
+            using ( var entitySetCreationContext = RockApp.Current.CreateRockContext() )
             {
                 entitySetId = communicationOperationsService
                     .CreatePersonAliasEntitySet( entitySetCreationContext, personAliasIds );
@@ -2671,12 +2673,12 @@ namespace Rock.Blocks.Communication
         private void SendTestCommunication( CommunicationEntryWizardCommunicationBag bag, out string errorMessage )
         {
             errorMessage = null;
-            var communication = SaveCommunication( new RockContext(), bag );
+            var communication = SaveCommunication( RockApp.Current.CreateRockContext(), bag );
 
             if ( communication != null )
             {
                 // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var currentPerson = GetCurrentPerson();
                     // store the CurrentPerson's current Email and SMS number so we can restore it after changing them to the Test Email/SMS Number
@@ -2823,7 +2825,7 @@ namespace Rock.Blocks.Communication
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
 
                                 // Delete any Person History that was created for the Test Communication
-                                using ( var historyContext = new RockContext() )
+                                using ( var historyContext = RockApp.Current.CreateRockContext() )
                                 {
                                     var categoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid() ).Id;
                                     var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
@@ -2847,7 +2849,7 @@ namespace Rock.Blocks.Communication
                         try
                         {
                             // make sure we restore the CurrentPerson's email/SMS number if it was changed for the test
-                            using ( var restorePersonContext = new RockContext() )
+                            using ( var restorePersonContext = RockApp.Current.CreateRockContext() )
                             {
                                 var restorePersonService = new PersonService( restorePersonContext );
                                 var personToUpdate = restorePersonService.Get( testPersonId );
@@ -3237,7 +3239,7 @@ namespace Rock.Blocks.Communication
                     Message = "Working...",
                 } );
 
-                var rockContext = new RockContext(); // Create new context within the task so it can remain open.
+                var rockContext = RockApp.Current.CreateRockContext(); // Create new context within the task so it can remain open.
 
                 Model.Communication communication = null;
                 using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Send Communication > Update Communication and Recipients" ) )
@@ -3609,7 +3611,7 @@ namespace Rock.Blocks.Communication
                 // which may include other updates to the communication or related entities.
                 // This allows the entity set to be used for efficiently loading just the recipient person aliases without affecting the state of the main context.
                 int? entitySetId = null;
-                using ( var entitySetCreationContext = new RockContext() )
+                using ( var entitySetCreationContext = RockApp.Current.CreateRockContext() )
                 {
                     entitySetId = new CommunicationOperationsService().CreatePersonAliasEntitySet( entitySetCreationContext, personAliasIds );
                 }

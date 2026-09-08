@@ -25,6 +25,7 @@ using Http.TestLibrary;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Controllers;
@@ -161,7 +162,7 @@ namespace Rock.Tests.Integration.Performance.Crm.Person
             {
                 var searchText = searchStrings[i];
 
-                var dataContext = new RockContext();
+                var dataContext = RockApp.Current.CreateRockContext();
                 var locationService = new LocationService( dataContext );
                 var items = locationService.Queryable()
                     .AsNoTracking()

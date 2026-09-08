@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -187,7 +188,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ContentChannelItemService( rockContext ).Get( guid.Value );
             }
 
@@ -207,7 +208,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelItemId = ContentChannelItemCache.GetId( guid.Value );
 

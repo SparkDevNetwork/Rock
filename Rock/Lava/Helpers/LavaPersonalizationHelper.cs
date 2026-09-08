@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Personalization;
@@ -243,7 +244,7 @@ namespace Rock.Lava
                 segmentFilterCookieData = new SegmentFilterCookieData();
                 segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
-                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                var segmentIdKeys = new PersonalizationSegmentService( RockApp.Current.CreateRockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 

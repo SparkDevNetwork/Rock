@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -63,7 +64,7 @@ namespace Rock.Field.Types
         {
             var configuration = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 bool includeInactive = configuration.ContainsKey( INCLUDE_INACTIVE_KEY ) && configuration[INCLUDE_INACTIVE_KEY].AsBoolean();
 
@@ -108,7 +109,7 @@ namespace Rock.Field.Types
             System.Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var communicationTemplateName = new CommunicationTemplateService( rockContext ).GetSelect( guid.Value, a => a.Name );
                     if ( communicationTemplateName != null )
@@ -146,7 +147,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new CommunicationTemplateService( rockContext ).Get( guid.Value );
             }
 
@@ -167,7 +168,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationTemplateId = new CommunicationTemplateService( rockContext ).GetId( guid.Value );
                 if ( !communicationTemplateId.HasValue )
@@ -295,7 +296,7 @@ namespace Rock.Field.Types
             editControl.Items.Add( new ListItem() );
             var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
 
-            var templates = new CommunicationTemplateService( new RockContext() )
+            var templates = new CommunicationTemplateService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( v => ( includeInactive || v.IsActive ) && v.UsageType == null ) // By default, exclude templates with a specified usage type (e.g., Communication Flows)
                 .Select( a => new
@@ -357,7 +358,7 @@ namespace Rock.Field.Types
                         if ( listItem == null )
                         {
                             var valueGuid = value.AsGuid();
-                            var template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( v => v.Guid == valueGuid ).FirstOrDefault();
+                            var template = new CommunicationTemplateService( RockApp.Current.CreateRockContext() ).Queryable().Where( v => v.Guid == valueGuid ).FirstOrDefault();
                             if ( template != null )
                             {
                                 editControl.Items.Add( new ListItem( template.Name, template.Guid.ToString() ) );
@@ -394,7 +395,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new CommunicationTemplateService( new RockContext() ).Get( guid );
+            var item = new CommunicationTemplateService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -406,7 +407,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new CommunicationTemplateService( new RockContext() ).Get( id ?? 0 );
+            var item = new CommunicationTemplateService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -343,7 +344,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             var mergeFields = RequestContext.GetCommonMergeFields();
             SessionContext sessionContext;
             PrayerRequest request;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( context.IsNotNullOrWhiteSpace() )
             {
@@ -502,7 +503,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         [BlockAction]
         public object FlagRequest( string sessionContext )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var context = Encryption.DecryptString( sessionContext ).FromJsonOrNull<SessionContext>() ?? new SessionContext();
                 var request = new PrayerRequestService( rockContext ).Get( context.RequestIds[context.Index] );

@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -199,7 +200,7 @@ namespace Rock.Reporting.DataSelect.Person
             var groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = parentControl.ID + "_0";
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().ToList();
             groupTypePicker.AutoPostBack = true;
             parentControl.Controls.Add( groupTypePicker );
 
@@ -245,7 +246,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            var groupType = new GroupTypeService( new RockContext() ).Get( selection.AsGuid() );
+            var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( selection.AsGuid() );
             ( controls[0] as GroupTypePicker ).SetValue( groupType != null ? groupType.Id : ( int? ) null );
         }
 

@@ -15,11 +15,15 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.AI.Classes.TextCompletions
 {
     /// <summary>
     /// The class for creating a new request for a completion.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public class TextCompletionsRequest
     {
         /// <summary>

@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using TreeNode = Rock.Web.UI.Controls.TreeNode;
+using Rock.Configuration;
 
 namespace Rock.Field.Types
 {
@@ -697,7 +698,7 @@ namespace Rock.Field.Types
         private TreeNode<CategorizedValuePickerItem> GetSelectionTreeForDefinedType( int? definedTypeId, List<string> selectableValueKeys )
         {
             var listItems = new List<DefinedValueTreeNode>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get the Defined Type and associated values.
             var definedType = DefinedTypeCache.Get( definedTypeId.GetValueOrDefault( 0 ) );
@@ -931,7 +932,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             return new DefinedValueService( rockContext ).Get( value );
         }
 

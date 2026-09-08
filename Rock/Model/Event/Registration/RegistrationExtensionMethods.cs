@@ -18,6 +18,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -35,7 +36,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<FinancialTransactionDetail> GetPayments( this Registration registration, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             return new RegistrationService( rockContext ).GetPayments( registration != null ? registration.Id : 0 );
         }
 
@@ -47,7 +48,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static decimal GetTotalPaid( this Registration registration, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             return new RegistrationService( rockContext ).GetTotalPayments( registration != null ? registration.Id : 0 );
         }
 

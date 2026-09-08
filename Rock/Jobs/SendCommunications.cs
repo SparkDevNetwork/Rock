@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -101,7 +102,7 @@ namespace Rock.Jobs
             List<Model.Communication> sendCommunications = null;
             var startDateTime = RockDateTime.Now;
             var stopWatch = Stopwatch.StartNew();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 sendCommunications = new CommunicationService( rockContext )
                     .GetQueued( expirationDays, 0, false, false )
@@ -199,7 +200,7 @@ namespace Rock.Jobs
 
                 startDateTime = RockDateTime.Now;
                 stopWatch = Stopwatch.StartNew();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
                         .Where( cr =>
@@ -266,7 +267,7 @@ namespace Rock.Jobs
             var startDateTime = RockDateTime.Now;
             var stopWatch = Stopwatch.StartNew();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the communications for which to send email metrics reminders.
                 var emailMetricsReminders = new CommunicationService( rockContext )

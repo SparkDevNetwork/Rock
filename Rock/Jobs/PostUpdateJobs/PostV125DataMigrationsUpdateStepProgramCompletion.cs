@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -81,7 +82,7 @@ namespace Rock.Jobs
             var totalBatchSize = 0;
             var currentBatch = 1;
 
-            totalBatchSize = new StepService( new RockContext() )
+            totalBatchSize = new StepService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( a => a.CompletedDateTime.HasValue && !a.StepProgramCompletionId.HasValue )
                 .Select( a => a.PersonAlias.PersonId )
@@ -91,7 +92,7 @@ namespace Rock.Jobs
             var lastProcessedPersonId = 0;
             while ( !isProcessingComplete )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var stepTypeService = new StepTypeService( rockContext );
                     var stepService = new StepService( rockContext );

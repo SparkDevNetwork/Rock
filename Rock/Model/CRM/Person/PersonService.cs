@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.BulkExport;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.SystemKey;
@@ -433,7 +434,7 @@ namespace Rock.Model
                     } );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // OR query for previous name matches
             var previousNameService = new PersonPreviousNameService( rockContext );
@@ -873,7 +874,7 @@ namespace Rock.Model
             }
 
             // The emails don't match and we've been instructed to update them
-            using ( var privateContext = new RockContext() )
+            using ( var privateContext = RockApp.Current.CreateRockContext() )
             {
                 var privatePersonService = new PersonService( privateContext );
                 var updatePerson = privatePersonService.Get( match.Id );
@@ -2635,7 +2636,7 @@ namespace Rock.Model
 
             if ( createNamelessPersonIfNotFound && person == null )
             {
-                using ( var nameLessPersonRockContext = new RockContext() )
+                using ( var nameLessPersonRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var smsPhoneNumber = new PhoneNumber();
                     smsPhoneNumber.NumberTypeValueId = numberTypeMobileValueId;
@@ -2682,7 +2683,7 @@ namespace Rock.Model
 
             if ( person == null && createNamelessPersonIfNotFound )
             {
-                using ( var nameLessPersonRockContext = new RockContext() )
+                using ( var nameLessPersonRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var emailUsername = emailAddress.Substring( 0, emailAddress.IndexOf( "@" ) );
 
@@ -2951,7 +2952,7 @@ namespace Rock.Model
         public Person GetByImpersonationToken( string encryptedKey )
         {
             // first, see if it exists as a PersonToken
-            using ( var personTokenRockContext = new RockContext() )
+            using ( var personTokenRockContext = RockApp.Current.CreateRockContext() )
             {
                 var personToken = new PersonTokenService( personTokenRockContext ).GetByImpersonationToken( encryptedKey );
                 if ( personToken != null )
@@ -2990,7 +2991,7 @@ namespace Rock.Model
         public Person GetByEncryptedKey( string encryptedKey, bool followMerges, bool incrementUsage, int? pageId )
         {
             // first, see if it exists as a PersonToken
-            using ( var personTokenRockContext = new RockContext() )
+            using ( var personTokenRockContext = RockApp.Current.CreateRockContext() )
             {
                 var personToken = new PersonTokenService( personTokenRockContext ).GetByImpersonationToken( encryptedKey );
                 if ( personToken != null )
@@ -3053,7 +3054,7 @@ namespace Rock.Model
         /// <returns></returns>
         public Person GetByUserLoginId( int userLoginId )
         {
-            UserLogin userLogin = new UserLoginService( new RockContext() ).Get( userLoginId );
+            UserLogin userLogin = new UserLoginService( RockApp.Current.CreateRockContext() ).Get( userLoginId );
             return Get( userLogin.PersonId.Value );
         }
 
@@ -3121,7 +3122,7 @@ namespace Rock.Model
                 groupTypeRoleId = familyGroupRoles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).FirstOrDefault()?.Id;
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             if ( groupTypeRoleId.HasValue )
             {
@@ -3133,7 +3134,7 @@ namespace Rock.Model
                 var primaryFamilyId = person.GetFamily( rockContext )?.Id;
                 if ( primaryFamilyId.HasValue )
                 {
-                    rockContext = rockContext ?? new RockContext();
+                    rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                     return new GroupMemberService( rockContext ).Queryable()
                                             .Where( gm => gm.PersonId == person.Id && gm.GroupId == primaryFamilyId )
@@ -3536,7 +3537,7 @@ namespace Rock.Model
         {
             int? anonymousPersonId = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             try
             {
                 rockContext.WrapTransaction( () =>
@@ -3899,7 +3900,7 @@ namespace Rock.Model
                     AND IsDeceased = 0
                     AND RecordStatusValueId <> {inactiveStatusId}";
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             using ( rockContext )
             {
                 rockContext.Database.ExecuteSqlCommand( sql );
@@ -4246,7 +4247,7 @@ namespace Rock.Model
         internal static string UpdatePersonProfilePhoto( Guid personGuid, byte[] photoBytes, string filename, RockContext rockContext = null )
         {
             // If rockContext is null, create a new RockContext object.
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             // Get the Person object using the unique identifier.
             var person = new PersonService( rockContext ).Get( personGuid );
@@ -5140,7 +5141,7 @@ AND GroupTypeId = ${familyGroupType.Id}
         /// </summary>
         private void CreateAnonymousVisitorPerson()
         {
-            using ( var anonymousVisitorPersonRockContext = new RockContext() )
+            using ( var anonymousVisitorPersonRockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
                 var recordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
@@ -5196,7 +5197,7 @@ AND GroupTypeId = ${familyGroupType.Id}
         /// </summary>
         private void CreateAnonymousGiverPerson()
         {
-            using ( var anonymousGiverPersonRockContext = new RockContext() )
+            using ( var anonymousGiverPersonRockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
                 var recordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
@@ -5239,7 +5240,7 @@ AND GroupTypeId = ${familyGroupType.Id}
         {
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             var entityTypeId = EntityTypeCache.GetId<Person>();

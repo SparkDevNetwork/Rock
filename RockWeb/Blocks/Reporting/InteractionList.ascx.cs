@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -200,7 +201,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 int? componentId = null;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     componentId = new InteractionComponentService( rockContext ).GetSelect(
                         PageParameter( PageParameterKey.ComponentId ),
@@ -235,7 +236,7 @@ namespace RockWeb.Blocks.Reporting
             ppPerson.Visible = !_personId.HasValue;
 
             int? componentId = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 componentId = new InteractionComponentService( rockContext ).GetSelect(
                     PageParameter( PageParameterKey.ComponentId ),
@@ -268,7 +269,7 @@ namespace RockWeb.Blocks.Reporting
             pageNumber = 0;
 
             int? componentId = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 componentId = new InteractionComponentService( rockContext ).GetSelect(
                     PageParameter( PageParameterKey.ComponentId ),
@@ -296,7 +297,7 @@ namespace RockWeb.Blocks.Reporting
 
             int skipCount = pageNumber * pageSize;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var component = new InteractionComponentService( rockContext ).Get( componentId );
                 if ( component != null && ( UserCanEdit || component.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
@@ -408,7 +409,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public int? GetPersonId()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personId = new PersonService( rockContext ).GetSelect(
                     PageParameter( PageParameterKey.PersonId ),

@@ -25,6 +25,7 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication;
 using Rock.Model;
@@ -193,7 +194,7 @@ namespace Rock.Jobs
         /// <returns></returns>
         private RockContext CreateRockContext()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 300;
             return rockContext;
         }

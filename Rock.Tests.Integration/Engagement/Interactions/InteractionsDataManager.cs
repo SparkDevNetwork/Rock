@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -51,7 +52,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
         /// <returns></returns>
         public bool DeleteInteraction( string interactionIdentifier )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new InteractionService( rockContext );
             var interaction = service.Get( interactionIdentifier );
 
@@ -88,7 +89,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
             string deviceClientType;
 
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var interactionService = new InteractionService( rockContext );
 
             var interactions = new List<Interaction>();

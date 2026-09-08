@@ -25,6 +25,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -66,7 +67,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var guids = privateValue.SplitDelimitedValues().AsGuidList();
 
@@ -109,7 +110,7 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
                 var guids = privateValue.SplitDelimitedValues().AsGuidList();
-                var dataViews = new DataViewService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) ).ToListItemBagList();
+                var dataViews = new DataViewService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) ).ToListItemBagList();
                 if ( dataViews.Any() )
                 {
                     return dataViews.ToCamelCaseJson( false, true );
@@ -135,7 +136,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var guids = value.SplitDelimitedValues();
                     var dataviews = new DataViewService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
@@ -163,7 +164,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dataViewIds = new DataViewService( rockContext )
                     .Queryable().AsNoTracking()
@@ -237,7 +238,7 @@ namespace Rock.Field.Types
 
             var etp = new EntityTypePicker();
             controls.Add( etp );
-            etp.EntityTypes = new EntityTypeService( new RockContext() )
+            etp.EntityTypes = new EntityTypeService( RockApp.Current.CreateRockContext() )
                 .GetEntities()
                 .OrderBy( t => t.FriendlyName )
                 .ToList();
@@ -370,7 +371,7 @@ namespace Rock.Field.Types
                 }
 
                 var guids = new List<Guid>();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var dataViews = new DataViewService( rockContext ).Queryable().AsNoTracking().Where( a => selectedValues.Contains( a.Id ) );
 
@@ -403,7 +404,7 @@ namespace Rock.Field.Types
                 {
                     guids = value.SplitDelimitedValues().AsGuidList();
 
-                    var dataViews = new DataViewService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) ).Select( a => a.Id );
+                    var dataViews = new DataViewService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) ).Select( a => a.Id );
                     foreach ( System.Web.UI.WebControls.ListItem li in picker.Items )
                     {
                         li.Selected = dataViews.Contains( li.Value.AsInteger() );

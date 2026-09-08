@@ -16,7 +16,12 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Data;
+using Rock.Net;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -61,6 +66,79 @@ namespace Rock.Model
                 .Where( e => e.EventCalendarItems.Any( c => c.EventCalendar.Id == calendarId ) );
 
             return items;
+        }
+
+        /// <summary>
+        /// Filters out occurrences whose event item is tagged for personalization segments
+        /// or request filters that the current request does not match. Event items with no
+        /// tags of an enabled type are always included.
+        /// </summary>
+        /// <returns>The filtered occurrences.</returns>
+        public static IQueryable<EventItemOccurrence> FilterByPersonalization( this IQueryable<EventItemOccurrence> occurrences, RockContext rockContext, bool filterByPersonalizationSegments, bool filterByRequestFilters, IEnumerable<int> matchedSegmentIds, IEnumerable<int> matchedRequestFilterIds )
+        {
+            if ( rockContext == null )
+            {
+                return occurrences;
+            }
+
+            if ( filterByPersonalizationSegments )
+            {
+                occurrences = FilterByPersonalizationType( occurrences, rockContext, PersonalizationType.Segment, matchedSegmentIds );
+            }
+
+            if ( filterByRequestFilters )
+            {
+                occurrences = FilterByPersonalizationType( occurrences, rockContext, PersonalizationType.RequestFilter, matchedRequestFilterIds );
+            }
+
+            return occurrences;
+        }
+
+        /// <summary>
+        /// Filters out occurrences whose event item is tagged for personalization segments
+        /// or request filters that the specified request does not match. Event items with no
+        /// tags of an enabled type are always included.
+        /// </summary>
+        /// <returns>The filtered occurrences.</returns>
+        public static IQueryable<EventItemOccurrence> FilterByPersonalization( this IQueryable<EventItemOccurrence> occurrences, RockContext rockContext, bool filterByPersonalizationSegments, bool filterByRequestFilters, RockRequestContext requestContext )
+        {
+            if ( requestContext == null )
+            {
+                return occurrences;
+            }
+
+            return occurrences.FilterByPersonalization(
+                rockContext,
+                filterByPersonalizationSegments,
+                filterByRequestFilters,
+                requestContext.PersonalizationSegmentIds,
+                requestContext.PersonalizationRequestFilterIds );
+        }
+
+        /// <summary>
+        /// Filters out occurrences whose event item is tagged for the specified personalization
+        /// type but matches none of the supplied identifiers.
+        /// </summary>
+        /// <returns>The filtered occurrences.</returns>
+        private static IQueryable<EventItemOccurrence> FilterByPersonalizationType( IQueryable<EventItemOccurrence> occurrences, RockContext rockContext, PersonalizationType personalizationType, IEnumerable<int> matchedIds )
+        {
+            var entityTypeId = EntityTypeCache.Get<EventItem>().Id;
+            var matchedIdList = matchedIds?.ToList() ?? new List<int>();
+
+            var taggedEventItemIdQry = rockContext.Set<PersonalizedEntity>()
+                .Where( pe => pe.EntityTypeId == entityTypeId
+                    && pe.PersonalizationType == personalizationType )
+                .Select( pe => pe.EntityId );
+
+            var matchedEventItemIdQry = rockContext.Set<PersonalizedEntity>()
+                .Where( pe => pe.EntityTypeId == entityTypeId
+                    && pe.PersonalizationType == personalizationType
+                    && matchedIdList.Contains( pe.PersonalizationEntityId ) )
+                .Select( pe => pe.EntityId );
+
+            // An untagged event item is always visible because tagging narrows an item's audience rather than widening it.
+            return occurrences.Where( o => !taggedEventItemIdQry.Contains( o.EventItemId )
+                || matchedEventItemIdQry.Contains( o.EventItemId ) );
         }
     }
 }

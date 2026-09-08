@@ -16,6 +16,7 @@
 //
 using System;
 using System.Web.Http;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Pbx;
@@ -105,7 +106,7 @@ namespace Rock.Rest.Controllers
             }
 
             // get the source person object ( the source could be different from the current person)
-            var sourcePerson = new PersonService( new Data.RockContext() ).Get( sourcePersonGuid );
+            var sourcePerson = new PersonService( RockApp.Current.CreateRockContext() ).Get( sourcePersonGuid );
 
             string message = null;
             response.Success = pbxComponent.Originate( sourcePerson, destinationPhone, callerId, out message );

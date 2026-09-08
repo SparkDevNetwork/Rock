@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -261,7 +262,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void UpdateList()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var searchSelections = new Dictionary<string, string>();
 
@@ -377,7 +378,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void SetFilters( bool setValues )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 string sessionKey = string.Format( "ConnectionSearch_{0}", this.BlockId );
                 var searchSelections = Session[sessionKey] as Dictionary<string, string>;
@@ -433,7 +434,7 @@ namespace RockWeb.Blocks.Connection
                     if ( connectionType != null )
                     {
                         int entityTypeId = new ConnectionOpportunity().TypeId;
-                        foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                        foreach ( var attributeModel in new AttributeService( RockApp.Current.CreateRockContext() ).Queryable()
                             .Where( a =>
                                 a.EntityTypeId == entityTypeId &&
                                 a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&

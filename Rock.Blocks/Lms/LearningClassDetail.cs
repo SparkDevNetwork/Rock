@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -377,7 +378,7 @@ namespace Rock.Blocks.Lms
                     }
                     else if ( box.Bag.Location?.Address != null )
                     {
-                        var locationService = new LocationService( new RockContext() );
+                        var locationService = new LocationService( RockApp.Current.CreateRockContext() );
                         var address = box.Bag.Location.Address;
                         var location = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country, null );
                         locationId = location?.Id ?? 0;
@@ -1206,7 +1207,7 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult ReorderActivity( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var classId = GetClassId().ToIntSafe();
 

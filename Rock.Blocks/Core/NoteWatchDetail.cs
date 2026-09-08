@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -354,7 +355,7 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
-            return new EntityTypeService( new RockContext() ).GetEntity( entityTypeId.Value, entityId.Value );
+            return new EntityTypeService( RockApp.Current.CreateRockContext() ).GetEntity( entityTypeId.Value, entityId.Value );
         }
 
         /// <summary>

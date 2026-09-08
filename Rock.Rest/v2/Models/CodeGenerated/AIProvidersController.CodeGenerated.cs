@@ -51,6 +51,8 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for AI Providers.
     /// </summary>
     [RoutePrefix( "api/v2/models/aiproviders" )]
+    [RockObsolete( "21.0" )]
+    [System.Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
     [Rock.SystemGuid.RestControllerGuid( "38956f87-b47b-5a52-9d78-5bdd2f18637e" )]
     public partial class AIProvidersController : ApiControllerBase
     {

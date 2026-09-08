@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.IpAddress.Classes;
 using Rock.Model;
@@ -61,7 +62,7 @@ namespace Rock.IpAddress
         /// <param name="sessionIds">The session ids.</param>
         private static void UpdateInteractionSessionLocation( IpLocation location, List<int> sessionIds )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionSessionLocationService = new InteractionSessionLocationService( rockContext );
             var interactionSessionService = new InteractionSessionService( rockContext );
 
@@ -125,7 +126,7 @@ namespace Rock.IpAddress
         private static void BulkUpdateSessions( List<int> sessionIds, int interactionSessionLocationId )
         {
             // We create our own context and service to be self-contained
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionSessionService = new InteractionSessionService( rockContext );
 
             // Bulk update the sessions with the new interaction session location

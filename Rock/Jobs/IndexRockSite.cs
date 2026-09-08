@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
@@ -74,7 +75,7 @@ namespace Rock.Jobs
 
             if ( siteId.HasValue )
             {
-                _site = new SiteService( new RockContext() ).Get( siteId.Value );
+                _site = new SiteService( RockApp.Current.CreateRockContext() ).Get( siteId.Value );
 
                 if ( _site != null )
                 {

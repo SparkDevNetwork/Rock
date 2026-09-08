@@ -67,7 +67,7 @@ namespace RockWeb
                     return;
                 }
 
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
                 GetCalendarEventFeedArgs calendarProps = ValidateRequestData( httpContext );
 
                 if ( calendarProps == null )
@@ -145,7 +145,7 @@ namespace RockWeb
                 return false;
             }
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             EventCalendarService eventCalendarService = new EventCalendarService( rockContext );
             EventCalendar eventCalendar = eventCalendarService.Get( calendarId );
 

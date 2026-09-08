@@ -25,6 +25,7 @@ using System.Linq.Dynamic;
 using Lucene.Net.Support;
 using OpenXmlPowerTools;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -321,7 +322,7 @@ namespace Rock.Achievement.Component
                 return achievementTypeCache.BadgeLavaTemplate.ResolveMergeFields( mergeFields );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var achievementTypeService = new AchievementTypeService( rockContext );
             var progressStatement = achievementTypeService.GetProgressStatement( achievementTypeCache, achieverEntityId );
 
@@ -406,7 +407,7 @@ $@"<div style=""color: #16c98d"">
         /// <returns></returns>
         private List<DateTime> GetCompletedStepTypeDates( AchievementTypeCache achievementTypeCache, int personAliasId, DateTime? minDate, DateTime? maxDate )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var query = GetSourceEntitiesQuery( achievementTypeCache, rockContext ) as IQueryable<Step>;
 
             query = query

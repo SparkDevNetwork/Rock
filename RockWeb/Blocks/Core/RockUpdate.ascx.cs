@@ -487,7 +487,7 @@ namespace RockWeb.Blocks.Core
             {
                 var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
                 var environmentData = Rock.Web.Utilities.RockUpdateHelper.GetEnvDataAsJson( Request, ResolveRockUrl( "~/" ) );
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var instanceStatistics = new RockInstanceImpactStatistics( new RockImpactService(), rockContext );
 
@@ -533,13 +533,13 @@ namespace RockWeb.Blocks.Core
 
         private Boolean HasPendingRunOnceJobs()
         {
-            var pendingStartupRunOnceJobs = new Rock.Model.ServiceJobService( new Rock.Data.RockContext() )
+            var pendingStartupRunOnceJobs = new Rock.Model.ServiceJobService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( j => Rock.Migrations.RockStartup.DataMigrationsStartup.startupRunOnceJobGuids.Contains( j.Guid ) )
                 .Select( j => j.Name )
                 .ToList();
 
-            var pendingScheduledRunOnceJobs = new Rock.Model.ServiceJobService( new Rock.Data.RockContext() )
+            var pendingScheduledRunOnceJobs = new Rock.Model.ServiceJobService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( j => Rock.Migrations.RockStartup.DataMigrationsStartup.scheduledRunOnceJobGuids.Contains( j.Guid)  )
                 .Select( j => j.Name )

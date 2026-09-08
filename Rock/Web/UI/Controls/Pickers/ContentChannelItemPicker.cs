@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -277,7 +278,7 @@ namespace Rock.Web.UI.Controls
                 int contentChannelItemId = value ?? 0;
                 if ( _ddlContentChannelItem.SelectedValue != contentChannelItemId.ToString() )
                 {
-                    var contentChannelItem = new Rock.Model.ContentChannelItemService( new RockContext() ).Get( contentChannelItemId );
+                    var contentChannelItem = new Rock.Model.ContentChannelItemService( RockApp.Current.CreateRockContext() ).Get( contentChannelItemId );
                     if ( contentChannelItem != null && _ddlContentChannel.SelectedValue != contentChannelItem.ContentChannelId.ToString() )
                     {
                         _ddlContentChannel.SelectedValue = contentChannelItem.ContentChannelId.ToString();
@@ -409,7 +410,7 @@ namespace Rock.Web.UI.Controls
             {
                 _ddlContentChannelItem.Items.Add( Rock.Constants.None.ListItem );
 
-                var contentChannelItemService = new Rock.Model.ContentChannelItemService( new RockContext() );
+                var contentChannelItemService = new Rock.Model.ContentChannelItemService( RockApp.Current.CreateRockContext() );
                 var contentChannelitems = contentChannelItemService.Queryable().Where( r => r.ContentChannelId == contentChannelId.Value ).OrderBy( a => a.Title ).ToList();
 
                 foreach ( var r in contentChannelitems )

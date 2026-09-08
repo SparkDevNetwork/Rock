@@ -31,6 +31,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -133,6 +134,8 @@ namespace Rock.Blocks.Finance
         Guid _cellPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
         Guid _workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
 
+        private List<AttributeCache> _resultGridAttributes;
+
         #endregion Fields
 
         #region Properties
@@ -145,6 +148,28 @@ namespace Rock.Blocks.Finance
         private BenevolenceTypeService BenevolenceTypeService => new BenevolenceTypeService( RockContext );
         private BinaryFileService BinaryFileService => new BinaryFileService( RockContext );
         private BenevolenceRequestDocumentService BenevolenceRequestDocumentService => new BenevolenceRequestDocumentService( RockContext );
+
+        /// <summary>
+        /// Gets the Benevolence Result attributes marked "Show in Grid" that the current individual is allowed to
+        /// view, in the order they should appear as columns on the results grid.
+        /// </summary>
+        private List<AttributeCache> ResultGridAttributes
+        {
+            get
+            {
+                if ( _resultGridAttributes == null )
+                {
+                    var entityTypeId = EntityTypeCache.Get<BenevolenceResult>( false )?.Id;
+
+                    _resultGridAttributes = AttributeCache
+                        .GetOrderedGridAttributes( entityTypeId, string.Empty, string.Empty )
+                        .Where( attribute => attribute.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                        .ToList();
+                }
+
+                return _resultGridAttributes;
+            }
+        }
 
         #endregion Properties
 
@@ -354,6 +379,8 @@ namespace Rock.Blocks.Finance
 
             options.BenevolenceDocumentBinaryFileTypeGuid = SystemGuid.BinaryFiletype.BENEVOLENCE_REQUEST_DOCUMENTS.AsGuid();
 
+            options.ResultAttributeFields = GetResultAttributeFields();
+
             return options;
         }
 
@@ -500,7 +527,7 @@ namespace Rock.Blocks.Finance
 
             if ( entity == null )
             {
-                error = ActionBadRequest( $"{BenevolenceRequest.FriendlyTypeName} not found." );
+                error = ActionBadRequest( $"The {BenevolenceRequest.FriendlyTypeName} was not found." );
                 return false;
             }
 
@@ -757,10 +784,14 @@ namespace Rock.Blocks.Finance
                         {
                             { "WorkflowTypeId", w.WorkflowTypeId.ToString() },
                             { "BenevolenceRequestId", entity.IdKey }
-                        }),
+                        } ),
                         iconCssClass = w.WorkflowType.IconCssClass,
-                    })
+                    } )
                     .ToList();
+
+                // Load in one pass so each result bag doesn't trigger its own attribute query.
+                var results = entity.BenevolenceResults.ToList();
+                results.LoadAttributes( RockContext );
 
                 return new BenevolenceRequestBag
                 {
@@ -774,14 +805,8 @@ namespace Rock.Blocks.Finance
                     ResultSummary = entity.ResultSummary,
                     ProvidedNextSteps = entity.ProvidedNextSteps,
                     Campus = campus,
-                    Results = entity.BenevolenceResults
-                        .Select( result => new BenevolenceResultBag
-                        {
-                            IdKey = result.IdKey,
-                            ResultTypeValueId = result.ResultTypeValueId,
-                            Amount = result.Amount,
-                            ResultSummary = result.ResultSummary,
-                        } )
+                    Results = results
+                        .Select( result => GetBenevolenceResultBag( result ) )
                         .ToList(),
                     RequestDocuments = entity.Documents
                         .OrderBy( document => document.Order )
@@ -799,6 +824,94 @@ namespace Rock.Blocks.Finance
             }
 
             return new BenevolenceRequestBag();
+        }
+
+        /// <summary>
+        /// Gets the bag that represents a single benevolence result, including the attributes and values the current
+        /// person is allowed to edit.
+        /// </summary>
+        /// <param name="result">The <see cref="BenevolenceResult"/> to be represented as a bag.</param>
+        /// <returns>A <see cref="BenevolenceResultBag"/> that represents the result, or <c>null</c> if <paramref name="result"/>
+        /// is <c>null</c>.</returns>
+        private BenevolenceResultBag GetBenevolenceResultBag( BenevolenceResult result )
+        {
+            if ( result == null )
+            {
+                return null;
+            }
+
+            var bag = new BenevolenceResultBag
+            {
+                IdKey = result.IdKey,
+                ResultTypeValueId = result.ResultTypeValueId,
+                Amount = result.Amount,
+                ResultSummary = result.ResultSummary
+            };
+
+            if ( result.Attributes == null )
+            {
+                result.LoadAttributes( RockContext );
+            }
+
+            // Results are only ever surfaced through the add/edit modal, so the editable set is what the client needs.
+            bag.LoadAttributesAndValuesForPublicEdit( result, RequestContext.CurrentPerson, enforceSecurity: true );
+
+            bag.AttributeDisplayValues = GetResultAttributeDisplayValues( result );
+
+            return bag;
+        }
+
+        /// <summary>
+        /// Builds the attribute column definitions for the results grid, using the <c>attr_{key}</c> naming
+        /// convention expected by the grid attribute column renderer.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeFieldDefinitionBag"/> items, one per grid attribute.</returns>
+        private List<AttributeFieldDefinitionBag> GetResultAttributeFields()
+        {
+            var textFieldTypeGuid = SystemGuid.FieldType.TEXT.AsGuid();
+
+            return ResultGridAttributes
+                .Select( attribute => new AttributeFieldDefinitionBag
+                {
+                    Name = $"attr_{attribute.Key}",
+                    Title = attribute.Name,
+                    FieldTypeGuid = attribute.FieldType?.Guid ?? textFieldTypeGuid
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Builds the condensed display values for a single result's grid attributes, keyed by <c>attr_{key}</c>.
+        /// </summary>
+        /// <param name="result">The result whose attributes have already been loaded.</param>
+        /// <returns>A dictionary whose values each carry an <c>Html</c> and a <c>Text</c> representation.</returns>
+        private Dictionary<string, object> GetResultAttributeDisplayValues( BenevolenceResult result )
+        {
+            var booleanFieldTypeGuid = SystemGuid.FieldType.BOOLEAN.AsGuid();
+            var displayValues = new Dictionary<string, object>();
+
+            foreach ( var attribute in ResultGridAttributes )
+            {
+                var field = attribute.FieldType?.Field;
+                var rawValue = result.GetAttributeValue( attribute.Key );
+
+                var htmlValue = field?.GetCondensedHtmlValue( rawValue, attribute.ConfigurationValues ) ?? string.Empty;
+
+                if ( attribute.FieldType?.Guid == booleanFieldTypeGuid )
+                {
+                    htmlValue = htmlValue == "Y"
+                        ? "<i class=\"ti ti-check\"></i>"
+                        : string.Empty;
+                }
+
+                displayValues[$"attr_{attribute.Key}"] = new
+                {
+                    Html = htmlValue,
+                    Text = field?.GetCondensedTextValue( rawValue, attribute.ConfigurationValues ) ?? string.Empty
+                };
+            }
+
+            return displayValues;
         }
 
         /// <inheritdoc/>
@@ -1668,20 +1781,19 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Adds a new benevolence request result to the system.
+        /// Saves a benevolence result to the specified benevolence request.
         /// </summary>
-        /// <param name="benevolenceRequestIdKey">The key representing the benevolence request to which the result will be added. Must be a valid, non-null
-        /// key.</param>
-        /// <param name="benevolenceResultBag">The data bag containing the details of the benevolence result to be added. Cannot be null and must have a
+        /// <param name="benevolenceRequestIdKey">The key representing the benevolence request that owns the result. Must be a valid, non-null key.</param>
+        /// <param name="benevolenceResultBag">The data bag containing the details of the benevolence result to be saved. Cannot be null and must have a
         /// valid <see cref="BenevolenceResultBag.ResultTypeValueId"/>.</param>
-        /// <returns>A <see cref="BlockActionResult"/> indicating the success or failure of the operation. Returns an error if
-        /// the user is not authorized, if the <paramref name="benevolenceResultBag"/> is invalid, or if the <paramref
-        /// name="benevolenceRequestIdKey"/> is invalid.</returns>
+        /// <returns>A <see cref="BlockActionResult"/> containing the saved <see cref="BenevolenceResultBag"/>. Returns an error if
+        /// the user is not authorized, if the <paramref name="benevolenceResultBag"/> is invalid, or if the result being
+        /// updated does not belong to the request.</returns>
         [BlockAction]
-        public BlockActionResult AddBenevolenceRequestResult( string benevolenceRequestIdKey, BenevolenceResultBag benevolenceResultBag )
+        public BlockActionResult SaveBenevolenceRequestResult( string benevolenceRequestIdKey, BenevolenceResultBag benevolenceResultBag )
         {
             // Is the user authorized to edit this benevolence request?
-            if ( !TryGetEntityForEditAction( benevolenceRequestIdKey, out var entity, out var actionError ) )
+            if ( !TryGetEntityForEditAction( benevolenceRequestIdKey, out _, out var actionError ) )
             {
                 return actionError;
             }
@@ -1705,27 +1817,77 @@ namespace Rock.Blocks.Finance
             }
 
             var resultService = new BenevolenceResultService( RockContext );
+            BenevolenceResult result;
 
-            var newResult = new BenevolenceResult
+            if ( benevolenceResultBag.IdKey.IsNullOrWhiteSpace() )
             {
-                BenevolenceRequestId = benevolenceRequestId.Value,
-                ResultTypeValueId = benevolenceResultBag.ResultTypeValueId,
-                Amount = benevolenceResultBag.Amount,
-                ResultSummary = benevolenceResultBag.ResultSummary ?? string.Empty
-            };
+                result = new BenevolenceResult
+                {
+                    BenevolenceRequestId = benevolenceRequestId.Value
+                };
 
-            resultService.Add( newResult );
-            RockContext.SaveChanges();
-
-            var newResultBag = new BenevolenceResultBag
+                resultService.Add( result );
+            }
+            else
             {
-                IdKey = newResult.IdKey,
-                ResultTypeValueId = newResult.ResultTypeValueId,
-                Amount = newResult.Amount,
-                ResultSummary = newResult.ResultSummary,
-            };
+                var notFoundMessage = $"The {BenevolenceResult.FriendlyTypeName} was not found.";
 
-            return ActionOk( newResultBag );
+                var benevolenceResultId = Rock.Utility.IdHasher.Instance.GetId( benevolenceResultBag.IdKey );
+                if ( !benevolenceResultId.HasValue || benevolenceResultId == 0 )
+                {
+                    return ActionBadRequest( notFoundMessage );
+                }
+
+                result = resultService.Queryable()
+                    .Where( r => r.BenevolenceRequestId == benevolenceRequestId )
+                    .FirstOrDefault( r => r.Id == benevolenceResultId );
+
+                if ( result == null )
+                {
+                    return ActionNotFound( notFoundMessage );
+                }
+            }
+
+            result.ResultTypeValueId = benevolenceResultBag.ResultTypeValueId;
+            result.Amount = benevolenceResultBag.Amount;
+            result.ResultSummary = benevolenceResultBag.ResultSummary ?? string.Empty;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+
+                result.LoadAttributes( RockContext );
+                result.SetPublicAttributeValues( benevolenceResultBag.AttributeValues ?? new Dictionary<string, string>(), RequestContext.CurrentPerson, enforceSecurity: true );
+                result.SaveAttributeValues( RockContext );
+            } );
+
+            return ActionOk( GetBenevolenceResultBag( result ) );
+        }
+
+        /// <summary>
+        /// Gets an empty benevolence result, populated with the attributes and default values to show when adding a
+        /// new result to a benevolence request.
+        /// </summary>
+        /// <param name="benevolenceRequestIdKey">The key representing the benevolence request the new result would belong to. Must be a valid, non-null
+        /// key.</param>
+        /// <returns>A <see cref="BlockActionResult"/> containing a <see cref="BenevolenceResultBag"/> whose properties are unset
+        /// and whose attributes have been loaded, or an error if the user is not authorized to edit the request.</returns>
+        [BlockAction]
+        public BlockActionResult GetNewBenevolenceRequestResult( string benevolenceRequestIdKey )
+        {
+            // Is the user authorized to edit this benevolence request?
+            if ( !TryGetEntityForEditAction( benevolenceRequestIdKey, out _, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            var newResult = new BenevolenceResult();
+            newResult.LoadAttributes( RockContext );
+
+            var bag = new BenevolenceResultBag();
+            bag.LoadAttributesAndValuesForPublicEdit( newResult, RequestContext.CurrentPerson, enforceSecurity: true );
+
+            return ActionOk( bag );
         }
 
         /// <summary>
@@ -1766,7 +1928,7 @@ namespace Rock.Blocks.Finance
 
             if ( result == null )
             {
-                return ActionNotFound( $"BenevolenceResult with IdKey {benevolenceResultIdKey} not found for request {benevolenceRequestIdKey}." );
+                return ActionNotFound( $"The {BenevolenceResult.FriendlyTypeName} was not found." );
             }
 
             resultService.Delete( result );

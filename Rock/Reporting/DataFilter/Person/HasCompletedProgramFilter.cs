@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -126,7 +127,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             if ( selectionConfig != null && selectionConfig.LearningProgramGuid.HasValue )
             {
-                var program = new LearningProgramService( new RockContext() ).Get( selectionConfig.LearningProgramGuid.Value );
+                var program = new LearningProgramService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.LearningProgramGuid.Value );
                 var dateRangeString = SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
 
                 return dateRangeString.IsNotNullOrWhiteSpace()
@@ -167,7 +168,7 @@ namespace Rock.Reporting.DataFilter.Person
         internal static void SetProgramItems( DropDownList ddlProgram )
         {
             // Only include active and tracked programs (non-tracked programs won't have LearningProgramCompletion records).
-            var programs = new LearningProgramService( new RockContext() )
+            var programs = new LearningProgramService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
                 .OrderBy( lp => lp.Name )

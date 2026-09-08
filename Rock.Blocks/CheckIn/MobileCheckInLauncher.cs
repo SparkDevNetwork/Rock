@@ -19,10 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.CheckIn.v2;
+using Rock.CheckIn.v2.Labels;
 using Rock.Enums.CheckIn;
 using Rock.Lava;
 using Rock.Model;
@@ -651,12 +654,13 @@ namespace Rock.Blocks.CheckIn
         /// <remarks>
         /// The template and area identifiers on the options bag are ignored in favor of block settings. Every
         /// person identifier in the requests is confirmed to be someone this individual may check in before
-        /// anything is saved.
+        /// anything is saved. A save that is not pending completes the check-in, so labels the resolved device
+        /// routes to the server print here.
         /// </remarks>
         /// <param name="options">The options posted by the check-in flow.</param>
         /// <returns>A bag containing the created attendance records and any messages raised while saving.</returns>
         [BlockAction]
-        public BlockActionResult SaveAttendance( SaveAttendanceOptionsBag options )
+        public async Task<BlockActionResult> SaveAttendance( SaveAttendanceOptionsBag options )
         {
             var individual = GetIdentifiedIndividual();
 
@@ -695,7 +699,8 @@ namespace Rock.Blocks.CheckIn
 
             try
             {
-                var session = new CheckInDirector( RockContext ).CreateSession( configuration );
+                var director = new CheckInDirector( RockContext );
+                var session = director.CreateSession( configuration );
 
                 // The individuals identified on the options bag must be checked against the people this individual is
                 // actually allowed to check in.
@@ -710,6 +715,15 @@ namespace Rock.Blocks.CheckIn
                 var sessionRequest = GetAttendanceSessionRequest( options.Session, individual );
 
                 var result = session.SaveAttendance( sessionRequest, requests, kiosk, RequestContext.ClientInformation.IpAddress );
+
+                // A save that is not pending completes the check-in, so labels the device routes to the server print
+                // now. Client-routed labels are discarded because a phone cannot print them; print messages ride the
+                // result into the response.
+                if ( !sessionRequest.IsPending )
+                {
+                    var cts = new CancellationTokenSource( 5000 );
+                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
+                }
 
                 return ActionOk( new SaveAttendanceResponseBag
                 {
@@ -727,13 +741,14 @@ namespace Rock.Blocks.CheckIn
         /// Confirms the attendance staged by a family check-in, turning the pending records into completed ones.
         /// </summary>
         /// <remarks>
-        /// The template identifier on the options bag is ignored in favor of block settings. No labels are rendered
-        /// here: they print at the kiosk when the success QR code is scanned.
+        /// The template identifier on the options bag is ignored in favor of block settings. Labels the resolved
+        /// device routes to the server print as part of confirming; client-routed labels print at a kiosk when the
+        /// success QR code is scanned.
         /// </remarks>
         /// <param name="options">The options posted by the check-in flow.</param>
         /// <returns>A bag containing the confirmed attendance records.</returns>
         [BlockAction]
-        public BlockActionResult ConfirmAttendance( ConfirmAttendanceOptionsBag options )
+        public async Task<BlockActionResult> ConfirmAttendance( ConfirmAttendanceOptionsBag options )
         {
             var individual = GetIdentifiedIndividual();
 
@@ -768,8 +783,15 @@ namespace Rock.Blocks.CheckIn
 
             try
             {
-                var session = new CheckInDirector( RockContext ).CreateSession( configuration );
+                var director = new CheckInDirector( RockContext );
+                var session = director.CreateSession( configuration );
                 var result = session.ConfirmAttendance( options.SessionGuid );
+
+                // Confirming completes the check-in, so labels the device routes to the server print now.
+                // Client-routed labels are discarded because a phone cannot print them; print messages ride the
+                // result into the response.
+                var cts = new CancellationTokenSource( 5000 );
+                await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                 return ActionOk( new ConfirmAttendanceResponseBag
                 {

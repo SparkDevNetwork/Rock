@@ -205,7 +205,7 @@ namespace Rock.CheckIn.v2
                     .ToList()
             };
 
-            var locationIdsOverCapacity = new HashSet<int>();
+            var locationIdsAtOrOverCapacity = new HashSet<int>();
 
             // Add in all the locations to the opportunities.
             foreach ( var grp in activeGroupLocations.GroupBy( gl => gl.LocationId ) )
@@ -214,14 +214,14 @@ namespace Rock.CheckIn.v2
                 var locationScheduleIds = new HashSet<int>( grp.SelectMany( gl => gl.ScheduleIds ).Distinct() );
                 var attendeeIds = locationCounts.GetValueOrDefault( location.IdKey, new HashSet<string>() );
 
-                // Check if this room is at all valid. If it is over the firm
-                // threshold then not even an override is allowed.
+                // Check if this room is at all valid. If it is at or over the
+                // firm threshold then not even an override is allowed.
                 var isThresholdExceeded = location.FirmRoomThreshold.HasValue
-                    && attendeeIds.Count > location.FirmRoomThreshold.Value;
+                    && attendeeIds.Count >= location.FirmRoomThreshold.Value;
 
                 if ( isThresholdExceeded )
                 {
-                    locationIdsOverCapacity.Add( location.Id );
+                    locationIdsAtOrOverCapacity.Add( location.Id );
 
                     continue;
                 }
@@ -239,7 +239,7 @@ namespace Rock.CheckIn.v2
 
             // Add in all the Groups to the opportunities.
             var activeGroupLocationsUnderCapacity = activeGroupLocations
-                .Where( gl => !locationIdsOverCapacity.Contains( gl.LocationId ) )
+                .Where( gl => !locationIdsAtOrOverCapacity.Contains( gl.LocationId ) )
                 .GroupBy( gl => gl.GroupId )
                 .Select( grp => new
                 {

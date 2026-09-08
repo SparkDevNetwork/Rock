@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Mobile;
@@ -289,7 +290,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         [BlockAction]
         public object GetEvents( DateTime beginDate, DateTime endDate )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventCalendar = new EventCalendarService( rockContext ).Get( Calendar ?? Guid.Empty );
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );

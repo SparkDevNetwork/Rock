@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistrationSessionsController"/> class.
         /// </summary>
-        public RegistrationSessionsController() : base( new Rock.Model.RegistrationSessionService( new Rock.Data.RockContext() ) ) { } 
+        public RegistrationSessionsController() : base( new Rock.Model.RegistrationSessionService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

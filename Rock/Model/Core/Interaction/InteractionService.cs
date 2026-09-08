@@ -556,7 +556,7 @@ namespace Rock.Model
         /// <returns>InteractionDeveiceType.Id</returns>
         private int GetOrCreateInteractionDeviceTypeId( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
             InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
                 .Where( a => a.Application == application && a.OperatingSystem == operatingSystem && a.ClientType == clientType )
@@ -696,7 +696,7 @@ namespace Rock.Model
                     .Where( i => i.PersonAliasId == null );
 
                 // Use BulkUpdate to set the PersonAliasId
-                new RockContext().BulkUpdate( interactions, i => new Interaction { PersonAliasId = personAliasId } );
+                RockApp.Current.CreateRockContext().BulkUpdate( interactions, i => new Interaction { PersonAliasId = personAliasId } );
             }
 
             return interactionsCount;
@@ -1236,7 +1236,7 @@ namespace Rock.Model
                 interactionsToInsert.Add( interaction );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.BulkInsert( interactionsToInsert );
             }
@@ -1253,7 +1253,7 @@ namespace Rock.Model
                 // Read their ids from their guids and append the id.
                 var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
 
-                var interactionIds = new InteractionService( new RockContext() ).Queryable()
+                var interactionIds = new InteractionService( RockApp.Current.CreateRockContext() ).Queryable()
                                         .Where( i => insertedGuids.Contains( i.Guid ) )
                                         .Select( i => new { i.Id, i.Guid } )
                                         .ToList();

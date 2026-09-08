@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Rest.Controls;
@@ -297,7 +298,7 @@ namespace Rock.Field.Types
                 //// Value is in format "Page.Guid,PageRoute.Guid"
                 //// If only a Page is specified, this is just a reference to a page without a special route
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
 
                     if ( ppPage.IsPageRoute )
@@ -345,7 +346,7 @@ namespace Rock.Field.Types
                 //// If only the Page.Guid is specified this is just a reference to a page without a special route
                 //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( valuePair.Length == 2 )
                 {

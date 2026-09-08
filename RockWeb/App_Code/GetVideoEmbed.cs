@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.SessionState;
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -58,7 +59,7 @@ namespace RockWeb
 
             var currentUser = UserLoginService.GetCurrentUser();
             Person currentPerson = currentUser != null ? currentUser.Person : null;
-            rockContext = new RockContext();
+            rockContext = RockApp.Current.CreateRockContext();
             binaryFileTypeService = new BinaryFileTypeService( rockContext );
 
             binaryFileType = binaryFileTypeService.Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_IMAGE.AsGuid() );

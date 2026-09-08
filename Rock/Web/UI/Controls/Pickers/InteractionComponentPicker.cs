@@ -18,6 +18,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -88,7 +89,7 @@ namespace Rock.Web.UI.Controls
                 picker.Items.Add( new ListItem() );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionComponentService = new InteractionComponentService( rockContext );
             var components = interactionComponentService.Queryable().AsNoTracking()
                 .Where( ic => ic.InteractionChannelId == picker.InteractionChannelId.Value )

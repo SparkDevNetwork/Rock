@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.Scheduling;
 using Rock.Model;
@@ -450,7 +451,7 @@ namespace Rock.Blocks.Group.Scheduling
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new InitializationBox();
 
@@ -2796,7 +2797,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetCurrentSchedule( Guid selectedPersonGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var response = GetCurrentSchedule( rockContext, selectedPersonGuid, out string errorMessage );
 
@@ -2817,7 +2818,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult PerformScheduleRowAction( PerformScheduleRowActionRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var response = PerformScheduleRowAction( rockContext, bag, out string errorMessage );
 
@@ -2838,7 +2839,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult SaveDeclineReason( SaveDeclineReasonRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SaveDeclineReason( rockContext, bag, out string errorMessage );
 
@@ -2859,7 +2860,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult SaveUnavailability( SaveUnavailabilityRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SaveUnavailability( rockContext, bag, out string errorMessage );
 
@@ -2880,7 +2881,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetSchedulePreferences( GetSchedulePreferencesRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var response = GetSchedulePreferences( rockContext, bag, out string errorMessage );
 
@@ -2901,7 +2902,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult SaveSchedulePreference( SaveSchedulePreferenceRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SaveSchedulePreference( rockContext, bag, out string errorMessage );
 
@@ -2922,7 +2923,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetAssignmentOptions( GetAssignmentOptionsRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var (assignmentOptions, _, __, errorMessage) = GetAssignmentOptions( rockContext, bag );
 
@@ -2943,7 +2944,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult SaveAssignment( SaveAssignmentRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var response = SaveAssignment( rockContext, bag );
 
@@ -2962,7 +2963,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult DeleteAssignment( DeleteAssignmentRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 DeleteAssignment( rockContext, bag, out string errorMessage );
 
@@ -2983,7 +2984,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetSignUps( GetSignUpsRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var (signUps, _, __, ___, errorMessage) = GetSignUps( rockContext, bag );
 
@@ -3004,7 +3005,7 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult SaveSignUp( SaveSignUpRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var response = SaveSignUp( rockContext, bag );
 

@@ -32,6 +32,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Interaction
 {
@@ -284,7 +285,7 @@ function() {
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes | ComparisonType.StartsWith );
             ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, "ddlIntegerCompare" );

@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -75,7 +76,7 @@ namespace Rock.Field.Types
 
                 var guids = privateValue.SplitDelimitedValues();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
                     if ( accounts.Any() )
@@ -185,7 +186,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var accountIds = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) ).Select( a => a.Id );
                 if ( accountIds.Any() )
@@ -451,7 +452,7 @@ namespace Rock.Field.Types
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => ids.Contains( a.Id ) );
 
@@ -494,7 +495,7 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) );
+                    var accounts = new FinancialAccountService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) );
                     picker.SetValues( accounts );
                 }
             }

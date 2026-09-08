@@ -73,7 +73,7 @@ namespace Rock.Attribute
         {
 
             Group group = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 group = new GroupService( rockContext ).Get( new Guid( groupGuid ) );
             }

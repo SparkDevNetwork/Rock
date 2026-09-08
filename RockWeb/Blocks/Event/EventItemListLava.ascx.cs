@@ -23,6 +23,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -136,7 +137,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void LoadContent()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventCalendarGuid = GetAttributeValue( "EventCalendar" ).AsGuid();
             var eventCalendar = new EventCalendarService( rockContext ).Get( eventCalendarGuid );
 

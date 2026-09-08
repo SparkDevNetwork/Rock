@@ -882,7 +882,7 @@ namespace Rock.Web.UI
                 }
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // If the impersonated query key was included or is in session then set the current person
             Page.Trace.Warn( "Checking for person impersonation" );
@@ -1790,7 +1790,7 @@ namespace Rock.Web.UI
             var currentPerson = currentPersonAlias?.Person;
             var currentPersonId = currentPersonAlias?.PersonId;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var visitorKeyCookie = GetCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
             PersonAlias currentVisitorCookiePersonAlias = null;
@@ -1975,7 +1975,7 @@ namespace Rock.Web.UI
                 segmentFilterCookieData = new Personalization.SegmentFilterCookieData();
                 segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
-                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                var segmentIdKeys = new PersonalizationSegmentService( RockApp.Current.CreateRockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 
@@ -3060,7 +3060,7 @@ Sys.Application.add_load(function () {
                     {
                         if ( keyModel.Id.HasValue || keyModel.Guid.HasValue )
                         {
-                            var qry = new PersonService( new RockContext() )
+                            var qry = new PersonService( RockApp.Current.CreateRockContext() )
                                 .Queryable( true, true )
                                 .Include( p => p.MaritalStatusValue )
                                 .Include( p => p.ConnectionStatusValue )
@@ -3086,7 +3086,7 @@ Sys.Application.add_load(function () {
                         }
                         else if ( keyModel.Key.IsNotNullOrWhiteSpace() )
                         {
-                            keyModel.Entity = new PersonService( new RockContext() ).GetByPublicKey( keyModel.Key );
+                            keyModel.Entity = new PersonService( RockApp.Current.CreateRockContext() ).GetByPublicKey( keyModel.Key );
                         }
                     }
                     else
@@ -3556,7 +3556,7 @@ Sys.Application.add_load(function () {
         /// <param name="macAddress">The mac address.</param>
         public bool LinkPersonAliasToDevice( int personAliasId, string macAddress )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
                 PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );

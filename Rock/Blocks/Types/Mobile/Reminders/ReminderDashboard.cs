@@ -17,6 +17,7 @@
 using System.ComponentModel;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using System.Linq;
@@ -320,7 +321,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 return ActionUnauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the list of filtered reminder types and the count associated with them.
                 var filteredReminderOptions = GetFilteredReminderOptionBags( rockContext );

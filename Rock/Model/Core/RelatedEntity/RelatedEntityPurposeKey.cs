@@ -200,5 +200,36 @@ namespace Rock.Model
         /// </summary>
         [Description( "Check-in Label" )]
         public const string AreaCheckInLabel = "AREA-CHECK-IN-LABEL";
+
+        /// <summary>
+        /// <para>
+        /// The primary link between a <see cref="FlexibleDocument"/> and the entity
+        /// the document belongs to. A document carries no link columns of its own,
+        /// so even its primary relationship is a <see cref="RelatedEntity"/> row;
+        /// secondary links use their own purpose keys.
+        /// </para>
+        /// <para>For this, the related entity fields would be...</para>
+        ///
+        /// <list>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.PurposeKey" /></term>
+        ///     <description>FLEXIBLE-DOCUMENT-PRIMARY</description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.SourceEntityType"/></term>
+        ///     <description><see cref="FlexibleDocument"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.TargetEntityType"/></term>
+        ///     <description>any Rock entity type</description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.QualifierValue"/></term>
+        ///     <description><c>null</c></description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [Description( "Flexible Document Primary" )]
+        public const string FlexibleDocumentPrimary = "FLEXIBLE-DOCUMENT-PRIMARY";
     }
 }

@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -84,7 +85,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void AddScheduleColumns()
         {
-            ScheduleService scheduleService = new ScheduleService( new RockContext() );
+            ScheduleService scheduleService = new ScheduleService( RockApp.Current.CreateRockContext() );
 
             // limit Schedules to ones that have a CheckInStartOffsetMinutes
             var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null && a.IsActive );
@@ -133,7 +134,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             AddScheduleColumns();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupLocationService = new GroupLocationService( rockContext );
             var groupTypeService = new GroupTypeService( rockContext );
@@ -270,7 +271,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 GroupLocationService groupLocationService = new GroupLocationService( rockContext );
                 ScheduleService scheduleService = new ScheduleService( rockContext );

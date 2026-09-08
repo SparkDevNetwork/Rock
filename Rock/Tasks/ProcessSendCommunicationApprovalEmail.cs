@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -36,7 +37,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communication = new CommunicationService( rockContext ).Get( message.CommunicationId );
 

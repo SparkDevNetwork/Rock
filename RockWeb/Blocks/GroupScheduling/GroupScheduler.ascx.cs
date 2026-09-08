@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -319,7 +320,7 @@ btnCopyToClipboard.ClientID );
                 return new List<Schedule>();
             }
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             GroupLocationService groupLocationService = new GroupLocationService( rockContext );
             var listedGroupIds = listedGroups.Select( a => a.Id ).ToArray();
 
@@ -347,7 +348,7 @@ btnCopyToClipboard.ClientID );
         private Group GetCurrentlySelectedGroup()
         {
             var groupId = hfSelectedGroupId.Value.AsIntegerOrNull();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             Group group = null;
             if ( groupId.HasValue )
             {
@@ -386,7 +387,7 @@ btnCopyToClipboard.ClientID );
             // get the selected listed groups (not including ones determined from IncludeChildGroups)
             var pickedGroupIds = gpPickedGroups.SelectedIds;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
 
             // if the ShowChildGroups option is enabled, also include those
@@ -454,7 +455,7 @@ btnCopyToClipboard.ClientID );
             {
                 var pageParameterGroupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
 
-                var pageParameterGroupId = new GroupService( new RockContext() )
+                var pageParameterGroupId = new GroupService( RockApp.Current.CreateRockContext() )
                     .GetSelect( this.PageParameter( PageParameterKey.GroupId ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( pageParameterGroupId.HasValue )
                 {
@@ -515,7 +516,7 @@ btnCopyToClipboard.ClientID );
             if ( selectedGroupId.HasValue )
             {
                 // Make sure a valid group was specified.
-                selectedGroupId = new GroupService( new RockContext() ).GetSelect( selectedGroupId.Value, s => ( int? ) s.Id );
+                selectedGroupId = new GroupService( RockApp.Current.CreateRockContext() ).GetSelect( selectedGroupId.Value, s => ( int? ) s.Id );
             }
 
             SetStateForShowChildGroupsButton( showChildGroups );
@@ -603,7 +604,7 @@ btnCopyToClipboard.ClientID );
             if ( dataViewId.HasValue )
             {
                 // make sure it is a Person DataView
-                var dataView = new DataViewService( new RockContext() ).Get( dataViewId.Value );
+                var dataView = new DataViewService( RockApp.Current.CreateRockContext() ).Get( dataViewId.Value );
                 if ( dataView != null && dataView.EntityTypeId == EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() ) )
                 {
                     dvpResourceListDataView.SetValue( dataView );
@@ -636,7 +637,7 @@ btnCopyToClipboard.ClientID );
         private static List<int> GetSchedulingEnabledGroupIds( List<int> authorizedGroupIds )
         {
             var schedulingEnabledGroupIds =
-             new GroupService( new RockContext() )
+             new GroupService( RockApp.Current.CreateRockContext() )
                 .GetByIds( authorizedGroupIds )
                 .Where( a => a.GroupType.IsSchedulingEnabled && !a.DisableScheduling )
                 .Select( a => a.Id )
@@ -707,7 +708,7 @@ btnCopyToClipboard.ClientID );
             preferences.SetValue( UserPreferenceKey.SelectAllSchedules, selectAllSchedules.ToString() );
             preferences.SetValue( UserPreferenceKey.SelectedIndividualScheduleId, selectedScheduleId.ToString() );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // only show the Show Child Groups option if
             // the is only one group selected, and that group has child ground
@@ -1081,7 +1082,7 @@ btnCopyToClipboard.ClientID );
         /// <returns></returns>
         private List<Location> GetListedLocations( List<Group> listedGroups, List<int> scheduleIds )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var listedGroupIds = listedGroups.Select( a => a.Id ).ToList();
 
             var groupLocationsQuery = new GroupLocationService( rockContext ).Queryable()
@@ -1129,7 +1130,7 @@ btnCopyToClipboard.ClientID );
 
                 case GroupSchedulerResourceListSourceType.ParentGroup:
                     {
-                        var rockContext = new RockContext();
+                        var rockContext = RockApp.Current.CreateRockContext();
                         resourceGroupId = new GroupService( rockContext ).GetSelect( groupId, s => s.ParentGroupId );
                         break;
                     }
@@ -1167,7 +1168,7 @@ btnCopyToClipboard.ClientID );
 
             var scheduleIds = GetSelectedScheduleIds( authorizedListedGroups );
 
-            var occurrenceSchedules = new ScheduleService( new RockContext() ).GetByIds( scheduleIds ).AsNoTracking().ToList();
+            var occurrenceSchedules = new ScheduleService( RockApp.Current.CreateRockContext() ).GetByIds( scheduleIds ).AsNoTracking().ToList();
 
             if ( !occurrenceSchedules.Any() )
             {
@@ -1198,7 +1199,7 @@ btnCopyToClipboard.ClientID );
 
             // create a lookup of GroupLocations for each GroupId
             // only include GroupLocations that have Schedules (since we can't schedule somebody for a group location that doesn't have any schedules)
-            var groupLocationQuery = new GroupLocationService( new RockContext() ).Queryable()
+            var groupLocationQuery = new GroupLocationService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( a =>
                         groupIds.Contains( a.GroupId )
                         && selectedLocationIds.Contains( a.LocationId )
@@ -1226,7 +1227,7 @@ btnCopyToClipboard.ClientID );
             {
                 var groupGroupLocationIds = groupGroupLocationIdsLookupByGroupId.GetValueOrNull( groupId ) ?? new List<int>();
 
-                using ( var missingAttendanceOccurrenceRockContext = new RockContext() )
+                using ( var missingAttendanceOccurrenceRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var missingAttendanceOccurrenceOccurrenceService = new AttendanceOccurrenceService( missingAttendanceOccurrenceRockContext );
 
@@ -1260,7 +1261,7 @@ btnCopyToClipboard.ClientID );
             }
 
             var occurrenceDateList = occurrenceDatesForAllSchedules.Select( a => a.Date ).Distinct().ToList();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
 
@@ -1990,7 +1991,7 @@ btnCopyToClipboard.ClientID );
         /// <param name="groups">The groups.</param>
         protected void AutoSchedule( List<Group> groups )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var displayedAttendanceOccurrenceIdList = hfDisplayedOccurrenceIds.Value.SplitDelimitedValues().AsIntegerList();
             var groupIds = groups.Select( a => a.Id ).ToList();
@@ -2047,7 +2048,7 @@ btnCopyToClipboard.ClientID );
         protected void SendConfirmations( List<Group> groups )
         {
             upnlContent.Update();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var displayedAttendanceOccurrenceIdList = hfDisplayedOccurrenceIds.Value.SplitDelimitedValues().AsIntegerList();
             var groupIds = groups.Select( a => a.Id ).ToList();
@@ -2330,7 +2331,7 @@ btnCopyToClipboard.ClientID );
         /// <param name="groupMemberId">The group member identifier.</param>
         protected void UpdateGroupScheduleAssignmentPreference( int attendanceId, int groupMemberId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             AttendanceService attendanceService = new AttendanceService( rockContext );
             var groupMemberPerson = groupMemberService.GetSelect( groupMemberId, s => new
@@ -2516,7 +2517,7 @@ btnCopyToClipboard.ClientID );
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupMemberService = new GroupMemberService( rockContext );
 

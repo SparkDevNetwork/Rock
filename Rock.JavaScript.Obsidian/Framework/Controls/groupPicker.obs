@@ -5,6 +5,7 @@
                     iconCssClass="ti ti-users"
                     :provider="itemProvider"
                     :multiple="multiple"
+                    :showSelectAll="showSelectAll"
                     autoExpand>
 
         <template #customPickerActions>
@@ -32,6 +33,17 @@
         },
 
         multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true, and the picker is in multi-select mode, a "Select All"
+         * action is shown that selects every currently-loaded group, to have
+         * parity with the WebForms GroupPicker control. Opt-in for now; it
+         * only selects loaded groups, not the full lazily-loaded hierarchy.
+         */
+        showSelectAll: {
             type: Boolean as PropType<boolean>,
             default: false
         },

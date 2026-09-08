@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -118,7 +119,7 @@ namespace Rock.Transactions
         {
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     WorkflowTypeCache workflowType = null;
                     if ( WorkflowTypeGuid.HasValue )

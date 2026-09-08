@@ -15,11 +15,15 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.AI.Classes.Moderations
 {
     /// <summary>
     /// The class for holding the response from a moderation.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public class ModerationsResponse
     {
         /// <summary>

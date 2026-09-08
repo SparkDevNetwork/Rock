@@ -25,6 +25,7 @@ using Rock.Communication;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
 using Rock.Communication.Chat.Sync;
+using Rock.Configuration;
 using Rock.Core.Automation.Triggers;
 using Rock.Data;
 using Rock.Logging;
@@ -123,7 +124,7 @@ namespace Rock.Core.Automation.Events
 
             Task.Run( () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
                     var systemCommunication = GetSystemCommunicationFromCacheOrDb( rockContext );

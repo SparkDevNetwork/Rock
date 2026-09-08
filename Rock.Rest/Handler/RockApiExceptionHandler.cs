@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.Results;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -49,7 +50,7 @@ namespace Rock.Rest
         {
             // check to see if the user is an admin, if so allow them to view the error details
             var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
-            GroupService service = new GroupService( new RockContext() );
+            GroupService service = new GroupService( RockApp.Current.CreateRockContext() );
             Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
             context.RequestContext.IncludeErrorDetail = userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0;
 

@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -85,7 +86,7 @@ namespace Rock.Search.Person
 
             bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
 
-            return new PersonService( new RockContext() )
+            return new PersonService( RockApp.Current.CreateRockContext() )
                 .GetByFullNameOrdered( searchTerm, true, false, allowFirstNameSearch, out _);
         }
 
@@ -104,7 +105,7 @@ namespace Rock.Search.Person
             bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
 
             bool reversed = false;
-            var qry = new PersonService( new RockContext() ).GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
+            var qry = new PersonService( RockApp.Current.CreateRockContext() ).GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
 
             IQueryable<string> resultQry;
 

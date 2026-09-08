@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
@@ -233,7 +234,7 @@ namespace RockWeb.Blocks.CheckIn
             mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
 
             // prepare a query with a new context in case the Lava wants to access Members of this family, and so that lazy loading will work
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var familyMembersQuery = new GroupMemberService( rockContext ).Queryable().Include( a => a.Person ).Include( a => a.GroupRole )
                     .AsNoTracking()

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.UI.Controls;
@@ -55,7 +56,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "1E007DCA-3785-4EFF-A09D-8F9A034450AA" )]
         public IEnumerable<int> GetParentIds( int id )
         {
-            var accountService = new FinancialAccountService( new Data.RockContext() );
+            var accountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             return accountService.GetAllAncestorIds( id )?.Reverse();
         }
 
@@ -69,7 +70,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "1858BC66-D4BA-48CE-9866-154B902AE7A4" )]
         public Dictionary<string, List<string>> GetParentIds( [FromUri] IEnumerable<string> ids )
         {
-            var accountService = new FinancialAccountService( new Data.RockContext() );
+            var accountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             var retVal = new Dictionary<string, List<string>>();
 
             foreach ( var id in ids )
@@ -137,7 +138,7 @@ namespace Rock.Rest.Controllers
         #region Methods
         private IQueryable<AccountTreeViewItem> GetChildrenData( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None, bool loadChildren = false )
         {
-            var financialAccountService = new FinancialAccountService( new Data.RockContext() );
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
 
             IQueryable<FinancialAccount> qry;
 
@@ -238,7 +239,7 @@ namespace Rock.Rest.Controllers
                 return null;
             }
 
-            var financialAccountService = new FinancialAccountService( new Data.RockContext() );
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             qry = financialAccountService.GetAccountsBySearchTerm( searchTerm );
 
             if ( activeOnly )
@@ -294,7 +295,7 @@ namespace Rock.Rest.Controllers
 
         private IQueryable<AccountTreeViewItem> GetInactiveData( bool displayPublicName )
         {
-            var financialAccountService = new FinancialAccountService( new Data.RockContext() );
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
 
             IQueryable<FinancialAccount> qry;
 

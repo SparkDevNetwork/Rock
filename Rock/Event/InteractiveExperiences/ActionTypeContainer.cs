@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -120,7 +121,7 @@ namespace Rock.Event.InteractiveExperiences
                 entityProperties.Add( customAttribute );
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             // Create any attributes that need to be created
             foreach ( var entityProperty in entityProperties )
@@ -173,7 +174,7 @@ namespace Rock.Event.InteractiveExperiences
             // Create any attributes that need to be created
             var actionEntityTypeId = EntityTypeCache.Get<InteractiveExperienceAction>().Id;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var actionComponent in AllComponents )
                 {

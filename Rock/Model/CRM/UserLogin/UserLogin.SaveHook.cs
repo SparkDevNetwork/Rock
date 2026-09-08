@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -109,7 +110,7 @@ namespace Rock.Model
                         {
                             // By this point EF has stripped out some of the data we need to save history
                             // Reload the data using a new context.
-                            RockContext newRockContext = new RockContext();
+                            RockContext newRockContext = RockApp.Current.CreateRockContext();
                             var userLogin = new UserLoginService( newRockContext ).Get( Entity.Id );
                             if ( userLogin != null && userLogin.PersonId != null )
                             {

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonDuplicatesController"/> class.
         /// </summary>
-        public PersonDuplicatesController() : base( new Rock.Model.PersonDuplicateService( new Rock.Data.RockContext() ) ) { } 
+        public PersonDuplicatesController() : base( new Rock.Model.PersonDuplicateService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

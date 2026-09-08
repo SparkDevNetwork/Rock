@@ -21,6 +21,7 @@ using System.Web.UI;
 #endif
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -39,6 +40,8 @@ namespace Rock.Field.Types
     /// <seealso cref="Rock.Field.FieldType" />
     /// <seealso cref="Rock.Field.IEntityFieldType" />
     [FieldTypeUsage( FieldTypeUsage.System )]
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( SystemGuid.FieldType.AI_PROVIDER )]
     public class AIProviderFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -88,7 +91,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new AIProviderService( rockContext ).Get( guid.Value );
             }
 

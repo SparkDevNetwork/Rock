@@ -1,9 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="root" class="group-finder styled-scroll" :class="{ 'group-finder-layout-split': config.isMapShown }">
+    <div ref="root" class="groupfinder styled-scroll" :class="{ 'groupfinder-layout-split': config.isMapShown }">
         <NotificationBox v-if="config.configurationWarning" alertType="warning">
             {{ config.configurationWarning }}
-            <ul v-if="config.configurationWarningItems && config.configurationWarningItems.length" class="mb-0 mt-2">
+            <ul v-if="config.configurationWarningItems && config.configurationWarningItems.length" class="groupfinder-configuration-warnings">
                 <li v-for="(item, index) in config.configurationWarningItems" :key="index">{{ item }}</li>
             </ul>
         </NotificationBox>
@@ -14,19 +14,19 @@
         <!-- Desktop filter bar: an Airbnb-style search pill of Campus/Where/When/What segments and a
              primary search action, with a More Filters dropdown beside it. Each segment shows its
              current value (or a placeholder) and opens its filter content in an anchored dropdown. -->
-        <div v-if="isFilterBarShown" ref="filterBar" class="group-finder-filterbar">
+        <div v-if="isFilterBarShown" ref="filterBar" class="groupfinder-filterbar">
             <!-- Cancel hint pinned just under the bar, shown when the pending overlay is up and no filter
                  popover is open. A subtle, temporary affordance for the designer to evaluate; it ignores
                  pointer events so the scrim handles the click, and it is absolutely positioned so it does
                  not affect the bar's flex layout. It fades quickly in and out rather than snapping. -->
-            <Transition name="group-finder-hint-fade">
-                <div v-if="isCancelHintShown" class="group-finder-pending-hint" aria-hidden="true">
+            <Transition name="groupfinder-hint-fade">
+                <div v-if="isCancelHintShown" class="groupfinder-pending-hint" aria-hidden="true">
                     <i class="ti ti-x"></i>
                     <span>Click anywhere to cancel</span>
                 </div>
             </Transition>
-            <div class="group-finder-searchpill">
-                <div class="filter-segments">
+            <div class="groupfinder-searchpill">
+                <div class="groupfinder-filter-segment-list">
                     <!-- Only More Filters is enabled: the pill collapses to a single "Filters" entry that
                          opens the More Filters content, with the applied count as its conditional value. -->
                     <DropDownContent v-if="isFiltersOnlyBar"
@@ -38,13 +38,13 @@
                                      rounded
                                      raised>
                         <template #anchor>
-                            <button type="button" class="filter-segment filter-segment-filters" :class="{ 'is-open': openSection === 'more' }">
-                                <span class="filter-segment-text">
-                                    <span class="filter-segment-name">Filters</span>
-                                    <span v-tooltip.overflow="segmentValueText.more" class="filter-segment-value" :class="{ 'is-placeholder': !moreFiltersSummary }">{{ segmentValueText.more }}</span>
+                            <button type="button" class="groupfinder-filter-segment groupfinder-filter-segment-filters" :class="{ 'is-open': openSection === 'more' }">
+                                <span class="groupfinder-filter-segment-text">
+                                    <span class="groupfinder-filter-segment-name">Filters</span>
+                                    <span v-tooltip.overflow="segmentValueText.more" class="groupfinder-filter-segment-value" :class="{ 'is-placeholder': !moreFiltersSummary }">{{ segmentValueText.more }}</span>
                                 </span>
                                 <span v-if="isSegmentClearShown('more', moreFiltersSummary)"
-                                      class="filter-segment-clear"
+                                      class="groupfinder-filter-segment-clear"
                                       role="button"
                                       tabindex="0"
                                       aria-label="Clear the applied filters"
@@ -53,10 +53,10 @@
                                       @keydown.space.prevent.stop="clearFilterSegment('more')">
                                     <i class="ti ti-x"></i>
                                 </span>
-                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
+                                <i v-else class="ti ti-chevron-down groupfinder-filter-segment-caret"></i>
                             </button>
                         </template>
-                        <div class="group-finder-filter-popover filters-more">
+                        <div class="groupfinder-filter-popover groupfinder-filter-popover-more">
                             <MoreFiltersContent />
                         </div>
                     </DropDownContent>
@@ -70,13 +70,13 @@
                                      rounded
                                      raised>
                         <template #anchor>
-                            <button type="button" class="filter-segment filter-segment-campus" :class="{ 'is-open': openSection === 'campus' }">
-                                <span class="filter-segment-text">
-                                    <span class="filter-segment-name">Campus</span>
-                                    <span v-tooltip.overflow="segmentValueText.campus" class="filter-segment-value" :class="{ 'is-placeholder': !campusSummary }">{{ segmentValueText.campus }}</span>
+                            <button type="button" class="groupfinder-filter-segment groupfinder-filter-segment-campus" :class="{ 'is-open': openSection === 'campus' }">
+                                <span class="groupfinder-filter-segment-text">
+                                    <span class="groupfinder-filter-segment-name">Campus</span>
+                                    <span v-tooltip.overflow="segmentValueText.campus" class="groupfinder-filter-segment-value" :class="{ 'is-placeholder': !campusSummary }">{{ segmentValueText.campus }}</span>
                                 </span>
                                 <span v-if="isSegmentClearShown('campus', campusSummary)"
-                                      class="filter-segment-clear"
+                                      class="groupfinder-filter-segment-clear"
                                       role="button"
                                       tabindex="0"
                                       aria-label="Clear the Campus filter"
@@ -85,15 +85,15 @@
                                       @keydown.space.prevent.stop="clearFilterSegment('campus')">
                                     <i class="ti ti-x"></i>
                                 </span>
-                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
+                                <i v-else class="ti ti-chevron-down groupfinder-filter-segment-caret"></i>
                             </button>
                         </template>
-                        <div class="group-finder-filter-popover filters-campus">
+                        <div class="groupfinder-filter-popover groupfinder-filter-popover-campus">
                             <CampusFilterContent />
                         </div>
                     </DropDownContent>
 
-                    <span v-if="config.isWhereFilterShown && config.isCampusFilterShown" class="filter-segment-divider"></span>
+                    <span v-if="config.isWhereFilterShown && config.isCampusFilterShown" class="groupfinder-filter-segment-divider"></span>
                     <DropDownContent v-if="config.isWhereFilterShown"
                                      :modelValue="openSection === 'where'"
                                      @update:modelValue="isOpen => onSectionToggle('where', isOpen)"
@@ -103,13 +103,13 @@
                                      rounded
                                      raised>
                         <template #anchor>
-                            <button type="button" class="filter-segment filter-segment-where" :class="{ 'is-open': openSection === 'where' }">
-                                <span class="filter-segment-text">
-                                    <span class="filter-segment-name">Where</span>
-                                    <span v-tooltip.overflow="segmentValueText.where" class="filter-segment-value" :class="{ 'is-placeholder': !whereSummary }">{{ segmentValueText.where }}</span>
+                            <button type="button" class="groupfinder-filter-segment groupfinder-filter-segment-where" :class="{ 'is-open': openSection === 'where' }">
+                                <span class="groupfinder-filter-segment-text">
+                                    <span class="groupfinder-filter-segment-name">Where</span>
+                                    <span v-tooltip.overflow="segmentValueText.where" class="groupfinder-filter-segment-value" :class="{ 'is-placeholder': !whereSummary }">{{ segmentValueText.where }}</span>
                                 </span>
                                 <span v-if="isSegmentClearShown('where', whereSummary)"
-                                      class="filter-segment-clear"
+                                      class="groupfinder-filter-segment-clear"
                                       role="button"
                                       tabindex="0"
                                       aria-label="Clear the Where filter"
@@ -118,15 +118,15 @@
                                       @keydown.space.prevent.stop="clearFilterSegment('where')">
                                     <i class="ti ti-x"></i>
                                 </span>
-                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
+                                <i v-else class="ti ti-chevron-down groupfinder-filter-segment-caret"></i>
                             </button>
                         </template>
-                        <div class="group-finder-filter-popover filters-where">
+                        <div class="groupfinder-filter-popover groupfinder-filter-popover-where">
                             <WhereFilterContent />
                         </div>
                     </DropDownContent>
 
-                    <span v-if="config.isWhenFilterShown && (config.isCampusFilterShown || config.isWhereFilterShown)" class="filter-segment-divider"></span>
+                    <span v-if="config.isWhenFilterShown && (config.isCampusFilterShown || config.isWhereFilterShown)" class="groupfinder-filter-segment-divider"></span>
                     <DropDownContent v-if="config.isWhenFilterShown"
                                      :modelValue="openSection === 'when'"
                                      @update:modelValue="isOpen => onSectionToggle('when', isOpen)"
@@ -136,13 +136,13 @@
                                      rounded
                                      raised>
                         <template #anchor>
-                            <button type="button" class="filter-segment filter-segment-when" :class="{ 'is-open': openSection === 'when' }">
-                                <span class="filter-segment-text">
-                                    <span class="filter-segment-name">When</span>
-                                    <span v-tooltip.overflow="segmentValueText.when" class="filter-segment-value" :class="{ 'is-placeholder': !whenSummary }"><i v-if="whenTimeIcon" :class="whenTimeIcon" class="filter-segment-value-icon"></i>{{ segmentValueText.when }}</span>
+                            <button type="button" class="groupfinder-filter-segment groupfinder-filter-segment-when" :class="{ 'is-open': openSection === 'when' }">
+                                <span class="groupfinder-filter-segment-text">
+                                    <span class="groupfinder-filter-segment-name">When</span>
+                                    <span v-tooltip.overflow="segmentValueText.when" class="groupfinder-filter-segment-value" :class="{ 'is-placeholder': !whenSummary }"><i v-if="whenTimeIcon" :class="whenTimeIcon" class="groupfinder-filter-segment-value-icon"></i>{{ segmentValueText.when }}</span>
                                 </span>
                                 <span v-if="isSegmentClearShown('when', whenSummary)"
-                                      class="filter-segment-clear"
+                                      class="groupfinder-filter-segment-clear"
                                       role="button"
                                       tabindex="0"
                                       aria-label="Clear the When filter"
@@ -151,15 +151,15 @@
                                       @keydown.space.prevent.stop="clearFilterSegment('when')">
                                     <i class="ti ti-x"></i>
                                 </span>
-                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
+                                <i v-else class="ti ti-chevron-down groupfinder-filter-segment-caret"></i>
                             </button>
                         </template>
-                        <div class="group-finder-filter-popover filters-when">
+                        <div class="groupfinder-filter-popover groupfinder-filter-popover-when">
                             <WhenFilterContent />
                         </div>
                     </DropDownContent>
 
-                    <span v-if="config.isWhatFilterShown && (config.isCampusFilterShown || config.isWhereFilterShown || config.isWhenFilterShown)" class="filter-segment-divider"></span>
+                    <span v-if="config.isWhatFilterShown && (config.isCampusFilterShown || config.isWhereFilterShown || config.isWhenFilterShown)" class="groupfinder-filter-segment-divider"></span>
                     <DropDownContent v-if="config.isWhatFilterShown"
                                      :modelValue="openSection === 'what'"
                                      @update:modelValue="isOpen => onSectionToggle('what', isOpen)"
@@ -169,13 +169,13 @@
                                      rounded
                                      raised>
                         <template #anchor>
-                            <button type="button" class="filter-segment filter-segment-what" :class="{ 'is-open': openSection === 'what' }">
-                                <span class="filter-segment-text">
-                                    <span class="filter-segment-name">What</span>
-                                    <span v-tooltip.overflow="segmentValueText.what" class="filter-segment-value" :class="{ 'is-placeholder': !whatSummary }">{{ segmentValueText.what }}</span>
+                            <button type="button" class="groupfinder-filter-segment groupfinder-filter-segment-what" :class="{ 'is-open': openSection === 'what' }">
+                                <span class="groupfinder-filter-segment-text">
+                                    <span class="groupfinder-filter-segment-name">What</span>
+                                    <span v-tooltip.overflow="segmentValueText.what" class="groupfinder-filter-segment-value" :class="{ 'is-placeholder': !whatSummary }">{{ segmentValueText.what }}</span>
                                 </span>
                                 <span v-if="isSegmentClearShown('what', whatSummary)"
-                                      class="filter-segment-clear"
+                                      class="groupfinder-filter-segment-clear"
                                       role="button"
                                       tabindex="0"
                                       aria-label="Clear the What filter"
@@ -184,26 +184,26 @@
                                       @keydown.space.prevent.stop="clearFilterSegment('what')">
                                     <i class="ti ti-x"></i>
                                 </span>
-                                <i v-else class="ti ti-chevron-down filter-segment-caret"></i>
+                                <i v-else class="ti ti-chevron-down groupfinder-filter-segment-caret"></i>
                             </button>
                         </template>
-                        <div class="group-finder-filter-popover filters-what">
+                        <div class="groupfinder-filter-popover groupfinder-filter-popover-what">
                             <WhatFilterContent />
                         </div>
                     </DropDownContent>
                 </div>
 
-                <button type="button" class="filter-search-button" :class="{ 'is-expanded': isPendingOverlayShown }" :disabled="isLoading" aria-label="Search" @click="onSearchClick">
-                    <span v-if="isLoading" class="filter-search-button-spinner" aria-hidden="true"></span>
+                <button type="button" class="groupfinder-searchpill-button groupfinder-round-button" :class="{ 'is-expanded': isPendingOverlayShown }" :disabled="isLoading" aria-label="Search" @click="onSearchClick">
+                    <span v-if="isLoading" class="groupfinder-searchpill-button-spinner" aria-hidden="true"></span>
                     <i v-else class="ti ti-search"></i>
-                    <span class="filter-search-button-label">Search</span>
+                    <span class="groupfinder-searchpill-button-label">Search</span>
                 </button>
             </div>
 
             <!-- Only the round icon button is interactive (the dropdown anchor); the label and the padding
                  around it are not clickable. The button is named from the visible label via aria-labelledby. -->
-            <div v-if="config.isMoreFiltersShown && !isFiltersOnlyBar" class="more-filters">
-                <span id="groupFinderMoreFiltersLabel" class="more-filters-label">More Filters</span>
+            <div v-if="config.isMoreFiltersShown && !isFiltersOnlyBar" class="groupfinder-more-filters">
+                <span id="groupFinderMoreFiltersLabel" class="groupfinder-more-filters-label">More Filters</span>
                 <DropDownContent :modelValue="openSection === 'more'"
                                  @update:modelValue="isOpen => onSectionToggle('more', isOpen)"
                                  placement="bottom-end"
@@ -213,17 +213,17 @@
                                  raised>
                     <template #anchor>
                         <button type="button"
-                                class="more-filters-button btn"
+                                class="groupfinder-more-filters-button groupfinder-round-button btn"
                                 :class="moreFiltersCount > 0 ? 'btn-primary' : 'btn-default'"
                                 :aria-label="isMoreFiltersClearShown ? 'Clear the More Filters values' : undefined"
                                 :aria-labelledby="isMoreFiltersClearShown ? undefined : 'groupFinderMoreFiltersLabel'"
                                 @click="onMoreFiltersButtonClick">
-                            <i v-if="isMoreFiltersClearShown" class="ti ti-x more-filters-clear"></i>
-                            <span v-else-if="moreFiltersCount > 0" class="filter-count">{{ moreFiltersCount }}</span>
+                            <i v-if="isMoreFiltersClearShown" class="ti ti-x groupfinder-more-filters-clear"></i>
+                            <span v-else-if="moreFiltersCount > 0" class="groupfinder-more-filters-count">{{ moreFiltersCount }}</span>
                             <i v-else class="ti ti-adjustments-horizontal"></i>
                         </button>
                     </template>
-                    <div class="group-finder-filter-popover filters-more">
+                    <div class="groupfinder-filter-popover groupfinder-filter-popover-more">
                         <MoreFiltersContent />
                     </div>
                 </DropDownContent>
@@ -233,10 +233,10 @@
         <!-- Mobile filter bar: a full-width field above the results/map (mobile breakpoint only). Its
              label and trailing action reflect the applied filters (Start/Refine Your Search, and a search
              icon or a count), and tapping it opens the full-screen filter panel. -->
-        <button v-if="isFilterBarShown" type="button" class="group-finder-mobile-filterbar" @click="isDrawerOpen = true">
-            <span class="group-finder-mobile-filterbar-label">{{ mobileFilterLabel }}</span>
-            <span class="group-finder-mobile-filterbar-action">
-                <span v-if="totalFilterCount > 0" class="group-finder-mobile-filter-count">{{ totalFilterCount }}</span>
+        <button v-if="isFilterBarShown" type="button" class="groupfinder-mobile-filterbar" @click="isDrawerOpen = true">
+            <span class="groupfinder-mobile-filterbar-label">{{ mobileFilterLabel }}</span>
+            <span class="groupfinder-mobile-filterbar-action">
+                <span v-if="totalFilterCount > 0" class="groupfinder-mobile-filter-count">{{ totalFilterCount }}</span>
                 <i v-else class="ti ti-search"></i>
             </span>
         </button>
@@ -248,14 +248,14 @@
         <Modal v-model="isDrawerOpen"
                cancelText=""
                isFullScreen
-               modalContentClasses="group-finder-filter-modal">
+               modalContentClasses="groupfinder-filter-modal">
             <!-- Render the header title as an h4 (via the Modal's header slot) rather than the control's
                  default h3, keeping the page's heading hierarchy correct. -->
             <template #header>
                 <h4 class="modal-title">{{ mobileFilterLabel }}</h4>
             </template>
 
-            <ContentSectionContainer :sidebar="false" class="group-finder-filter-sections">
+            <ContentSectionContainer :sidebar="false" class="groupfinder-filter-sections">
                 <ContentSection v-if="config.isCampusFilterShown"
                                 title="Campus"
                                 :isCollapsed="mobileOpenSection !== 'campus'"
@@ -298,8 +298,8 @@
             </ContentSectionContainer>
 
             <template #customButtons>
-                <div class="group-finder-filter-footer">
-                    <RockButton btnType="link" class="group-finder-filter-clear" @click="clearAllFilters">Clear all</RockButton>
+                <div class="groupfinder-filter-footer">
+                    <RockButton btnType="link" class="groupfinder-filter-clear" @click="clearAllFilters">Clear all</RockButton>
                     <RockButton btnType="primary" @click="onDrawerSearch">Apply</RockButton>
                 </div>
             </template>
@@ -314,12 +314,12 @@
              is open or filters are pending, so the bar reads as the active surface and the results and map
              read as stale until the visitor commits the search. The visitor commits with the Search button;
              clicking the dimmed area cancels, reverting to the last searched filters. Fades in, not snaps. -->
-        <Transition name="group-finder-pending-fade">
-            <div v-if="isPendingOverlayShown" class="group-finder-pending-overlay" @mousedown="onPendingOverlayMouseDown"></div>
+        <Transition name="groupfinder-pending-fade">
+            <div v-if="isPendingOverlayShown" class="groupfinder-pending-overlay" @mousedown="onPendingOverlayMouseDown"></div>
         </Transition>
 
         <!-- Results -->
-        <div class="group-finder-body" :data-layout="layoutMode">
+        <div class="groupfinder-body" :data-layout="layoutMode">
 
             <!-- Card list inline for every mode except the drawer, where it rides in the bottom sheet. -->
             <GroupFinderResults v-if="layoutMode !== 'drawer'"
@@ -340,23 +340,23 @@
             <!-- Map: shown whenever enabled, except in the toggle when the list is chosen. -->
             <div v-if="config.isMapShown"
                  ref="mapPane"
-                 class="group-finder-map-pane"
+                 class="groupfinder-map-pane"
                  :style="mapPaneHeight ? { height: mapPaneHeight, paddingBottom: mapDrawerReserve } : undefined">
-                <div class="group-finder-map-overlays">
+                <div class="groupfinder-map-overlays">
                     <RockButton v-if="isMapMoved && !isLoading"
                                 btnType="default"
-                                class="group-finder-search-area-button"
+                                class="groupfinder-search-area-button groupfinder-map-pill"
                                 @click="onSearchThisArea">
                         <i class="ti ti-search"></i> Search this area
                     </RockButton>
-                    <div v-if="isLoading" class="group-finder-map-loading">
+                    <div v-if="isLoading" class="groupfinder-map-loading groupfinder-map-pill">
                         <LoadingIndicator isSmall />
                         <span>Searching&hellip;</span>
                     </div>
                 </div>
-                <div class="group-finder-map-note-bottom"
+                <div class="groupfinder-map-note-bottom"
                      :style="mapDrawerReserve ? { bottom: `calc(${mapDrawerReserve} + var(--spacing-medium))` } : undefined">
-                    <div class="group-finder-map-note">
+                    <div class="groupfinder-map-note groupfinder-map-pill">
                         <i class="ti ti-info-circle"></i>
                         <span>{{ layoutMode === "drawer" ? "Locations are approximate." : "Locations are an approximation of the meeting area." }}</span>
                     </div>
@@ -396,7 +396,7 @@
                          :snapPoints="drawerSnapPoints"
                          @settled="onDrawerSettled">
                 <template #header>
-                    <div class="group-finder-sheet-title">
+                    <div class="groupfinder-sheet-title">
                         <span>{{ resultCountText }}</span>
                         <!-- Only while refreshing an already-populated list; the empty/initial load shows
                              the single centered indicator in the sheet body instead. -->
@@ -404,7 +404,7 @@
                     </div>
                 </template>
 
-                <div class="group-finder-sheet-body">
+                <div class="groupfinder-sheet-body">
                     <GroupFinderResults :selectedGroupGuid="selectedGroupGuid"
                                         @update:selectedGroupGuid="onGroupCardSelect"
                                         v-model:hoveredGroupGuid="hoveredGroupGuid"
@@ -425,697 +425,6 @@
         </template>
     </div>
 </template>
-
-<style scoped>
-.group-finder {
-    position: relative;
-    /* No outer padding or background: the host layout owns the spacing and backdrop, so the block sits
-       full-bleed on whatever surface it is placed. */
-}
-
-/*
-    New styles land here scoped; the UI team migrates them to shared LESS/SCSS
-    in a later pass.
-*/
-/* Centered filter bar that pins to the top of the block and acts as the sticky header. */
-/* The bar is a soft pill that hugs its content (the white search pill plus the More Filters action) and
-   centers in the block, rather than stretching edge to edge. The soft surface sits behind; the inner
-   search pill carries its own lighter surface and shadow. */
-.group-finder-filterbar {
-    display: flex;
-    gap: var(--spacing-xlarge);
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: center;
-    width: fit-content;
-    max-width: 100%;
-    margin-inline: auto;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    margin-bottom: var(--spacing-medium);
-    padding: var(--spacing-tiny);
-    background: var(--color-interface-softer);
-    /* A soft shadow lifts the pill so its edge reads even when the page background matches the fill. */
-    box-shadow: var(--box-shadow);
-    border-radius: 500px;
-}
-
-/* The search pill: filter segments and the primary search action on one rounded, elevated surface. */
-.group-finder-searchpill {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    gap: var(--spacing-large);
-    /* Right padding insets the search button from the pill's rounded end so its full (square) bounds sit in
-       the straight middle and are not clipped by the border-radius + overflow. Left stays flush. */
-    padding: 0 var(--spacing-small) 0 0;
-    overflow: hidden;
-    background: var(--color-interface-softest, #fff);
-    border-radius: 500px;
-    box-shadow: var(--box-shadow);
-}
-
-.filter-segments {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-}
-
-/*
-    DropDownContent wraps each segment in an anchor element that sits between .filter-segments and the
-    button. It belongs to that child component, so :deep is needed to reach it. Make the wrapper a shrinkable
-    flex box (display: flex + min-width: 0) so the 240px button can narrow when the bar runs out of room;
-    without this the wrapper's auto min-width pins the segment. Every direct child that is not a divider is
-    such a wrapper.
-*/
-.filter-segments > :deep(*:not(.filter-segment-divider)) {
-    display: flex;
-    min-width: 0;
-}
-
-/* The pill is flush against its first segment, so that segment's text needs more than the segment's own
-   padding to clear the rounded end and not look wedged into the curve. */
-.filter-segments > :deep(*:first-child) .filter-segment {
-    padding-left: var(--spacing-large);
-}
-
-/*
-    A segment lays its two lines of text (the filter name over its current value or a placeholder) beside a
-    trailing control - the caret, or the clear action once there is something to clear. The two sit side by
-    side rather than the control floating over the text, so a long value ellipsizes short of the control
-    instead of running underneath it.
-*/
-.filter-segment {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    width: 240px;
-    /* Keep 240px as the preferred size, but allow shrinking below it (min-width: 0) when the bar runs out
-       of room, so the segments narrow and their values ellipsize instead of wrapping or overflowing. */
-    min-width: 0;
-    padding: var(--spacing-medium);
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    text-align: left;
-    cursor: pointer;
-}
-
-/* The name and value column, taking the width the trailing control does not. min-width: 0 is what lets the
-   value ellipsize here rather than pushing the control past the segment's edge. */
-.filter-segment-text {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    min-width: 0;
-}
-
-.filter-segment:hover,
-.filter-segment.is-open {
-    background: var(--color-interface-softer);
-}
-
-.filter-segment-name {
-    font-size: var(--font-size-small, 14px);
-    font-weight: var(--font-weight-semibold, 600);
-    line-height: 1.1;
-    color: var(--color-interface-strong);
-}
-
-.filter-segment-value {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: var(--font-size-regular, 16px);
-    line-height: 1.5;
-    color: var(--color-interface-strong);
-}
-
-.filter-segment-value.is-placeholder {
-    color: var(--color-interface-medium, #8b8ba7);
-}
-
-/* The time-of-day icon sits just before the When value (e.g. a sun beside "Mon, Tue, Thu"). */
-.filter-segment-value-icon {
-    margin-right: var(--spacing-xsmall);
-}
-
-/*
-    Only-More-Filters mode: the sole segment carries a summary of every applied value, which can be long.
-    A flex item defaults to min-width: auto (its content width), so without this the long summary would
-    stretch the segment past its fixed .filter-segment width; min-width: 0 lets the fixed width hold so the
-    value truncates with an ellipsis instead.
-*/
-.filter-segment-filters,
-.filter-segment-filters .filter-segment-value {
-    min-width: 0;
-}
-
-.filter-segment-caret {
-    flex: none;
-    font-size: 1rem;
-    color: var(--color-interface-medium, #8b8ba7);
-    transition: transform 0.15s ease-in-out;
-}
-
-/* Open segment: highlight the name and turn the caret over. The caret only survives an open segment while
-   there is nothing to clear; once the segment holds a value the clear action takes its slot instead (see
-   isSegmentClearShown), so the two affordances never compete. */
-.filter-segment.is-open .filter-segment-name {
-    color: var(--color-primary);
-}
-
-.filter-segment.is-open .filter-segment-caret {
-    transform: rotate(180deg);
-}
-
-/*
-    The clear action, which takes the caret's place on an open segment that has something to clear. It holds
-    the same slot beside the text, so the swap does not shift the value, and carries a hit area of its own
-    since it is a target inside the larger segment button rather than part of it. The negative margins keep
-    that hit area from widening the slot the caret occupies, so the value's ellipsis lands in the same place
-    either way.
-*/
-.filter-segment-clear {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    margin: -4px;
-    font-size: 1rem;
-    color: var(--color-interface-strong, #3d444d);
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.filter-segment-clear:hover,
-.filter-segment-clear:focus-visible {
-    background: var(--color-interface-soft, #d9d9e3);
-    color: var(--color-interface-stronger, #0d1117);
-}
-
-.filter-segment-divider {
-    align-self: stretch;
-    flex-shrink: 0;
-    width: 1px;
-    margin: var(--spacing-small) 0;
-    background: var(--color-interface-soft);
-}
-
-/* Round primary search action at the trailing end of the pill. While filters are pending it widens into
-   a pill with a "Search" label (see .is-expanded); the width and label slide in rather than snap. */
-.filter-search-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    /* No gap while collapsed: the zero-width label is still a flex item, so a gap before it would
-       push the icon left of center. The gap is added only once the label is shown (see .is-expanded). */
-    gap: 0;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 1.125rem;
-    white-space: nowrap;
-    overflow: hidden;
-    cursor: pointer;
-    transition: width 0.25s ease, border-radius 0.25s ease, gap 0.25s ease;
-}
-
-.filter-search-button:hover {
-    background: var(--color-primary-shade, var(--color-primary));
-}
-
-/* While a search is running the button is inert and its search glyph becomes a spinner. */
-.filter-search-button:disabled {
-    cursor: default;
-    opacity: 0.65;
-}
-
-/*
-    A CSS ring spinner rather than a rotating icon glyph. An icon font's glyph is not perfectly centered
-    in its em box, so rotating the element makes the glyph orbit its box center and wobble. A bordered
-    circle is radially symmetric, so it spins dead-center with no wobble.
-*/
-.filter-search-button-spinner {
-    box-sizing: border-box;
-    display: inline-block;
-    width: 1.1em;
-    height: 1.1em;
-    border: 2px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: group-finder-search-spin 0.7s linear infinite;
-}
-
-@keyframes group-finder-search-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.filter-search-button.is-expanded {
-    width: 116px;
-    border-radius: 500px;
-    gap: var(--spacing-xsmall);
-}
-
-/* The label slides open (0 to its width) and fades in as the button widens. */
-.filter-search-button-label {
-    max-width: 0;
-    opacity: 0;
-    font-size: var(--font-size-regular, 16px);
-    transition: max-width 0.25s ease, opacity 0.2s ease;
-}
-
-.filter-search-button.is-expanded .filter-search-button-label {
-    max-width: 5rem;
-    opacity: 1;
-}
-
-/* More Filters: a non-interactive wrapper holding the label and the round button. The padding gives the
-   group breathing room without becoming part of the button's click/hover target - only the button is. */
-.more-filters {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    padding-right: var(--spacing-xsmall);
-}
-
-.more-filters-label {
-    font-size: var(--font-size-h6, 16px);
-    font-weight: var(--font-weight-semibold, 600);
-    color: var(--color-interface-strongest);
-    white-space: nowrap;
-}
-
-/*
-    Reuse Rock's real .btn .btn-default for the exact default-button surface, colors, and hover/active/focus
-    effects; only the shape is overridden here (a fixed round icon button) rather than re-implementing the
-    look, which never quite matches.
-*/
-.more-filters-button.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    font-size: 1.125rem;
-    /* The .btn base line-height (1.5) offsets the glyph's line box; reset it so the flex centering
-       actually centers the icon. */
-    line-height: 1;
-}
-
-/*
-    The clear glyph, larger than the icon it replaces so the action reads at a glance. It appears only while
-    the panel is open with values applied, which is the one state where the button clears rather than
-    toggles - the button otherwise keeps the icon it wears closed, so an X never has to mean two things.
-*/
-.more-filters-clear {
-    font-size: 1.5rem;
-}
-
-/*
-    Sizing and padding for the filter dropdown content; DropDownContent supplies the floating card
-    surface (anchoring, border, shadow) around it.
-
-    The panel floats over the results, so it carries its own hairline and elevation rather than relying on
-    the surrounding body's: --box-shadow-strong is defined in styles-v2, which not every theme loads, and an
-    undefined custom property drops the whole declaration. Without the fallback the panel loses its shadow,
-    and since its fill matches the card surface underneath it exactly, the options read as text floating over
-    the group cards.
-*/
-.group-finder-filter-popover {
-    min-width: 240px;
-    max-width: min(92vw, 420px);
-    padding: var(--spacing-medium);
-    background: var(--color-interface-softest, #fff);
-    border: 1px solid var(--color-interface-soft, #d9d9e3);
-    /* The floating body is rounded but does not clip (preventOverflowClipping lets inner dropdowns such as
-       the address suggestions overflow), so round this opaque content to match, or its square corners paint
-       over the body's rounded ones and the panel looks square. */
-    border-radius: var(--rounded-large);
-    box-shadow: var(--box-shadow-strong, rgba(145, 158, 171, 0.2) 0 20px 25px -5px, rgba(145, 158, 171, 0.12) 0 10px 10px -5px);
-}
-
-/* Map pane: rounded, clipped, and the positioning anchor for the approximation banner. */
-.group-finder-map-pane {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--rounded-xlarge);
-}
-
-/* Top-center stack of map overlays: the "Search this area" prompt and, while fetching, the loading
-   pill beneath it. pointer-events: none keeps the map fully interactive under the overlays. Span the
-   full width (left/right 0) rather than left: 50%, so the centered pills can grow to the available
-   width instead of shrink-to-fit against only the right half; align-items: center keeps them centered
-   and the side padding is the gutter. */
-.group-finder-map-overlays {
-    position: absolute;
-    top: var(--spacing-small);
-    left: 0;
-    right: 0;
-    z-index: 3;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-tiny);
-    padding: 0 var(--spacing-small);
-    pointer-events: none;
-}
-
-.group-finder-map-note,
-.group-finder-map-loading {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-tiny);
-    max-width: 100%;
-    padding: var(--spacing-tiny) var(--spacing-small);
-    font-size: 13px;
-    color: var(--color-interface-strong, #4a4a4a);
-    background: var(--color-interface-softest, #fff);
-    border-radius: var(--rounded-huge);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* The approximation note sits at the bottom-center of the map, its bottom edge aligned with the bottom of
-   Google's zoom controls (anchoring by bottom keeps that alignment regardless of the note's own height). */
-.group-finder-map-note-bottom {
-    position: absolute;
-    bottom: var(--spacing-large);
-    left: 0;
-    right: 0;
-    z-index: 3;
-    display: flex;
-    justify-content: center;
-    padding: 0 var(--spacing-small);
-    pointer-events: none;
-}
-
-/* "Search this area" prompt at the top-center of the map (in the overlay stack) after a pan or zoom.
-   The overlay container is click-through, so the button re-enables pointer events for itself. */
-.group-finder-search-area-button {
-    pointer-events: auto;
-    background: var(--color-interface-softest, #fff);
-    border-radius: var(--rounded-huge);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-}
-
-/*
-    Layout modes, chosen from the single width threshold in script:
-    - results:    map disabled, full-width grid.
-    - sidebyside: fixed-height two-pane below the sticky filter bar; the card column scrolls
-                  internally and wraps from three to one column as width drops, while the map
-                  fills the rest of the width and the block's height.
-    - drawer:     map is the main view; the list opens in a docked panel over it.
-*/
-.group-finder-body {
-    position: relative;
-}
-
-.group-finder-body[data-layout="results"],
-.group-finder-body[data-layout="drawer"] {
-    display: block;
-}
-
-/*
-    Scrim over the whole page (position: fixed) while filters are pending, so everything behind the filter
-    bar reads as stale, not just the block. The sticky filter bar (z-index 10) paints above the scrim
-    (z-index 5), so only the pill stays lit; an open segment popover also sits above it, so the filter
-    being edited is never dimmed. Fixed resolves against the viewport as long as no ancestor establishes a
-    fixed-positioning containing block (transform/filter/will-change/contain); the block has none today.
-
-    Matches Rock's modal backdrop: the backdrop color and its 0.5 opacity applied separately on the
-    element (as .modal-backdrop.fade.in does), faded in. --modal-backdrop-background carries the theme's
-    backdrop color where defined, falling back to black on themes that do not expose it.
-*/
-.group-finder-pending-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 5;
-    background: var(--modal-backdrop-background, #000);
-    opacity: 0.5;
-    cursor: pointer;
-}
-
-/* Cancel hint pinned just under the filter bar (a subtle, temporary affordance for the designer to
-   evaluate). It lives inside the sticky bar so it tracks the bar and paints above the scrim, sits a Rock
-   spacing step below the bar, and ignores pointer events so the scrim still handles the click. */
-.group-finder-pending-hint {
-    position: absolute;
-    top: calc(100% + var(--spacing-medium));
-    left: 50%;
-    transform: translateX(-50%);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    padding: var(--spacing-tiny) var(--spacing-small);
-    border-radius: var(--rounded-huge);
-    background: var(--color-interface-softest);
-    color: var(--color-interface-medium);
-    box-shadow: var(--box-shadow);
-    font-size: var(--font-size-small);
-    font-weight: 400;
-    white-space: nowrap;
-    pointer-events: none;
-}
-
-/* Fade the scrim in and out (to its resting 0.5) rather than toggling it instantly. */
-.group-finder-pending-fade-enter-active,
-.group-finder-pending-fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-
-.group-finder-pending-fade-enter-from,
-.group-finder-pending-fade-leave-to {
-    opacity: 0;
-}
-
-/* Fade the cancel hint quickly in and out rather than snapping it on and off. */
-.group-finder-hint-fade-enter-active,
-.group-finder-hint-fade-leave-active {
-    transition: opacity 0.12s ease;
-}
-
-.group-finder-hint-fade-enter-from,
-.group-finder-hint-fade-leave-to {
-    opacity: 0;
-}
-
-/*
-    Map-hidden (results) layout: center the capped card grid in the block so a wide page does not leave
-    dead space on one side (which reads as room reserved for the map). The result-count line gets the same
-    capped, centered width with its text flush-left, so "All Groups" lines up with the left edge of the
-    cards rather than centering over them.
-*/
-.group-finder-body[data-layout="results"] :deep(.group-finder-results) {
-    justify-content: start;
-    margin-inline: auto;
-}
-
-.group-finder-body[data-layout="results"] :deep(.group-finder-result-count) {
-    max-width: calc(3 * 370px + 2 * var(--spacing-medium));
-    margin-inline: auto;
-    justify-content: flex-start;
-}
-
-
-/*
-    Stacked is the tier between side-by-side and the drawer: the map is a fixed-height hero across the
-    block with the card column beneath it, both on the page. Nothing is pinned to the viewport here, so
-    the page scrolls as one and the bottom of the screen stays free for whatever the host layout puts
-    there (on an administrator's page, Rock's admin footer).
-
-    The map leads visually while the cards keep their document order, so the list stays first for a screen
-    reader and the pane is reordered instead of being moved in the markup.
-*/
-.group-finder-body[data-layout="stacked"] {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-large);
-}
-
-.group-finder-body[data-layout="stacked"] .group-finder-map-pane {
-    order: -1;
-    width: 100%;
-    /* Tall enough to read as the hero, capped so a short window still leaves room for a card or two. */
-    height: min(50vh, 420px);
-}
-
-/* The single card column and its count line share one centered measure under the full-width map. */
-.group-finder-body[data-layout="stacked"] :deep(.group-finder-result-count) {
-    max-width: 370px;
-    margin-inline: auto;
-}
-
-/*
-    Side by side is a fixed-height two-pane: the body fills the viewport below the fixed top header
-    and the sticky filter bar, and never scrolls itself. The card column scrolls internally while
-    the map fills its side and stays put, so scrolling the cards does not move the map.
-*/
-.group-finder-body[data-layout="sidebyside"] {
-    display: flex;
-    gap: var(--spacing-large);
-    /*
-        The height is measured in script against the block's own scroll container (see
-        fitSideBySide) rather than the viewport, so the two-pane fills the space actually
-        available to the block in whatever zone or layout it lands in. The min-height is only
-        a pre-measure floor so the panes never collapse before the first measurement lands.
-    */
-    min-height: 400px;
-    overflow: hidden;
-}
-
-/*
-    Cards keep their fixed 370px width and wrap to as many columns as fit; the map takes
-    the leftover width down to a 370px floor. No breakpoints drive the column count here,
-    only the mode switch (side-by-side / stacked / drawer) is breakpoint-driven.
-*/
-.group-finder-body[data-layout="sidebyside"] .group-finder-results-pane {
-    /* Width is set in script to a whole number of 370px card columns plus the scrollbar gutter and this padding. */
-    flex: 0 0 auto;
-    box-sizing: border-box;
-    min-width: 370px;
-    height: 100%;
-    /*
-        Horizontal padding gives card hover shadows room before the overflow clip (overflow-y:auto forces
-        overflow-x to auto too, so anything past the padding box is cut), so the left and right shadows
-        both read. Top and bottom are flush, so only the first/last card's vertical shadow clips at the
-        pane edge (interior cards are unaffected, and the shadow is mostly a downward drop). sizeResultsPane
-        adds the horizontal padding back to the pane width so the column count is unchanged.
-    */
-    padding: 0 var(--spacing-medium);
-    overflow-y: auto;
-    /* Always reserve the scrollbar gutter so the content width (and column count) is stable. */
-    scrollbar-gutter: stable;
-}
-
-.group-finder-body[data-layout="sidebyside"] .group-finder-map-pane {
-    flex: 1 1 auto;
-    min-width: 370px;
-    height: 100%;
-}
-
-/* In drawer (mobile) mode the map spans the full block width and runs to the viewport bottom (height is
-   set inline); square its corners, and give it the block background so the area reserved behind the
-   floating sheet (and its rounded corners) matches the block rather than showing the page behind. */
-.group-finder-body[data-layout="drawer"] .group-finder-map-pane {
-    width: 100%;
-    height: 70vh;
-    border-radius: 0;
-    background: var(--color-interface-softer);
-    /* Ease the fill so the map grows or shrinks smoothly when the reserve changes after a scroll settles,
-       rather than snapping. Only the padding transitions; the inline height stays instant so viewport and
-       layout changes are not animated. */
-    transition: padding-bottom 250ms ease;
-}
-
-/* The drawer-mode pane runs full height behind the sheet, so round the inset map view itself into a
-   card (all four corners) rather than the pane. */
-.group-finder-body[data-layout="drawer"] .group-finder-map-pane :deep(.map-view) {
-    border-radius: var(--rounded-xlarge);
-    overflow: hidden;
-}
-
-/*
-    The drawer is a DockedPanel (position="bottom", dragHandle="header"), which supplies the sheet
-    surface, the grabber, drag-to-snap, and tap-to-toggle. These rules only style the slotted
-    content: the centered header title (with room for the panel's grabber) and the body padding.
-*/
-.group-finder-sheet-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xsmall);
-    padding: var(--spacing-medium) var(--spacing-medium) var(--spacing-small);
-    font-weight: 600;
-}
-
-.group-finder-sheet-body {
-    padding: var(--spacing-medium);
-    background-color: var(--color-interface-softer);
-}
-
-/*
-    Mobile filter bar: a single field above the results that opens the filter modal. Shown only at the
-    mobile breakpoint (see the media query below); the desktop horizontal bar is hidden there. The label
-    reads "Start"/"Refine Your Search" and the trailing action is the search icon or an applied-filter
-    count badge.
-*/
-.group-finder-mobile-filterbar {
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-small);
-    width: 100%;
-    margin-bottom: var(--spacing-small);
-    padding: var(--spacing-small) var(--spacing-medium);
-    border: 1px solid var(--color-interface-soft, #e5e5e5);
-    border-radius: var(--rounded-large, 24px);
-    background: var(--color-interface-softest, #fff);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    text-align: left;
-    cursor: pointer;
-}
-
-.group-finder-mobile-filterbar-label {
-    font-weight: 600;
-    color: var(--color-interface-stronger, #333);
-}
-
-.group-finder-mobile-filterbar-action {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    height: 32px;
-    padding: 0 var(--spacing-xsmall);
-    border-radius: 999px;
-    background: var(--color-primary, #ee7725);
-    color: #fff;
-    font-weight: 600;
-}
-
-/* Filter modal footer content (rendered into the Modal's customButtons slot): both buttons grouped to the
-   right (Clear all, then Apply). Styled here on the block's own slot content so it does not depend on
-   overriding the teleported modal's footer styles. */
-.group-finder-filter-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
-    gap: var(--spacing-small);
-}
-
-/* At the mobile breakpoint the horizontal filter bar gives way to the mobile filter bar. The filter modal
-   itself is the shared Obsidian Modal (teleported to the body and sized full-screen by the global rule
-   below the scoped block). */
-@media (max-width: 991px) {
-    .group-finder-filterbar {
-        display: none;
-    }
-
-    .group-finder-mobile-filterbar {
-        display: flex;
-    }
-}
-</style>
-
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
@@ -2596,7 +1905,7 @@
         }
 
         root.value?.scrollIntoView({ block: "start", behavior: "smooth" });
-        document.querySelector(".group-finder-results-pane")?.scrollTo({ top: 0, behavior: "smooth" });
+        document.querySelector(".groupfinder-results-pane")?.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     // Publish the sticky filter bar's height as a CSS variable so the sticky result count
@@ -2789,7 +2098,7 @@
     // breakpoints, so columns wrap fluidly and the map takes whatever width is left over.
     function sizeResultsPane(): void {
         const body = mapPane.value?.parentElement;
-        const results = body?.querySelector(".group-finder-results-pane") as HTMLElement | null;
+        const results = body?.querySelector(".groupfinder-results-pane") as HTMLElement | null;
         if (!body || !results) {
             return;
         }

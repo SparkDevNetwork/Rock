@@ -82,7 +82,7 @@ namespace Rock.Blocks.CheckIn
         Order = 4 )]
 
     [BooleanField( "Select All Schedules Automatically",
-        Description = "When enabled, the kiosk will automatically select all available schedules instead of asking the individual to make a selection. This will also disable the 'skip' screen when there is nothing to check into, instead those individuals will quietly be skipped and not checked in.",
+        Description = "When enabled, the kiosk will automatically select all available schedules instead of asking the individual to make a selection. Whether the 'skip' screen is shown when there is nothing to check into is controlled separately by the kiosk's Skip Screen Behavior setting.",
         Key = AttributeKey.SelectAllSchedulesAutomatically,
         IsRequired = false,
         Order = 5 )]

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -306,7 +307,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !DefaultStepProgramId.HasValue && ( !StepProgramId.HasValue || StepProgramId.Value == 0 ) )
                     {
-                        var stepType = new StepTypeService( new RockContext() ).Queryable().AsNoTracking().FirstOrDefault( st => st.Id == stepTypeId );
+                        var stepType = new StepTypeService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking().FirstOrDefault( st => st.Id == stepTypeId );
 
                         if ( stepType != null && _sppStepProgramPicker.SelectedValue != stepType.StepProgramId.ToString() )
                         {

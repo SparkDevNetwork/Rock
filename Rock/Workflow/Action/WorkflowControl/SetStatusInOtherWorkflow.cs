@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -67,7 +68,7 @@ namespace Rock.Workflow.Action
             Guid? workflowGuid = GetAttributeValue( action, "Workflow", true ).AsGuidOrNull();
             if ( workflowGuid.HasValue )
             {
-                using ( var newRockContext = new RockContext() )
+                using ( var newRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var workflowService = new WorkflowService( newRockContext );
                     var workflow = workflowService.Get( workflowGuid.Value );

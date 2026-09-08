@@ -28,6 +28,7 @@ using Microsoft.AspNet.SignalR;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -154,7 +155,7 @@ namespace RockWeb.Blocks.Finance
 
             ShowScheduledTransactionResults();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var activeGatewayList = financialGatewayService.Queryable().Where( a => a.IsActive == true ).AsNoTracking().ToList();
             var myWellGateways = activeGatewayList.Where( a => a.GetGatewayComponent() is MyWellGateway ).ToList();
@@ -202,7 +203,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             var oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() );
-            var oneTimeScheduledTransactionQry = new FinancialScheduledTransactionService( new RockContext() ).Queryable()
+            var oneTimeScheduledTransactionQry = new FinancialScheduledTransactionService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( a => a.IsActive && a.TransactionFrequencyValueId == oneTimeFrequencyId && !string.IsNullOrEmpty( a.GatewayScheduleId ) )
                 .Where( a => a.FinancialGatewayId.HasValue );
 
@@ -232,7 +233,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void BindGrid()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var nmiGatewayId = ddlNMIGateway.SelectedValue.AsIntegerOrNull();
             if ( !nmiGatewayId.HasValue )
             {
@@ -416,7 +417,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnMigrateSavedAccounts_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var nmiFinancialGatewayID = ddlNMIGateway.SelectedValue.AsInteger();
@@ -594,7 +595,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnMigrateScheduledTransactions_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var nmiFinancialGatewayId = ddlNMIGateway.SelectedValue.AsInteger();
             var nmiFinancialGateway = financialGatewayService.Get( nmiFinancialGatewayId );
@@ -932,7 +933,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRemoveEmailAddresses_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var myWellFinancialGatewayId = ddlMyWellGateway.SelectedValue.AsInteger();
@@ -986,7 +987,7 @@ namespace RockWeb.Blocks.Finance
         {
             var nmiFinancialGatewayID = ddlNMIGateway.SelectedValue.AsInteger();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
             var financialTransactionService = new FinancialTransactionService( rockContext );
@@ -1075,7 +1076,7 @@ and fst.NextPaymentDate >= GetDate()*/
         protected void btnUpdateOneTimeScheduleStatus_Click( object sender, EventArgs e )
         {
             var oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() );
-            var scheduledTransactionQry = new FinancialScheduledTransactionService( new RockContext() ).Queryable()
+            var scheduledTransactionQry = new FinancialScheduledTransactionService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( a => a.IsActive && a.TransactionFrequencyValueId == oneTimeFrequencyId && !string.IsNullOrEmpty( a.GatewayScheduleId ) )
                 .OrderBy( a => a.Id );
             var scheduledTransactionIdList = scheduledTransactionQry.Select( a => a.Id ).ToList();
@@ -1084,7 +1085,7 @@ and fst.NextPaymentDate >= GetDate()*/
             {
                 foreach ( var scheduledTransactionId in scheduledTransactionIdList )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                         var scheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );

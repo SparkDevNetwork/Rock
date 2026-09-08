@@ -21,6 +21,7 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Chart;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
 using Rock.Web.Cache;
@@ -179,7 +180,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( "MetricCategories" ) );
 
             var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
-            return new MetricService( new Rock.Data.RockContext() ).GetByGuids( metricGuids ).Select( a => a.Id ).ToList();
+            return new MetricService( RockApp.Current.CreateRockContext() ).GetByGuids( metricGuids ).Select( a => a.Id ).ToList();
         }
     }
 }

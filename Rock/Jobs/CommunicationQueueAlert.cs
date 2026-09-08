@@ -23,6 +23,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -68,7 +69,7 @@ namespace Rock.Jobs
 
             if ( systemEmailGuid.HasValue && recipientEmails.Any() )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 int expirationDays = GetJobAttributeValue( "ExpirationPeriod", 3, rockContext );
                 var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );

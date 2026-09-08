@@ -17,6 +17,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using System.ComponentModel;
@@ -48,7 +49,7 @@ namespace Rock.Jobs
             // get the configured timeout, or default to 240 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
                 rockContext.Database.ExecuteSqlCommand( @"
@@ -176,7 +177,7 @@ INNER JOIN (
         /// <param name="jobId">The job identifier.</param>
         public static void DeleteJob( int jobId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );

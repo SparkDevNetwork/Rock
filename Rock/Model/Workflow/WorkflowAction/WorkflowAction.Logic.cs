@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -334,7 +335,7 @@ namespace Rock.Model
         /// <returns>The model if it can be resolved or null</returns>
         public IEntity GetEntityFromAttributeValue( string value, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var attributeGuid = value.AsGuidOrNull();
             if ( attributeGuid.HasValue )
@@ -547,7 +548,7 @@ namespace Rock.Model
         /// </returns>
         internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return Activate( actionTypeCache, activity, rockContext );
             }

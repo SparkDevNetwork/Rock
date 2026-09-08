@@ -24,6 +24,7 @@ using System.Web;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -69,7 +70,7 @@ namespace Rock.Jobs
             var groupGuid = this.GetAttributeValue( AttributeKey.Group ).ToString().AsGuid();
             var sendToDescendants = this.GetAttributeValue( AttributeKey.SendToDescendantGroups ).AsBoolean();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var systemCommunication = new SystemCommunicationService( rockContext ).Get( emailTemplateGuid );
 
             var group = new GroupService( rockContext ).Get( groupGuid );

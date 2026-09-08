@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -120,7 +121,7 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
         private void BindGrid()
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             PersonService personService = new PersonService( rockContext );
             
             // sample query to display a few people

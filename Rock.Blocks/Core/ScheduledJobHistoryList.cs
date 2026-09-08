@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -178,7 +179,7 @@ namespace Rock.Blocks.Core
 
                 if ( scheduledJobId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         _serviceJobName = new ServiceJobService( rockContext ).GetSelect( scheduledJobId.Value, j => j.Name );
                     }

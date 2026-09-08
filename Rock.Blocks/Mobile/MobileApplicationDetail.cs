@@ -41,6 +41,7 @@ using Rock.Web.Cache;
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Mobile
 {
@@ -183,7 +184,7 @@ namespace Rock.Blocks.Mobile
 
             if ( key.IsNotNullOrWhiteSpace() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var siteName = new SiteService( rockContext ).GetSelect( key, s => s.Name );
 
@@ -978,7 +979,7 @@ namespace Rock.Blocks.Mobile
                 return ActionBadRequest( PlatformManagedMessage );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var siteService = new SiteService( rockContext );
                 await siteService.BuildMobileApplicationAsync( entity.Id );

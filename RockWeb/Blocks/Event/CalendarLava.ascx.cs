@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -166,6 +167,17 @@ namespace RockWeb.Blocks.Event
         DefaultBooleanValue = false,
         Order = 23 )]
 
+    [BooleanField( "Filter by Personalization Segments",
+        Description = "Determines whether events tagged with personalization segments are hidden from visitors who do not match any of those segments. Events with no segments are always shown. Requires personalization to be enabled on the site; when it is not, every tagged event is hidden from everyone. This affects visibility in this block only and is not a security setting.",
+        DefaultBooleanValue = false,
+        Key = "FilterByPersonalizationSegments",
+        Order = 24 )]
+    [BooleanField( "Filter by Request Filters",
+        Description = "Determines whether events tagged with request filters are hidden from requests that do not match any of those filters. Events with no request filters are always shown. Requires personalization to be enabled on the site; when it is not, every tagged event is hidden from everyone. This affects visibility in this block only and is not a security setting.",
+        DefaultBooleanValue = false,
+        Key = "FilterByRequestFilters",
+        Order = 25 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "8760D668-8ADF-48C8-9D90-09461FB75B88" )]
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
@@ -230,7 +242,7 @@ namespace RockWeb.Blocks.Event
 
             _firstDayOfWeek = GetAttributeValue( "StartofWeekDay" ).ConvertToEnum<DayOfWeek>();
 
-            var eventCalendar = new EventCalendarService( new RockContext() ).Get( GetAttributeValue( "EventCalendar" ).AsGuid() );
+            var eventCalendar = new EventCalendarService( RockApp.Current.CreateRockContext() ).Get( GetAttributeValue( "EventCalendar" ).AsGuid() );
             if ( eventCalendar != null )
             {
                 _calendarId = eventCalendar.Id;
@@ -428,7 +440,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
 
             // Grab events
@@ -480,6 +492,18 @@ namespace RockWeb.Blocks.Event
             if ( categories.Any() )
             {
                 qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => categories.Contains( c.DefinedValueId ) ) );
+            }
+
+            // Filter by personalization
+            var filterByPersonalizationSegments = GetAttributeValue( "FilterByPersonalizationSegments" ).AsBoolean();
+            var filterByRequestFilters = GetAttributeValue( "FilterByRequestFilters" ).AsBoolean();
+
+            // Skipped entirely when both settings are off so the default configuration adds no query cost.
+            if ( filterByPersonalizationSegments || filterByRequestFilters )
+            {
+                ShowPersonalizationWarningIfSiteNotEnabled();
+
+                qry = qry.FilterByPersonalization( rockContext, filterByPersonalizationSegments, filterByRequestFilters, RockPage.RequestContext );
             }
 
             // Get the beginning and end dates
@@ -817,6 +841,28 @@ namespace RockWeb.Blocks.Event
             nbMessage.Text = string.Format( "<p>{0}</p>", message );
             nbMessage.NotificationBoxType = NotificationBoxType.Danger;
             nbMessage.Visible = true;
+        }
+
+        /// <summary>
+        /// Warns block administrators that the personalization filters cannot match anything
+        /// because personalization is disabled on the site.
+        /// </summary>
+        private void ShowPersonalizationWarningIfSiteNotEnabled()
+        {
+            if ( RockPage.Site?.EnablePersonalization != false )
+            {
+                return;
+            }
+
+            // Shown only to administrators because it reports a configuration problem rather than a visitor-facing one.
+            if ( !IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
+            {
+                return;
+            }
+
+            nbPersonalizationWarning.Heading = "Personalization Is Disabled";
+            nbPersonalizationWarning.Text = "<p>This block is set to filter events by personalization, but personalization is not enabled on this site. Every event tagged with a segment or request filter is currently hidden from all visitors. Enable personalization in the site settings, or turn off the personalization filter settings on this block.</p>";
+            nbPersonalizationWarning.Visible = true;
         }
 
         #endregion

@@ -40,6 +40,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Attribute = Rock.Model.Attribute;
+using Rock.Configuration;
 
 namespace RockWeb.Blocks.Engagement.SignUp
 {
@@ -373,7 +374,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             if ( groupRoleIds.Any() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupRoles = new GroupTypeRoleService( rockContext ).GetByIds( groupRoleIds );
                     this.GroupRequirementsState.ForEach( r =>
@@ -473,7 +474,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
             else if ( groupId.HasValue && groupId.Value != 0 )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var group = new GroupService( rockContext ).GetNoTracking( groupId.Value );
                     if ( group != null )
@@ -547,7 +548,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 if ( groupId.Value > 0 )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         group = new GroupService( rockContext ).GetNoTracking( groupId.Value );
                     }
@@ -585,7 +586,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             SetIsCampusRequired();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Group group;
                 if ( this.GroupId == 0 )
@@ -629,7 +630,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             Group group = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var isNewGroup = false;
                 var groupService = new GroupService( rockContext );
@@ -1298,7 +1299,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         protected void gGroupRequirements_ShowEdit( Guid groupRequirementGuid )
         {
             List<GroupRequirementType> groupRequirementTypes;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 groupRequirementTypes = new GroupRequirementTypeService( rockContext )
                     .Queryable()
@@ -1421,7 +1422,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 this.GroupRequirementsState.Add( groupRequirement );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 groupRequirement.GroupRequirementTypeId = ddlGroupRequirementType.SelectedValue.AsInteger();
                 groupRequirement.GroupRequirementType = new GroupRequirementTypeService( rockContext )
@@ -1489,7 +1490,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             var rowGuid = ( Guid ) e.RowKeyValue;
             this.GroupRequirementsState.RemoveEntity( rowGuid );
 
-            using ( var context = new RockContext() )
+            using ( var context = RockApp.Current.CreateRockContext() )
             {
                 BuildGroupRequirementsList( true, context );
             }
@@ -1502,7 +1503,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
         protected void gGroupRequirements_GridRebind( object sender, GridRebindEventArgs e )
         {
-            using ( var context = new RockContext() )
+            using ( var context = RockApp.Current.CreateRockContext() )
             {
                 BuildGroupRequirementsList( true, context );
             }
@@ -1641,7 +1642,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             ResetNotificationBoxes();
 
             int? parentGroupId = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupService = new GroupService( rockContext );
                 var group = groupService.Queryable()
@@ -1793,7 +1794,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
             else
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     schedule = new ScheduleService( rockContext ).GetNoTracking( opportunity.ScheduleId );
                     location = new LocationService( rockContext ).GetNoTracking( opportunity.LocationId );
@@ -1900,7 +1901,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             var newScheduleId = parsed.NewScheduleId;
             var newLocationId = parsed.NewLocationId;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 GroupLocation groupLocationToSave = null;
                 GroupLocation existingGroupLocation = null;
@@ -2193,7 +2194,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             // We should consider moving this logic to a service (probably the GroupLocationService), as this code block is identical
             // to that found within the SignUpOverview block's dfOpportunities_Click() method.
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // An Opportunity is a GroupLocationSchedule with possible GroupMemberAssignments (and therefore, GroupMembers).
                 // When deleting an Opportunity we should delete the following:
@@ -2452,7 +2453,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         {
             ResetControlVisibility();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Group group = null;
 
@@ -2982,7 +2983,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             // Purposefully using a new, unmanaged RockContext instance here, due to the need for
             // lazy loading of these entities' props with respect to ViewState, Etc.
-            var attributeService = new AttributeService( new RockContext() );
+            var attributeService = new AttributeService( RockApp.Current.CreateRockContext() );
             var allowSpecificGroupMemberAttributes = this.CurrentGroupType?.AllowSpecificGroupMemberAttributes == true;
 
             // Toggle visibility of the inherited member attributes grid.
@@ -3211,7 +3212,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             GroupRequirementType groupRequirementType = groupRequirementTypes?.FirstOrDefault( t => t.Id == groupRequirementTypeId );
             if ( groupRequirementType == null && groupRequirementTypeId > 0 )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     groupRequirementType = new GroupRequirementTypeService( rockContext )
                         .Queryable()
@@ -3444,7 +3445,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="shouldForceRefresh">if set to <c>true</c> [should force refresh].</param>
         private void BindOpportunitiesGrid( Group group = null, bool shouldForceRefresh = false )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 group = group ?? new GroupService( rockContext )
                     .Queryable()

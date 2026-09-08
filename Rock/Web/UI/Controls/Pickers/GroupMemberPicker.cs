@@ -17,6 +17,7 @@
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -73,7 +74,7 @@ namespace Rock.Web.UI.Controls
                     picker.Items.Add( new ListItem() );
                 }
 
-                var group = new GroupService( new RockContext() ).Get( picker.GroupId.Value );
+                var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( picker.GroupId.Value );
                 if ( group != null && group.Members.Any() )
                 {
                     foreach ( var groupMember in group.Members.OrderBy( m => m.Person.FullName ) )

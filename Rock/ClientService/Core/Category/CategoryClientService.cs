@@ -17,6 +17,7 @@
 
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using Rock.ClientService.Core.Category.Options;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Model.Core.Category.Options;
@@ -121,7 +122,7 @@ namespace Rock.ClientService.Core.Category
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
+                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { RockApp.Current.CreateRockContext() } ) as IService;
                     }
                 }
             }

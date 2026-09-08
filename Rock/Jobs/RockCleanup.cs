@@ -237,9 +237,9 @@ namespace Rock.Jobs
             /* 
                 IMPORTANT!! MDP 2020-05-05
 
-                1) Whenever you do a new RockContext() in RockCleanup make sure to set the CommandTimeout, like this:
+                1) Whenever you do a RockApp.Current.CreateRockContext() in RockCleanup make sure to set the CommandTimeout, like this:
 
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 2) The cleanupTitle parameter on RunCleanupTask should short. The should be short enough so that the summary of all job tasks
@@ -1102,7 +1102,7 @@ namespace Rock.Jobs
                     .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                 if ( ownerRoleId.HasValue )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     rockContext.Database.SetCommandTimeout( commandTimeout );
                     var personService = new PersonService( rockContext );
                     var memberService = new GroupMemberService( rockContext );
@@ -1450,7 +1450,7 @@ namespace Rock.Jobs
             int? auditExpireDays = GetAttributeValue( AttributeKey.AuditLogExpirationDays ).AsIntegerOrNull();
             if ( auditExpireDays.HasValue )
             {
-                var auditLogRockContext = new Rock.Data.RockContext();
+                var auditLogRockContext = RockApp.Current.CreateRockContext();
                 auditLogRockContext.Database.SetCommandTimeout( commandTimeout );
 
                 DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
@@ -1469,7 +1469,7 @@ namespace Rock.Jobs
             int? exceptionExpireDays = GetAttributeValue( AttributeKey.DaysKeepExceptions ).AsIntegerOrNull();
             if ( exceptionExpireDays.HasValue )
             {
-                var exceptionLogRockContext = new Rock.Data.RockContext();
+                var exceptionLogRockContext = RockApp.Current.CreateRockContext();
 
                 // Assuming a 10 minute minimum CommandTimeout for this process.
                 exceptionLogRockContext.Database.SetCommandTimeout( commandTimeout >= 600 ? commandTimeout : 600 );
@@ -1689,7 +1689,7 @@ namespace Rock.Jobs
             // Also, this helps prevent new record inserts waiting the batch operation (if Snapshot Isolation is disabled)
             var chunkQuery = recordsToDeleteQuery.Take( chunkSize );
 
-            using ( var bulkDeleteContext = new RockContext() )
+            using ( var bulkDeleteContext = RockApp.Current.CreateRockContext() )
             {
                 bulkDeleteContext.Database.SetCommandTimeout( commandTimeout );
                 var keepDeleting = true;
@@ -1731,7 +1731,7 @@ namespace Rock.Jobs
             // (if Snapshot Isolation is disabled).
             var chunkQuery = recordsToUpdateQuery.Take( chunkSize );
 
-            using ( var bulkUpdateContext = new RockContext() )
+            using ( var bulkUpdateContext = RockApp.Current.CreateRockContext() )
             {
                 bulkUpdateContext.Database.SetCommandTimeout( commandTimeout );
                 var keepUpdating = true;
@@ -1877,7 +1877,7 @@ namespace Rock.Jobs
         {
             int totalRowsDeleted = 0;
 
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Set a 10 minute minimum timeout here.
             rockContext.Database.SetCommandTimeout( commandTimeout >= 600 ? commandTimeout : 600 );
@@ -2796,7 +2796,7 @@ SELECT @@ROWCOUNT
                     chunkUpperBound = upperBound;
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     /*
                         6/15/26 - NA
@@ -3031,7 +3031,7 @@ WHERE NOT EXISTS (
              */
             return 0;
 
-            ////var rockContext = new RockContext();
+            ////var rockContext = RockApp.Current.CreateRockContext();
             ////rockContext.Database.SetCommandTimeout( commandTimeout );
 
             ////var maxDays = dataMap.GetIntValue( AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays );
@@ -3942,7 +3942,7 @@ SET @UpdatedCampusCount = @CampusCount;
         /// <returns>A new instance of <see cref="RockContext"/>.</returns>
         private RockContext CreateRockContext()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.Database.SetCommandTimeout( commandTimeout );
 

@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -220,7 +221,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new CategoryService( rockContext ).Get( guid.Value );
             }
 
@@ -305,7 +306,7 @@ namespace Rock.Field.Types
             var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.Items.Add( new ListItem( None.Text, None.IdValue ) );
-            foreach ( var entityType in new EntityTypeService( new RockContext() ).GetEntities().OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ) )
+            foreach ( var entityType in new EntityTypeService( RockApp.Current.CreateRockContext() ).GetEntities().OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ) )
             {
                 ddl.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );
             }
@@ -473,7 +474,7 @@ namespace Rock.Field.Types
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid != null )
                 {
-                    var category = new CategoryService( new RockContext() ).Get( guid.Value );
+                    var category = new CategoryService( RockApp.Current.CreateRockContext() ).Get( guid.Value );
                     picker.SetValue( category );
                 }
             }
@@ -488,7 +489,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var category = new CategoryService( new RockContext() ).Get( guid );
+            var category = new CategoryService( RockApp.Current.CreateRockContext() ).Get( guid );
             return category != null ? category.Id : ( int? ) null;
         }
 
@@ -500,7 +501,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var category = new CategoryService( new RockContext() ).Get( id ?? 0 );
+            var category = new CategoryService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = category != null ? category.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

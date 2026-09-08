@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
@@ -854,7 +855,7 @@ namespace Rock.Blocks.Crm
 
             var scheduleDates = new HashSet<DateTime>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var schedules = campusScheduleAttributeValue.Split( ',' ).Select( g => new ScheduleService( rockContext ).Get( g.AsGuid() ) );
                 var daysAhead = GetAttributeValue( AttributeKey.ScheduledDaysAhead ).AsIntegerOrNull() ?? 28;
@@ -907,7 +908,7 @@ namespace Rock.Blocks.Crm
         [BlockAction( "GetNewChild" )]
         public BlockActionResult GetNewChild()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new Person();
                 person.LoadAttributes();
@@ -957,7 +958,7 @@ namespace Rock.Blocks.Crm
             var createFirstAdultAccount = GetFieldBag( AttributeKey.FirstAdultCreateAccount ).IsShown;
 
             // ...and some service objects
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupService = new GroupService( rockContext );
@@ -1581,7 +1582,7 @@ namespace Rock.Blocks.Crm
         /// <returns></returns>
         private Rock.Model.UserLogin CreateUser( Person person, string username, string password )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var user = UserLoginService.Create(
                 rockContext,
                 person,
@@ -1846,7 +1847,7 @@ namespace Rock.Blocks.Crm
 
                 if ( UserLoginService.IsPasswordValid( bag.CreateAccount.Password ) )
                 {
-                    var userLoginService = new UserLoginService( new RockContext() );
+                    var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
                     var userLogin = userLoginService.GetByUserName( bag.CreateAccount.Username );
 
                     if ( userLogin != null )
@@ -2022,7 +2023,7 @@ namespace Rock.Blocks.Crm
                 ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentPerson = this.GetCurrentPerson();
 

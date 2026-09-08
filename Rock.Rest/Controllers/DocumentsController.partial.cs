@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -58,7 +59,7 @@ namespace Rock.Rest.Controllers
                     GenerateResponse( HttpStatusCode.BadRequest, "No file was sent." );
                 }
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 // Ensure the caller is authorized to save a document of the specified type.
                 var documentType = new DocumentTypeService( rockContext )
@@ -151,7 +152,7 @@ namespace Rock.Rest.Controllers
             try
             {
                 // Find the Person to whom this Document belongs.
-                int personId = new PersonService( new RockContext() )
+                int personId = new PersonService( RockApp.Current.CreateRockContext() )
                     .Queryable()
                     .Where( p => p.ForeignId == foreignPersonId )
                     .Select( p => p.Id )

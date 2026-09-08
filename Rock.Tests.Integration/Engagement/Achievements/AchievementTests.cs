@@ -21,6 +21,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Achievement;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -60,7 +61,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         /// </summary>
         private static void CreateStreakTypeData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var streakType = new StreakType
             {
@@ -114,7 +115,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         /// </summary>
         private static void CreatePersonData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var person = new Person
@@ -162,7 +163,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             AchievementContainer.Instance.Refresh();
             _ = AchievementContainer.GetComponent( ComponentEntityTypeName );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var achievementType = new AchievementType
             {
@@ -206,7 +207,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
 
         private static void DeleteAchievementsData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var service = new AchievementAttemptService( rockContext );
             service.DeleteRange( service.Queryable().Where( saa => saa.AchievementTypeId == _achievementTypeId ) );
@@ -221,7 +222,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         [TestMethod]
         public void StreakAchievementProcess()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var attemptsQuery = new AchievementAttemptService( rockContext ).Queryable()
                 .AsNoTracking()
@@ -302,7 +303,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         {
             DeleteAchievementsData();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var attemptsQuery = new AchievementAttemptService( rockContext ).Queryable()
                 .AsNoTracking()
@@ -394,7 +395,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         {
             DeleteAchievementsData();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var attemptsQuery = new AchievementAttemptService( rockContext ).Queryable()
                 .AsNoTracking()

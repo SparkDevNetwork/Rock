@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Model;
@@ -66,7 +67,7 @@ namespace Rock.Web.UI.Controls
             base.LoadViewState( savedState );
 
             GroupTypeGuid = ViewState["GroupTypeGuid"] as Guid? ?? Guid.NewGuid();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupType = new GroupTypeService( rockContext ).Get( GroupTypeGuid );
                 if ( groupType != null )
@@ -396,7 +397,7 @@ namespace Rock.Web.UI.Controls
             _ddlGroupTypeInheritFrom.Label = "Inherit from";
 
             _ddlGroupTypeInheritFrom.Items.Add( Rock.Constants.None.ListItem );
-            var groupTypeCheckinFilterList = new GroupTypeService( new RockContext() ).Queryable()
+            var groupTypeCheckinFilterList = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( a => a.GroupTypePurposeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER ) )
                 .OrderBy( a => a.Order ).ThenBy( a => a.Name )
                 .Select( a => new { a.Id, a.Name } ).ToList();
@@ -595,7 +596,7 @@ namespace Rock.Web.UI.Controls
         private void _ddlGroupTypeInheritFrom_SelectedIndexChanged( object sender, EventArgs e )
         {
             EnsureChildControls();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupType = new GroupTypeService( rockContext ).Get( GroupTypeGuid );
                 if ( groupType != null )

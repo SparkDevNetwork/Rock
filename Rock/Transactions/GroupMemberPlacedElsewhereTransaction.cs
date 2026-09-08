@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -71,7 +72,7 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             if ( TriggerIsActive )
             {
                 LaunchWorkflow( rockContext, TriggerWorkflowTypeId, TriggerName );

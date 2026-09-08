@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -188,7 +189,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<Tag> GetListQueryable( RockContext rockContext )
         {
-            IQueryable<Tag> queryable = new TagService( new RockContext() ).Queryable()
+            IQueryable<Tag> queryable = new TagService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Include( a => a.EntityType )
                 .Include( a => a.TaggedItems )
                 .Include( a => a.OwnerPersonAlias );
@@ -300,7 +301,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
                 var qry = GetListQueryable( rockContext );
@@ -328,7 +329,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new TagService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

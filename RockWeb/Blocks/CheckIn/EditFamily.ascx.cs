@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.CheckIn;
 using Rock.CheckIn.Registration;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -373,7 +374,7 @@ namespace RockWeb.Blocks.CheckIn
                 mdEditFamily.Title = checkInFamily.Group.Name;
 
                 int groupId = hfGroupId.Value.AsInteger();
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupMembersQuery = groupMemberService.Queryable( false )
                     .Include( a => a.Person )
@@ -554,7 +555,7 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Set the Campus for new families to the Campus of this Kiosk
             int? kioskCampusId = CurrentCheckInState.Kiosk.CampusId;
@@ -810,7 +811,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="groupMemberId">The group member identifier.</param>
         private void EditGroupMember( Guid? groupMemberGuid )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             FamilyRegistrationState.FamilyPersonState familyPersonState = null;
 

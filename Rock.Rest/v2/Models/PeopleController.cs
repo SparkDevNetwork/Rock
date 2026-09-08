@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -94,7 +95,7 @@ namespace Rock.Rest.v2.Models
                 suffixValueId: value.SuffixValueId
             );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return FindOrCreatePerson( rockContext, personMatchQuery, createPersonIfMissing ? value : null );
             }
@@ -152,7 +153,7 @@ namespace Rock.Rest.v2.Models
                 }
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return FindOrCreatePerson( rockContext, personMatchQuery, personToCreateIfMissing );
             }

@@ -21,6 +21,7 @@ using System.IO;
 using System.Web;
 using HtmlAgilityPack;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -63,7 +64,7 @@ namespace Rock.MergeTemplates
             this.Exceptions = new List<Exception>();
             BinaryFile outputBinaryFile = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var binaryFileService = new BinaryFileService( rockContext );
 
             var templateBinaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );

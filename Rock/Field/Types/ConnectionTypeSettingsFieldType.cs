@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -74,7 +75,7 @@ namespace Rock.Field.Types
 
             if ( opportunityGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     opportunityName = new ConnectionOpportunityService( rockContext )
                         .Queryable()
@@ -147,7 +148,7 @@ namespace Rock.Field.Types
                 return publicConfigurationValues;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var types = ConnectionTypeCache.All()
                     .Where( t => t.IsActive )
@@ -254,7 +255,7 @@ namespace Rock.Field.Types
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( typeGuid.HasValue )
                 {
@@ -294,7 +295,7 @@ namespace Rock.Field.Types
 
             var references = new List<ReferencedEntity>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( typeGuid.HasValue )
                 {

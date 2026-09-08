@@ -83,6 +83,8 @@ namespace Rock.Blocks.Crm.PersonDetail
         private static class PageParameterKey
         {
             public const string PersonId = "PersonId";
+            public const string Request = "Request";
+            public const string ConnectionOpportunity = "ConnectionOpportunity";
         }
 
         #endregion Keys
@@ -222,8 +224,8 @@ namespace Rock.Blocks.Crm.PersonDetail
         {
             var queryParams = new Dictionary<string, string>
             {
-                ["ConnectionRequestId"] = request.IdKey,
-                ["ConnectionOpportunityId"] = request.ConnectionOpportunity.IdKey
+                [PageParameterKey.Request] = request.IdKey,
+                [PageParameterKey.ConnectionOpportunity] = request.ConnectionOpportunity.IdKey
             };
 
             var useConnectionTypePage = GetAttributeValue( AttributeKey.UseConnectionRequestDetailPageFromConnectionType ).AsBoolean();

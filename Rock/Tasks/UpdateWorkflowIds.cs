@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Configuration;
 using Rock.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -31,7 +32,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var sql = $@"
 DECLARE @batchId INT

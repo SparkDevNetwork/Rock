@@ -20,7 +20,8 @@ import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 export const enum NavigationUrlKey {
     RegistrationPage = "RegistrationPage",
     GroupPlacementPage = "GroupPlacementPage",
-    GroupDetailPage = "GroupDetailPage"
+    GroupDetailPage = "GroupDetailPage",
+    PersonProfilePage = "PersonProfilePage"
 }
 
 export const enum PreferenceKey {

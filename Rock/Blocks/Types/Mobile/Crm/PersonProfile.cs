@@ -18,6 +18,7 @@ using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Crm.PersonProfile;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -268,7 +269,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         /// </summary>
         private static bool CheckReminderConfiguration()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasEntityTypeId = EntityTypeCache.Get( typeof( PersonAlias ) ).Id;
 
@@ -753,7 +754,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         [BlockAction]
         public BlockActionResult GetPersonProfileData()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = RequestContext.GetContextEntity<Person>();
 
@@ -790,7 +791,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 return ActionNotFound();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext )
                     .Get( requestPersonId.Value );
@@ -823,7 +824,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 return ActionNotFound();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext )
                     .Get( requestPersonId.Value );
@@ -860,7 +861,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 return ActionNotFound( "Unable to find a Person from context." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext )
                     .Get( requestPersonId.Value );
@@ -891,7 +892,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         public BlockActionResult UpdatePerson( PersonBag personBag )
         {
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext ).Get( personBag.Guid );
                 if ( person == null )
@@ -931,7 +932,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 return ActionForbidden();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext )
                     .Get( requestPersonId.Value );

@@ -14,3 +14,4 @@ If you are new, start with [check-in-overview.md](check-in-overview.md). Sub-top
 | [Mobile Check-in](mobile-check-in.md) | Same v2 engine on mobile, cloud-print label routing, `SourceTypeValueId` for entry-channel distinction. |
 | [Next-Gen Check-in (v2) vs Legacy](v2-vs-legacy.md) | Two engines comparison, why v2 exists, migration considerations. |
 | [Opportunity Filters](opportunity-filters.md) | The filter chain, built-in filters (age/grade/gender/etc.), authoring custom filters, ordering decisions. |
+| [Skip Screen Behavior](skip-screen-behavior.md) | Tri-state per-kiosk setting controlling when the area "skip" screen is shown during check-in. |

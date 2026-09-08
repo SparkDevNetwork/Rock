@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -67,7 +68,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new SuggestionDetailBox();
 
@@ -144,7 +145,7 @@ namespace Rock.Blocks.Core
                 var suggestionEntityTypeId = followingSuggestion.EntityTypeId;
                 var suggestionComponentEntityType = EntityTypeCache.Get( followingSuggestion.EntityTypeId.Value );
                 var suggestionEntityType = EntityTypeCache.Get( "Rock.Model.FollowingSuggestionType" );
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 Rock.Attribute.Helper.UpdateAttributes( suggestionComponentEntityType.GetEntityType(), suggestionEntityType.Id, "EntityTypeId", suggestionComponentEntityType.Id.ToString(), rockContext );
             }
 
@@ -223,7 +224,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -326,7 +327,7 @@ namespace Rock.Blocks.Core
 
             if ( !string.IsNullOrWhiteSpace( idKey ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var followingSuggestionTypeService = new FollowingSuggestionTypeService( rockContext );
                 var existingEntity = followingSuggestionTypeService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
 
@@ -350,7 +351,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Save( SuggestionDetailBox box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new FollowingSuggestionTypeService( rockContext );
 
@@ -407,7 +408,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult RefreshAttributes( SuggestionDetailBox box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

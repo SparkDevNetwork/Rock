@@ -23,6 +23,7 @@ using Http.TestLibrary;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -68,7 +69,7 @@ Hi Ted!
             AssertOutputForPersonAndRequest( input, expectedOutputBill, TestGuids.TestPeople.BillMarble );
 
             var mergeValues = new LavaDataDictionary();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var person = personService.GetByGuids( new List<Guid> { TestGuids.TestPeople.TedDecker.AsGuid() } ).FirstOrDefault();
 
@@ -860,7 +861,7 @@ Block 2.
             var mergeValues = options.MergeFields;
             if ( !string.IsNullOrWhiteSpace( personGuid ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
                 var person = personService.GetByGuids( new List<Guid> { personGuid.AsGuid() } ).FirstOrDefault();
 
@@ -873,7 +874,7 @@ Block 2.
 
         private void RemoveSegmentForPerson( string personGuid, string segmentKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var segmentService = new PersonalizationSegmentService( rockContext );
 
             var removeSegmentIdList = segmentService.Queryable()

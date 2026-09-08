@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -91,7 +92,7 @@ namespace Rock.Cms.ContentCollection.Indexers
                 return 0;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get all the content channel items for this source.
                 items = new ContentChannelItemService( rockContext ).Queryable()
@@ -148,7 +149,7 @@ namespace Rock.Cms.ContentCollection.Indexers
         /// <inheritdoc/>
         public async Task<int> IndexContentCollectionDocumentAsync( int id, IndexDocumentOptions options )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var itemEntity = new ContentChannelItemService( rockContext ).GetInclude( id, ci => ci.ContentChannelItemSlugs );
                 var now = RockDateTime.Now;

@@ -1,0 +1,101 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filters"
+           saveText="Apply Filter"
+           @save="onSave">
+
+        <SchedulePicker v-model="selectedSchedules"
+                        label="Schedules"
+                        :multiple="true"
+                        :allowInactiveSelection="false"
+                        :includeCheckInSchedulesOnly="true"
+                        help="Limit the counts to attendance in one or more of the selected schedules." />
+
+        <div class="d-flex justify-content-end">
+            <RockButton :btnType="BtnType.Link"
+                        :btnSize="BtnSize.Small"
+                        :disabled="!selectedSchedules.length"
+                        @click="onClearFilter">
+                Clear Filter
+            </RockButton>
+        </div>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // #region Types
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #endregion Types
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const selectedSchedules = ref<ListItemBag[]>([...(props.modelValue.selectedSchedules ?? [])]);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            selectedSchedules: [...selectedSchedules.value]
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    function onClearFilter(): void {
+        selectedSchedules.value = [];
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        selectedSchedules.value = [...(props.modelValue.selectedSchedules ?? [])];
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

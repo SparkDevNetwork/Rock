@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -112,7 +113,7 @@ namespace Rock.Jobs
             int exitAttendanceCountLong = 8;
 
             // Get era dataset from stored proc
-            var resultContext = new RockContext();
+            var resultContext = RockApp.Current.CreateRockContext();
 
             var eraAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
             var eraStartAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
@@ -146,7 +147,7 @@ namespace Rock.Jobs
             {
                 progressPosition++;
                 // Create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
-                RockContext updateContext = new RockContext();
+                RockContext updateContext = RockApp.Current.CreateRockContext();
                 updateContext.SourceOfChange = SOURCE_OF_CHANGE;
                 updateContext.Database.SetCommandTimeout( commandTimeout );
                 var attributeValueService = new AttributeValueService( updateContext );
@@ -390,7 +391,7 @@ namespace Rock.Jobs
             {
                 var spouse = family.Members.Where( m => m.GroupRoleId == adultRoleId && m.PersonId != headOfHouse.Person.Id ).FirstOrDefault();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -58,7 +59,7 @@ namespace Rock.Tests.Integration.TestData.Cms
         /// <returns></returns>
         public bool DeletePageShortLink( string identifier, RockContext rockContext )
         {
-            var dataContext = rockContext ?? new RockContext();
+            var dataContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var service = new PageShortLinkService( dataContext );
 
@@ -85,7 +86,7 @@ namespace Rock.Tests.Integration.TestData.Cms
         /// <returns></returns>
         public void SavePageShortLink( PageShortLink shortlink, CreateExistingItemStrategySpecifier existingItemStrategy = CreateExistingItemStrategySpecifier.Replace )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.WrapTransaction( () =>
             {

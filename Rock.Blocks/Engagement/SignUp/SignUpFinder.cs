@@ -37,6 +37,7 @@ using System.Data.Entity.Spatial;
 #endif
 using System.Linq;
 using System.Linq.Expressions;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Engagement.SignUp
 {
@@ -440,7 +441,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new SignUpFinderInitializationBox();
 
@@ -1461,7 +1462,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return GetSecurityGrantToken();
             }
@@ -1512,7 +1513,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult GetUpdatedAttributes( IEnumerable<string> selectedProjectTypeGuidStrings )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Load block attributes, as we're going to double-check the provided guid strings against those available according to the settings.
                 var block = new BlockService( rockContext ).Get( this.BlockId );
@@ -1530,7 +1531,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult GetFilteredProjects( SignUpFinderSelectedFiltersBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Load block attributes, as we're going to double-check that each type of filtering is allowed according to the settings.
                 var block = new BlockService( rockContext ).Get( this.BlockId );
@@ -1555,7 +1556,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult GetCustomSettings()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
                 {
@@ -1669,7 +1670,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult SaveCustomSettings( CustomSettingsBox<SignUpFinderCustomSettingsBag, SignUpFinderCustomSettingsOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
                 {

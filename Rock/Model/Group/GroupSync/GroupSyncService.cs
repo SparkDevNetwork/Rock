@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -77,7 +78,7 @@ namespace Rock.Model
                 updateStatusAction?.Invoke( $"Syncing group '{syncInfo.GroupName}'" );
 
                 // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 using ( var rockContextReadOnly = new RockContextReadOnly() )
                 {
                     // Always use the non-readonly context to get the sync object graph, so we know whether the
@@ -174,7 +175,7 @@ namespace Rock.Model
                         try
                         {
                             // Use a new context to limit the amount of change-tracking required
-                            using ( var groupMemberContext = new RockContext() )
+                            using ( var groupMemberContext = RockApp.Current.CreateRockContext() )
                             {
                                 // Disable cache update, we will handle it at the end
                                 // of the sync process to reduce load on the server due
@@ -258,7 +259,7 @@ namespace Rock.Model
                         try
                         {
                             // Use a new context to limit the amount of change-tracking required
-                            using ( var groupMemberContext = new RockContext() )
+                            using ( var groupMemberContext = RockApp.Current.CreateRockContext() )
                             {
                                 // Disable cache update, we will handle it at the end
                                 // of the sync process to reduce load on the server due
@@ -428,7 +429,7 @@ namespace Rock.Model
                 }
 
                 // Update last refresh datetime in different context to avoid side-effects.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var sync = new GroupSyncService( rockContext )
                         .Queryable()

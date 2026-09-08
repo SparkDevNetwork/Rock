@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Groups.GroupAttendanceEntry;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -481,7 +482,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetGroupData( Guid groupGuid, DateTimeOffset? date = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
@@ -564,7 +565,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult SaveAttendance( Guid groupGuid, DateTimeOffset date, List<Attendee> attendees, bool didNotMeet, string notes = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
@@ -600,7 +601,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult DidNotMeet( Guid groupGuid, DateTimeOffset date, bool didNotMeet )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
                 var group = new GroupService( rockContext ).Get( groupGuid );

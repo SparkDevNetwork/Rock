@@ -18,6 +18,7 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Model;
@@ -46,7 +47,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             // Remove in foreign-key-safe order: sessions and registrants reference
             // the registrations, which reference the instance and template.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( $@"
 DELETE FROM [RegistrationSession] WHERE [ForeignKey] = '{_foreignKey}';
@@ -173,7 +174,7 @@ DELETE FROM [RegistrationTemplate] WHERE [ForeignKey] = '{_foreignKey}';" );
         /// </summary>
         private RegistrationInstance CreateInstance( int maxAttendees )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Several string columns on RegistrationTemplate are NOT NULL at
                 // the database level even though the model does not mark them as
@@ -226,7 +227,7 @@ DELETE FROM [RegistrationTemplate] WHERE [ForeignKey] = '{_foreignKey}';" );
         /// </summary>
         private Registration CreateRegistration( RegistrationInstance instance, int activeRegistrants, int waitListRegistrants )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registration = new Registration
                 {

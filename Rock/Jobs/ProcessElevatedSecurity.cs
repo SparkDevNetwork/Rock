@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility.Enums;
@@ -64,7 +65,7 @@ namespace Rock.Jobs
         private int UpdatePersonAccountProtectionProfile()
         {
             var rowsUpdated = 0;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rowsUpdated = PersonService.UpdateAccountProtectionProfileAll( rockContext );
             }

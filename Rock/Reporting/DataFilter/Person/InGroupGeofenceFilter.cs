@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -141,7 +142,7 @@ function() {
         {
             string result = "In group geofence";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var group = new GroupService( rockContext ).Get( selection.AsGuid() );
             if ( group != null )
             {
@@ -191,7 +192,7 @@ function() {
         {
             int groupId = ( controls[0] as GroupPicker ).SelectedValueAsInt() ?? 0;
 
-            var group = new GroupService( new RockContext() ).Get( groupId );
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( groupId );
             if ( group != null )
             {
                 return group.Guid.ToString();
@@ -208,7 +209,7 @@ function() {
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             Guid groupGuid = selection.AsGuid();
-            var group = new GroupService( new RockContext() ).Get( groupGuid );
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( groupGuid );
             if ( group != null )
             {
                 ( controls[0] as GroupPicker ).SetValue( group.Id );

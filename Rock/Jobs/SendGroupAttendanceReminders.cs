@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -92,7 +93,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var jobPreferredCommunicationType = ( CommunicationType ) GetAttributeValue( AttributeKey.SendUsing ).AsInteger();
             if ( jobPreferredCommunicationType != CommunicationType.Email )
@@ -205,7 +206,7 @@ namespace Rock.Jobs
         /// <param name="jobPreferredCommunicationType">Type of the job preferred communication.</param>
         private void SendRemindersForGroupType( GroupType groupType, CommunicationType jobPreferredCommunicationType )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var isGroupTypeValid = groupType.AttendanceReminderSystemCommunicationId.HasValue;
             var excludedGroupsDataViewGuid = GetAttributeValue( AttributeKey.ExcludedGroupsDataView ).AsGuidOrNull();
 
@@ -547,7 +548,7 @@ namespace Rock.Jobs
                 Reason: Tracking sent attendance reminders.
             */
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
 

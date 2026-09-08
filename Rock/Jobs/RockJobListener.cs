@@ -24,6 +24,7 @@ using Quartz;
 
 using Rock.Bus.Locking;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
@@ -109,7 +110,7 @@ namespace Rock.Jobs
             );
 
             // load job
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var jobService = new ServiceJobService( rockContext );
             var job = jobService.Get( jobId );
 
@@ -229,7 +230,7 @@ namespace Rock.Jobs
             }
 
             // load job
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var jobService = new ServiceJobService( rockContext );
             var job = jobService.Get( jobId );
 
@@ -345,7 +346,7 @@ namespace Rock.Jobs
             {
                 // A separate context is used so a failure saving the last run details above cannot poison the
                 // history write.
-                using ( var historyRockContext = new RockContext() )
+                using ( var historyRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var serviceJobHistoryService = new ServiceJobHistoryService( historyRockContext );
                     var jobHistory = GetStartedServiceJobHistory( context, serviceJobHistoryService, job );

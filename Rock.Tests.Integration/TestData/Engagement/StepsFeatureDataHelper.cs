@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Linq;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework;
@@ -134,7 +135,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         {
             LogHelper.Log( "Removing existing Steps Feature test data..." );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Use SQL delete for efficiency.
             int recordsAffected;
@@ -258,7 +259,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
                 return;
             }
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Add Step Categories
             LogHelper.StartTask( "Adding Step Categories..." );
@@ -343,7 +344,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
                 return;
             }
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var stepService = new StepService( dataContext );
             var personLookup = new PersonLookup( dataContext );
@@ -455,7 +456,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         {
             LogHelper.Log( "Adding Steps Data Views..." );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Add Data View Category "Steps".
             const string categoryDataViewStepsName = "Steps";
@@ -471,7 +472,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
             dataContext.SaveChanges();
 
             // Create Data View: Steps Completed
-            dataContext = new RockContext();
+            dataContext = RockApp.Current.CreateRockContext();
 
             const string dataViewStepsCompleted2001Name = "Steps Completed in 2001";
 
@@ -526,7 +527,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
             LogHelper.Log( "Adding random Steps..." );
 
             // Get a complete set of active Step Types ordered by Program and structure order.
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var programService = new StepProgramService( dataContext );
 
@@ -705,7 +706,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
 
                         if ( stepService == null )
                         {
-                            var stepDataContext = new RockContext();
+                            var stepDataContext = RockApp.Current.CreateRockContext();
 
                             stepService = new StepService( stepDataContext );
                         }
@@ -776,7 +777,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
 
             Dictionary<Guid, int> guidDictionary;
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Add Step Types
             var stepTypeService = new StepTypeService( dataContext );

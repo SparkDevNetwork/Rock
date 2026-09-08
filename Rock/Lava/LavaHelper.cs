@@ -338,7 +338,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new PersonAliasService( rockContext ).GetPrimaryAliasId( person.Guid );
             }

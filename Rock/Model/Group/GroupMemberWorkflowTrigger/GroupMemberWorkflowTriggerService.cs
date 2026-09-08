@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -50,7 +51,7 @@ namespace Rock.Model
         {
             var triggers = new List<GroupMemberWorkflowTrigger>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach( var trigger in new GroupMemberWorkflowTriggerService( rockContext )
                     .Queryable().AsNoTracking() )

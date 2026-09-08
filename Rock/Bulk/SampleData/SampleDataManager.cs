@@ -38,6 +38,7 @@ using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Rock.Configuration;
 
 namespace Rock.Utility
 {
@@ -105,12 +106,12 @@ namespace Rock.Utility
         /// <summary>
         /// Holds the Person Image binary file type.
         /// </summary>
-        private readonly static BinaryFileType _personImageBinaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+        private readonly static BinaryFileType _personImageBinaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
         /// <summary>
         /// Holds the Person Image binary file type.
         /// </summary>
-        private readonly static BinaryFileType _checkImageBinaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid() );
+        private readonly static BinaryFileType _checkImageBinaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid() );
 
         /// <summary>
         /// The Person image binary file type settings
@@ -125,12 +126,12 @@ namespace Rock.Utility
         /// <summary>
         /// The id for the "child" role of a family.
         /// </summary>
-        private readonly static int _childRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+        private readonly static int _childRoleId = new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
 
         /// <summary>
         /// The id for the "adult" role of a family.
         /// </summary>
-        private readonly static int _adultRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+        private readonly static int _adultRoleId = new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
         /// <summary>
         /// The Entity Type Id for the Person entities.
@@ -499,7 +500,7 @@ namespace Rock.Utility
                 }
 
                 // since some PostSaveChanges was disabled, call these cleanup tasks
-                using ( var personRockContext = new Rock.Data.RockContext() )
+                using ( var personRockContext = RockApp.Current.CreateRockContext() )
                 {
                     // these should all be pretty quick, but just in case
                     personRockContext.Database.SetCommandTimeout( 180 );
@@ -524,7 +525,7 @@ namespace Rock.Utility
                     // Fire-and-forget in background to prevent blocking
                     Task.Run( () =>
                     {
-                        using ( var backgroundContext = new RockContext() )
+                        using ( var backgroundContext = RockApp.Current.CreateRockContext() )
                         {
                             var serviceJobService = new ServiceJobService( backgroundContext );
                             var job = serviceJobService.Get( Rock.SystemGuid.ServiceJob.UPDATE_PERSISTED_ATTRIBUTE_VALUE );
@@ -971,7 +972,7 @@ namespace Rock.Utility
 
                         attributeState.Key = attributeState.Name.RemoveSpecialCharacters().Replace( " ", string.Empty );
 
-                        new CategoryService( new RockContext() ).Queryable().Where( c => categoryGuids.Contains( c.Guid.ToString() ) ).ToList().ForEach( c => attributeState.Categories.Add( c ) );
+                        new CategoryService( RockApp.Current.CreateRockContext() ).Queryable().Where( c => categoryGuids.Contains( c.Guid.ToString() ) ).ToList().ForEach( c => attributeState.Categories.Add( c ) );
 
                         var attribute = Helper.SaveAttributeEdits( attributeState, new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), rockContext );
 
@@ -3556,7 +3557,7 @@ namespace Rock.Utility
         }
         private RockContext GetConfiguredDataContext()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Set the timeout to 30 mins, to allow processing of very large datasets.
             rockContext.Database.SetCommandTimeout( 1800 );
