@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -27,7 +28,7 @@ namespace Rock.Model
                 var contactTemporaryPhotoId = Entity.PhotoId;
                 if ( contactTemporaryPhotoId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var binaryFileService = new BinaryFileService( rockContext );
                         var binaryFile = binaryFileService.Get( contactTemporaryPhotoId.Value );

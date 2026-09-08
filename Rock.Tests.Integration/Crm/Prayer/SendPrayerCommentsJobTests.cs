@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Tests.Integration.TestData;
@@ -111,7 +112,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_DateFilterForWeek1_ReturnsCommentsInWeek1Only()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -137,7 +138,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_DateFilterForWeek2_ReturnsWeek1PrayerRequestWithWeek2Comments()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -169,7 +170,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_PrivateComments_AreExcluded()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -203,7 +204,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_FilterWithChildCategoriesExcluded_ReturnsRequestsInParentCategoryOnly()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -228,7 +229,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_ChildCategoriesIncluded_ReturnsRequestsInParentAndChildCategories()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 

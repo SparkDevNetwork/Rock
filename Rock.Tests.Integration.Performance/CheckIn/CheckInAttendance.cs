@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -16,7 +17,7 @@ namespace Rock.Tests.Integration.CheckIn
         [TestMethod]
         public void PerformanceTest()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personAliasIdList = TestDataHelper.GetPersonIdWithAliasIdList().Select( a => a.PersonAliasId ).ToList();
 
@@ -41,7 +42,7 @@ namespace Rock.Tests.Integration.CheckIn
                                 break;
                             }
 
-                            using ( var rockContextAttendance = new RockContext() )
+                            using ( var rockContextAttendance = RockApp.Current.CreateRockContext() )
                             {
                                 var attendanceService = new AttendanceService( rockContextAttendance );
                                 var checkinDateTime = RockDateTime.Now;

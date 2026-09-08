@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -63,7 +64,7 @@ namespace Rock.Obsidian.UI
 
             var entitySetItems = new List<EntitySetItem>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( entityType != null )
                 {
@@ -137,7 +138,7 @@ namespace Rock.Obsidian.UI
         /// <returns>An instance of <see cref="Rock.Model.Communication"/> or <c>null</c> if there would have been no recipients.</returns>
         public static Rock.Model.Communication CreateCommunication( GridCommunicationBag communicationBag, RockRequestContext requestContext )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentPersonAliasId = requestContext?.CurrentPerson?.PrimaryAliasId;
 
@@ -151,7 +152,7 @@ namespace Rock.Obsidian.UI
                 }
 
                 // Create the blank communication to be filled in later.
-                var communicationRockContext = new RockContext();
+                var communicationRockContext = RockApp.Current.CreateRockContext();
                 var communicationService = new CommunicationService( communicationRockContext );
                 var communication = new Rock.Model.Communication
                 {
@@ -202,7 +203,7 @@ namespace Rock.Obsidian.UI
                 }
 
                 // BulkInsert to quickly insert the CommunicationRecipient records. Note: This is much faster, but will bypass EF and Rock processing.
-                var communicationRecipientRockContext = new RockContext();
+                var communicationRecipientRockContext = RockApp.Current.CreateRockContext();
                 communicationRecipientRockContext.BulkInsert( communicationRecipientList );
 
                 return communication;

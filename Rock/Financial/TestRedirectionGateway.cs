@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -336,7 +337,7 @@ namespace Rock.Financial
 
             var fakePayments = new List<Payment>();
             var randomNumberOfPayments = new Random().Next( 1, 1000 );
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var scheduledTransactionList = new FinancialScheduledTransactionService( rockContext ).Queryable().Where( a => a.FinancialGatewayId == financialGateway.Id ).ToList();
             if ( !scheduledTransactionList.Any() )
             {

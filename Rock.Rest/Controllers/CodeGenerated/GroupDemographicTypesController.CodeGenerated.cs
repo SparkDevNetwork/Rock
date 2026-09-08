@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupDemographicTypesController"/> class.
         /// </summary>
-        public GroupDemographicTypesController() : base( new Rock.Model.GroupDemographicTypeService( new Rock.Data.RockContext() ) ) { } 
+        public GroupDemographicTypesController() : base( new Rock.Model.GroupDemographicTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

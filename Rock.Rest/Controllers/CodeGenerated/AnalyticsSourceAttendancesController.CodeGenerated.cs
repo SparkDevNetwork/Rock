@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalyticsSourceAttendancesController"/> class.
         /// </summary>
-        public AnalyticsSourceAttendancesController() : base( new Rock.Model.AnalyticsSourceAttendanceService( new Rock.Data.RockContext() ) ) { } 
+        public AnalyticsSourceAttendancesController() : base( new Rock.Model.AnalyticsSourceAttendanceService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Reporting;
 using Rock.Field;
@@ -757,7 +758,7 @@ namespace Rock.Reporting.DataFilter.Step
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepTypeService = new StepProgramService( rockContext );
                 return stepTypeService.Get( stepProgramId.Value );
@@ -776,7 +777,7 @@ namespace Rock.Reporting.DataFilter.Step
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepTypeService = new StepProgramService( rockContext );
                 return stepTypeService.Get( stepProgramGuid.Value );
@@ -795,7 +796,7 @@ namespace Rock.Reporting.DataFilter.Step
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepTypeService = new StepTypeService( rockContext );
                 return stepTypeService.Get( stepTypeId.Value );
@@ -814,7 +815,7 @@ namespace Rock.Reporting.DataFilter.Step
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepTypeService = new StepTypeService( rockContext );
                 return stepTypeService.Get( stepTypeGuid.Value );

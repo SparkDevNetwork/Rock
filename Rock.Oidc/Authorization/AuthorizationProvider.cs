@@ -28,6 +28,7 @@ using Microsoft.Owin.Security;
 using Owin.Security.OpenIdConnect.Extensions;
 using Owin.Security.OpenIdConnect.Server;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
@@ -125,7 +126,7 @@ namespace Rock.Oidc.Authorization
                 var loginValid = false;
 
                 // Do all the data access here so we can dispose of the rock context asap.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var userLoginService = new UserLoginService( rockContext );
                     user = userLoginService.GetByUserName( context.Request.Username );
@@ -237,7 +238,7 @@ namespace Rock.Oidc.Authorization
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var authClientService = new AuthClientService( rockContext );
             var authClient = await authClientService.GetByClientIdAsync( context.ClientId );
 
@@ -373,7 +374,7 @@ namespace Rock.Oidc.Authorization
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var authClientService = new AuthClientService( rockContext );
             var authClient = await authClientService.GetByClientIdAndSecretAsync( context.ClientId, context.ClientSecret );
 
@@ -400,7 +401,7 @@ namespace Rock.Oidc.Authorization
             // match the address registered by the client application.
             if ( !context.PostLogoutRedirectUri.IsNullOrWhiteSpace() )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var authClientService = new AuthClientService( rockContext );
                 var authClient = await authClientService.GetByPostLogoutRedirectUrlAsync( context.PostLogoutRedirectUri );
 
@@ -435,7 +436,7 @@ namespace Rock.Oidc.Authorization
 
             // Populate requested/allowed claims
             // See https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server/issues/543
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var user = new UserLoginService( rockContext ).GetByUserName( userName );
                 if ( user == null )
@@ -466,7 +467,7 @@ namespace Rock.Oidc.Authorization
         public override Task HandleConfigurationRequest( HandleConfigurationRequestContext context )
         {
             var result = base.HandleConfigurationRequest( context );
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var activeScopes = RockIdentityHelper.GetActiveAuthScopes( rockContext );
                 context.Scopes.UnionWith( activeScopes );

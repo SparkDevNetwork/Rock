@@ -12,6 +12,7 @@ using Moq.Protected;
 
 using Rock.Communication;
 using Rock.Communication.Transport;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -1547,7 +1548,7 @@ namespace Rock.Tests.Integration.Communications
                 .Object
                 .Send( actualCommunication, 37, new Dictionary<string, string>() );
 
-            var actualReciepent = new CommunicationRecipientService( new RockContext() ).Get( actualCommunication.Recipients.FirstOrDefault().Id );
+            var actualReciepent = new CommunicationRecipientService( RockApp.Current.CreateRockContext() ).Get( actualCommunication.Recipients.FirstOrDefault().Id );
             Assert.AreEqual( CommunicationRecipientStatus.Failed, actualReciepent.Status );
             Assert.AreEqual( "Exception: The specified string is not in the form required for an e-mail address.", actualReciepent.StatusNote );
         }
@@ -1580,7 +1581,7 @@ namespace Rock.Tests.Integration.Communications
                 .Object
                 .Send( actualCommunication, 37, new Dictionary<string, string>() );
 
-            var actualReciepent = new CommunicationRecipientService( new RockContext() ).Get( actualCommunication.Recipients.FirstOrDefault().Id );
+            var actualReciepent = new CommunicationRecipientService( RockApp.Current.CreateRockContext() ).Get( actualCommunication.Recipients.FirstOrDefault().Id );
             Assert.AreEqual( CommunicationRecipientStatus.Failed, actualReciepent.Status );
             Assert.Contains( "Exception: The parameter 'address' cannot be an empty string.", actualReciepent.StatusNote );
         }
@@ -1833,7 +1834,7 @@ namespace Rock.Tests.Integration.Communications
 
         private void AddSafeDomains()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedTypeService = new DefinedValueService( rockContext );
                 var definedType = new DefinedTypeService( rockContext ).Get( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() );
@@ -1914,7 +1915,7 @@ namespace Rock.Tests.Integration.Communications
                 actualCommunication.Attachments = communicationAttachments;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( actualPerson );
@@ -1947,7 +1948,7 @@ namespace Rock.Tests.Integration.Communications
                 return _testFiles;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var textFile = new BinaryFile
             {
                 BinaryFileTypeId = 3,
@@ -1985,7 +1986,7 @@ namespace Rock.Tests.Integration.Communications
         [TestCleanup]
         public void TestCleanUp()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( _communicationId > 0 )
                 {

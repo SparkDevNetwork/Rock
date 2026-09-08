@@ -25,6 +25,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -75,7 +76,7 @@ namespace RockWeb.Blocks.Examples
 
             mfpExample.MergeFields.Add( "GlobalAttribute,Rock.Model.Person,Rock.Model.Group" );
 
-            var selectableAccountIds = new FinancialAccountService( new RockContext() ).Queryable().Where( a => a.ParentAccountId == null ).Take( 4 ).Select( a => a.Id ).ToArray();
+            var selectableAccountIds = new FinancialAccountService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.ParentAccountId == null ).Take( 4 ).Select( a => a.Id ).ToArray();
             caapExampleSingleAccount.SelectableAccountIds = selectableAccountIds;
             caapExampleMultiAccount.SelectableAccountIds = selectableAccountIds;
 
@@ -213,7 +214,7 @@ namespace RockWeb.Blocks.Examples
                 campExample.Campuses = CampusCache.All();
                 campsExample.Campuses = CampusCache.All();
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var allGroupTypes = new GroupTypeService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
                 gpGroupType.GroupTypes = allGroupTypes;
                 gpGroupTypes.GroupTypes = allGroupTypes;
@@ -463,7 +464,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void caapExample_Changed( object sender, EventArgs e )
         {
-            var financialAccountService = new FinancialAccountService( new RockContext() );
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             lCaapExampleSingleAccountResultAccount.Text = financialAccountService.GetByIds( caapExampleSingleAccount.SelectedAccountIds.ToList() ).Select( a => a.PublicName ).ToList().AsDelimited( ", " );
             lCaapExampleMultiAccountResultAccount.Text = financialAccountService.GetByIds( caapExampleMultiAccount.SelectedAccountIds.ToList() ).Select( a => a.PublicName ).ToList().AsDelimited( ", " );
         }

@@ -16,6 +16,7 @@
 //
 using System;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Security;
@@ -81,7 +82,7 @@ namespace Rock.Model
         {
             get
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var noteTypeEntityTypeId = NoteTypeCache.Get( this.NoteTypeId )?.EntityTypeId;
                     if ( noteTypeEntityTypeId.HasValue && this.EntityId.HasValue )

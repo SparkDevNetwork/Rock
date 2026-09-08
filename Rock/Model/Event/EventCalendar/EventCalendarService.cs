@@ -29,6 +29,7 @@ using Rock.Data;
 using TimeZoneConverter;
 
 using Calendar = Ical.Net.Calendar;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -288,7 +289,7 @@ namespace Rock.Model
         /// <returns>The matching event items.</returns>
         private List<EventItem> GetEventItems( GetCalendarEventFeedArgs calendarProps )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var eventCalendar = new EventCalendarService( rockContext ).Get( calendarProps.CalendarId );
             if ( eventCalendar == null )

@@ -19,6 +19,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -60,7 +61,7 @@ namespace Rock.Model
             }
 
             // Get the AttributeMatrix associated with this AttributeMatrixItem.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             int? matrixId = AttributeMatrixId;
             if ( matrixId == default

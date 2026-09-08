@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -55,7 +56,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
 
         private static void CreateTestData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add Personal Devices for Ted Decker
             // Sites: Internal, External
@@ -219,7 +220,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
         private IQueryable<IEntity> GetPersonQueryWithPersonalDevicesFilter( PersonalDevicesFilter.FilterSettings settings )
         {
             var settingsFilter = new PersonalDevicesFilter();
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( dataContext );
 
             var parameterExpression = personService.ParameterExpression;

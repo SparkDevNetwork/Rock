@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -155,7 +156,7 @@ namespace Rock.Communication
         {
             if ( personIds != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     SetRecipients( new PersonService( rockContext )
                         .Queryable().AsNoTracking()
@@ -170,7 +171,7 @@ namespace Rock.Communication
         /// <param name="groupId">The group identifier.</param>
         public void SetRecipients( int groupId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SetRecipients( new GroupMemberService( rockContext )
                     .Queryable().AsNoTracking()

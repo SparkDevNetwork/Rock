@@ -33,6 +33,7 @@ using Newtonsoft.Json;
 using RestSharp;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Logging;
@@ -506,7 +507,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         {
             errorMessage = string.Empty;
 
-            var financialGateway = origTransaction?.FinancialGateway ?? new FinancialGatewayService( new RockContext() ).Get( origTransaction.FinancialGatewayId ?? 0 );
+            var financialGateway = origTransaction?.FinancialGateway ?? new FinancialGatewayService( RockApp.Current.CreateRockContext() ).Get( origTransaction.FinancialGatewayId ?? 0 );
 
             if ( financialGateway == null )
             {
@@ -741,7 +742,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         /// <returns></returns>
         public override bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
-            var financialGateway = transaction.FinancialGateway ?? new FinancialGatewayService( new RockContext() ).Get( transaction.FinancialGatewayId.Value );
+            var financialGateway = transaction.FinancialGateway ?? new FinancialGatewayService( RockApp.Current.CreateRockContext() ).Get( transaction.FinancialGatewayId.Value );
             DeleteSubscription( financialGateway, transaction.GatewayScheduleId );
             transaction.IsActive = false;
             errorMessage = string.Empty;
@@ -766,7 +767,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            var financialGateway = new FinancialGatewayService( new RockContext() ).Get( transaction.FinancialGatewayId.Value );
+            var financialGateway = new FinancialGatewayService( RockApp.Current.CreateRockContext() ).Get( transaction.FinancialGatewayId.Value );
 
             var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.QueryApiUrl ) );
             var restRequest = new RestRequest( Method.GET );
@@ -1784,7 +1785,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 PersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId
             };
 
-            var financialGateway = scheduledTransaction.FinancialGateway ?? new FinancialGatewayService( new RockContext() ).Get( scheduledTransaction.FinancialGatewayId.Value );
+            var financialGateway = scheduledTransaction.FinancialGateway ?? new FinancialGatewayService( RockApp.Current.CreateRockContext() ).Get( scheduledTransaction.FinancialGatewayId.Value );
 
             if ( referencedPaymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
             {

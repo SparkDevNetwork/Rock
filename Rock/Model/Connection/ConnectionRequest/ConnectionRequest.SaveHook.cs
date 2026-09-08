@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Connection;
 using Rock.Tasks;
@@ -417,7 +418,7 @@ namespace Rock.Model
                 var hasPersonHistoryChanges = PersonHistoryChangeList?.Any() == true;
                 if ( hasHistoryChanges || hasPersonHistoryChanges )
                 {
-                    using ( var historyRockContext = new RockContext() )
+                    using ( var historyRockContext = RockApp.Current.CreateRockContext() )
                     {
                         if ( hasHistoryChanges )
                         {
@@ -475,7 +476,7 @@ namespace Rock.Model
                         }
                         else if ( connectionRequest.PersonAliasId != default )
                         {
-                            message.PersonId = new PersonAliasService( new RockContext() ).GetPersonId( connectionRequest.PersonAliasId );
+                            message.PersonId = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetPersonId( connectionRequest.PersonAliasId );
                         }
 
                         if ( connectionRequest.ConnectionOpportunity != null )

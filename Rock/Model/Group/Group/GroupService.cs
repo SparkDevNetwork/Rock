@@ -32,6 +32,7 @@ using Rock.Model.Groups.Group.Options;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -1112,7 +1113,7 @@ namespace Rock.Model
             List<string> familyMemberNames = new List<string>();
             string primaryLastName = string.Empty;
 
-            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext ?? new RockContext() );
+            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext ?? RockApp.Current.CreateRockContext() );
             var groupId = group.Id;
 
             var familyMembersQry = groupMemberService.Queryable( false ).Where( a => a.GroupId == groupId );
@@ -1892,7 +1893,7 @@ namespace Rock.Model
                 return null;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
 
             var group = groupService.Queryable()
@@ -2210,7 +2211,7 @@ namespace Rock.Model
         /// <param name="groupId">The group identifier.</param>
         public static void DeleteSecurityRoleGroup( int groupId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.WrapTransaction( () =>
             {
                 // Get the target group.

@@ -21,6 +21,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
@@ -46,7 +47,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             ExecuteRockCleanupJob();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( expectedPerson.Guid );
                 Assert.AreEqual( AccountProtectionProfile.Medium, actualPerson.AccountProtectionProfile );
@@ -65,7 +66,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             ExecuteRockCleanupJob();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( expectedLowGroupPerson.Guid );
                 Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
@@ -88,7 +89,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 Guid = personGuid
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( personWithFinancialPersonBankAccount );
@@ -110,7 +111,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             ExecuteRockCleanupJob();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
                 Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
@@ -130,7 +131,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 Guid = personGuid
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( personWithFinancialPersonBankAccount );
@@ -164,7 +165,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             ExecuteRockCleanupJob();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
                 Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
@@ -184,7 +185,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 Guid = personGuid
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( personWithFinancialScheduledTransaction );
@@ -206,7 +207,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             ExecuteRockCleanupJob();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
                 Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
@@ -226,7 +227,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 Guid = personGuid
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( personWithFinancialTransaction );
@@ -247,7 +248,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             ExecuteRockCleanupJob();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
                 Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
@@ -261,7 +262,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         public void RockCleanup_CleanupPersonRelatedRecords_MissingSearchKeysAreAdded()
         {
             var job = new Rock.Jobs.RockCleanup();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personSearchKeyService = new PersonSearchKeyService( rockContext );
 
             var personSearchOptions = PersonService.PersonQueryOptions.AllRecords();
@@ -294,7 +295,7 @@ DELETE FROM PersonSearchKey
         public void RockCleanup_CleanupInteractionSessions_RemovesSessionsWithNoInteractions()
         {
             var job = new Rock.Jobs.RockCleanup();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add an Interaction Session with some associated interactions.
             var complete1GuidString = "2D8F4B1D-2D68-4E4D-83FD-0099DEA3C599";
@@ -400,7 +401,7 @@ WHERE [InteractionSessionId] = {sessionId}
         {
             var personGuid = Guid.NewGuid();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // We have to manually add the records to the database so that we can ensure the post save methods don't updated the data.
                 var createPersonScript = $@"INSERT INTO [Person] (
@@ -446,7 +447,7 @@ WHERE [InteractionSessionId] = {sessionId}
         {
             var userLoginGuid = Guid.NewGuid();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // We have to manually add the records to the database so that we can ensure the post save methods don't updated the data.
                 var createUserLoginScript = $@"INSERT INTO [UserLogin] (
@@ -503,7 +504,7 @@ WHERE [InteractionSessionId] = {sessionId}
 	            , ${securityLevel.ConvertToInt()}--ElevatedSecurityLevel
             )";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( createGroupScript );
                 var group = new GroupService( rockContext ).Get( securityGroupGuid );

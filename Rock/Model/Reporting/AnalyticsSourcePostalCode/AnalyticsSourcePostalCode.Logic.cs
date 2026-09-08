@@ -32,6 +32,7 @@ using Newtonsoft.Json;
 
 using OfficeOpenXml;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -88,13 +89,13 @@ namespace Rock.Model
 
                 // Batch size
                 var batchSize = 1000;
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
 
                 // Calculate the number of batches
                 int batches = ( int ) Math.Ceiling( ( double ) analyticsSourcePostalCodes.Count / batchSize );
                 for ( int i = 0; i < batches; i++ )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
                     rockContext.Configuration.AutoDetectChangesEnabled = false;
                     rockContext.Configuration.ValidateOnSaveEnabled = false;
 
@@ -109,7 +110,7 @@ namespace Rock.Model
             }
             else
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Since we are not saving the DbGeography details we'll just use EFBatchOperation to BulkInsert.
                     EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourcePostalCode>() ).InsertAll( analyticsSourcePostalCodes );
@@ -122,7 +123,7 @@ namespace Rock.Model
         /// </summary>
         public static void ClearTable()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

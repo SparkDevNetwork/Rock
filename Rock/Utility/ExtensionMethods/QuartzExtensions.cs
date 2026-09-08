@@ -16,6 +16,7 @@
 //
 using System;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -41,7 +42,7 @@ namespace Rock
             context.Result = message;
 
             int jobId = context.GetJobId();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );

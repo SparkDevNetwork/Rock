@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Utility;
 
@@ -407,7 +408,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    Person person = new PersonService( new RockContext() ).Get( PersonId );
+                    Person person = new PersonService( RockApp.Current.CreateRockContext() ).Get( PersonId );
                     return Person.GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification );
                 }
             }
@@ -428,7 +429,7 @@ namespace Rock.Model
                 {
                     if ( ConnectorPersonId.HasValue )
                     {
-                        Person person = new PersonService( new RockContext() ).Get( ConnectorPersonId.Value );
+                        Person person = new PersonService( RockApp.Current.CreateRockContext() ).Get( ConnectorPersonId.Value );
                         return Person.GetPersonPhotoUrl( person.Initials, person.PhotoId, person.Age, person.Gender, person.RecordTypeValueId, person.AgeClassification );
                     }
                     else

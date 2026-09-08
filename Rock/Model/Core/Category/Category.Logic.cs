@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -84,7 +85,7 @@ namespace Rock.Model
                     // make sure it isn't getting saved with a recursive parent hierarchy
                     var parentIds = new List<int>();
                     parentIds.Add( this.Id );
-                    var parent = this.ParentCategoryId.HasValue ? ( this.ParentCategory ?? new CategoryService( new RockContext() ).Get( this.ParentCategoryId.Value ) ) : null;
+                    var parent = this.ParentCategoryId.HasValue ? ( this.ParentCategory ?? new CategoryService( RockApp.Current.CreateRockContext() ).Get( this.ParentCategoryId.Value ) ) : null;
                     while ( parent != null )
                     {
                         if ( parentIds.Contains( parent.Id ) )

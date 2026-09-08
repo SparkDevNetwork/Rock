@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Model;
 using System;
 using Rock.Web.Cache;
@@ -42,7 +43,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 publicConfigurationValues[VALUES_PUBLIC_KEY] = StreakTypeCache.All()
                     .Where( s => s.IsActive )

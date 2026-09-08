@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -59,7 +60,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( groupGuid.HasValue )
                 {
@@ -187,7 +188,7 @@ namespace Rock.Field.Types
 
             var entityReferences = new List<ReferencedEntity>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( groupGuid.HasValue )
                 {
@@ -369,7 +370,7 @@ namespace Rock.Field.Types
             GroupAndRolePicker groupAndRolePicker = control as GroupAndRolePicker;
             if ( groupAndRolePicker != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 Guid? groupTypeGuid = null;
                 Guid? groupGuid = null;
@@ -427,7 +428,7 @@ namespace Rock.Field.Types
                 groupAndRolePicker.GroupRoleId = null;
 
                 string[] parts = ( value ?? string.Empty ).Split( '|' );
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 if ( parts.Length >= 1 )
                 {
                     var groupType = new GroupTypeService( rockContext ).Get( parts[0].AsGuid() );

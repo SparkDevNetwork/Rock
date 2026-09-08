@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -57,7 +58,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestCleanup]
         public void TestCleanup()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( $"DELETE [ExceptionLog] WHERE [ForeignKey] = '{_exceptionForeignKey}'" );
             }
@@ -87,7 +88,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void ExceptionGroupHash_IsComputedAndNotPersisted()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var isPersisted = rockContext.Database.SqlQuery<bool?>( $@"
 SELECT [is_persisted]
@@ -108,7 +109,7 @@ WHERE [object_id] = OBJECT_ID( '{_tableName}' )
         [TestMethod]
         public void ExceptionGroupHash_IsBinaryThirtyTwoBytes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var columnType = rockContext.Database.SqlQuery<string>( $@"
 SELECT [t].[name] + '(' + CAST( [c].[max_length] AS VARCHAR(10) ) + ')'
@@ -221,7 +222,7 @@ WHERE [c].[object_id] = OBJECT_ID( '{_tableName}' )
 
             var groupHash = GetExceptionGroupHash( firstInGroupId );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var exceptionLogService = new ExceptionLogService( rockContext );
 
@@ -261,7 +262,7 @@ WHERE [c].[object_id] = OBJECT_ID( '{_tableName}' )
         /// <returns>The identifier of the new exception.</returns>
         private int AddException( string exceptionType, string description )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var exceptionLog = new ExceptionLog
                 {
@@ -285,7 +286,7 @@ WHERE [c].[object_id] = OBJECT_ID( '{_tableName}' )
         /// <returns>The exception's group hash.</returns>
         private static byte[] GetExceptionGroupHash( int exceptionId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new ExceptionLogService( rockContext )
                     .Queryable()
@@ -302,7 +303,7 @@ WHERE [c].[object_id] = OBJECT_ID( '{_tableName}' )
         /// <returns>The property value, or <c>null</c> when the column does not exist.</returns>
         private static int? GetColumnProperty( string propertyName )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return rockContext.Database
                     .SqlQuery<int?>( $"SELECT COLUMNPROPERTY( OBJECT_ID( '{_tableName}' ), '{_columnName}', '{propertyName}' )" )

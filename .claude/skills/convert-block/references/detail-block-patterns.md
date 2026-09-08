@@ -66,7 +66,7 @@ In `editPanel.partial.obs`, every editable field is declared with `propertyRef` 
 
 ## IBreadCrumbBlock
 
-Implement on detail blocks that contribute a breadcrumb. Uses `new RockContext()` (one of the few legitimate exceptions):
+Implement on detail blocks that contribute a breadcrumb. Use the base class `RockContext`, or `RockApp.Current.CreateRockContext()` when a separate context is genuinely required. Never use `new RockContext()`:
 
 ```csharp
 public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )

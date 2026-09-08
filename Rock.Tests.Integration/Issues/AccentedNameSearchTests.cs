@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -47,7 +48,7 @@ namespace Rock.Tests.Integration.Issues
         [TestMethod]
         public void FamilySalutation_ForTwoParentsTwoChildren_ReturnsCorrectFormat()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
             var deckerFamilyGroup = groupService.GetByParentGroupIdAndName( null, "Decker Family" ).FirstOrDefault();
 
@@ -59,7 +60,7 @@ namespace Rock.Tests.Integration.Issues
         [TestMethod]
         public void FamilySalutation_ForPeopleWithAccentedNames_ReturnsCorrectFormat()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
             var familyGroup = groupService.GetByParentGroupIdAndName( null, "Côté Family" ).FirstOrDefault();
 
@@ -75,7 +76,7 @@ namespace Rock.Tests.Integration.Issues
                 System.Data.CommandType.Text,
                 null );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var duplicateService = new PersonDuplicateService( rockContext );
 
@@ -115,7 +116,7 @@ namespace Rock.Tests.Integration.Issues
 
         private List<Person> Search( PersonService.PersonSearchOptions options )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var personSearchQry = personService.Search( options );

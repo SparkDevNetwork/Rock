@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
@@ -194,7 +195,7 @@ namespace Rock.Field.Types
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
 
-            var item = this.GetEntityByGuid( guid, new RockContext() );
+            var item = this.GetEntityByGuid( guid, RockApp.Current.CreateRockContext() );
 
             return item != null ? item.Id : (int?)null;
         }
@@ -207,7 +208,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = this.GetEntityById( id, new RockContext() );
+            var item = this.GetEntityById( id, RockApp.Current.CreateRockContext() );
 
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
 
@@ -281,7 +282,7 @@ namespace Rock.Field.Types
 
         private IService GetEntityService( RockContext dataContext )
         {
-            dataContext = dataContext ?? new RockContext();
+            dataContext = dataContext ?? RockApp.Current.CreateRockContext();
 
             return Reflection.GetServiceForEntityType( typeof(TEntity), dataContext );
         }

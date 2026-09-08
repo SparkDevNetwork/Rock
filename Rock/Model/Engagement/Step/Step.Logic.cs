@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 
@@ -60,7 +61,7 @@ namespace Rock.Model
             {
                 if ( rockContext == null )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 var personAlias = new PersonAliasService( rockContext ).Get( this.PersonAliasId );
@@ -73,7 +74,7 @@ namespace Rock.Model
             {
                 if ( rockContext == null )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 stepType = new StepTypeService( rockContext ).Get( this.StepTypeId );
@@ -178,7 +179,7 @@ namespace Rock.Model
                 }
 
                 // now check if they are auth'd to EDIT or MANAGE_STEPS on this Step's Step Type
-                var stepType = this.StepType ?? new StepTypeService( new RockContext() ).Get( this.StepTypeId );
+                var stepType = this.StepType ?? new StepTypeService( RockApp.Current.CreateRockContext() ).Get( this.StepTypeId );
 
                 if ( stepType != null )
                 {

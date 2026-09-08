@@ -21,6 +21,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -343,7 +344,7 @@ findme-interactiontest3
 
         private Interaction GetInteractionBySummary( string summary )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionService = new InteractionService( rockContext );
             var interactions = interactionService
                 .Queryable()

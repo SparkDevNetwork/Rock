@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -50,7 +51,7 @@ namespace Rock.Field.Types
                 return privateValue;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendance = GetAttendanceForDisplay( guid.Value, rockContext );
 
@@ -107,7 +108,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new AttendanceService( rockContext ).Get( guid.Value );
             }
 
@@ -137,7 +138,7 @@ namespace Rock.Field.Types
             if ( attendanceId.HasValue )
             {
                 // if an Id was specified instead of a Guid, get the Guid instead
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     return new AttendanceService( rockContext ).GetGuid( attendanceId.Value );
                 }
@@ -176,7 +177,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var attendance = GetAttendanceForDisplay( guid.Value, rockContext );
 
@@ -218,7 +219,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendance = new AttendanceService( rockContext )
                     .Queryable()
@@ -363,7 +364,7 @@ namespace Rock.Field.Types
                 if ( attendanceId.HasValue )
                 {
                     // if an Id was specified instead of a Guid, get the Guid instead
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         attendanceGuid = new AttendanceService( rockContext ).GetGuid( attendanceId.Value );
                     }
@@ -402,7 +403,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            return new AttendanceService( new RockContext() ).GetId( guid );
+            return new AttendanceService( RockApp.Current.CreateRockContext() ).GetId( guid );
         }
 
         /// <summary>
@@ -413,7 +414,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var itemGuid = new AttendanceService( new RockContext() ).GetGuid( id ?? 0 );
+            var itemGuid = new AttendanceService( RockApp.Current.CreateRockContext() ).GetGuid( id ?? 0 );
             SetEditValue( control, configurationValues, itemGuid.ToString() );
         }
 

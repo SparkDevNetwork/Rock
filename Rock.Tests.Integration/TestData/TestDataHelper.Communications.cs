@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -39,7 +40,7 @@ namespace Rock.Tests.Integration.TestData
             {
                 Group listGroup = null;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 rockContext.WrapTransaction( () =>
                 {
                     var groupService = new GroupService( rockContext );
@@ -92,7 +93,7 @@ namespace Rock.Tests.Integration.TestData
 
             public static bool DeleteCommunicationList( string communicationListIdentifier )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var groupService = new GroupService( rockContext );
 
                 var listGroup = groupService.Get( communicationListIdentifier );
@@ -118,7 +119,7 @@ namespace Rock.Tests.Integration.TestData
 
             public static int AddPeopleToCommunicationList( CommunicationListAddPeopleArgs args )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 var groupService = new GroupService( rockContext );
                 var listGroup = groupService.Get( args.CommunicationListGroupIdentifier );

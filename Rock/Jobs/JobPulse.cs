@@ -22,6 +22,7 @@ using Quartz.Impl.Matchers;
 using Quartz;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -89,7 +90,7 @@ namespace Rock.Jobs
             int jobsDeleted = 0;
             int jobsScheduleUpdated = 0;
 
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
             List<ServiceJob> activeJobList = jobService.GetActiveJobs().ToList();
             var scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );

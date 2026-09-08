@@ -24,6 +24,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.RealTime.Topics;
@@ -708,7 +709,7 @@ namespace Rock.Blocks.Group
         /// </returns>
         private bool HasValidChildGroups( int parentGroupId, int groupTypeId, out string errorMessage )
         {
-            var childPlacementGroups = new GroupService( new RockContext() ).Queryable().Where( a => a.ParentGroupId == parentGroupId && a.IsActive == true ).ToList();
+            var childPlacementGroups = new GroupService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.ParentGroupId == parentGroupId && a.IsActive == true ).ToList();
             if ( childPlacementGroups.Count() == 0 )
             {
                 errorMessage = "The selected parent group does not have any active child groups.";

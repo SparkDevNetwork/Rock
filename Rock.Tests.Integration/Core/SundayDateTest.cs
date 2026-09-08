@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -41,7 +42,7 @@ namespace Rock.Tests.Integration.Core
             attendanceOccurrence = new AttendanceOccurrence() { OccurrenceDate = new DateTime( 2019, 9, 19 ) };
             Assert.IsTrue( attendanceOccurrence.SundayDate == new DateTime( 2019, 9, 19 ).SundayDate() );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var sql = $@"SELECT dbo.ufnUtility_GetSundayDate('{new DateTime( 2019, 8, 23 )}')";
 
@@ -81,7 +82,7 @@ namespace Rock.Tests.Integration.Core
             Assert.IsTrue( new DateTime( 2019, 10, 22 ).SundayDate() != sundayDate20191020, "Incorrect Sunday Date" );
             Assert.IsTrue( new DateTime( 2019, 10, 22 ).SundayDate() == sundayDate20191027, "Incorrect Sunday Date" );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             Assert.IsTrue( rockContext.Database.SqlQuery<DateTime>( $@"SELECT dbo.ufnUtility_GetSundayDate('2019-10-1')" ).FirstOrDefault() == sundayDate20191006, "Incorrect Sunday Date" );
             Assert.IsTrue( rockContext.Database.SqlQuery<DateTime>( $@"SELECT dbo.ufnUtility_GetSundayDate('2019-10-5')" ).FirstOrDefault() == sundayDate20191006, "Incorrect Sunday Date" );
@@ -120,7 +121,7 @@ namespace Rock.Tests.Integration.Core
             Assert.IsTrue( new DateTime( 2019, 10, 25 ).SundayDate() == sundayDate20191020, "Incorrect Sunday Date" );
             Assert.IsTrue( new DateTime( 2019, 10, 28 ).SundayDate() == sundayDate20191027, "Incorrect Sunday Date" );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             Assert.IsTrue( rockContext.Database.SqlQuery<DateTime>( $@"SELECT dbo.ufnUtility_GetSundayDate('2019-10-6')" ).FirstOrDefault() == sundayDate20191006, "Incorrect Sunday Date" );
             Assert.IsTrue( rockContext.Database.SqlQuery<DateTime>( $@"SELECT dbo.ufnUtility_GetSundayDate('2019-10-8')" ).FirstOrDefault() == sundayDate20191006, "Incorrect Sunday Date" );

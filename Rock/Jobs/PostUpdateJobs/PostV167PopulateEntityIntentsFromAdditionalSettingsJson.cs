@@ -21,6 +21,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -48,7 +49,7 @@ namespace Rock.Jobs
         /// <inheritdoc />
         public override void Execute()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the configured timeout, or default to 240 minutes if it is blank.
                 rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400 );
@@ -105,7 +106,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

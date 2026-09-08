@@ -92,7 +92,7 @@ namespace Rock.Model
                 // so if there's no category we can skip any additional checks.
                 if ( categoryId > 0 )
                 {
-                    using ( var aiAutomationRockContext = new RockContext() )
+                    using ( var aiAutomationRockContext = RockApp.Current.CreateRockContext() )
                     {
                         var aiConfig = PrayerRequestService.GetAutomationConfiguration( categoryId, aiAutomationRockContext );
 

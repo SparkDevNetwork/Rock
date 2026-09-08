@@ -24,6 +24,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -141,7 +142,7 @@ namespace Rock.Field.Types
             Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = new DataViewService( rockContext );
                     var dataview = service.GetNoTracking( guid.Value );
@@ -185,7 +186,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new DataViewService( rockContext ).Get( guid.Value );
             }
 
@@ -206,7 +207,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dataViewId = new DataViewService( rockContext ).GetId( guid.Value );
 
@@ -273,7 +274,7 @@ namespace Rock.Field.Types
 
             var etp = new EntityTypePicker();
             controls.Add( etp );
-            etp.EntityTypes = new EntityTypeService( new RockContext() )
+            etp.EntityTypes = new EntityTypeService( RockApp.Current.CreateRockContext() )
                 .GetEntities()
                 .OrderBy( t => t.FriendlyName )
                 .ToList();
@@ -391,7 +392,7 @@ namespace Rock.Field.Types
                 int? id = picker.SelectedValue.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var dataview = new DataViewService( rockContext ).GetNoTracking( id.Value );
 
@@ -424,7 +425,7 @@ namespace Rock.Field.Types
                 Guid guid = value.AsGuid();
 
                 // get the item (or null) and set it
-                var dataview = new DataViewService( new RockContext() ).Get( guid );
+                var dataview = new DataViewService( RockApp.Current.CreateRockContext() ).Get( guid );
                 picker.SetValue( dataview );
             }
         }
@@ -438,7 +439,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new DataViewService( new RockContext() ).Get( guid );
+            var item = new DataViewService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -450,7 +451,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new DataViewService( new RockContext() ).Get( id ?? 0 );
+            var item = new DataViewService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

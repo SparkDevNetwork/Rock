@@ -30,6 +30,7 @@ using Rock.Utility;
 using Rock.Web.Cache;
 
 using Microsoft.Extensions.Logging;
+using Rock.Configuration;
 using Rock.ViewModels.Event.RegistrationEntry;
 using Z.EntityFramework.Plus;
 using Rock.ViewModels.Utility;
@@ -388,7 +389,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -458,7 +459,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

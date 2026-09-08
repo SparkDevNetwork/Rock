@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -93,7 +94,7 @@ namespace Rock.Field.Types
                 Guid? binaryFileGuid = null;
                 if ( binaryFileId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
@@ -120,7 +121,7 @@ namespace Rock.Field.Types
                 Guid? binaryFileGuid = value.AsGuidOrNull();
                 if ( binaryFileGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == binaryFileGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }

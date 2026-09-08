@@ -22,6 +22,7 @@ using System.Data.Entity.SqlServer;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -39,7 +40,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Group> GetFamilies( this Person person, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             return new PersonService( rockContext ).GetFamilies( person != null ? person.Id : 0 );
         }
 
@@ -326,7 +327,7 @@ namespace Rock.Model
         /// </returns>
         public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false, RockContext rockContext = null )
         {
-            return new PersonService( rockContext ?? new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
+            return new PersonService( rockContext ?? RockApp.Current.CreateRockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
         }
 
         /// <summary>
@@ -339,7 +340,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<GroupMember> GetGroupMembers( this Person person, int groupTypeId, bool includeSelf = false, RockContext rockContext = null )
         {
-            return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
+            return new PersonService( rockContext ?? RockApp.Current.CreateRockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
         }
 
         /// <summary>
@@ -350,7 +351,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IOrderedQueryable<PersonPreviousName> GetPreviousNames( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( rockContext ?? new RockContext() ).GetPreviousNames( person != null ? person.Id : 0 );
+            return new PersonService( rockContext ?? RockApp.Current.CreateRockContext() ).GetPreviousNames( person != null ? person.Id : 0 );
         }
 
         /// <summary>
@@ -385,7 +386,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<PersonSearchKey> GetPersonSearchKeys( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( rockContext ?? new RockContext() ).GetPersonSearchKeys( person != null ? person.Id : 0 );
+            return new PersonService( rockContext ?? RockApp.Current.CreateRockContext() ).GetPersonSearchKeys( person != null ? person.Id : 0 );
         }
 
         /// <summary>
@@ -398,7 +399,7 @@ namespace Rock.Model
         /// </returns>
         public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
+            return new PersonService( rockContext ?? RockApp.Current.CreateRockContext() ).GetSpouse( person );
         }
 
         /// <summary>
@@ -431,7 +432,7 @@ namespace Rock.Model
         /// </returns>
         public static Person GetHeadOfHousehold( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( rockContext ?? new RockContext() ).GetHeadOfHousehold( person );
+            return new PersonService( rockContext ?? RockApp.Current.CreateRockContext() ).GetHeadOfHousehold( person );
         }
 
         /// <summary>
@@ -444,7 +445,7 @@ namespace Rock.Model
         {
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             return new PersonService( rockContext ).GetFamilyRole( person, rockContext );
@@ -462,7 +463,7 @@ namespace Rock.Model
         /// </returns>
         public static TResult GetSpouse<TResult>( this Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector, RockContext rockContext = null )
         {
-            return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person, selector );
+            return new PersonService( rockContext ?? RockApp.Current.CreateRockContext() ).GetSpouse( person, selector );
         }
 
         /// <summary>
@@ -473,7 +474,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Person> GetBusinesses( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( rockContext ?? new RockContext() ).GetBusinesses( person.Id );
+            return new PersonService( rockContext ?? RockApp.Current.CreateRockContext() ).GetBusinesses( person.Id );
         }
 
         /// <summary>

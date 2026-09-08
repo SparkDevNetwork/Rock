@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
@@ -99,7 +100,7 @@ namespace Rock.RealTime.Topics
 
             JoinExperienceResponseBag response = new JoinExperienceResponseBag();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var actionService = new InteractiveExperienceActionService( rockContext );
                 var occurrence = new InteractiveExperienceOccurrenceService( rockContext )
@@ -384,7 +385,7 @@ namespace Rock.RealTime.Topics
 
             var occurrenceId = IdHasher.Instance.GetId( occurrenceIdKey );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var count = new InteractiveExperienceOccurrenceService( rockContext )
                     .GetRecentParticipantCount( occurrenceId.Value );

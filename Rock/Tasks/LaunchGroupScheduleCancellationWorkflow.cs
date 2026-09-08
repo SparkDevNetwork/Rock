@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -33,7 +34,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             var attendanceInfo = attendanceService.GetSelect(
                 message.AttendanceId,

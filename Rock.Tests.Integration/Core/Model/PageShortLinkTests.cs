@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Cms;
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData.Cms;
@@ -192,7 +193,7 @@ namespace Rock.Tests.Integration.Core.Model
             // Execute then transaction immediately, and retrieve the result.
             pageViewTransaction.Execute();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionService = new InteractionService( rockContext );
             var interaction = interactionService.Queryable()
                 .OrderByDescending( i => i.Id )
@@ -415,7 +416,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void InitializeUtmTestData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add UTM Campaigns
             var utmCampaignDefinedTypeId = DefinedTypeCache.GetId( SystemGuid.DefinedType.UTM_CAMPAIGN.AsGuid() ) ?? 0;

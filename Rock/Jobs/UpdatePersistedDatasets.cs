@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Logging;
@@ -68,7 +69,7 @@ namespace Rock.Jobs
 
                  Reason: Prevent excessive memory usage by deferring loading of large dataset objects.
             */
-            var persistedDatasetQuery = new PersistedDatasetService( new RockContext() )
+            var persistedDatasetQuery = new PersistedDatasetService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .AsNoTracking()
                 .Where(
@@ -101,7 +102,7 @@ namespace Rock.Jobs
                     // Apply schedule-based logic only if the dataset is associated with a schedule
                     if ( dataset.PersistedScheduleId.HasValue )
                     {
-                        var schedule = new ScheduleService( new RockContext() ).Get( dataset.PersistedScheduleId.Value );
+                        var schedule = new ScheduleService( RockApp.Current.CreateRockContext() ).Get( dataset.PersistedScheduleId.Value );
                         var beginDateTime = dataset.LastRefreshDateTime ?? schedule.GetFirstStartDateTime();
                         if ( !beginDateTime.HasValue )
                         {
@@ -119,7 +120,7 @@ namespace Rock.Jobs
 
             foreach ( var untrackedPersistedDataset in datasetsToBeUpdated )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Get the full persisted dataset object to update
                     var persistedDatasetService = new PersistedDatasetService( rockContext );

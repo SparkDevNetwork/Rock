@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using System.Text;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -40,7 +41,7 @@ namespace Rock.Tasks
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var confirmationData = new GroupLocationService( rockContext )
                     .Queryable()

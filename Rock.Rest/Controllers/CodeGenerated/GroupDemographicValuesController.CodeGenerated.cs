@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupDemographicValuesController"/> class.
         /// </summary>
-        public GroupDemographicValuesController() : base( new Rock.Model.GroupDemographicValueService( new Rock.Data.RockContext() ) ) { } 
+        public GroupDemographicValuesController() : base( new Rock.Model.GroupDemographicValueService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

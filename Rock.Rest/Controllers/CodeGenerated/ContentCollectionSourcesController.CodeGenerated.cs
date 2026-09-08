@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentCollectionSourcesController"/> class.
         /// </summary>
-        public ContentCollectionSourcesController() : base( new Rock.Model.ContentCollectionSourceService( new Rock.Data.RockContext() ) ) { } 
+        public ContentCollectionSourcesController() : base( new Rock.Model.ContentCollectionSourceService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

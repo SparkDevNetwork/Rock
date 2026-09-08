@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -352,7 +353,7 @@ namespace Rock.Utility
                             var qualifierGroupTypeId = attributeCache.EntityTypeQualifierValue.AsInteger();
 
                             List<int> inheritedGroupTypeIds = null;
-                            using (var groupTypeRockContext = new RockContext() )
+                            using (var groupTypeRockContext = RockApp.Current.CreateRockContext() )
                             {
                                 var groupType = new GroupTypeService( groupTypeRockContext ).Get( qualifierGroupTypeId );
                                 inheritedGroupTypeIds = groupType.GetAllDependentGroupTypeIds( groupTypeRockContext );

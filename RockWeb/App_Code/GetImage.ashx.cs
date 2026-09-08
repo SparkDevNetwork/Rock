@@ -25,6 +25,7 @@ using System.Threading;
 using System.Web;
 using ImageResizer;
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -55,7 +56,7 @@ namespace RockWeb
 
                 if ( isBinaryFile )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         ProcessBinaryFileRequest( context, rockContext );
                     }

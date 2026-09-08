@@ -31,6 +31,7 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using Regex = System.Text.RegularExpressions.Regex;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {
@@ -439,7 +440,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributes = AttributeFiltersGuids.Select( a => AttributeCache.Get( a ) )
                     .Where( a => a != null )
@@ -872,7 +873,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetInitialData()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var showResults = ShouldShowInitialResults();
                 var validLocations = GetValidNamedLocations( rockContext );
@@ -901,7 +902,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetGroups( GroupFinderFilter filter )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return ActionOk( new GetGroupsResult
                 {

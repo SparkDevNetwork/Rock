@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -138,7 +139,7 @@ namespace Rock.Field.Types
         {
             bool includeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
 
-            return new AssessmentTypeService( new RockContext() )
+            return new AssessmentTypeService( RockApp.Current.CreateRockContext() )
                 .Queryable().AsNoTracking()
                 .OrderBy( t => t.Title )
                 .Where( t => t.IsActive || includeInactive )
@@ -162,7 +163,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var valueGuidList = privateValue.SplitDelimitedValues().AsGuidList();
 

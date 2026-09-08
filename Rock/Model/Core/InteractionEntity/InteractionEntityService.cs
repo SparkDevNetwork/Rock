@@ -22,6 +22,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -45,7 +46,7 @@ namespace Rock.Model
             int itemsProcessed = 0;
             int itemsUpdated = 0;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( commandTimeout.HasValue )
                 {
@@ -118,7 +119,7 @@ namespace Rock.Model
                     items = items.Skip( 250 ).ToList();
 
                     // Create all the records in this batch.
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var dbSet = rockContext.Set<InteractionEntity>();
 

@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Model;
@@ -261,7 +262,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetAuditDetails( string idKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var auditId = new AuditService( rockContext ).Get( idKey )?.Id;
 

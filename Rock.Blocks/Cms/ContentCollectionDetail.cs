@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Cms.ContentCollection;
 using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -76,7 +77,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<ContentCollectionBag, ContentCollectionDetailOptionsBag>();
 
@@ -346,7 +347,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -772,7 +773,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -798,7 +799,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<ContentCollectionBag, ContentCollectionDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ContentCollectionService( rockContext );
 
@@ -851,7 +852,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ContentCollectionService( rockContext );
 
@@ -881,7 +882,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<ContentCollectionBag, ContentCollectionDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -934,7 +935,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetAvailableContentChannels()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannels = new ContentChannelService( rockContext )
                     .Queryable()
@@ -979,7 +980,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetAvailableEventCalendars()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventCalendars = new EventCalendarService( rockContext )
                     .Queryable()
@@ -1025,7 +1026,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public async Task<BlockActionResult> SaveCollectionSource( string key, ContentSourceBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentCollectionService = new ContentCollectionService( rockContext );
 
@@ -1137,7 +1138,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult DeleteCollectionSource( string key, Guid sourceGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentCollectionService = new ContentCollectionService( rockContext );
                 var contentCollectionSourceService = new ContentCollectionSourceService( rockContext );
@@ -1183,7 +1184,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ReorderSource( string key, Guid guid, Guid? beforeGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentCollectionService = new ContentCollectionService( rockContext );
 
@@ -1218,7 +1219,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult SaveFilterSettings( string key, DetailBlockBox<FilterSettingsBag, ContentCollectionDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentCollectionService = new ContentCollectionService( rockContext );
 
@@ -1398,7 +1399,7 @@ namespace Rock.Blocks.Cms
         {
             int contentCollectionId;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentCollectionService = new ContentCollectionService( rockContext );
 
@@ -1466,7 +1467,7 @@ namespace Rock.Blocks.Cms
                 }
 
                 // Update the last index values.
-                using ( var rockContext2 = new RockContext() )
+                using ( var rockContext2 = RockApp.Current.CreateRockContext() )
                 {
                     var updateContentCollection = new ContentCollectionService( rockContext2 ).Get( contentCollectionId );
 

@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -153,7 +154,7 @@ namespace RockWeb.Blocks.Finance
         {
             var numberOfYears = GetAttributeValue( "MaxYearsToDisplay" ).AsInteger();
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
 

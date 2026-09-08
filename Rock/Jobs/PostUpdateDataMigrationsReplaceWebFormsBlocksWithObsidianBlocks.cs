@@ -25,6 +25,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -187,7 +188,7 @@ namespace Rock.Jobs
             if ( ErrorMessage.Any() )
             {
                 // If there were errors, fail the job and make it non-system so that the admins may choose to run it again or delete it based on their discretion
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
                 var serviceJob = ( new ServiceJobService( rockContext ) ).Get( this.ServiceJobId );
                 serviceJob.IsSystem = false;
                 rockContext.SaveChanges();
@@ -219,7 +220,7 @@ namespace Rock.Jobs
 
             foreach ( var blockTypeGuidPair in BlockTypeGuidReplacementPairs )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Check if the blockTypeGuidPair.Key exists in our AttributeFixes dictionary
                     var oldBlockTypeGuid = blockTypeGuidPair.Key;
@@ -552,7 +553,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

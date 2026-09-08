@@ -21,6 +21,7 @@ using System.Net.Mail;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.Communications.Transport;
@@ -125,7 +126,7 @@ namespace Rock.Tests.Integration.Communications
                 RecipientStatus = CommunicationRecipientStatus.Pending
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var communicationService = new CommunicationService( rockContext );
             var communication = communicationService.CreateEmailCommunication( createEmailArgs );
 

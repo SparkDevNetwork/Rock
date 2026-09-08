@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -71,7 +72,7 @@ namespace Rock.Workflow.Action
             Rock.Model.Workflow workflow = null;
 
             // Use new context so only changes made to the activity by this action are persisted
-            using ( var newRockContext = new RockContext() )
+            using ( var newRockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( reference.AsGuidOrNull() != null )
                 {

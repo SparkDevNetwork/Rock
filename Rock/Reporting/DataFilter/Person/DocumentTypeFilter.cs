@@ -33,6 +33,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -179,7 +180,7 @@ function() {
 
             if ( selectionConfig != null )
             {
-                var documentTypeService = new DocumentTypeService( new RockContext() ).Get( selectionConfig.DocumentTypeId );
+                var documentTypeService = new DocumentTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.DocumentTypeId );
 
                 if ( documentTypeService != null )
                 {
@@ -214,7 +215,7 @@ function() {
             ddlDocumentType.EnhanceForLongLists = true;
             filterControl.Controls.Add( ddlDocumentType );
 
-            var documentTypeService = new DocumentTypeService( new RockContext() );
+            var documentTypeService = new DocumentTypeService( RockApp.Current.CreateRockContext() );
             var documentTypes = documentTypeService.Queryable().AsNoTracking()
                 .OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
                 {
@@ -284,7 +285,7 @@ function() {
         {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
-            var documentType = new DocumentTypeService( new RockContext() ).Get( selectionConfig.DocumentTypeId );
+            var documentType = new DocumentTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.DocumentTypeId );
             var ddlDocumentType = controls[0] as RockDropDownList;
             var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
             if ( documentType != null )

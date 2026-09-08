@@ -1156,7 +1156,7 @@ Guid - ContentChannelItem Guid";
 
                 Reason: Prevent ObjectDisposedException on cached items during Lava rendering.
             */
-            var itemRockContext = new RockContext();
+            var itemRockContext = RockApp.Current.CreateRockContext();
             var query = new ContentChannelItemService( itemRockContext )
                 .Queryable()
                 .Include( c => c.ContentChannel );

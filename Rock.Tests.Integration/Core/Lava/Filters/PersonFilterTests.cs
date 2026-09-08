@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -208,7 +209,7 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
             campusManager.AddCampusTestDataSet();
 
             // Add a new Person with no Location.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var testPersonGuidString = "0875D029-FE06-409F-A7D0-CEDBE18D454F";
@@ -449,7 +450,7 @@ Your token is: <token>
         }
         private void SetPersonAccountProtectionProfile( String guid, AccountProtectionProfile profile )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var person = personService.Get( guid.AsGuid() );
@@ -461,7 +462,7 @@ Your token is: <token>
         [TestMethod]
         public void PersonByPersonActionIdentifier_WithValidIdentifier_ReturnsPerson()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var person = new PersonService( rockContext ).Queryable().First( x => x.Guid.ToString() == TestGuids.TestPeople.BillMarble );
             var action = "photo-opt-out";
@@ -523,7 +524,7 @@ Current Person Guid = {{ person.Guid }}
                 "Ted Decker:<p>Attender - Completed</p><p>Volunteer - Started</p>" );
 
             // Test with Step Program Id.
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var stepProgramId = new StepProgramService( dataContext ).GetId( TestGuids.Steps.ProgramAlphaGuid );
 
@@ -546,7 +547,7 @@ Current Person Guid = {{ person.Guid }}
                 "Ted Decker: <p>Baptism - Success</p>" );
 
             // Test with Step Type Id.
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var stepTypeId = new StepTypeService( dataContext ).GetId( TestGuids.Steps.StepTypeBaptismGuid );
 
@@ -607,7 +608,7 @@ Current Person Guid = {{ person.Guid }}
         public void IsInSecurityRole_WithGroupTypeSecurityRole_ReturnsTrue()
         {
             Guid financeAdministrationGroupGuid = Guid.Parse( "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559" );
-            var group = new GroupService( new RockContext() ).Queryable().FirstOrDefault( m => m.Guid == financeAdministrationGroupGuid );
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Queryable().FirstOrDefault( m => m.Guid == financeAdministrationGroupGuid );
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlishaMarble.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
@@ -630,7 +631,7 @@ User is in Role = {{ isInRole }}
         public void IsInSecurityRole_WithGroupDesignatedAsSecurityRole_ReturnsTrue()
         {
             // Create a new Group with [Security Role] = true.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var addGroupArgs = new TestDataHelper.Crm.AddGroupArgs
             {
                 ReplaceIfExists = true,
@@ -675,7 +676,7 @@ User is in Role = {{ isInRole }}
         public void IsInSecurityRole_WithNonSecurityGroupId_ReturnsFalse()
         {
             Guid relationShipsGroupGuid = Guid.Parse( "0F16BD3F-4775-4CD1-8F2F-DF576AEAD290" );
-            var group = new GroupService( new RockContext() ).Queryable().FirstOrDefault( m => m.Guid == relationShipsGroupGuid );
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Queryable().FirstOrDefault( m => m.Guid == relationShipsGroupGuid );
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
@@ -710,7 +711,7 @@ User is in Role = {{ isInRole }}
 
         private LavaDataDictionary AddTestPersonToMergeDictionary( Guid personGuid, LavaDataDictionary dictionary = null, string mergeKey = "CurrentPerson" )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var tedDeckerPerson = new PersonService( rockContext ).Queryable().First( x => x.Guid == personGuid );
 

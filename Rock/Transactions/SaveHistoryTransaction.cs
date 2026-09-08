@@ -18,6 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -62,7 +63,7 @@ namespace Rock.Transactions
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.BulkInsert( historyRecordsToInsert );
             }

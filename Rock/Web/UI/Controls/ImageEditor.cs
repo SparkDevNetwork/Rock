@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -718,7 +719,7 @@ namespace Rock.Web.UI.Controls
         {
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 BinaryFileService binaryFileService = new BinaryFileService( rockContext );
 
                 // load image from database
@@ -866,7 +867,7 @@ namespace Rock.Web.UI.Controls
 
             _nbImageWarning.Visible = false;
             _nbErrorMessage.Visible = false;
-            var binaryFile = new BinaryFileService( new RockContext() ).Get( CropBinaryFileId ?? 0 );
+            var binaryFile = new BinaryFileService( RockApp.Current.CreateRockContext() ).Get( CropBinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
                 _imgCropSource.ImageUrl = ( ( RockPage ) Page ).ResolveRockUrl( "~/GetImage.ashx?guid=" + binaryFile.Guid.ToString() );

@@ -17,6 +17,7 @@
 
 using System.Data.Entity;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Web.Cache;
@@ -70,7 +71,7 @@ namespace Rock.Model
 
             // Get event items for this calendar that are ONLY on this calendar.
             // We don't want to delete items that are also on another calendar.
-            var eventItems = new EventItemService( new RockContext() )
+            var eventItems = new EventItemService( RockApp.Current.CreateRockContext() )
                                     .GetActiveItemsByCalendarId( calendarId )
                                     .Where( i => i.EventCalendarItems.Count() == 1 )
                                     .Select( a => a.Id ).ToList();
@@ -103,7 +104,7 @@ namespace Rock.Model
                 return;
             }
 
-            var eventItems = new EventItemService( new RockContext() )
+            var eventItems = new EventItemService( RockApp.Current.CreateRockContext() )
                                     .GetActiveItemsByCalendarId( calendarId )
                                     .Select( a => a.Id ).ToList();
 

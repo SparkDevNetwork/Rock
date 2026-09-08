@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="InteractiveExperienceAnswersController"/> class.
         /// </summary>
-        public InteractiveExperienceAnswersController() : base( new Rock.Model.InteractiveExperienceAnswerService( new Rock.Data.RockContext() ) ) { } 
+        public InteractiveExperienceAnswersController() : base( new Rock.Model.InteractiveExperienceAnswerService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

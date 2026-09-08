@@ -4556,7 +4556,7 @@ namespace Rock.Lava
         /// <returns>A <see cref="BinaryFile"/> instance or <c>null</c> if an error occurred.</returns>
         public static BinaryFile UploadBinaryFile( object input, string binaryFileTypeId, string filename, string mimeType = null, string format = null, bool isTemporary = false, string binaryFileId = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFileType = BinaryFileTypeCache.Get( binaryFileTypeId, true );
@@ -5447,7 +5447,7 @@ namespace Rock.Lava
                 }
             }
 
-            using ( var rockContext = new RockContext() ) // Can't use LavaHelper.GetRockContextFromLavaContext( context) since it's wrapped in a using
+            using ( var rockContext = RockApp.Current.CreateRockContext() ) // Can't use LavaHelper.GetRockContextFromLavaContext( context) since it's wrapped in a using
             {
                 int followingEntityTypeId = entity.TypeId;
                 var followedQry = new FollowingService( rockContext ).Queryable()

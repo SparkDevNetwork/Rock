@@ -21,6 +21,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Data;
 using Rock.Rest.Filters;
@@ -84,7 +85,7 @@ namespace Rock.Rest.v2
         [SystemGuid.RestActionGuid( "2c6194af-095a-42fa-9288-27e8b3494231" )]
         public async Task<IActionResult> PostMcp( string slug, CancellationToken cancellationToken )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var agentCache = AIAgentCache.All()
                     .FirstOrDefault( a => a.AgentType == AgentType.Mcp
@@ -149,7 +150,7 @@ namespace Rock.Rest.v2
         [SystemGuid.RestActionGuid( "bfc72a48-ec2d-4ba9-9b1e-87ea48b63f9d" )]
         public async Task<IActionResult> PostPublicMcp( string slug, CancellationToken cancellationToken )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var agentCache = AIAgentCache.All()
                     .FirstOrDefault( a => a.AgentType == AgentType.Mcp

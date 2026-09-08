@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -283,7 +284,7 @@ namespace Rock.Reporting.DataSelect.Person
             var groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = parentControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
             parentControl.Controls.Add( groupTypePicker );
@@ -340,7 +341,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( groupType != null )
             {
                 cblRole.Items.Clear();
-                foreach ( var item in new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupType.Id ) )
+                foreach ( var item in new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).GetByGroupTypeId( groupType.Id ) )
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
@@ -401,7 +402,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( selectionValues.Length >= 2 )
             {
                 Guid groupTypeGuid = selectionValues[0].AsGuid();
-                var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid );
+                var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( groupTypeGuid );
                 var groupTypePicker = ( controls[0] as GroupTypePicker );
                 groupTypePicker.SetValue( groupType != null ? groupType.Id : ( int? ) null );
 

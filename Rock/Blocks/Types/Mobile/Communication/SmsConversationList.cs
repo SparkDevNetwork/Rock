@@ -22,6 +22,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication;
 using Rock.Model;
@@ -223,7 +224,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 

@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -231,7 +232,7 @@ namespace RockWeb
             }
 
             // get channel items
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
 
             var content = contentService.Queryable().AsNoTracking().Where( c =>

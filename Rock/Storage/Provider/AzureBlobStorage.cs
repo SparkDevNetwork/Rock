@@ -16,6 +16,7 @@
 //
 using Azure.Storage.Blobs;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.Common;
@@ -225,7 +226,7 @@ namespace Rock.Storage.Provider
             var binaryFileType = binaryFile.BinaryFileType;
             if ( binaryFileType == null && binaryFile.BinaryFileTypeId.HasValue )
             {
-                binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFile.BinaryFileTypeId.Value );
+                binaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( binaryFile.BinaryFileTypeId.Value );
             }
             if ( binaryFileType == null )
             {

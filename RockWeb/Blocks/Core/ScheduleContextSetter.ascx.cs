@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -169,7 +170,7 @@ namespace RockWeb.Blocks.Core
                 var selectedSchedule = GetAttributeValue( AttributeKey.ScheduleGroup );
                 var selectedScheduleList = selectedSchedule.Split( ',' ).AsGuidList();
 
-                schedules.AddRange( new ScheduleService( new RockContext() ).Queryable()
+                schedules.AddRange( new ScheduleService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( a => selectedScheduleList.Contains( a.Guid ) )
                     .Select( a => new ScheduleItem { Name = a.Name, Id = a.Id } )
                     .OrderBy( s => s.Name )
@@ -212,7 +213,7 @@ namespace RockWeb.Blocks.Core
         protected Schedule SetScheduleContext( int scheduleId, bool refreshPage = false )
         {
             bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
-            var schedule = new ScheduleService( new RockContext() ).Get( scheduleId );
+            var schedule = new ScheduleService( RockApp.Current.CreateRockContext() ).Get( scheduleId );
             if ( schedule == null )
             {
                 // clear the current schedule context

@@ -20,6 +20,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.RealTime.Topics;
 using Rock.RealTime;
@@ -123,7 +124,7 @@ namespace Rock.Model
             {
                 // If occurrence does not yet exist, create it
                 // A new context is used so the occurrence can be saved and used on multiple new attendance records that will be saved at once.
-                using ( var newContext = new RockContext() )
+                using ( var newContext = RockApp.Current.CreateRockContext() )
                 {
                     occurrence = new AttendanceOccurrence
                     {
@@ -679,7 +680,7 @@ namespace Rock.Model
         {
             var guids = attendanceOccurrenceGuids.ToList();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
 

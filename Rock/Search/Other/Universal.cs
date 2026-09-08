@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Net;
 using Rock.UniversalSearch;
@@ -137,7 +138,7 @@ namespace Rock.Search.Other
                 return Enumerable.Empty<string>().AsQueryable();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var results = GetSearchResults( searchterm )
                     .Where( r => r.IsViewAllowed( RockRequestContextAccessor.Current?.CurrentPerson, rockContext ) );

@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -72,7 +73,7 @@ namespace RockWeb.Blocks.Core
 
             int definedTypeId = InitForDefinedType();
 
-            _definedType = new DefinedTypeService( new RockContext() ).Get( definedTypeId );
+            _definedType = new DefinedTypeService( RockApp.Current.CreateRockContext() ).Get( definedTypeId );
 
             if ( _definedType != null )
             {
@@ -216,7 +217,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedValues_Delete( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var definedValueService = new DefinedValueService( rockContext );
 
             DefinedValue value = definedValueService.Get( e.RowKeyId );
@@ -245,7 +246,7 @@ namespace RockWeb.Blocks.Core
         protected void btnSaveValue_Click( object sender, EventArgs e )
         {
             DefinedValue definedValue;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
 
             int definedValueId = hfDefinedValueId.ValueAsInt();
@@ -339,7 +340,7 @@ namespace RockWeb.Blocks.Core
         {
             int definedTypeId = hfDefinedTypeId.ValueAsInt();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var definedValueService = new DefinedValueService( rockContext );
             var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
             var changedIds = definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex );
@@ -363,7 +364,7 @@ namespace RockWeb.Blocks.Core
                 // Add attribute columns
                 int entityTypeId = new DefinedValue().TypeId;
                 string qualifier = _definedType.Id.ToString();
-                foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                foreach ( var attribute in new AttributeService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
@@ -408,7 +409,7 @@ namespace RockWeb.Blocks.Core
                     categoryColumn.Visible = _definedType.CategorizedValuesEnabled.GetValueOrDefault( false );
                 }
 
-                var queryable = new DefinedValueService( new RockContext() ).Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order );
+                var queryable = new DefinedValueService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order );
                 var result = queryable.ToList();
 
                 gDefinedValues.DataSource = result;
@@ -434,7 +435,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !valueId.Equals( 0 ) )
             {
-                definedValue = new DefinedValueService( new RockContext() ).Get( valueId );
+                definedValue = new DefinedValueService( RockApp.Current.CreateRockContext() ).Get( valueId );
                 if ( definedType != null )
                 {
                     lActionTitleDefinedValue.Text = ActionTitle.Edit( "defined value for " + definedType.Name );

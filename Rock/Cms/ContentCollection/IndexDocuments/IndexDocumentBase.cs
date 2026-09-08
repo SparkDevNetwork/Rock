@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Cms.ContentCollection.Search;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Lava;
@@ -508,7 +509,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personalizationItems = rockContext.Set<PersonalizedEntity>()
                     .AsNoTracking()

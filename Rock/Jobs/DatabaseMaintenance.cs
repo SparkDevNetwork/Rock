@@ -301,7 +301,7 @@ namespace Rock.Jobs
         /// <returns></returns>
         private bool IntegrityCheck( int commandTimeout, string alertEmail)
         {
-            string databaseName = new RockContext().Database.Connection.Database;
+            string databaseName = RockApp.Current.CreateRockContext().Database.Connection.Database;
             string integrityQuery = $"DBCC CHECKDB('{ databaseName }',NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS";
             bool checkPassed = true;
 

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="FlexibleDocumentsController"/> class.
         /// </summary>
-        public FlexibleDocumentsController() : base( new Rock.Model.FlexibleDocumentService( new Rock.Data.RockContext() ) ) { } 
+        public FlexibleDocumentsController() : base( new Rock.Model.FlexibleDocumentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

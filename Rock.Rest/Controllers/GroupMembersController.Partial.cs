@@ -21,6 +21,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.OData;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -42,7 +43,7 @@ namespace Rock.Rest.Controllers
 
             if ( includeDeceased.AsBoolean( false ) )
             {
-                var rockContext = new Rock.Data.RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 return new GroupMemberService( rockContext ).Queryable( true );
             }
             else
@@ -62,7 +63,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "6E5F85FB-5D43-4C3A-96C0-0D94D347A6FE" )]
         public IEnumerable<GroupPlacementGroupMember> GetGroupPlacementGroupMembers( [FromBody] GetGroupPlacementGroupMembersParameters options )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupMemberService = new GroupMemberService( rockContext );
             return groupMemberService.GetGroupPlacementGroupMembers( options, this.GetPerson() );
         }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -116,7 +117,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Get( int.Parse( ItemId ) );
+            var registrationTemplate = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).Get( int.Parse( ItemId ) );
             SetValue( registrationTemplate );
         }
 
@@ -125,7 +126,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var registrationTemplates = new RegistrationTemplateService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
+            var registrationTemplates = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
             this.SetValues( registrationTemplates );
         }
 

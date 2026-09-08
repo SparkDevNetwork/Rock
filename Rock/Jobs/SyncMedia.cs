@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
@@ -86,7 +87,7 @@ namespace Rock.Jobs
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
         private async Task<OperationResult> ProcessAllAccounts( bool limitFullSync )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var tasks = new List<Task<OperationResult>>();
                 var mediaAccounts = new MediaAccountService( rockContext ).Queryable()

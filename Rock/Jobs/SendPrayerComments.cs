@@ -25,6 +25,7 @@ using System.Web;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -235,7 +236,7 @@ namespace Rock.Jobs
         {
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 GetPrayerCategories( rockContext );
 
@@ -260,7 +261,7 @@ namespace Rock.Jobs
                     LoadPrayerRequests();
                 }
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 PrepareNotifications( rockContext );
             }
@@ -287,7 +288,7 @@ namespace Rock.Jobs
                     PrepareNotifications();
                 }
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 SendNotifications( rockContext );
             }

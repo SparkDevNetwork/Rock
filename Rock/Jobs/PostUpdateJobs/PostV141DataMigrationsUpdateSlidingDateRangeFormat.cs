@@ -20,6 +20,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -82,7 +83,7 @@ namespace Rock.Jobs
             var currentBatch = 1;
 
             var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.SLIDING_DATE_RANGE.AsGuid() );
-            var batchSizeQueryContext = new RockContext();
+            var batchSizeQueryContext = RockApp.Current.CreateRockContext();
             batchSizeQueryContext.Database.SetCommandTimeout( commandTimeout );
             totalBatchSize = new AttributeValueService( batchSizeQueryContext )
                 .Queryable()
@@ -94,7 +95,7 @@ namespace Rock.Jobs
 
             while ( !isProcessingComplete )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( commandTimeout );
                     var attributes = new AttributeValueService( rockContext )

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model.Finance.FinancialPersonSavedAccountService.Options;
@@ -131,7 +132,7 @@ namespace Rock.Model
         /// <returns></returns>
         internal RemoveExpiredSavedAccountsResult RemoveExpiredSavedAccounts( int removedExpiredSavedAccountDays )
         {
-            var financialPersonSavedAccountQry = new FinancialPersonSavedAccountService( new RockContext() ).Queryable()
+            var financialPersonSavedAccountQry = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( a =>
                     a.FinancialPaymentDetail.CardExpirationDate != null
                     && ( a.PersonAliasId.HasValue || a.GroupId.HasValue )
@@ -207,7 +208,7 @@ namespace Rock.Model
                 // Wrapping the following in a try/catch so a single deletion failure doesn't end the process for all deletion candidates.
                 try
                 {
-                    using ( var savedAccountRockContext = new RockContext() )
+                    using ( var savedAccountRockContext = RockApp.Current.CreateRockContext() )
                     {
                         var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( savedAccountRockContext );
                         var financialPersonSavedAccount = financialPersonSavedAccountService.Get( savedAccountInfo.Id );

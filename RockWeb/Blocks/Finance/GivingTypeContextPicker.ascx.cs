@@ -21,6 +21,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -109,7 +110,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( CurrentPersonId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
                 var personAndBusinesses = personService.GetBusinesses( CurrentPersonId.Value ).ToList();
                 var displayType = GetAttributeValue( AttributeKey.DisplayType );
@@ -181,7 +182,7 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         protected Person SetGivingTypeContext( string personOrBusinessIdKey, bool refreshPage = false )
         {
-            var personOrBusiness = new PersonService( new RockContext() ).Get( personOrBusinessIdKey );
+            var personOrBusiness = new PersonService( RockApp.Current.CreateRockContext() ).Get( personOrBusinessIdKey );
             if ( personOrBusiness == null )
             {
                 personOrBusiness = this.CurrentPerson;

@@ -39,7 +39,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var pageShortLink = new PageShortLinkService( rockContext ).Get( message.PageShortLinkId );
             if ( pageShortLink == null )
             {

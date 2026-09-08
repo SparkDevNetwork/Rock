@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -198,7 +199,7 @@ namespace RockWeb.Blocks.Utility
 
         private void ShowView()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var missingConfiguration = new List<string>();
 

@@ -28,6 +28,7 @@ using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.ElectronicSignature;
@@ -246,7 +247,7 @@ namespace Rock.Blocks.Event
         /// </returns>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = GetInitializationBox( rockContext );
                 var instanceName = box.InstanceName;
@@ -355,7 +356,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult CheckDiscountCode( string code, int registrantCount, Guid? registrationGuid, bool isAutoApply )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationInstanceId = GetRegistrationInstanceId( rockContext );
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
@@ -473,7 +474,7 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( "Missing registration arguments." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 /*
                     5/4/26 - JMH
@@ -601,7 +602,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult CalculateCost( RegistrationEntryArgsBag args )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Ensure the arguments provided are in their proper format
                 // before use (e.g. proper currency formatting of amounts).
@@ -629,7 +630,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult TryToRenewSession( Guid registrationSessionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationSession = RegistrationSessionService.TryToRenewSession( registrationSessionGuid );
 
@@ -697,7 +698,7 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( "Captcha was not valid." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 FixRegistrationArguments( args );
 
@@ -768,7 +769,7 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( "Invalid registrant." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var context = GetContext( rockContext, args, out var errorMessage );
 
@@ -889,7 +890,7 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( "Invalid registrant." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var context = GetContext( rockContext, args, out var errorMessage );
 
@@ -949,7 +950,7 @@ namespace Rock.Blocks.Event
                 return ActionOk( fieldValues );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // A null person is okay here as default values can still be returned.
                 Person person = null;
@@ -1026,7 +1027,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult DeletePaymentPlan()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var context = GetContext( rockContext, out var getContextErrorMessage );
 
@@ -1139,7 +1140,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult GetScheduledPaymentDates( RegistrationEntryGetScheduledPaymentDatesRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var context = GetContext( rockContext, out var errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() )
@@ -1461,7 +1462,7 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationInstanceId = GetRegistrationInstanceId( rockContext, pageReference );
                 var instanceName = new RegistrationInstanceService( rockContext )
@@ -1645,7 +1646,7 @@ namespace Rock.Blocks.Event
                          && firstRegistrantEmail.IsNotNullOrWhiteSpace()
                          && !firstRegistrantEmail.Equals( registrarPerson.Email, StringComparison.CurrentCultureIgnoreCase ) )
                     {
-                        using ( var privateContext = new RockContext() )
+                        using ( var privateContext = RockApp.Current.CreateRockContext() )
                         {
                             var updatePerson = new PersonService( privateContext ).Get( registrarPerson.Id );
                             updatePerson.Email = firstRegistrantEmail;
@@ -1853,7 +1854,7 @@ namespace Rock.Blocks.Event
 
             // Save the history
             Task.Run( () => HistoryService.SaveChanges(
-                new RockContext(),
+                RockApp.Current.CreateRockContext(),
                 typeof( Registration ),
                 Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                 context.Registration.Id,
@@ -2259,7 +2260,7 @@ namespace Rock.Blocks.Event
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationService = new RegistrationService( rockContext );
                 var registration = registrationService.Get( context.Registration.Id );
@@ -2489,7 +2490,7 @@ namespace Rock.Blocks.Event
 
             if ( !registrationSlug.IsNullOrWhiteSpace() )
             {
-                return new EventItemOccurrenceGroupMapService( rockContext ?? new RockContext() )
+                return new EventItemOccurrenceGroupMapService( rockContext ?? RockApp.Current.CreateRockContext() )
                     .Queryable().AsNoTracking()
                     .Include( m => m.Campus )
                     .Where( l =>
@@ -2504,7 +2505,7 @@ namespace Rock.Blocks.Event
             }
             else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
             {
-                return new EventItemOccurrenceGroupMapService( rockContext ?? new RockContext() )
+                return new EventItemOccurrenceGroupMapService( rockContext ?? RockApp.Current.CreateRockContext() )
                     .Queryable().AsNoTracking()
                     .Include( m => m.Campus )
                     .Where( l =>
@@ -3926,7 +3927,7 @@ namespace Rock.Blocks.Event
 
             Task.Run( () =>
                 HistoryService.SaveChanges(
-                    new RockContext(),
+                    RockApp.Current.CreateRockContext(),
                     typeof( Registration ),
                     Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                     context.Registration.Id,
@@ -5324,7 +5325,7 @@ namespace Rock.Blocks.Event
             {
                 Task.Run( () =>
                     HistoryService.SaveChanges(
-                        new RockContext(),
+                        RockApp.Current.CreateRockContext(),
                         typeof( FinancialBatch ),
                         Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
                         transaction.BatchId.Value,
@@ -5337,7 +5338,7 @@ namespace Rock.Blocks.Event
             registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Payment" ).SetNewValue( string.Format( "{0} payment", transaction.TotalAmount.FormatAsCurrency() ) );
             Task.Run( () =>
                 HistoryService.SaveChanges(
-                    new RockContext(),
+                    RockApp.Current.CreateRockContext(),
                     typeof( Registration ),
                     Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                     context.Registration.Id,
@@ -5441,7 +5442,7 @@ namespace Rock.Blocks.Event
 
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var registration = new RegistrationService( rockContext )
                     .Queryable()
                     .Include( r => r.RegistrationInstance.RegistrationTemplate )
@@ -6064,7 +6065,7 @@ namespace Rock.Blocks.Event
                     ThemeRoot = RequestContext.RootUrlPath + RequestContext.ResolveRockUrl( "~~/" )
                 }.Send();
 
-                var registrationService = new RegistrationService( new RockContext() );
+                var registrationService = new RegistrationService( RockApp.Current.CreateRockContext() );
                 var newRegistration = registrationService.Get( registration.Id );
 
                 if ( newRegistration != null )

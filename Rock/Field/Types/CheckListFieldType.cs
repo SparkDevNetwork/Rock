@@ -32,6 +32,7 @@ using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 using static Rock.Web.UI.Controls.ListItems;
+using Rock.Configuration;
 
 namespace Rock.Field.Types
 {
@@ -208,7 +209,7 @@ namespace Rock.Field.Types
                         foreach ( var selectedValue in selectedValues )
                         {
                             var searchValue = "," + selectedValue + ",";
-                            var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                            var qryToExtract = new AttributeValueService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
                             var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
 
                             if ( comparisonType.Value != ComparisonType.Contains )

@@ -26,6 +26,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Core.Geography;
 using Rock.Core.Geography.Classes;
 using Rock.Data;
@@ -1532,7 +1533,7 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult SaveCustomSettings( CustomSettingsBox<GroupFinderCustomSettingsBag, GroupFinderCustomSettingsOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 {
@@ -1730,7 +1731,7 @@ namespace Rock.Blocks.Group
             // resolves definitions from AttributeCache and its inherited attributes from GroupTypeCache,
             // and skips the attribute-value query, so this reads the cache rather than the database.
             // Passing the context avoids LoadAttributes allocating a fresh one per group type.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var guidString in groupTypeGuidStrings ?? Enumerable.Empty<string>() )
                 {

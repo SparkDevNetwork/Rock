@@ -84,7 +84,7 @@ Work through each category below. Check every item against both the WebForms sou
 ## 3. Bug Patterns
 
 ### C# Block
-- [ ] No `new RockContext()` — use `RockContext` from base class
+- [ ] No `new RockContext()` — use the base class `RockContext`, or `RockApp.Current.CreateRockContext()` if a separate context is truly needed
 - [ ] No `using` blocks around `RockContext` (kills lazy loading)
 - [ ] Nullable types handled (`.Value` used safely, null checks before access)
 - [ ] `int.Parse` / `int.TryParse` used correctly (not swapped, not missing error handling)

@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -117,7 +118,7 @@ namespace Rock.Workflow.Action
              * Per Jon, code in Rock should account for the possibility of multiple assessments for a type that are in a pending state and only select the latest one.
              */
              
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             errorMessages = new List<string>();
 

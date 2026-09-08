@@ -31,6 +31,7 @@ using RestSharp;
 using RestSharp.Authenticators;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.Authentication;
@@ -262,7 +263,7 @@ namespace Rock.Security.ExternalAuthentication
             string userName = "Twitter_" + twitterId;
             UserLogin user = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );

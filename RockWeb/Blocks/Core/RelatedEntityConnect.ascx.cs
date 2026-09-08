@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -344,7 +345,7 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var relatedEntityService = new RelatedEntityService( rockContext );
 
             RelatedEntity relatedEntity = null;
@@ -532,7 +533,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             if ( relatedEntityService == null )

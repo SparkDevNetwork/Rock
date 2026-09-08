@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -130,7 +131,7 @@ namespace RockWeb.Blocks.Core
 
         private void SetCampus()
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             Campus campus = null;
 
             // get device
@@ -153,7 +154,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( device.Locations.Count > 0 )
                 {
-                    campus = new CampusService( new RockContext() ).Get( device.Locations.First().CampusId.Value );
+                    campus = new CampusService( RockApp.Current.CreateRockContext() ).Get( device.Locations.First().CampusId.Value );
 
                     // set the context
                     if ( campus != null )

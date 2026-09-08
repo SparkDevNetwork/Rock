@@ -24,6 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -1023,7 +1024,7 @@ namespace RockWeb.Blocks.Steps
         {
             if ( _rockContext == null )
             {
-                _rockContext = new RockContext();
+                _rockContext = RockApp.Current.CreateRockContext();
             }
 
             return _rockContext;

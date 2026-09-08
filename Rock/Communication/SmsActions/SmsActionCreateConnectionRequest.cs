@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -171,7 +172,7 @@ namespace Rock.Communication.SmsActions
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var opportunity = new ConnectionOpportunityService( rockContext )
                     .Queryable()

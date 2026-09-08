@@ -23,6 +23,7 @@ using Rock.Model;
 using Rock.Tests.Shared.Constants;
 
 using static Rock.Tests.Integration.TestData.LocationDataManager;
+using Rock.Configuration;
 
 namespace Rock.Tests.Integration.TestData
 {
@@ -237,7 +238,7 @@ namespace Rock.Tests.Integration.TestData
 
         public void AddCampusTestDataSet()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // If the online campus exists, then assume we have already initialized the data.
             if ( new CampusService( rockContext ).Get( OnlineCampusGuid.AsGuid() ) != null )

@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -330,7 +331,7 @@ function ReviewFlag(elem) {
         /// </summary>
         private void FlagPrayerRequest( int prayerRequestId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new PrayerRequestService( rockContext );
             var flagLimit = GetAttributeValue( AttributeKey.FlagLimit ).AsIntegerOrNull() ?? 1;
             PrayerRequest request = service.Get( prayerRequestId );
@@ -354,7 +355,7 @@ function ReviewFlag(elem) {
         /// </summary>
         private void PrayRequest( int prayerRequestId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new PrayerRequestService( rockContext );
             var flagLimit = GetAttributeValue( AttributeKey.FlagLimit ).AsIntegerOrNull() ?? 1;
             PrayerRequest request = service.Get( prayerRequestId );
@@ -514,7 +515,7 @@ function ReviewFlag(elem) {
         protected void LoadContent()
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var prayerRequests = GetPrayerRequests( rockContext );
 
             mergeFields.Add( "PrayerRequestItems", prayerRequests );

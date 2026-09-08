@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -680,7 +681,7 @@ namespace Rock.Blocks.CheckIn.Manager
             // Re-fetch with a fresh context for the display bag; the modified
             // context still tracks the old navigation properties, which would
             // stale-render the panel.
-            using ( var displayContext = new RockContext() )
+            using ( var displayContext = RockApp.Current.CreateRockContext() )
             {
                 var refreshed = LoadAttendanceForDisplay( displayContext, attendance.Id );
                 var refreshedBag = refreshed != null

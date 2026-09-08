@@ -24,6 +24,7 @@ using System.Data.Entity.SqlServer;
 using System.Data.SqlTypes;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -187,7 +188,7 @@ namespace Rock.Model
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     attributeValue.ValueAsPersonId = new PersonAliasService( rockContext ).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId ).FirstOrDefault();
                 }
@@ -467,7 +468,7 @@ namespace Rock.Model
         /// <returns></returns>
         private AttributeValue GetRootMatrixAttributeValue()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeMatrixService = new AttributeMatrixService( rockContext );
             var attributeService = new AttributeService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );

@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -156,7 +157,7 @@ namespace RockWeb.Blocks.Event
         {
             hfEventItemId.Value = eventItemId.ToString();
 
-            var eventItem = new EventItemService( new RockContext() ).Get( eventItemId );
+            var eventItem = new EventItemService( RockApp.Current.CreateRockContext() ).Get( eventItemId );
             string eventLavaTemplate = this.GetAttributeValue( "EventLavaTemplate" );
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "Event", eventItem );
@@ -209,7 +210,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowResults()
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             int eventItemId = hfEventItemId.Value.AsInteger();
             var qry = new EventItemOccurrenceService( rockContext ).Queryable().Where( e => e.EventItem.IsActive && e.EventItemId == eventItemId );

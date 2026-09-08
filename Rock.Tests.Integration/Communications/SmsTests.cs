@@ -19,6 +19,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication.SmsActions;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -46,7 +47,7 @@ namespace Rock.Tests.Integration.Communications
         {
             var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.UnknownPerson1MobileNumber );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
 
@@ -68,7 +69,7 @@ namespace Rock.Tests.Integration.Communications
             //var outcomes = SmsActionService.ProcessIncomingMessage(message);
 
             // Delete the newly-created unnamed person record.
-            dataContext = new RockContext();
+            dataContext = RockApp.Current.CreateRockContext();
             personService = new PersonService( dataContext );
 
             DeleteNamelessPersonRecord( dataContext, TestGuids.Communications.UnknownPerson1MobileNumber );
@@ -82,7 +83,7 @@ namespace Rock.Tests.Integration.Communications
         [TestMethod]
         public void IncomingSms_FromKnownNamelessPerson_ReturnsMatchedPerson()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
             var fromNumber = PhoneNumber.FormattedNumber( "1", TestGuids.Communications.UnknownPerson1MobileNumber, true );
@@ -110,7 +111,7 @@ namespace Rock.Tests.Integration.Communications
         {
             var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.MobilePhoneTedDecker );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
 
@@ -124,7 +125,7 @@ namespace Rock.Tests.Integration.Communications
         public void NamelessPersonRecordType_GetDefaultPersonQuery_DoesNotIncludeNameless()
         {
             // Verify at least one NamelessPerson Record Type exists.
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
 

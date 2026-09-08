@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -60,7 +61,7 @@ namespace Rock.Field.Types
         /// </value>
         internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new InteractionChannelService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToDictionary( c => c.Guid.ToString(), c => c.Name );
+            return new InteractionChannelService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( a => a.Name ).ToDictionary( c => c.Guid.ToString(), c => c.Name );
         }
 
         #endregion

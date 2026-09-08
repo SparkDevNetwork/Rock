@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Web.Cache;
@@ -97,7 +98,7 @@ namespace Rock.AI.Provider
             // Create any attributes that need to be created
             var providerEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.AIProvider ) );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var component in this.Components )
                 {

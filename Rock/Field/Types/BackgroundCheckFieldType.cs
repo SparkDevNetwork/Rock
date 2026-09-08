@@ -21,6 +21,7 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
@@ -239,7 +240,7 @@ namespace Rock.Field.Types
         {
             if ( binaryFileGuid.HasValue && !binaryFileGuid.Value.IsEmpty() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var fileName = new BinaryFileService( rockContext )
                     .Queryable()
@@ -270,7 +271,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue && !guid.Value.IsEmpty() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var fileName = new BinaryFileService( rockContext )
                     .Queryable()
@@ -424,7 +425,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var fileId = new BinaryFileService( rockContext ).GetId( guid.Value );
 
@@ -526,7 +527,7 @@ namespace Rock.Field.Types
                 if ( binaryFileId.HasValue )
                 {
                     string binaryFileGuidString = string.Empty;
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         Guid? binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                         if ( binaryFileGuid.HasValue )
@@ -583,7 +584,7 @@ namespace Rock.Field.Types
             if ( binaryFileGuid.HasValue )
             {
                 int? binaryFileId = null;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     binaryFileId = new BinaryFileService( rockContext )
                         .Queryable()
@@ -624,7 +625,7 @@ namespace Rock.Field.Types
             if ( binaryFileGuidFromValue.HasValue )
             {
                 int? binaryFileId = null;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     binaryFileId = new BinaryFileService( rockContext )
                         .Queryable()

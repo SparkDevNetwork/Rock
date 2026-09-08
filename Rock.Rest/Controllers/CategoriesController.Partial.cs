@@ -20,6 +20,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -53,7 +54,7 @@ namespace Rock.Rest.Controllers
                     includedCategoryIds: includedCategoryIds
                 ).ToList();
 
-            var metricCategoryService = new MetricCategoryService( new RockContext() );
+            var metricCategoryService = new MetricCategoryService( RockApp.Current.CreateRockContext() );
             var convertedMetrics = new List<CategoryItem>();
 
             // Translate from MetricCategory to Metric.
@@ -221,7 +222,7 @@ namespace Rock.Rest.Controllers
                         Type[] modelType = { entityType };
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
+                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { RockApp.Current.CreateRockContext() } ) as IService;
 
                         hasActiveFlag = typeof( IHasActiveFlag ).IsAssignableFrom( entityType );
                     }
@@ -478,7 +479,7 @@ namespace Rock.Rest.Controllers
                         Type[] modelType = { entityType };
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
+                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { RockApp.Current.CreateRockContext() } ) as IService;
 
                         hasActiveFlag = typeof( IHasActiveFlag ).IsAssignableFrom( entityType );
                     }

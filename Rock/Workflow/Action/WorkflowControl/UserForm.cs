@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Workflow;
 using Rock.Field;
@@ -272,7 +273,7 @@ namespace Rock.Workflow.Action
             if ( form.GetAllowPersonEntry( formBuilderTemplate ) )
             {
                 // The person entry processor requires its own RockContext.
-                using ( var personEntryRockContext = new RockContext() )
+                using ( var personEntryRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var processor = new WorkflowPersonEntryProcessor( action, personEntryRockContext );
                     processor.SetFormPersonEntryValues( requestContext.CurrentPerson?.Id, personEntryValues );
@@ -1094,7 +1095,7 @@ namespace Rock.Workflow.Action
                     break;
 
                 case Rock.Workflow.FormBuilder.CampusSetFrom.WorkflowPerson:
-                    action.GetPersonEntryPeople( new RockContext(), requestContext.CurrentPerson?.Id, out var personEntryPerson, out _ );
+                    action.GetPersonEntryPeople( RockApp.Current.CreateRockContext(), requestContext.CurrentPerson?.Id, out var personEntryPerson, out _ );
                     if ( personEntryPerson != null )
                     {
                         workflow.CampusId = personEntryPerson.PrimaryCampusId;
@@ -1636,7 +1637,7 @@ namespace Rock.Workflow.Action
         {
             if ( formEmailSourceSettings.Type == FormEmailSourceType.UseTemplate && formEmailSourceSettings.SystemCommunicationId.HasValue )
             {
-                var systemCommunication = new SystemCommunicationService( new RockContext() ).Get( formEmailSourceSettings.SystemCommunicationId.Value );
+                var systemCommunication = new SystemCommunicationService( RockApp.Current.CreateRockContext() ).Get( formEmailSourceSettings.SystemCommunicationId.Value );
                 if ( systemCommunication != null )
                 {
                     var emailMessage = new RockEmailMessage( systemCommunication );

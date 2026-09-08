@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Communication.CommunicationEntry;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -306,7 +307,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         [BlockAction]
         public BlockActionResult GetRecipients( Guid entitySetGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // First load the entity set from the entity set guid.
                 var entitySet = new EntitySetService( rockContext )
@@ -374,7 +375,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         [BlockAction]
         public BlockActionResult DeleteRecipientFromEntitySet( Guid entitySetGuid, Guid entitySetItemGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Load our recipient.
                 var entitySetItemService = new EntitySetItemService( rockContext );
@@ -402,7 +403,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         [BlockAction]
         public BlockActionResult SendCommunication( SendCommunicationRequestBag sendCommunicationBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( RequestContext.CurrentPerson == null )
                 {

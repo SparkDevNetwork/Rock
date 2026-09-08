@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Reporting;
 using Rock.Field;
@@ -268,7 +269,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             var values = selection.FromJsonOrNull<List<string>>();
             if ( values != null && values.Count >= 2 )
             {
-                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( values[0].AsGuid() );
                 if ( contentChannelType != null )
                 {
                     var entityFields = GetContentChannelItemAttributes( contentChannelType.Id );
@@ -306,7 +307,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             contentChannelTypePicker.Label = "Content Channel Type";
 
             contentChannelTypePicker.Items.Clear();
-            var contentChannelTypeList = new ContentChannelTypeService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            var contentChannelTypeList = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
             foreach ( var contentChannelType in contentChannelTypeList )
             {
                 contentChannelTypePicker.Items.Add( new ListItem( contentChannelType.Name, contentChannelType.Id.ToString() ) );
@@ -460,7 +461,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                 {
                     // note: since this datafilter creates additional controls outside of CreateChildControls(), we'll use our _controlsToRender instead of the controls parameter
                     RockDropDownList contentChannelTypePicker = containerControl.Controls[0] as RockDropDownList;
-                    var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( contentChannelTypePicker.SelectedValue.AsInteger() );
+                    var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( contentChannelTypePicker.SelectedValue.AsInteger() );
                     if ( contentChannelType != null )
                     {
                         if ( containerControl.Controls.Count == 1 )
@@ -508,7 +509,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                 var values = selection.FromJsonOrNull<List<string>>();
                 if ( controls.Length > 0 && values.Count > 0 )
                 {
-                    var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                    var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( values[0].AsGuid() );
                     if ( contentChannelType != null )
                     {
                         var containerControl = controls[0] as DynamicControlsPanel;
@@ -551,7 +552,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
 
                 if ( values.Count >= 3 )
                 {
-                    var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                    var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( values[0].AsGuid() );
                     if ( contentChannelType != null )
                     {
                         string selectedProperty = values[1];
@@ -583,7 +584,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             List<EntityField> entityAttributeFields = new List<EntityField>();
             if ( contentChannelTypeId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var contentChannelService = new ContentChannelService( rockContext );
                     var allEntityAttributeFields = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) ).Where( a => a.FieldKind == FieldKind.Attribute );

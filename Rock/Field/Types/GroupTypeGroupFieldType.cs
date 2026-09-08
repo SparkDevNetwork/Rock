@@ -22,6 +22,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -60,7 +61,7 @@ namespace Rock.Field.Types
 
             if ( groupGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupName = new GroupService( rockContext ).GetSelect( groupGuid.Value, g => g.Name );
 
@@ -101,7 +102,7 @@ namespace Rock.Field.Types
             ViewModels.Utility.ListItemBag group = null;
             if ( groupGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     group = new GroupService( rockContext ).Get( groupGuid.Value )?.ToListItemBag();
                 }
@@ -177,7 +178,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // We only use one of these at a time when formatting the value
                 // so we don't need to reference both.
@@ -356,7 +357,7 @@ namespace Rock.Field.Types
             GroupTypeGroupPicker groupTypeGroupPicker = control as GroupTypeGroupPicker;
             if ( groupTypeGroupPicker != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 Guid? groupTypeGuid = null;
                 Guid? groupGuid = null;
@@ -403,7 +404,7 @@ namespace Rock.Field.Types
                 groupTypeGroupPicker.GroupId = null;
 
                 string[] parts = ( value ?? string.Empty ).Split( '|' );
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 if ( parts.Length >= 1 )
                 {
                     var groupType = new GroupTypeService( rockContext ).Get( parts[0].AsGuid() );

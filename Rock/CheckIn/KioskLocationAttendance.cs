@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -116,7 +117,7 @@ namespace Rock.CheckIn
 
         private static KioskLocationAttendance Create( int id )
         {
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var location = NamedLocationCache.Get( id );
                 if ( location == null )

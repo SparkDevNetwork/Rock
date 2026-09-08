@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -91,7 +92,7 @@ namespace Rock.Blocks.Crm
 
                 if ( !GetAttributeValue( AttributeKey.AllowStaff ).AsBoolean() )
                 {
-                    GroupService service = new GroupService( new RockContext() );
+                    GroupService service = new GroupService( RockApp.Current.CreateRockContext() );
                     staffGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS ) );
                 }
 
@@ -173,7 +174,7 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult UpdatePersonProfilePhoto( string personIdKey, Guid photoGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 PersonService personService = new PersonService( rockContext );
                 var person = personService.Get( personIdKey );

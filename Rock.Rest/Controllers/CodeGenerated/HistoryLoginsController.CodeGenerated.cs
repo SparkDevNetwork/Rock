@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="HistoryLoginsController"/> class.
         /// </summary>
-        public HistoryLoginsController() : base( new Rock.Model.HistoryLoginService( new Rock.Data.RockContext() ) ) { } 
+        public HistoryLoginsController() : base( new Rock.Model.HistoryLoginService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

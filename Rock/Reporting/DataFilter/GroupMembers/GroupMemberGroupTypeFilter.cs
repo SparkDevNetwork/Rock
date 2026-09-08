@@ -30,6 +30,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.GroupMembers
 {
@@ -172,7 +173,7 @@ function() {
             GroupTypePicker groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.GetChildControlInstanceName( "_groupTypePicker" );
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().ToList();
             filterControl.Controls.Add( groupTypePicker );
 
             return new Control[] { groupTypePicker };

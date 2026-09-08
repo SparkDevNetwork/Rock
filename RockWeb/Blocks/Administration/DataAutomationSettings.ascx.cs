@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
@@ -45,7 +46,7 @@ namespace RockWeb.Blocks.Administration
 
         private List<IgnoreCampusChangeRow> _ignoreCampusChangeRows { get; set; }
 
-        private RockContext _rockContext = new RockContext();
+        private RockContext _rockContext = RockApp.Current.CreateRockContext();
 
         private Dictionary<string, string> _generalSettings = new Dictionary<string, string>();
 

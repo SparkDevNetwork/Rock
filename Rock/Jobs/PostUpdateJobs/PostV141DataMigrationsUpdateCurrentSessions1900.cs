@@ -20,6 +20,7 @@ using System.ComponentModel;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -57,7 +58,7 @@ namespace Rock.Jobs
         {
             var commandTimeout = this.GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefault.CommandTimeout;
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -101,7 +102,7 @@ INNER JOIN (
         /// <param name="jobId">The job identifier.</param>
         public static void DeleteJob( int jobId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );

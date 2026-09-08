@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Chart;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -731,7 +732,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult ChartData( string chartType )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = GetInitializationBox( rockContext, chartType );
                 return ActionOk( box );

@@ -234,7 +234,7 @@ namespace Rock.WebFarm
 
             // If another process has started recently, then it will have set the RestartDateTime to a more
             // recent time than my start
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var node = GetNode( rockContext, NodeName );
 
@@ -283,7 +283,7 @@ namespace Rock.WebFarm
 
             Debug( "Start Stage 1" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Check that the WebFarmEnable = true.If yes, continue
                 if ( !IsEnabled() )
@@ -398,7 +398,7 @@ namespace Rock.WebFarm
 
             Debug( "Start Stage 2" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Mark IsActive true
                 // Update LastSeenDateTime = now
@@ -451,7 +451,7 @@ namespace Rock.WebFarm
                 PublishEvent( EventType.Shutdown, payload: shutdownReasonText );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !isOverlappedRecycling )
                 {
@@ -494,7 +494,7 @@ namespace Rock.WebFarm
                 $"{currentPerson.FullName} (Person Id: {currentPerson.Id})";
             var payload = $"{personName} requested Rock restart";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, payload );
                 rockContext.SaveChanges();
@@ -567,7 +567,7 @@ namespace Rock.WebFarm
 
             Debug( $"Got a Pong from {senderNodeName}" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var node = GetNode( rockContext, senderNodeName );
 
@@ -602,7 +602,7 @@ namespace Rock.WebFarm
 
             await DoLeadershipPollAsync();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 AddMetrics( rockContext );
                 rockContext.SaveChanges();
@@ -630,7 +630,7 @@ namespace Rock.WebFarm
             PublishEvent( EventType.Ping, payload: _leadershipPingKey.Value.ToString() );
 
             // Assert this node's leadership in the database
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var webFarmNodeService = new WebFarmNodeService( rockContext );
                 var nodes = webFarmNodeService.Queryable().ToList();
@@ -666,7 +666,7 @@ namespace Rock.WebFarm
 
                 Debug( "Checking for unresponsive nodes" );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var webFarmNodeService = new WebFarmNodeService( rockContext );
                     var unresponsiveNodes = webFarmNodeService.Queryable()
@@ -898,7 +898,7 @@ namespace Rock.WebFarm
             {
                 var text = isEnabled ? "enabled" : "disabled";
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Availability, $"The farm has been {text}" );
                     rockContext.SaveChanges();
@@ -1066,7 +1066,7 @@ namespace Rock.WebFarm
             var eventType = EventType.Error;
             var text = callerMethod.IsNullOrWhiteSpace() ? message : $"[{callerMethod}]: {message}";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 AddLog( rockContext, severity, _nodeId, eventType, text );
             }

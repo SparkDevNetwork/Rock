@@ -23,6 +23,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -60,7 +61,7 @@ namespace Rock.Jobs
             int remindersSent = 0;
             var errors = new List<string>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 DateTime now = RockDateTime.Now;
                 DateTime expireDate = now.AddDays( expireDays * -1 );

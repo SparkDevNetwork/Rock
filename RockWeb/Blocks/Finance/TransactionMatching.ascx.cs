@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -331,7 +332,7 @@ namespace RockWeb.Blocks.Finance
                 int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
                 if ( transactionId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var financialTransactionService = new FinancialTransactionService( rockContext );
                         var txn = financialTransactionService.Queryable().Where( t => t.Id == transactionId ).SingleOrDefault();
@@ -388,7 +389,7 @@ namespace RockWeb.Blocks.Finance
         public void LoadDropDowns()
         {
             // get accounts that are both allowed by the BlockSettings and also in the personal AccountList setting
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var blockAccountGuidList = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             var preferences = GetBlockPersonPreferences();
@@ -636,7 +637,7 @@ namespace RockWeb.Blocks.Finance
                 hfHistoryPosition.Value = position.ToString();
 
                 int batchId = hfBatchId.Value.AsInteger();
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
                 var financialTransactionService = new FinancialTransactionService( rockContext );
                 var qryTransactionsToMatch = financialTransactionService.Queryable()
@@ -999,7 +1000,7 @@ namespace RockWeb.Blocks.Finance
                 accountBox.Attributes["data-sort-order"] = _sortedAccountIds.IndexOf( accountBoxAccountId ).ToString();
             }
 
-            var optionalAccounts = new FinancialAccountService( new RockContext() ).GetByIds( _allOptionalAccountIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            var optionalAccounts = new FinancialAccountService( RockApp.Current.CreateRockContext() ).GetByIds( _allOptionalAccountIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             ddlAddAccount.Items.Clear();
             ddlAddAccount.Items.Add( new ListItem() );
             foreach ( var account in optionalAccounts )
@@ -1141,7 +1142,7 @@ namespace RockWeb.Blocks.Finance
             int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
             if ( transactionId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var financialTransactionService = new FinancialTransactionService( rockContext );
                     var txn = financialTransactionService.Queryable().Where( t => t.Id == transactionId ).SingleOrDefault();
@@ -1201,7 +1202,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="transactionId">The transaction identifier.</param>
         private void MarkTransactionAsNotProcessedByCurrentUser( int transactionId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var financialTransaction = financialTransactionService.Get( transactionId );
 
@@ -1238,7 +1239,7 @@ namespace RockWeb.Blocks.Finance
         {
             var changes = new History.HistoryChangeList();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
@@ -1494,7 +1495,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFindByEnvelopeNumber_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personGivingEnvelopeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
             var envelopeNumber = tbEnvelopeNumber.Text;
             if ( !string.IsNullOrEmpty( envelopeNumber ) )
@@ -1545,7 +1546,7 @@ namespace RockWeb.Blocks.Finance
             if ( personId.HasValue )
             {
                 mdEnvelopeSearchResults.Hide();
-                ppSelectNew.SetValue( new PersonService( new RockContext() ).Get( personId.Value ) );
+                ppSelectNew.SetValue( new PersonService( RockApp.Current.CreateRockContext() ).Get( personId.Value ) );
                 LoadPersonPreview( personId );
             }
         }
@@ -1560,7 +1561,7 @@ namespace RockWeb.Blocks.Finance
             int? batchId = hfBatchId.Value.AsIntegerOrNull();
             if ( batchId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var batch = new FinancialBatchService( rockContext ).Get( batchId.Value );
                     if ( batch != null && batch.Status == BatchStatus.Pending )
@@ -1581,7 +1582,7 @@ namespace RockWeb.Blocks.Finance
         private void LoadPersonPreview( int? personId )
         {
             string previewHtmlDetails = string.Empty;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( personId ?? 0 );
             pnlPreview.Visible = person != null;
             if ( person != null )
@@ -1854,7 +1855,7 @@ namespace RockWeb.Blocks.Finance
                 familyMembers.Add( spouseGroupMember );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var campusId = cpAddPersonCampus.SelectedCampusId;
             var addressLocation = GetAddressLocation( rockContext, acAddPersonAddress );
             var family = GroupService.SaveNewFamily( rockContext, familyMembers, cpAddPersonCampus.SelectedCampusId, false );
@@ -1899,7 +1900,7 @@ namespace RockWeb.Blocks.Finance
                 }
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var addressLocation = GetAddressLocation( rockContext, acAddBusinessAddress );
             var campusId = cpAddBusinessCampus.SelectedCampusId;
 
@@ -1947,7 +1948,7 @@ namespace RockWeb.Blocks.Finance
             }
             else if ( transactionId != cachedTransactionId )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var transactionService = new FinancialTransactionService( rockContext );
 
                 _currentTransactionUntracked = transactionService.Queryable()

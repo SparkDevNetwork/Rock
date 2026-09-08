@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityVerificationCodesController"/> class.
         /// </summary>
-        public IdentityVerificationCodesController() : base( new Rock.Model.IdentityVerificationCodeService( new Rock.Data.RockContext() ) ) { } 
+        public IdentityVerificationCodesController() : base( new Rock.Model.IdentityVerificationCodeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

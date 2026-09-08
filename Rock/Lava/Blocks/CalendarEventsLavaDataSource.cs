@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -119,7 +120,7 @@ namespace Rock.Lava.Blocks
 
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             // Get the Event Calendar.
@@ -212,7 +213,7 @@ namespace Rock.Lava.Blocks
 
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             // Get the Event.

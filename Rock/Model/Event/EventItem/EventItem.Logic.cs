@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -140,7 +141,7 @@ namespace Rock.Model
         {
             var indexableItems = new List<IndexModelBase>();
 
-            var eventItems = new EventItemService( new RockContext() )
+            var eventItems = new EventItemService( RockApp.Current.CreateRockContext() )
                                 .GetIndexableActiveItems()
                                 .Include( i => i.EventItemAudiences )
                                 .Include( i => i.EventItemOccurrences )
@@ -178,7 +179,7 @@ namespace Rock.Model
         /// <param name="id">The identifier.</param>
         public void IndexDocument( int id )
         {
-            var eventItemEntity = new EventItemService( new RockContext() ).Get( id );
+            var eventItemEntity = new EventItemService( RockApp.Current.CreateRockContext() ).Get( id );
 
             // Check to ensure that the event item is on a calendar that is indexed
             if ( eventItemEntity != null && eventItemEntity.EventCalendarItems.Any( c => c.EventCalendar.IsIndexEnabled ) )

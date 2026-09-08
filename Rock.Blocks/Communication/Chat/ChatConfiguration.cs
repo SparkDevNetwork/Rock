@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.Communication.Chat;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration;
@@ -87,7 +88,7 @@ namespace Rock.Blocks.Communication.Chat
             // take some time to complete.
             Task.Run( async () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
                     chatHelper.Reinitialize();

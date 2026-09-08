@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -74,7 +75,7 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var locationService = new LocationService( rockContext );
 
             var locationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_ROOM.AsGuid() ).Id;

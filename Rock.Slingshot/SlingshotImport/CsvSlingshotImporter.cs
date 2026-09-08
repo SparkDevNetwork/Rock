@@ -25,6 +25,7 @@ using Rock.Model;
 
 // Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
 using SlingshotCore = global::Slingshot.Core;
+using Rock.Configuration;
 
 namespace Rock.Slingshot
 {
@@ -295,7 +296,7 @@ namespace Rock.Slingshot
         /// </summary>
         public void AddPersonCSVImportErrorNotes()
         {
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 PersonService personService = new PersonService( rockContext );
                 NoteService noteService = new NoteService( rockContext );

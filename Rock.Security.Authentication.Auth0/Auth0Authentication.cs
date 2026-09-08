@@ -24,6 +24,7 @@ using System.Web;
 using RestSharp;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.Authentication.ExternalRedirectAuthentication;
@@ -187,7 +188,7 @@ namespace Rock.Security.Authentication.Auth0
             string userName = "AUTH0_" + auth0UserInfo.sub;
             UserLogin user = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );

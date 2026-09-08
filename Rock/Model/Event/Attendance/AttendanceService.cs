@@ -40,6 +40,7 @@ using Rock.ViewModels.Event;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -2319,7 +2320,7 @@ namespace Rock.Model
             }
 
             // use a new RockContext to use for adding attending resources so that get can get saved to the database without saving any changes associated with the current rockContext
-            var groupAssignmentAttendanceRockContext = new RockContext();
+            var groupAssignmentAttendanceRockContext = RockApp.Current.CreateRockContext();
             var groupAssignmentAttendanceService = new AttendanceService( groupAssignmentAttendanceRockContext );
 
             /* 2020-08-03 MDP
@@ -3086,7 +3087,7 @@ namespace Rock.Model
             }
 
             var attendanceImportList = attendancesImport.Attendances;
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             DateTime importDateTime = RockDateTime.Now;
 
@@ -3251,7 +3252,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -3321,7 +3322,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

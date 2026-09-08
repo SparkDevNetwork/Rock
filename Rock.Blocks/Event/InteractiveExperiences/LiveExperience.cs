@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
@@ -86,7 +87,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new LiveExperienceInitializationBox();
                 var token = RequestContext.GetPageParameter( PageParameterKey.Token );

@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -79,7 +80,7 @@ namespace RockWeb.Blocks.Reporting
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
-            var groupService = new DataViewService( new RockContext() );
+            var groupService = new DataViewService( RockApp.Current.CreateRockContext() );
             var dataViews = new List<DataView>();
 
             if ( !string.IsNullOrWhiteSpace( type ) && !string.IsNullOrWhiteSpace( term ) )

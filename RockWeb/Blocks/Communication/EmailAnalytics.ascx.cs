@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Humanizer;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -259,7 +260,7 @@ namespace RockWeb.Blocks.Communication
             pnlCharts.Visible = false;
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.CommandTimeout = this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
                     if ( PopulateCharts( rockContext ) )

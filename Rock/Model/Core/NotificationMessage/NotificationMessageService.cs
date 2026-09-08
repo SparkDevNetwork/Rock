@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -175,7 +176,7 @@ namespace Rock.Model
         /// <returns>A Task representing the asynchronous operation.</returns>
         internal static async Task SendBadgeCountUpdatesAsync( List<int> personIds )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var messageService = new NotificationMessageService( rockContext );
                 List<(int PersonId, int SiteId, List<string> DeviceRegistrationIds)> personSites;

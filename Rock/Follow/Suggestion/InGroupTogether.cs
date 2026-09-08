@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -98,7 +99,7 @@ namespace Rock.Follow.Suggestion
             Guid? groupTypeGuid = GetAttributeValue( followingSuggestionType, "GroupType" ).AsGuidOrNull();
             if ( groupTypeGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
                     var personAliasService = new PersonAliasService( rockContext );

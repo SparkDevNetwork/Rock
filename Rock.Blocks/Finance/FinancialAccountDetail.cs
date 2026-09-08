@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -387,7 +388,7 @@ namespace Rock.Blocks.Finance
         /// <returns>List&lt;AccountParticipantInfo&gt;.</returns>
         private List<FinancialAccountParticipantBag> GetAccountParticipantStateFromDatabase( int accountId )
         {
-            var financialAccountService = new FinancialAccountService( new RockContext() );
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             var accountParticipantsQuery = financialAccountService.GetAccountParticipantsAndPurpose( accountId );
 
             var participantsState = accountParticipantsQuery

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="DocumentsController"/> class.
         /// </summary>
-        public DocumentsController() : base( new Rock.Model.DocumentService( new Rock.Data.RockContext() ) ) { } 
+        public DocumentsController() : base( new Rock.Model.DocumentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -89,7 +89,7 @@ namespace Rock.Field.Types
             if ( jsonValue != null )
             {
                 var guids = jsonValue.ConvertAll( l => l.Value.AsGuid() );
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var guidPairList = new MetricCategoryService( rockContext ).GetByGuids( guids )
                         .Select( mc => new
@@ -115,9 +115,9 @@ namespace Rock.Field.Types
             var metricCategories = new List<ListItemBag>();
             var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( privateValue );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var metricCategoryService = new MetricCategoryService( new RockContext() );
+                var metricCategoryService = new MetricCategoryService( RockApp.Current.CreateRockContext() );
 
                 foreach ( var guidPair in guidPairs )
                 {
@@ -182,7 +182,7 @@ namespace Rock.Field.Types
             }
             var metricGuids = guidPairs.Select( a => a.MetricGuid );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var referencedEntities = new MetricService( rockContext )
                                     .Queryable()
@@ -275,7 +275,7 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 var ids = picker.SelectedValuesAsInt();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var metricCategories = new MetricCategoryService( rockContext ).Queryable().AsNoTracking().Where( a => ids.Contains( a.Id ) );
 
@@ -306,7 +306,7 @@ namespace Rock.Field.Types
             {
                 List<MetricCategory> metricCategories = new List<MetricCategory>();
                 var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
-                MetricCategoryService metricCategoryService = new MetricCategoryService( new RockContext() );
+                MetricCategoryService metricCategoryService = new MetricCategoryService( RockApp.Current.CreateRockContext() );
 
                 foreach ( var guidPair in guidPairs )
                 {

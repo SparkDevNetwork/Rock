@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
@@ -241,7 +242,7 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new GroupRegistrationBlockBox();
 
@@ -347,7 +348,7 @@ namespace Rock.Blocks.Group
 
         private void GetSettings( RockContext rockContext, GroupRegistrationBlockBox box )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var group = GetGroup( rockContext );
             var currentPerson = RequestContext.CurrentPerson;
 
@@ -667,7 +668,7 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult Save( GroupRegistrationBag groupRegistrationBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
                 if ( !disableCaptcha && !RequestContext.IsCaptchaValid )

@@ -22,6 +22,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using Newtonsoft.Json;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Checkr.CheckrApi;
 using Rock.Checkr.Constants;
@@ -134,7 +135,7 @@ namespace Rock.Checkr
                         return true;
                     }
                     
-                    using ( var newRockContext = new RockContext() )
+                    using ( var newRockContext = RockApp.Current.CreateRockContext() )
                     {
                         var backgroundCheckService = new BackgroundCheckService( newRockContext );
                         var backgroundCheck = backgroundCheckService.Queryable()
@@ -240,7 +241,7 @@ namespace Rock.Checkr
         /// <returns></returns>
         private Person GetCurrentPerson()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
                 return currentUser != null ? currentUser.Person : null;
@@ -417,7 +418,7 @@ namespace Rock.Checkr
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
         private static bool UpdateBackgroundCheckAndWorkFlow( string candidateId, CheckrApi.Enums.WebhookTypes webhookTypes, string packageName = null, string status = null, string documentId = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var backgroundCheck = new BackgroundCheckService( rockContext )
                     .Queryable( "PersonAlias.Person" )
@@ -601,7 +602,7 @@ namespace Rock.Checkr
             }
 
             Dictionary<string, DefinedValue> packages;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.BACKGROUND_CHECK_TYPES.AsGuid() );
 

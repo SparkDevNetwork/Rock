@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -163,7 +164,7 @@ namespace Rock.Jobs
             string batchNamePrefix = GetAttributeValue( AttributeKey.BatchNamePrefix );
             Dictionary<FinancialGateway, string> processedPaymentsSummary = new Dictionary<FinancialGateway, string>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var targetGatewayQuery = new FinancialGatewayService( rockContext ).Queryable().Where( g => g.IsActive ).AsNoTracking();
 

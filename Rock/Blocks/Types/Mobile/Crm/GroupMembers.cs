@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -145,7 +146,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
             if ( groupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() )
             {
                 // We purposefully use a separate rockContext for this.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var memberService = new GroupMemberService( rockContext );
                     var groupMemberGroups = memberService.Queryable( true )
@@ -162,7 +163,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 }
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var memberService = new GroupMemberService( rockContext );
 

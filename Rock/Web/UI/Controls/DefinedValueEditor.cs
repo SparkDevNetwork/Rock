@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -406,7 +407,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                definedValue = new DefinedValueService( new RockContext() ).Get( DefinedValueId );
+                definedValue = new DefinedValueService( RockApp.Current.CreateRockContext() ).Get( DefinedValueId );
             }
 
             _hfDefinedValueId.SetValue( definedValue.Id );
@@ -427,7 +428,7 @@ namespace Rock.Web.UI.Controls
         protected void btnSave_Click( object sender, EventArgs e )
         {
             DefinedValue definedValue;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
 
             if ( DefinedValueId.Equals( 0 ) )

@@ -23,6 +23,7 @@ using System.Web;
 using Microsoft.Extensions.Logging;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -190,7 +191,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
             var messageSid = request.Form["MessageSid"];
 
             // get communication from the message side
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 CommunicationRecipientService recipientService = new CommunicationRecipientService( rockContext );
 

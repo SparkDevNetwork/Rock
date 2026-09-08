@@ -20,6 +20,7 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -64,7 +65,7 @@ namespace Rock.Web.UI.Controls
                 picker.Items.Add( new ListItem() );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionChannelService = new InteractionChannelService( rockContext );
             var channels = interactionChannelService.Queryable().AsNoTracking()
                 .Include( "ChannelTypeMediumValue" )

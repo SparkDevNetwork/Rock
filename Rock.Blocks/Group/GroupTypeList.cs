@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks.Group.GroupTypeList;
 using Rock.Web.Cache;
 
 using static Rock.Blocks.Group.GroupTypeList;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Group
 {
@@ -213,7 +214,7 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
                 var qry = GetListQueryable( rockContext );
@@ -242,7 +243,7 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new GroupTypeService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

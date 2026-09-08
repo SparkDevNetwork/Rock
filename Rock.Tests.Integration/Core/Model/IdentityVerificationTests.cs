@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -20,7 +21,7 @@ namespace Rock.Tests.Integration.Core.Model
             var ipAddress = "TEST-IP-ADDRESS";
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
@@ -38,7 +39,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             CreateIdentityVerificationRecords( ipLimit, referenceNumber, ipAddress );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 Assert.Throws<IdentityVerificationIpLimitReachedException>(
@@ -56,7 +57,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             CreateIdentityVerificationRecords( ipLimit - 1, referenceNumber, ipAddress );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, ipLimit, referenceNumber );
@@ -77,7 +78,7 @@ namespace Rock.Tests.Integration.Core.Model
             CreateIdentityVerificationRecords( 20, $"{referenceNumber}-3", $"{ipAddress}-3" );
             CreateIdentityVerificationRecords( 20, $"{referenceNumber}-4", $"{ipAddress}-4" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, ipLimit, referenceNumber );
@@ -99,7 +100,7 @@ namespace Rock.Tests.Integration.Core.Model
             CreateIdentityVerificationRecords( 20, $"{referenceNumber}-3", $"{ipAddress}-3" );
             CreateIdentityVerificationRecords( 20, $"{referenceNumber}-4", $"{ipAddress}-4" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, ipLimit, referenceNumber );
@@ -116,7 +117,7 @@ namespace Rock.Tests.Integration.Core.Model
             var validationAttempts = 10;
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
@@ -136,7 +137,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord1 = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
@@ -158,7 +159,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
@@ -178,7 +179,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
@@ -201,7 +202,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
@@ -224,7 +225,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
@@ -263,7 +264,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 for ( var i = 0; i < ipLimit; i++ )
                 {
@@ -276,7 +277,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private void DeleteIdentityVerificationRecords( string referenceNumber, string ipAddress )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( $@"
                     DELETE IdentityVerification WHERE ReferenceNumber = '{referenceNumber}' AND RequestIpAddress = '{ipAddress}'

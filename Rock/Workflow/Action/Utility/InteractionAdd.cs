@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -242,7 +243,7 @@ namespace Rock.Workflow.Action
                     }
 
                     // If still no match, and we have a name, create a new channel
-                    using ( var newRockContext = new RockContext() )
+                    using ( var newRockContext = RockApp.Current.CreateRockContext() )
                     {
                         InteractionChannel interactionChannel = new InteractionChannel();
                         interactionChannel.Name = identifier;
@@ -327,7 +328,7 @@ namespace Rock.Workflow.Action
                         }
 
                         // If still no match, and we have a name, create a new channel
-                        using ( var newRockContext = new RockContext() )
+                        using ( var newRockContext = RockApp.Current.CreateRockContext() )
                         {
                             var interactionComponent = new InteractionComponent();
                             interactionComponent.Name = identifier;

@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -311,7 +312,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() );
 
             LoadStateDetails( workflowType, rockContext );
@@ -325,7 +326,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var service = new WorkflowTypeService( rockContext );
             var workflowType = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
@@ -355,7 +356,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var workflowTypeService = new WorkflowTypeService( rockContext );
             var workflowType = workflowTypeService.Get( hfWorkflowTypeId.Value.AsInteger() );
 
@@ -587,7 +588,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnLaunch_Click( object sender, EventArgs e )
         {
-            var workflowType = new WorkflowTypeService( new RockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
+            var workflowType = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
             var qryParams = new Dictionary<string, string>();
             if ( workflowType != null )
             {
@@ -603,7 +604,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnManage_Click( object sender, EventArgs e )
         {
-            var workflowType = new WorkflowTypeService( new RockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
+            var workflowType = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
             var qryParams = new Dictionary<string, string>();
             if ( workflowType != null )
             {
@@ -619,7 +620,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnExport_Click( object sender, EventArgs e )
         {
-            var workflowType = new WorkflowTypeService( new RockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
+            var workflowType = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).GetNoTracking( hfWorkflowTypeId.Value.AsInteger() );
             var qryParams = new Dictionary<string, string>();
             if ( workflowType != null )
             {
@@ -637,7 +638,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         {
             ParseControls( true );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new WorkflowTypeService( rockContext );
 
             WorkflowType workflowType = null;
@@ -981,7 +982,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             else
             {
                 // Cancelling on Edit.  Return to Details
-                WorkflowTypeService service = new WorkflowTypeService( new RockContext() );
+                WorkflowTypeService service = new WorkflowTypeService( RockApp.Current.CreateRockContext() );
                 WorkflowType item = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -993,7 +994,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         protected void tbName_TextChanged( object sender, EventArgs e )
         {
             // Auto-update the slug when the name changes if the workflow is new.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 var workflowTypeId = hfWorkflowTypeId.Value.AsInteger();
@@ -1011,7 +1012,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         protected void tbSlug_TextChanged( object sender, EventArgs e )
         {
             // Ensure the manually entered slug is unique anytime it is changed.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 var workflowTypeId = hfWorkflowTypeId.Value.AsIntegerOrNull();
@@ -1205,7 +1206,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 var action = EntityTypeCache.Get( actionType.EntityTypeId );
                 if ( action != null )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), actionType.TypeId, "EntityTypeId", actionType.EntityTypeId.ToString(), rockContext );
                     actionType.LoadAttributes( rockContext );
                 }
@@ -1266,7 +1267,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     var action = EntityTypeCache.Get( actionType.EntityTypeId );
                     if ( action != null )
                     {
-                        var rockContext = new RockContext();
+                        var rockContext = RockApp.Current.CreateRockContext();
                         Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), actionType.TypeId, "EntityTypeId", actionType.EntityTypeId.ToString(), rockContext );
                         actionType.LoadAttributes( rockContext );
                     }
@@ -1372,7 +1373,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
         private string GenerateUniqueWorkflowPrefix( RockContext rockContext, string basePrefix )
         {
-            var workflowTypeService = new WorkflowTypeService( new RockContext() );
+            var workflowTypeService = new WorkflowTypeService( RockApp.Current.CreateRockContext() );
             string newPrefix = basePrefix;
             int suffix = 1;
 
@@ -1394,7 +1395,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// </summary>
         private void ShowDetail()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
 
             var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId );

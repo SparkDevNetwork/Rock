@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.ClientService.Connection.ConnectionOpportunity;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -226,7 +227,7 @@ namespace RockWeb.Blocks.Connection
         #region Methods
         private string GetConnectionTypeTitle()
         {
-            var connectionType = new ConnectionTypeService( new RockContext() ).GetNoTracking( _connectionTypeGuid );
+            var connectionType = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).GetNoTracking( _connectionTypeGuid );
             return connectionType?.Name;
         }
         /// <summary>
@@ -234,7 +235,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void GetConnectionOpportunities()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var opportunityService = new ConnectionOpportunityService( rockContext );
 

@@ -18,6 +18,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -43,7 +44,7 @@ namespace Rock.Tests.Integration.Crm.Following
         {
             RemovePersonFollowings();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var followingService = new FollowingService( rockContext );
             var personService = new PersonService( rockContext );
 
@@ -85,7 +86,7 @@ namespace Rock.Tests.Integration.Crm.Following
         {
             RemovePersonFollowings();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var followingService = new FollowingService( rockContext );
             var personService = new PersonService( rockContext );
 
@@ -112,7 +113,7 @@ namespace Rock.Tests.Integration.Crm.Following
         {
             RemovePersonFollowings();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var followingService = new FollowingService( rockContext );
             var personService = new PersonService( rockContext );
 
@@ -138,7 +139,7 @@ namespace Rock.Tests.Integration.Crm.Following
         {
             RemovePersonFollowings();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var followingService = new FollowingService( rockContext );
             var personService = new PersonService( rockContext );
             var groupService = new GroupService( rockContext );
@@ -159,7 +160,7 @@ namespace Rock.Tests.Integration.Crm.Following
 
         private void RemovePersonFollowings()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var followingService = new FollowingService( rockContext );
 
             var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
@@ -178,7 +179,7 @@ namespace Rock.Tests.Integration.Crm.Following
 
         private void AddPersonFollowings()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var followingService = new FollowingService( rockContext );
             var personService = new PersonService( rockContext );
 

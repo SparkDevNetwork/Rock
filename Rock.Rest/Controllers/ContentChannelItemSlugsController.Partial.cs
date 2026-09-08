@@ -16,6 +16,7 @@
 //
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -40,7 +41,7 @@ namespace Rock.Rest.Controllers
         public SaveSlugResponse SaveContentSlug( int contentChannelItemId, string slug, int? contentChannelItemSlugId = null )
         {
             SaveSlugResponse response = new SaveSlugResponse();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
 
@@ -69,7 +70,7 @@ namespace Rock.Rest.Controllers
         {
             string uniqueSlug = string.Empty;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
 
@@ -94,7 +95,7 @@ namespace Rock.Rest.Controllers
         {
             string uniqueSlug = string.Empty;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
 

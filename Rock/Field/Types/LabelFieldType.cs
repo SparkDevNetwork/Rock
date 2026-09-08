@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.SecurityGrantRules;
@@ -56,7 +57,7 @@ namespace Rock.Field.Types
             var guidValue = privateValue.AsGuidOrNull();
             if ( guidValue.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileInfo = new BinaryFileService( rockContext ).GetSelect( guidValue.Value, f => new ListItemBag()
                     {
@@ -84,7 +85,7 @@ namespace Rock.Field.Types
             var binaryFileGuid = value.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var fileName = binaryFileService.GetSelect( binaryFileGuid.Value, s => s.FileName );

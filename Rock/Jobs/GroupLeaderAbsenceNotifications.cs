@@ -22,6 +22,7 @@ using System.Text;
 using System.Web;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -112,7 +113,7 @@ namespace Rock.Jobs
             int sendFailed = 0;
 
             // get groups set to sync
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             Guid? groupTypeGuid = GetAttributeValue( AttributeKey.GroupType ).AsGuidOrNull();
             Guid? systemEmailGuid = GetAttributeValue( AttributeKey.NotificationEmail ).AsGuidOrNull();

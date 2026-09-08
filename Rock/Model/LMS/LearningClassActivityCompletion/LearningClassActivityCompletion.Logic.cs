@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Lms;
 
@@ -221,7 +222,7 @@ namespace Rock.Model
                 else
                 {
                     return this.LearningClassActivityId > 0 ?
-                        new LearningClassActivityService( new Data.RockContext() ).Get( this.LearningClassActivityId ) :
+                        new LearningClassActivityService( RockApp.Current.CreateRockContext() ).Get( this.LearningClassActivityId ) :
                         base.ParentAuthority;
                 }
             }

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AdaptiveMessageAdaptationSegmentsController"/> class.
         /// </summary>
-        public AdaptiveMessageAdaptationSegmentsController() : base( new Rock.Model.AdaptiveMessageAdaptationSegmentService( new Rock.Data.RockContext() ) ) { } 
+        public AdaptiveMessageAdaptationSegmentsController() : base( new Rock.Model.AdaptiveMessageAdaptationSegmentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

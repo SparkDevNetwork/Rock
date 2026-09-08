@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -48,7 +49,7 @@ namespace Rock.Jobs
         {
             var groupGuid = this.GetAttributeValue( "NotificationGroup" ).AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var group = new GroupService( rockContext ).Get( groupGuid );
 
             if ( group != null )

@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -212,7 +213,7 @@ function() {
 
             var waitlistFilterStatus = selectionConfig.OnWaitList == null ? string.Empty : Convert.ToBoolean( selectionConfig.OnWaitList ) ? ", only wait list" : ", no wait list";
 
-            var registrationInstance = new RegistrationInstanceService( new RockContext() ).Queryable().Where( a => a.Guid == selectionConfig.RegistrationInstanceGuid ).FirstOrDefault();
+            var registrationInstance = new RegistrationInstanceService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.Guid == selectionConfig.RegistrationInstanceGuid ).FirstOrDefault();
             if ( registrationInstance != null )
             {
                 return string.Format( "{0} in registration instance '{1}' {2}", filterOptions, registrationInstance.Name, waitlistFilterStatus );
@@ -223,7 +224,7 @@ function() {
             }
             else
             {
-                var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Queryable().Where( t => t.Id == selectionConfig.RegistrationTemplateId ).FirstOrDefault();
+                var registrationTemplate = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).Queryable().Where( t => t.Id == selectionConfig.RegistrationTemplateId ).FirstOrDefault();
                 return string.Format( "{0} in any registration instance of template '{1}' {2}", filterOptions, registrationTemplate?.Name ?? selectionConfig.RegistrationTemplateId + " [MISSING]", waitlistFilterStatus );
             }
         }
@@ -244,7 +245,7 @@ function() {
             _ddlRegistrationTemplate.Label = "Registration Template";
             _ddlRegistrationTemplate.DataTextField = "Name";
             _ddlRegistrationTemplate.DataValueField = "Id";
-            _ddlRegistrationTemplate.DataSource = new RegistrationTemplateService( new RockContext() ).Queryable()
+            _ddlRegistrationTemplate.DataSource = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).Queryable()
                 .OrderBy( a => a.Name )
                 .Select( d => new
                 {
@@ -320,7 +321,7 @@ function() {
             {
                 _ddlRegistrationInstance.Items.Clear();
                 _ddlRegistrationInstance.Items.Add( new ListItem( "- Any -", string.Empty ) );
-                foreach ( var item in new RegistrationInstanceService( new RockContext() ).Queryable().Where( r => r.RegistrationTemplateId == registrationTemplateId ).OrderBy( r => r.Name ) )
+                foreach ( var item in new RegistrationInstanceService( RockApp.Current.CreateRockContext() ).Queryable().Where( r => r.RegistrationTemplateId == registrationTemplateId ).OrderBy( r => r.Name ) )
                 {
                     _ddlRegistrationInstance.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
@@ -377,7 +378,7 @@ function() {
         {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
-            var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Get( selectionConfig.RegistrationTemplateId );
+            var registrationTemplate = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.RegistrationTemplateId );
             var ddlRegistrationTemplate = controls[0] as RockDropDownList;
             if ( registrationTemplate != null )
             {

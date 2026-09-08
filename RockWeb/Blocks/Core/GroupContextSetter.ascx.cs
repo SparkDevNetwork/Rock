@@ -22,6 +22,7 @@ using System.Web;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -162,7 +163,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
             var groupTypeService = new GroupTypeService( rockContext );
             IQueryable<Group> qryGroups = null;
@@ -247,7 +248,7 @@ namespace RockWeb.Blocks.Core
         protected Group SetGroupContext( int groupId, bool refreshPage = false )
         {
             bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
-            var group = new GroupService( new RockContext() ).Get( groupId );
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( groupId );
             if ( group == null )
             {
                 // clear the current group context
@@ -289,7 +290,7 @@ namespace RockWeb.Blocks.Core
         protected GroupType SetGroupTypeContext( Guid? groupTypeGuid )
         {
             bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
-            var groupTypeService = new GroupTypeService( new RockContext() );
+            var groupTypeService = new GroupTypeService( RockApp.Current.CreateRockContext() );
 
             // check if a grouptype parameter exists to set
             var groupType = groupTypeService.Get( ( Guid ) groupTypeGuid );

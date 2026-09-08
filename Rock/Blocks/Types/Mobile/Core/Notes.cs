@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Enums.Core;
@@ -306,7 +307,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 // Can't use defaultNoteImageFile.Url because it will build the path
                 // relative to the current request, which won't always work with mobile
                 // applications. So force it to use the PublicApplicationRoot.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var defaultNoteImageFile = new BinaryFileService( rockContext ).Get( DefaultNoteImage.Value );
 
@@ -503,7 +504,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <param name="noteText">The note text.</param>
         private void SendNoteAddedCommunicationToGroup( Group group, string noteText )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -653,7 +654,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction]
         public BlockActionResult GetNote( Guid noteGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
 
                 if ( noteGuid == null )
@@ -708,7 +709,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 return ActionBadRequest( "Unknown note type." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var noteService = new NoteService( rockContext );
                 Note note;
@@ -825,7 +826,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction]
         public BlockActionResult DeleteNote( Guid noteGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new NoteService( rockContext );
                 var note = service.Get( noteGuid );
@@ -863,7 +864,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction]
         public BlockActionResult GetNotesTemplate( Guid? parentNoteGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var notes = GetEntityNotes( parentNoteGuid, 0, PageLoadSize );
 

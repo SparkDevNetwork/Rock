@@ -23,6 +23,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -109,7 +110,7 @@ namespace Rock.StatementGenerator.Rest
             var endDate = isCurrentYear ? RockDateTime.Now : new DateTime( year.Value + 1, 1, 1 );
 
             // Declare the necessary services
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             // Get the family ID

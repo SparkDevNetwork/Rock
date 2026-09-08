@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -117,7 +118,7 @@ namespace Rock.Blocks.Core
                 if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
-                    var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
+                    var signatureDocumentTemplateService = new SignatureDocumentTemplateService( RockApp.Current.CreateRockContext() );
                     var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
 
                     bool canEdit = signatureDocumentTemplate?.IsAuthorized( Authorization.EDIT, currentPerson ) ?? false;

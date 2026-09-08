@@ -22,6 +22,7 @@ using System.Data.SqlClient;
 using System.Linq;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility.Settings.Giving;
@@ -42,7 +43,7 @@ namespace Rock.Financial
         /// <returns>The number of journey stages changed.</returns>
         internal static int UpdateJourneyStages( GivingAutomationSettings settings )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.CommandTimeout = 180;
 
@@ -98,7 +99,7 @@ namespace Rock.Financial
         /// </summary>
         internal static void UpdateGivingBinsAndPercentiles()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.CommandTimeout = 180;
 

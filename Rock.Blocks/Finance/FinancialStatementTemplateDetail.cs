@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Financial;
@@ -224,7 +225,7 @@ namespace Rock.Blocks.Finance
             var transactionSettings = entity.ReportSettings.TransactionSettings;
             if ( transactionSettings.AccountSelectionOption == Rock.Financial.FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts )
             {
-                var accountList = new FinancialAccountService( new RockContext() ).Queryable()
+                var accountList = new FinancialAccountService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( a => a.IsActive && a.IsTaxDeductible )
                         .ToList();
 
@@ -234,7 +235,7 @@ namespace Rock.Blocks.Finance
             {
                 if ( transactionSettings.SelectedAccountIds.Any() )
                 {
-                    var accountList = new FinancialAccountService( new RockContext() )
+                    var accountList = new FinancialAccountService( RockApp.Current.CreateRockContext() )
                         .GetByIds( transactionSettings.SelectedAccountIds )
                         .Where( a => a.IsActive )
                         .ToList();
@@ -483,7 +484,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var key = pageReference.GetPageParameter( PageParameterKey.FinancialStatementTemplateId );
                 var pageParameters = new Dictionary<string, string>();

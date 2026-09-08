@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -78,7 +79,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag>();
 
@@ -335,7 +336,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -457,7 +458,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -483,7 +484,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -523,7 +524,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new FinancialPledgeService( rockContext );
 
@@ -553,7 +554,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<FinancialPledgeBag, FinancialPledgeDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -606,7 +607,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult LoadGroups( Guid? personAliasGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groups = LoadGroups( personAliasGuid, rockContext );
                 return ActionOk( groups );

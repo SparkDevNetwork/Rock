@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -468,7 +469,7 @@ namespace Rock.Web.UI
 
                     if ( registrationInstance != null )
                     {
-                        var dataContext = new RockContext();
+                        var dataContext = RockApp.Current.CreateRockContext();
 
                         var registrationIdQry = new RegistrationService( dataContext )
                             .Queryable().AsNoTracking()
@@ -1012,7 +1013,7 @@ namespace Rock.Web.UI
                 return new RegistrantFormField[0];
             }
 
-            List<RegistrationTemplateForm> registrationTemplateForms = new RegistrationTemplateService( new RockContext() ).GetSelect( this.RegistrationTemplateId.Value, s => s.Forms )?.ToList();
+            List<RegistrationTemplateForm> registrationTemplateForms = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).GetSelect( this.RegistrationTemplateId.Value, s => s.Forms )?.ToList();
 
             if ( registrationTemplateForms == null )
             {
@@ -1126,7 +1127,7 @@ namespace Rock.Web.UI
 
             if ( registrationInstance == null )
             {
-                registrationInstance = GetRegistrationInstance( registrationInstanceId, new RockContext() );
+                registrationInstance = GetRegistrationInstance( registrationInstanceId, RockApp.Current.CreateRockContext() );
                 RockPage.SaveSharedItem( key, registrationInstance );
             }
 

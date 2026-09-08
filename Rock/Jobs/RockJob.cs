@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 
 using Quartz;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -122,7 +123,7 @@ namespace Rock.Jobs
         internal void InitializeFromJobContext( IJobExecutionContext context )
         {
             var serviceJobId = context.GetJobIdFromQuartz();
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             this.ServiceJobId = serviceJobId;
             ServiceJob = new ServiceJobService( rockContext ).Get( serviceJobId );
             ServiceJob.LoadAttributes();
@@ -152,7 +153,7 @@ namespace Rock.Jobs
             Logger.LogDebug( statusMessage );
 
             Result = statusMessage;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var serviceJob = new ServiceJobService( rockContext ).Get( this.ServiceJobId );
                 if ( serviceJob == null )

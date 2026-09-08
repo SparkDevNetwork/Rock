@@ -21,6 +21,7 @@ using System.Web.Http;
 using System.Web.UI;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack )
             {
-                var service = new RestActionService( new RockContext() );
+                var service = new RestActionService( RockApp.Current.CreateRockContext() );
                 var restAction = service.Get( PageParameter( "RestActionId" ).AsInteger() );
 
                 if ( restAction != null )

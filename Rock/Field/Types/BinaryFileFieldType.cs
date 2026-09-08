@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -57,7 +58,7 @@ namespace Rock.Field.Types
         {
             var configurationProperties = new Dictionary<string, string>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileTypes = new BinaryFileTypeService( rockContext )
                     .Queryable()
@@ -95,7 +96,7 @@ namespace Rock.Field.Types
                 return "";
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileInfo = new BinaryFileService( rockContext )
                     .Queryable()
@@ -158,7 +159,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var fileName = new BinaryFileService( rockContext ).GetSelect( guid.Value, f => f.FileName );
 
@@ -178,7 +179,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return new BinaryFileService( new Data.RockContext() )
+            return new BinaryFileService( RockApp.Current.CreateRockContext() )
                 .Get( privateValue.AsGuid() )
                 .ToListItemBag()
                 .ToCamelCaseJson( false, true );
@@ -225,7 +226,7 @@ namespace Rock.Field.Types
         {
             if ( usage != ConfigurationValueUsage.View )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
@@ -323,7 +324,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new BinaryFileService( rockContext ).Get( guid.Value );
             }
 
@@ -344,7 +345,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileId = new BinaryFileService( rockContext ).GetId( guid.Value );
 
@@ -385,7 +386,7 @@ namespace Rock.Field.Types
                 return PersistedValues.Empty();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileInfo = new BinaryFileService( rockContext )
                     .Queryable()
@@ -501,7 +502,7 @@ namespace Rock.Field.Types
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Items.Clear();
             ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var ft in new BinaryFileTypeService( new RockContext() )
+            foreach ( var ft in new BinaryFileTypeService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .OrderBy( f => f.Name )
                 .Select( f => new { f.Guid, f.Name } ) )
@@ -598,7 +599,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         itemGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
@@ -628,7 +629,7 @@ namespace Rock.Field.Types
                 // get the item (or null) and set it
                 if ( guid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         binaryFile = new BinaryFileService( rockContext ).Get( guid.Value );
                     }
@@ -680,7 +681,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            int? itemId = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Guid == guid ).Select( a => a.Id ).FirstOrDefault();
+            int? itemId = new BinaryFileService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.Guid == guid ).Select( a => a.Id ).FirstOrDefault();
             return itemId != null ? itemId : ( int? ) null;
         }
 
@@ -696,7 +697,7 @@ namespace Rock.Field.Types
             Guid? itemGuid = null;
             if ( id.HasValue )
             {
-                itemGuid = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Id == id.Value ).Select( a => a.Guid ).FirstOrDefault();
+                itemGuid = new BinaryFileService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.Id == id.Value ).Select( a => a.Guid ).FirstOrDefault();
             }
 
             string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;

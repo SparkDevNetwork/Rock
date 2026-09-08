@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -402,7 +403,7 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var device = new DeviceService( rockContext ).Get( deviceId.Value );
 
             if ( device == null )
@@ -532,7 +533,7 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
                 var deviceQry = new DeviceService( rockContext )
                     .Queryable()
@@ -663,7 +664,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <returns></returns>
         private Person GetMobilePerson()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var mobilePerson = this.CurrentPerson;
             if ( mobilePerson == null )
             {
@@ -861,7 +862,7 @@ namespace RockWeb.Blocks.CheckIn
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     IQueryable<Device> kioskQuery = new DeviceService( rockContext )
                         .GetDevicesByGeocode( latitude, longitude, deviceTypeCheckinKioskValueId )
@@ -931,7 +932,7 @@ namespace RockWeb.Blocks.CheckIn
             // keep any currently selected areas after we repopulate areas for the selectedCheckinType
             var selectedAreaIds = lbAreas.SelectedValues.AsIntegerList();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var locationService = new LocationService( rockContext );
             var groupLocationService = new GroupLocationService( rockContext );
 
@@ -974,7 +975,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BindCheckinTypes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupTypeService = new GroupTypeService( rockContext );
 
@@ -1018,7 +1019,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             DeviceService deviceService = new DeviceService( rockContext );
             var devices = deviceService.Queryable().AsNoTracking().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId && d.IsActive == true )
@@ -1122,7 +1123,7 @@ namespace RockWeb.Blocks.CheckIn
             checkInState.CheckIn.Families = new List<CheckInFamily>();
             checkInState.CheckIn.Families.Add( checkInFamily );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             SaveState();
 

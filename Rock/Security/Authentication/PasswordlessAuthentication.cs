@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -164,7 +165,7 @@ namespace Rock.Security.Authentication
                 };
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !IsOneTimePasscodeValid( rockContext, state, out var remoteAuthenticationSession ) )
                 {

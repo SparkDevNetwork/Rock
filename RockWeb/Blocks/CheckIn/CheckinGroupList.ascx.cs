@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using System.Data.Entity;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -82,7 +83,7 @@ namespace RockWeb.Blocks.Checkin
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            _rockContext = new RockContext();
+            _rockContext = RockApp.Current.CreateRockContext();
 
             _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
             bddlCampus.Visible = _allowCampusFilter;

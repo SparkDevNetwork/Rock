@@ -23,6 +23,7 @@ using System.Linq;
 using System.Net.Mime;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -72,7 +73,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<ContentChannelTypeBag, ContentChannelTypeDetailOptionsBag>();
 
@@ -88,7 +89,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentTypeId = pageReference.GetPageParameter( PageParameterKey.ContentChannelTypeId );
                 var contentTypeName = new ContentChannelTypeService( rockContext )
@@ -366,7 +367,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -500,7 +501,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -524,7 +525,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<ContentChannelTypeBag, ContentChannelTypeDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ContentChannelTypeService( rockContext );
 

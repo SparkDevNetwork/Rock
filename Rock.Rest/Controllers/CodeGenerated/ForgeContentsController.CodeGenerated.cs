@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ForgeContentsController"/> class.
         /// </summary>
-        public ForgeContentsController() : base( new Rock.Model.ForgeContentService( new Rock.Data.RockContext() ) ) { } 
+        public ForgeContentsController() : base( new Rock.Model.ForgeContentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

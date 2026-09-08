@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.ElectronicSignature;
@@ -441,7 +442,7 @@ namespace Rock.Blocks.Core
                 BinaryFile binaryFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId, "preview.pdf", signedDocumentHtml );
                 binaryFile.IsTemporary = true;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     new BinaryFileService( rockContext ).Add( binaryFile );
                     rockContext.SaveChanges();
@@ -572,7 +573,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetPdfPreviewUrl( GetPdfPreviewUrlRequestBag requestBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SignatureType signatureType = requestBag.SignatureType.IsNotNullOrWhiteSpace() ? requestBag.SignatureType.ConvertToEnum<SignatureType>() : SignatureType.Typed;
 

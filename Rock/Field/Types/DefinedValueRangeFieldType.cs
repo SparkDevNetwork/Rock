@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -354,7 +355,7 @@ namespace Rock.Field.Types
             ddl.Label = "Defined Type";
             ddl.Help = "The Defined Type to select values from.";
 
-            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService( new RockContext() );
+            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService( RockApp.Current.CreateRockContext() );
             ddl.Items.Add( new ListItem() );
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
             {

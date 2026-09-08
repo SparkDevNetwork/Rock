@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared.Constants;
@@ -91,7 +92,7 @@ namespace Rock.Tests.Integration.TestData.Metrics
         {
             MetricValue newMetricValue = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.WrapTransaction( () =>
             {
@@ -153,7 +154,7 @@ namespace Rock.Tests.Integration.TestData.Metrics
         /// <returns></returns>
         public void UpdateMetricValue( UpdateMetricValueActionArgs args )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.WrapTransaction( () =>
             {
@@ -265,7 +266,7 @@ DELETE FROM [MetricValue] WHERE [ForeignKey] = '{TestDataForeignKey}'
 
             LogHelper.Log( $"Weekly Attendance Metrics: adding sample data..." );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var campusSteppingStone = TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
             var steppingStoneCampusGuidString = campusSteppingStone.Guid.ToString();
 

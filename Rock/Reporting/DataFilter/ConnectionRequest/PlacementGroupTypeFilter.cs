@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -96,7 +97,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
                 return data;
             }
 
-            var groupType = new GroupTypeService( new RockContext() ).Get( selectionConfig.PlacementGroupTypeGuid.Value );
+            var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.PlacementGroupTypeGuid.Value );
 
             data.AddOrReplace( "groupType", groupType?.ToListItemBag().ToCamelCaseJson( false, true ) );
 
@@ -186,7 +187,7 @@ function() {
             GroupTypePicker groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Placement Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().ToList();
             filterControl.Controls.Add( groupTypePicker );
 
             return new Control[] { groupTypePicker };
@@ -214,7 +215,7 @@ function() {
         {
             var selectionConfig = new SelectionConfig();
             int? groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId();
-            var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId ?? 0 );
+            var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( groupTypeId ?? 0 );
             if ( groupType != null )
             {
                 selectionConfig.PlacementGroupTypeGuid = groupType.Guid;
@@ -236,7 +237,7 @@ function() {
                 SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
                 if ( controls.Length > 0 && selectionConfig.PlacementGroupTypeGuid.HasValue )
                 {
-                    var groupType = new GroupTypeService( new RockContext() ).Get( selectionConfig.PlacementGroupTypeGuid.Value );
+                    var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.PlacementGroupTypeGuid.Value );
                     if ( groupType != null )
                     {
                         ( controls[0] as GroupTypePicker ).SetValue( groupType.Id );
@@ -263,7 +264,7 @@ function() {
                 return null;
             }
 
-            var groupType = new GroupTypeService( new RockContext() ).Get( selectionConfig.PlacementGroupTypeGuid.Value );
+            var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.PlacementGroupTypeGuid.Value );
             int? groupTypeId = null;
             if ( groupType != null )
             {

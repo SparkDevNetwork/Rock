@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using EF6.TagWith;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Data.LinqKit;
 using Rock.Model;
@@ -403,7 +404,7 @@ namespace Rock
                     var models = new List<IModel>();
                     source.ToList().ForEach( i => models.Add( i as IModel ) );
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         //Check if Attribute Entity Type is same as Source Entity Type
                         var type = models.First().GetType();

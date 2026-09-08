@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Threading;
 using System.Web;
 using Rock;
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Model;
 
@@ -91,7 +92,7 @@ namespace RockWeb
                     var activeComponent = Rock.Security.BackgroundCheckContainer.GetActiveComponent();
                     if ( activeComponent != null )
                     {
-                        using ( var rockContext = new Rock.Data.RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
                             var currentPerson = currentUser?.Person;

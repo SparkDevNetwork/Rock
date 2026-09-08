@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
             List<int> mediaElementIds;
             int contentChannelsUpdatedCount;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaFolder = new MediaFolderService( rockContext ).Get( mediaFolderId );
 

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -61,7 +62,7 @@ namespace Rock.Rest.v2.Models.Actions
         [SystemGuid.RestActionGuid( "802af5c2-c880-42d4-8043-33a43ad27965" )]
         public IActionResult GetFollowed( string entityTypeId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityType = EntityCache<EntityTypeCache, EntityType>.Get( entityTypeId, true );
 

@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -115,7 +116,7 @@ namespace Rock.Field.Types
 
             if ( int.TryParse( privateValue, out var id ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var site = new SiteService( rockContext ).GetNoTracking( id );
                     if ( site != null )
@@ -157,7 +158,7 @@ namespace Rock.Field.Types
             var id = value.AsIntegerOrNull();
             if ( id.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new SiteService( rockContext ).Get( id.Value );
             }
 
@@ -339,7 +340,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var siteService = new SiteService( new RockContext() );
+            var siteService = new SiteService( RockApp.Current.CreateRockContext() );
             var siteQry = siteService.Queryable();
 
             var shorteningSitesOnly = false;

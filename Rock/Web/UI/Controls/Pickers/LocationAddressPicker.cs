@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -357,7 +358,7 @@ namespace Rock.Web.UI.Controls
                 var locationId = _hfLocationId.ValueAsInt();
                 if ( locationId > 0 )
                 {
-                    return new LocationService( new RockContext() ).Get( locationId );
+                    return new LocationService( RockApp.Current.CreateRockContext() ).Get( locationId );
                 }
 
                 return null;
@@ -580,7 +581,7 @@ namespace Rock.Web.UI.Controls
 
             _acAddress.GetValues( editedLocation );
 
-            var locationService = new LocationService( new RockContext() );
+            var locationService = new LocationService( RockApp.Current.CreateRockContext() );
 
             string validationMessage;
 

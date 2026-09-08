@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Web.UI.Controls
@@ -283,7 +284,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !WorkflowTypeId.HasValue )
                     {
-                        var workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( workflowId );
+                        var workflow = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Get( workflowId );
                         if ( workflow != null &&
                             _ddlWorkflowType.SelectedValue != workflow.WorkflowTypeId.ToString() )
                         {
@@ -381,7 +382,7 @@ namespace Rock.Web.UI.Controls
                 _ddlWorkflowType.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowTypeService = new Rock.Model.WorkflowTypeService( rockContext );
 
@@ -418,7 +419,7 @@ namespace Rock.Web.UI.Controls
                     _ddlWorkflow.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
                 }
 
-                var workflowService = new Rock.Model.WorkflowService( new RockContext() );
+                var workflowService = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() );
                 var workflows = workflowService.Queryable()
                     .Where( w => 
                         w.WorkflowTypeId == workflowTypeId.Value &&

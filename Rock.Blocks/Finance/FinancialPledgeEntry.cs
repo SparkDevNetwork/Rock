@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
@@ -212,7 +213,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>();
 
@@ -503,7 +504,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = new FinancialPledge
                 {
@@ -689,7 +690,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult InitializeBox()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = new FinancialPledge
                 {
@@ -821,7 +822,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

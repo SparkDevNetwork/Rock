@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -266,7 +267,7 @@ function() {
                 Guid? locationGuid = selectionValues[1].AsGuidOrNull();
                 if ( locationGuid.HasValue )
                 {
-                    var location = new LocationService( new RockContext() ).Get( locationGuid.Value );
+                    var location = new LocationService( RockApp.Current.CreateRockContext() ).Get( locationGuid.Value );
                     double miles = selectionValues[2].AsDoubleOrNull() ?? 0;
 
                     result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
@@ -365,7 +366,7 @@ function() {
                 groupLocationType.SetValue( groupLocationTypeGuid.ToString() );
 
                 var locationPicker = controls[1] as LocationPicker;
-                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[1].AsGuid() );
+                var selectedLocation = new LocationService( RockApp.Current.CreateRockContext() ).Get( selectionValues[1].AsGuid() );
                 locationPicker.SetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
 

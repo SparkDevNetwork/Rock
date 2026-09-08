@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -777,7 +778,7 @@ namespace Rock.Model
         /// <returns>A Task representing the asynchronous operation.</returns>
         internal static async Task SendOutboundSmsRealTimeNotificationsAsync( int communicationRecipientId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var messageBag = new CommunicationRecipientService( rockContext )
                     .GetConversationMessageBag( communicationRecipientId );
@@ -818,7 +819,7 @@ namespace Rock.Model
         /// <returns>A Task representing the asynchronous operation.</returns>
         internal static async Task SendInboundSmsRealTimeNotificationsAsync( int communicationResponseId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var messageBag = new CommunicationResponseService( rockContext )
                     .GetConversationMessageBag( communicationResponseId );
@@ -938,7 +939,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Find the response and pull out just the data we need.
                 var response = new CommunicationResponseService( rockContext )

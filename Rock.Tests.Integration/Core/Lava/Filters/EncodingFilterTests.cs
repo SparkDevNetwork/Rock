@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -40,7 +41,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         [TestMethod]
         public void Base64EncodeFilter_WithBinaryFileObjectParameter_ReturnsExpectedEncoding()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var contentChannelItem = new ContentChannelItemService( rockContext )
                 .Queryable()
@@ -65,7 +66,7 @@ Base64Format: {{ image | Base64Encode }}<br/>
         [TestMethod]
         public void ToBase64Filter_WithBinaryDataParameter_ReturnsExpectedEncoding()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var contentChannelItem = new ContentChannelItemService( rockContext )
                 .Queryable()

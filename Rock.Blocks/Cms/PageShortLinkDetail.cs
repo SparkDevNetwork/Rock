@@ -26,6 +26,7 @@ using QRCoder;
 
 using Rock.Attribute;
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -94,7 +95,7 @@ namespace Rock.Blocks.Cms
         {
             _minTokenLength = GetAttributeValue( AttributeKey.MinimumTokenLength ).AsIntegerOrNull() ?? 7;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>();
 
@@ -931,7 +932,7 @@ GROUP BY [Bucket], [Partition]";
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new PageShortLinkService( rockContext );
 

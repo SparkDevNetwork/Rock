@@ -21,6 +21,7 @@ using System.Web.UI;
 using Rock.Attribute;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -62,7 +63,7 @@ namespace RockWeb.Blocks.Core
             Guid binaryFileTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( GetAttributeValue( AttributeKey.BinaryFileType ), out binaryFileTypeGuid ) )
             {
-                var service = new BinaryFileTypeService( new RockContext() );
+                var service = new BinaryFileTypeService( RockApp.Current.CreateRockContext() );
                 binaryFileType = service.Get( binaryFileTypeGuid );
             }
 
@@ -140,7 +141,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFile_Delete( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
             BinaryFile binaryFile = binaryFileService.Get( e.RowKeyId );
 
@@ -203,7 +204,7 @@ namespace RockWeb.Blocks.Core
         private void BindGrid()
         {
             Guid binaryFileTypeGuid = binaryFileType != null ? binaryFileType.Guid : Guid.NewGuid();
-            var binaryFileService = new BinaryFileService( new RockContext() );
+            var binaryFileService = new BinaryFileService( RockApp.Current.CreateRockContext() );
             var queryable = binaryFileService.Queryable().Where( f => f.BinaryFileType.Guid == binaryFileTypeGuid );
 
             bool includeTemp = false;

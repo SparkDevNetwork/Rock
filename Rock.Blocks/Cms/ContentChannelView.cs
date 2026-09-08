@@ -24,6 +24,7 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Lava;
@@ -1273,7 +1274,7 @@ namespace Rock.Blocks.Cms
 
                     Reason: Prevent ObjectDisposedException on cached items during Lava rendering.
                 */
-                var contentRockContext = new RockContext();
+                var contentRockContext = RockApp.Current.CreateRockContext();
                 var contentChannelItemService = new ContentChannelItemService( contentRockContext );
                 var itemId = PageParameter( PageParameterKey.Item ).AsIntegerOrNull();
                 var dataFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();

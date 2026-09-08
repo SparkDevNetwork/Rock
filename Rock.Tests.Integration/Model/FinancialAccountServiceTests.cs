@@ -2,6 +2,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -16,7 +17,7 @@ namespace Rock.Tests.Integration.Model
         {
             // This test checks that the GetTree method does not throw and
             // exception due to missing columns in the query.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
 

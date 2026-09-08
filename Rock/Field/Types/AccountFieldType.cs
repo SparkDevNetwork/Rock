@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -165,7 +166,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new FinancialAccountService( rockContext ).Get( guid.Value );
             }
 

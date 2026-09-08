@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -123,7 +124,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var themeService = new ThemeService( rockContext );
 
@@ -171,7 +172,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( cloneWasSuccessful )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     if ( new ThemeService( rockContext ).UpdateThemes() )
                     {
@@ -245,7 +246,7 @@ namespace RockWeb.Blocks.Cms
         {
             string messages = string.Empty;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var themeService = new ThemeService( rockContext );
                 var themesToDelete = themeService.Queryable()
@@ -301,7 +302,7 @@ namespace RockWeb.Blocks.Cms
 
         private List<ThemePoco> GetThemes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var legacyThemeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_LEGACY.AsGuid(), rockContext ).Id;
 

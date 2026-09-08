@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -59,7 +60,7 @@ namespace Rock.Search.Finance
                 return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialAccountService = new FinancialAccountService( rockContext );
             var qry = financialAccountService.GetAccountsBySearchTerm( searchTerm );
 
@@ -79,7 +80,7 @@ namespace Rock.Search.Finance
                 return Enumerable.Empty<string>().AsQueryable();
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialAccountService = new FinancialAccountService( rockContext );
 
             // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection

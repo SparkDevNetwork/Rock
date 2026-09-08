@@ -22,6 +22,7 @@ using System.Web.UI;
 using OpenXmlPowerTools;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -181,7 +182,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var referencedEntities = guids.Select( a => new ScheduleService( rockContext ).Get( a ) )
                 .Select( s => s.Id )

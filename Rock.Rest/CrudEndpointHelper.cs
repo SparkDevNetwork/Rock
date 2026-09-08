@@ -21,6 +21,7 @@ using System.Net;
 using System.Reflection;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -90,7 +91,7 @@ namespace Rock.Rest
                     return BadRequest( errorMessage );
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
 
@@ -158,7 +159,7 @@ namespace Rock.Rest
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
                     var entity = service.Get( id );
@@ -199,7 +200,7 @@ namespace Rock.Rest
                     return BadRequest( "Item to be updated cannot be null." );
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
                     var targetEntity = service.Get( id );
@@ -255,7 +256,7 @@ namespace Rock.Rest
         {
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
                     var entity = service.Get( id );
@@ -311,7 +312,7 @@ namespace Rock.Rest
                     return BadRequest( "Cannot set Id." );
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
                     var entity = service.Get( id );
@@ -428,7 +429,7 @@ namespace Rock.Rest
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
                     var entity = service.Get( id );
@@ -514,7 +515,7 @@ namespace Rock.Rest
                     return BadRequest( "No values were sent in the body." );
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
                     var entity = service.Get( id );
@@ -597,7 +598,7 @@ namespace Rock.Rest
                     IsRefinementAllowed = true
                 };
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var queryable = ( IQueryable<TEntity> ) Reflection.GetQueryableForEntityType( typeof( TEntity ), rockContext )
                         ?? throw new Exception( $"Entity type '{typeof( TEntity ).FullName}' does not support entity search." );

@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -98,7 +99,7 @@ namespace Rock.Web.UI.Controls
             this.Items.Clear();
             this.Items.Add( new ListItem() );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var gateways = new FinancialGatewayService( rockContext )
                     .Queryable()

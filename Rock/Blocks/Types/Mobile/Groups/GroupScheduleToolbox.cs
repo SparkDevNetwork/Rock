@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -217,7 +218,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>The content view model to be used when displaying on mobile.</returns>
         private ContentBag GetScheduleContent()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentDateTime = RockDateTime.Now.Date;
 
@@ -317,7 +318,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Query the specific attendance attempting to be declined.
                 var attendanceService = new AttendanceService( rockContext );
@@ -360,7 +361,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
 
             // Get the corresponding attendance Id from the Guid.
@@ -390,7 +391,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult DeclineAttend( Guid attendanceGuid, Guid? declineReasonGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // We cannot operate without a logged in person.
                 if ( RequestContext.CurrentPerson == null )
@@ -437,7 +438,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult SetPending( Guid attendanceGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // We cannot operate without a logged in person.
                 if ( RequestContext.CurrentPerson == null )

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="LearningClassActivityCompletionsController"/> class.
         /// </summary>
-        public LearningClassActivityCompletionsController() : base( new Rock.Model.LearningClassActivityCompletionService( new Rock.Data.RockContext() ) ) { } 
+        public LearningClassActivityCompletionsController() : base( new Rock.Model.LearningClassActivityCompletionService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

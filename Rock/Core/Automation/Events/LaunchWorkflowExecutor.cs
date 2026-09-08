@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Metadata;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -98,7 +99,7 @@ namespace Rock.Core.Automation.Events
         /// <param name="name">The name of the workflow.</param>
         private void ExecuteWorkflow( int? entityTypeId, int? entityId, string name )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 using ( var activity = Observability.ObservabilityHelper.StartActivity( "WT:" ) )
                 {

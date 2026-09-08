@@ -24,6 +24,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -104,7 +105,7 @@ namespace Rock.Jobs
             }
 
             var errors = new List<string>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var selectedGroupTypes = new List<Guid>();
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.GroupTypes ) ) )

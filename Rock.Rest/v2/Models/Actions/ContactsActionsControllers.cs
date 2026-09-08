@@ -21,6 +21,7 @@ using System.Net;
 using System.Web.Http;
 
 using Rock.Common.Mobile.Blocks.Engagement.MyContact;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -61,7 +62,7 @@ namespace Rock.Rest.v2.Models.Actions
         [SystemGuid.RestActionGuid( "5ba11dbf-6342-4a80-a27d-ae6d893607e3" )]
         public IActionResult PostSearchMy( [FromBody] ContactSearchOptions option )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // If the person isn't logged in then they can't have
                 // anything followed.

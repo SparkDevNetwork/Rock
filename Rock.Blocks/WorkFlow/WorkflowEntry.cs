@@ -26,6 +26,7 @@ using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.WorkflowEntry;
 using Rock.Common.Mobile.Enums;
 #endif
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Enums.Workflow;
@@ -2015,7 +2016,7 @@ namespace Rock.Blocks.Workflow
             {
                 if ( personEntryValues != null )
                 {
-                    using ( var personEntryRockContext = new RockContext() )
+                    using ( var personEntryRockContext = RockApp.Current.CreateRockContext() )
                     {
                         var processor = new WorkflowPersonEntryProcessor( action, personEntryRockContext );
                         processor.SetFormPersonEntryValues( RequestContext.CurrentPerson?.Id, ConvertLegacyMobilePersonEntryValuesBag( personEntryValues ) );

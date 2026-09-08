@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.ViewModels.Utility;
@@ -55,7 +56,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var configurationProperties = new Dictionary<string, string>();
 

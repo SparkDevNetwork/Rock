@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -259,7 +260,7 @@ function ()
                 return result;
             }
 
-            using ( var context = new RockContext() )
+            using ( var context = RockApp.Current.CreateRockContext() )
             {
                 var dataView = new DataViewService( context ).Get( settings.GroupMemberDataViewGuid.GetValueOrDefault() );
 

@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using System.Data.Entity;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -144,7 +145,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItemGuid != Guid.Empty )
             {
                 lMessages.Text = string.Empty;
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
 
                 // get event occurrences
                 var qry = new EventItemOccurrenceService( rockContext ).Queryable()

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -63,7 +64,7 @@ namespace Rock.Rest.v2.Models.Actions
         [SystemGuid.RestActionGuid( "348856c3-478e-4da8-b7d9-e0f47d254376" )]
         public IActionResult GetContains( string id, string entityId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dataView = new DataViewService( rockContext ).Get( id );
 
@@ -119,7 +120,7 @@ namespace Rock.Rest.v2.Models.Actions
         [SystemGuid.RestActionGuid( "295c3416-34b2-4be7-bb4f-c0ee3c38b86c" )]
         public IActionResult GetContents( string id, [FromQuery] bool fullObjects = false )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dataView = new DataViewService( rockContext ).Get( id );
 

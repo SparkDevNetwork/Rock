@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
+using Rock.Configuration;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -280,7 +281,7 @@ namespace Rock.Workflow.Action.CheckIn
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceRecords = new AttendanceService( rockContext ).Queryable().Where( a => family.AttendanceIds.Contains( a.Id ) );
             var labelData = JsonConvert.SerializeObject( labels );
 

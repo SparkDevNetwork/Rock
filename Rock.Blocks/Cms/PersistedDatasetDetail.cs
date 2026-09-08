@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -72,7 +73,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<PersistedDatasetBag, PersistedDatasetDetailOptionsBag>();
 
@@ -552,7 +553,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -578,7 +579,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<PersistedDatasetBag, PersistedDatasetDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -631,7 +632,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new PersistedDatasetService( rockContext );
 
@@ -661,7 +662,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<PersistedDatasetBag, PersistedDatasetDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

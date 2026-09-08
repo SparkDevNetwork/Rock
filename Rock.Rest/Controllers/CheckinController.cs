@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Utility;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
+using Rock.Configuration;
 
 namespace Rock.Rest.Controllers
 {
@@ -134,7 +135,7 @@ namespace Rock.Rest.Controllers
                 };
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 KioskDevice printer = null;
 

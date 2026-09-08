@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.Data;
 using Rock.Tests.Integration.TestData.Crm;
@@ -116,7 +117,7 @@ namespace Rock.Tests.Integration.Performance.Crm
         /// <returns></returns>
         protected RockContext GetDataContext()
         {
-            return new RockContext();
+            return RockApp.Current.CreateRockContext();
         }
 
         #region Support Methods

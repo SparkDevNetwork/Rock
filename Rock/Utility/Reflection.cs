@@ -438,7 +438,7 @@ namespace Rock
                 return null;
             }
 
-            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
             var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
             var entity = getMethod?.Invoke( serviceInstance, new object[] { entityGuid } ) as IEntity;
             return entity;
@@ -460,7 +460,7 @@ namespace Rock
                 return null;
             }
 
-            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
             var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
 
             return getMethod?.Invoke( serviceInstance, new object[] { entityId } ) as IEntity;
@@ -549,7 +549,7 @@ namespace Rock
             // If we didn't find the entity id in cache, look it up in the database.
             if ( !entityId.HasValue )
             {
-                var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+                var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
                 var getIdMethod = serviceInstance?.GetType().GetMethod( "GetId", new Type[] { typeof( Guid ) } );
 
                 entityId = getIdMethod?.Invoke( serviceInstance, new object[] { entityGuid } ) as int?;
@@ -660,7 +660,7 @@ namespace Rock
             // If we didn't find the entity id in cache, look it up in the database.
             if ( !entityGuid.HasValue )
             {
-                var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+                var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
                 var getIdMethod = serviceInstance?.GetType().GetMethod( "GetGuid", new Type[] { typeof( int ) } );
 
                 entityGuid = getIdMethod?.Invoke( serviceInstance, new object[] { entityId } ) as Guid?;
@@ -725,7 +725,7 @@ namespace Rock
 
                 if ( dbContext == null )
                 {
-                    dbContext = new RockContext();
+                    dbContext = RockApp.Current.CreateRockContext();
                     disposeOfContext = true;
                 }
 
@@ -897,7 +897,7 @@ namespace Rock
             // If we didn't find the entity id in cache, look it up in the database.
             if ( !entityId.HasValue )
             {
-                var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+                var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
                 var getIdMethod = serviceInstance?.GetType().GetMethod( "GetId", new Type[] { typeof( Guid ) } );
 
                 entityId = getIdMethod?.Invoke( serviceInstance, new object[] { entityGuid.Value } ) as int?;

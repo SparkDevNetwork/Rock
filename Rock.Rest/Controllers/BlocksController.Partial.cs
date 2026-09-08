@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -53,7 +54,7 @@ namespace Rock.Rest.Controllers
         /// <param name="serviceProvider">The service provider for this instance.</param>
         [ActivatorUtilitiesConstructor]
         public BlocksController( IServiceProvider serviceProvider )
-            : base( new BlockService( new RockContext() ) )
+            : base( new BlockService( RockApp.Current.CreateRockContext() ) )
         {
             _serviceProvider = serviceProvider;
         }

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.UI.Controls;
@@ -41,7 +42,7 @@ namespace Rock.Model
         {
             get
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var interactions = this.GetInteractions( rockContext )
                        .OrderBy( a => a.InteractionDateTime )
@@ -72,7 +73,7 @@ namespace Rock.Model
         {
             get
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var interactions = this.GetInteractions( rockContext )
                         .OrderBy( a => a.InteractionDateTime )

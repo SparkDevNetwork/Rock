@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -229,7 +230,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             _blockTypeEntityId = EntityTypeCache.GetId<Block>().Value;
-            _block = new BlockService( new RockContext() ).Get( this.BlockId );
+            _block = new BlockService( RockApp.Current.CreateRockContext() ).Get( this.BlockId );
 
             pnlHeading.Visible = GetAttributeValue( AttributeKey.ShowBlockTitle ).AsBoolean();
             lBlockTitle.Text = GetAttributeValue( AttributeKey.BlockTitleText );
@@ -457,7 +458,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gFilters_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             var attributes = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() )
@@ -501,7 +502,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gFilters_Edit( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
             var attribute = new AttributeService( rockContext ).Get( e.RowKeyId );
 
@@ -527,7 +528,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gFilters_Delete( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             var attribute = attributeService.Get( e.RowKeyId );
@@ -549,7 +550,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gFilters_Add( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             // Reset attribute editor fields.
@@ -618,7 +619,7 @@ namespace RockWeb.Blocks.Reporting
         private void BindGrid()
         {
             IQueryable<Rock.Model.Attribute> query = null;
-            var attributeService = new AttributeService( new RockContext() );
+            var attributeService = new AttributeService( RockApp.Current.CreateRockContext() );
 
             query = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
             gFilters.DataSource = query.OrderBy( a => a.Order ).ToList();
@@ -810,7 +811,7 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
-            _block.LoadAttributes( new RockContext() );
+            _block.LoadAttributes( RockApp.Current.CreateRockContext() );
 
             if ( _block.Attributes != null )
             {

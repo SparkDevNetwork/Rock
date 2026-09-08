@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 
@@ -289,7 +290,7 @@ namespace Rock.Model
                 }
 
                 // Write ExceptionLog record to database.
-                using ( var rockContext = new Rock.Data.RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var exceptionLogService = new ExceptionLogService( rockContext );
                     exceptionLogService.Add( exceptionLog );

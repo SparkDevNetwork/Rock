@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -80,7 +81,7 @@ namespace Rock.Event.InteractiveExperiences
             // Create any attributes that need to be created
             var actionEntityTypeId = EntityTypeCache.Get<InteractiveExperienceAction>().Id;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var visualizerComponent in AllComponents )
                 {

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Web.Cache;
@@ -54,7 +55,7 @@ namespace Rock.Media
 
             // Create any attributes that need to be created
             int mediaAccountEntityTypeId = EntityTypeCache.Get( typeof( Model.MediaAccount ) ).Id;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var mediaAccountComponent in this.Components )
                 {

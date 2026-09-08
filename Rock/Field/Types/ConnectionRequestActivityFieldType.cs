@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -44,7 +45,7 @@ namespace Rock.Field.Types
         {
             ConnectionRequestActivity connectionRequestActivity = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Guid? guid = privateValue.AsGuidOrNull();
                 if ( guid.HasValue )
@@ -100,7 +101,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
@@ -124,7 +125,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestActivityId = new ConnectionRequestActivityService( rockContext ).GetId( guid.Value );
 
@@ -193,7 +194,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new ConnectionRequestActivityService( rockContext ).GetId( guid );
             }
@@ -207,7 +208,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var itemGuid = new ConnectionRequestActivityService( rockContext ).GetGuid( id ?? 0 );
                 string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;

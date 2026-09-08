@@ -94,7 +94,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mergeTemplate = new MergeTemplateService( rockContext ).GetSelect( guid.Value, mt => new ListItemBag()
                     {
@@ -150,7 +150,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new MergeTemplateService( rockContext ).Get( guid.Value );
             }
 
@@ -170,7 +170,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mergeTemplateId = new MergeTemplateService( rockContext ).GetId( guid.Value );
 
@@ -262,7 +262,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         itemGuid = new MergeTemplateService( rockContext ).Queryable().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
@@ -290,7 +290,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = value.AsGuidOrNull();
                 if ( itemGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         item = new MergeTemplateService( rockContext ).Get( itemGuid.Value );
                         picker.SetValue( item );
@@ -325,7 +325,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new MergeTemplateService( new RockContext() ).Get( guid );
+            var item = new MergeTemplateService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -337,7 +337,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new MergeTemplateService( new RockContext() ).Get( id ?? 0 );
+            var item = new MergeTemplateService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

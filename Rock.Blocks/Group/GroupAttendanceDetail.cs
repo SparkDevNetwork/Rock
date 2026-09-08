@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.GroupAttendanceDetail;
 using Rock.Model;
@@ -546,7 +547,7 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized() );
@@ -568,7 +569,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "GetAttendance" )]
         public BlockActionResult GetAttendance( GroupAttendanceDetailGetAttendanceRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceQuery = new AttendanceService( rockContext )
                     .Queryable()
@@ -638,7 +639,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "PrintRoster" )]
         public BlockActionResult PrintRoster( GroupAttendanceDetailPrintRosterRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters(
@@ -745,7 +746,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "AddPerson" )]
         public BlockActionResult AddPerson( GroupAttendanceDetailAddPersonRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), searchParameterOverrides: s =>
@@ -829,7 +830,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "Get" )]
         public BlockActionResult Get( GroupAttendanceDetailGetOrCreateRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters(
@@ -869,7 +870,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "GetOrCreate" )]
         public BlockActionResult GetOrCreate( GroupAttendanceDetailGetOrCreateRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters(
@@ -921,7 +922,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "SubscribeToRealTime" )]
         public async Task<BlockActionResult> SubscribeToRealTime( string connectionId, Guid groupGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
@@ -952,7 +953,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "MarkAttendance" )]
         public BlockActionResult MarkAttendance( GroupAttendanceDetailMarkAttendanceRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), bag.AttendanceOccurrenceGuid );
@@ -1002,7 +1003,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "UpdateDidNotOccur" )]
         public BlockActionResult UpdateDidNotOccur( GroupAttendanceDetailUpdateDidNotOccurRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), bag.AttendanceOccurrenceGuid );
@@ -1072,7 +1073,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "UpdateNotes" )]
         public BlockActionResult UpdateNotes( GroupAttendanceDetailUpdateNotesRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), bag.AttendanceOccurrenceGuid );
@@ -1097,7 +1098,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "UpdateAttendanceOccurrenceType" )]
         public BlockActionResult UpdateAttendanceOccurrenceType( GroupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var clientService = GetOccurrenceDataClientService( rockContext );
                 var searchParameters = clientService.GetAttendanceOccurrenceSearchParameters( clientService.GetGroupIfAuthorized(), bag.AttendanceOccurrenceGuid );
@@ -1133,7 +1134,7 @@ namespace Rock.Blocks.Group
             {
                 return ActionNotFound();
             }
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var list = GetGroupLocations( rockContext, bag.GroupGuid.Value );
 
@@ -1149,7 +1150,7 @@ namespace Rock.Blocks.Group
         [BlockAction( "GetGroupLocationSchedules" )]
         public BlockActionResult GetGroupLocationSchedules( GroupAttendanceDetailGetGroupLocationSchedulesRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var schedules = GetGroupLocationSchedules( rockContext, bag.GroupGuid, bag.LocationGuid, bag.Date );
 
@@ -1175,7 +1176,7 @@ namespace Rock.Blocks.Group
                 return ActionNotFound();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var list = GetGroupLocationScheduleDateBags( rockContext, bag );
 
@@ -1464,10 +1465,10 @@ namespace Rock.Blocks.Group
             };
 
             var groupGuid = group.Guid;
-            var groupLocations = new Lazy<List<ListItemBag>>( () => GetGroupLocations( new RockContext(), groupGuid ) );
-            var groupLocationSchedules = new Lazy<List<ListItemBag>>( () => GetGroupLocationSchedules( new RockContext(), groupGuid, occurrence.Location?.Guid, occurrence.OccurrenceDate ) );
+            var groupLocations = new Lazy<List<ListItemBag>>( () => GetGroupLocations( RockApp.Current.CreateRockContext(), groupGuid ) );
+            var groupLocationSchedules = new Lazy<List<ListItemBag>>( () => GetGroupLocationSchedules( RockApp.Current.CreateRockContext(), groupGuid, occurrence.Location?.Guid, occurrence.OccurrenceDate ) );
             var groupLocationScheduleDates = new Lazy<List<ListItemBag>>( () => GetGroupLocationScheduleDateBags(
-                new RockContext(),
+                RockApp.Current.CreateRockContext(),
                 new GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag
                 {
                     GroupGuid = groupGuid,

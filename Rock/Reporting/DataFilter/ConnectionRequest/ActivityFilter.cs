@@ -25,6 +25,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -73,7 +74,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var activityTypeOptions = new ConnectionActivityTypeService( new RockContext() ).Queryable( "ConnectionType" )
+            var activityTypeOptions = new ConnectionActivityTypeService( RockApp.Current.CreateRockContext() ).Queryable( "ConnectionType" )
                 .AsNoTracking()
                 .Where( a => a.IsActive )
                 .OrderBy( a => a.ConnectionTypeId.HasValue )
@@ -167,7 +168,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             var selectionConfig = SelectionConfig.Parse( selection );
             if ( selectionConfig != null && selectionConfig.ConnectionActivityTypeGuid.HasValue )
             {
-                var activityType = new ConnectionActivityTypeService( new RockContext() ).Get( selectionConfig.ConnectionActivityTypeGuid.Value );
+                var activityType = new ConnectionActivityTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.ConnectionActivityTypeGuid.Value );
                 var activityName = GetActivityName( activityType );
                 var dateRangeString = string.Empty;
                 if ( selectionConfig.SlidingDateRangeDelimitedValues.IsNotNullOrWhiteSpace() )
@@ -203,7 +204,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             ddlActivityType.AddCssClass( "js-activity-type" );
             ddlActivityType.Label = "Activity Type";
             filterControl.Controls.Add( ddlActivityType );
-            var activityTypes = new ConnectionActivityTypeService( new RockContext() ).Queryable( "ConnectionType" ).AsNoTracking().Where( a => a.IsActive )
+            var activityTypes = new ConnectionActivityTypeService( RockApp.Current.CreateRockContext() ).Queryable( "ConnectionType" ).AsNoTracking().Where( a => a.IsActive )
                 .OrderBy( a => a.ConnectionTypeId.HasValue )
                 .ThenBy( a => a.Name )
                 .ToList();

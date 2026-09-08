@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -57,7 +58,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new ListBlockBox<PersonSignalListOptionsBag>();
                 var builder = GetGridBuilder();
@@ -242,7 +243,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetEditPersonSignal( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new PersonSignalService( RockContext );
                 var entity = entityService.Get( key, false );
@@ -274,7 +275,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SavePersonSignal( ValidPropertiesBox<PersonSignalBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personSignalService = new PersonSignalService( RockContext );
 

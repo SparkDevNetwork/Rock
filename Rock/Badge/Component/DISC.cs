@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -135,7 +136,7 @@ namespace Rock.Badge.Component
             }
             else
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
                 var lastRequestDate = new AssessmentService( rockContext )
                    .Queryable()

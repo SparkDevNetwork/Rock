@@ -17,6 +17,7 @@
 
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -47,7 +48,7 @@ namespace Rock.Model
                 return true;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // If the schedule has a group then the person must be an active
                 // member of the group. Check this first since it is a cheaper

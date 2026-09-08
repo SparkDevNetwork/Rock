@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -58,7 +59,7 @@ namespace Rock.Transactions
                     // then update the last accessed date and time. It doesn't
                     // matter that this isn't the exact correct second. Since
                     // we only update once a day it doesn't matter.
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var personPreferenceService = new PersonPreferenceService( rockContext );
                         var personPreferences = personPreferenceService.Queryable()

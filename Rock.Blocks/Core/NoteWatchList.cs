@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Model;
@@ -191,7 +192,7 @@ namespace Rock.Blocks.Core
         {
             if ( entityId.HasValue && entityTypeId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var entity = new EntityTypeService( rockContext ).GetEntity( entityTypeId.Value, entityId.Value );
                 if ( entity != null )
                 {

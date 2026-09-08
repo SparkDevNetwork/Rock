@@ -24,6 +24,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Engagement.SignUp;
@@ -205,7 +206,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var box = new SignUpRegisterInitializationBox();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SetBoxInitialState( box, rockContext );
             }
@@ -1758,7 +1759,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult Register( SignUpRegisterRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
                 if ( !disableCaptcha && !RequestContext.IsCaptchaValid )

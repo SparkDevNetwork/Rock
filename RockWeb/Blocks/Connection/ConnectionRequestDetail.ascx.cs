@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Connection;
@@ -418,7 +419,7 @@ namespace RockWeb.Blocks.Connection
         /// <returns></returns>
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var breadCrumbs = new List<BreadCrumb>();
 
             ConnectionRequest connectionRequest = GetConnectionRequest( rockContext );
@@ -537,7 +538,7 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionRequestService( rockContext );
             var request = service.Get( connectionRequestId.Value );
 
@@ -573,7 +574,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ShowEditDetails( new ConnectionRequestService( rockContext ).Get( hfConnectionRequestId.ValueAsInt() ), rockContext );
             }
@@ -595,7 +596,7 @@ namespace RockWeb.Blocks.Connection
                  */
                 gConnectionRequestActivities.Actions.ShowAdd = true;
                 gConnectionRequestActivities.IsDeleteEnabled = true;
-                ShowReadonlyDetails( new ConnectionRequestService( new RockContext() ).Get( connectionRequestId ) );
+                ShowReadonlyDetails( new ConnectionRequestService( RockApp.Current.CreateRockContext() ).Get( connectionRequestId ) );
                 pnlReadDetails.Visible = true;
                 pnlConnectionRequestActivities.Visible = true;
                 wpConnectionRequestWorkflow.Visible = true;
@@ -617,7 +618,7 @@ namespace RockWeb.Blocks.Connection
         {
             if ( ppRequestor.PersonId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
 
@@ -663,7 +664,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( Page.IsValid )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
                     ConnectionRequest connectionRequest = null;
@@ -818,7 +819,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbConnect_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var groupService = new GroupService( rockContext );
@@ -978,7 +979,7 @@ namespace RockWeb.Blocks.Connection
         protected void lbTransfer_Click( object sender, EventArgs e )
         {
             nbTranferFailed.Visible = false;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -1031,7 +1032,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlTransferOpportunity_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionOpportunityID = ddlTransferOpportunity.SelectedValue.AsIntegerOrNull();
             var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityID.Value );
 
@@ -1045,7 +1046,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpTransferCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionOpportunityID = ddlTransferOpportunity.SelectedValue.AsIntegerOrNull();
             var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityID.Value );
             RebindTransferOpportunityConnector( connectionOpportunity, false, rockContext );
@@ -1060,7 +1061,7 @@ namespace RockWeb.Blocks.Connection
         {
             if ( e.CommandName == "LaunchWorkflow" )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var connectionRequest = new ConnectionRequestService( rockContext ).Get( hfConnectionRequestId.ValueAsInt() );
                     var connectionWorkflow = new ConnectionWorkflowService( rockContext ).Get( e.CommandArgument.ToString().AsInteger() );
@@ -1113,7 +1114,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -1135,7 +1136,7 @@ namespace RockWeb.Blocks.Connection
 
         protected void ddlPlacementGroup_SelectedIndexChanged( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -1157,7 +1158,7 @@ namespace RockWeb.Blocks.Connection
 
         protected void ddlPlacementGroupRole_SelectedIndexChanged( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -1205,7 +1206,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnTransferSave_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
@@ -1313,7 +1314,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -1346,7 +1347,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgSearch_SaveClick( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -1396,7 +1397,7 @@ namespace RockWeb.Blocks.Connection
         {
             var activityId = PageParameter( PageParameterKey.ConnectionRequestActivityId ).ToIntSafe();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // only allow deleting if current user created the activity, and not a system activity
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
@@ -1440,7 +1441,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindConnectionRequestWorkflowsGrid()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -1496,7 +1497,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionRequestWorkflows_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            var requestWorkflow = new ConnectionRequestWorkflowService( new RockContext() ).Get( e.RowKeyValue.ToString().AsGuid() );
+            var requestWorkflow = new ConnectionRequestWorkflowService( RockApp.Current.CreateRockContext() ).Get( e.RowKeyValue.ToString().AsGuid() );
             if ( requestWorkflow != null && requestWorkflow.Workflow != null )
             {
                 if ( requestWorkflow.Workflow.HasActiveEntryForm( CurrentPerson ) )
@@ -1524,7 +1525,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddConnectionRequestActivity_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
@@ -1590,7 +1591,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gConnectionRequestActivities_GridRebind( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -1620,7 +1621,7 @@ namespace RockWeb.Blocks.Connection
         {
             // only allow editing if current user created the activity, and not a system activity
             var activityGuid = e.RowKeyValue.ToString().AsGuid();
-            var activity = new ConnectionRequestActivityService( new RockContext() ).Get( activityGuid );
+            var activity = new ConnectionRequestActivityService( RockApp.Current.CreateRockContext() ).Get( activityGuid );
             if ( activity != null &&
                 ( activity.CreatedByPersonAliasId.Equals( CurrentPersonAliasId ) || activity.ConnectorPersonAliasId.Equals( CurrentPersonAliasId ) ) &&
                 activity.ConnectionActivityType.ConnectionTypeId.HasValue )
@@ -1661,7 +1662,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gConnectionRequestActivities_Delete( object sender, RowEventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // only allow deleting if current user created the activity, and not a system activity
                 var activityGuid = e.RowKeyValue.ToString().AsGuid();
@@ -1768,7 +1769,7 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( _assignedActivityId == 0 )
             {
@@ -1872,14 +1873,14 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void RebindTransferOpportunityConnector( ConnectionOpportunity connectionOpportunity, bool setControl = false, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var connectors = new Dictionary<int, Person>();
             ddlTransferOpportunityConnector.Items.Clear();
             ddlTransferOpportunityConnector.Items.Add( new ListItem() );
 
             rbTransferDefaultConnector.Text = "Default Connector for " + connectionOpportunity.Name;
 
-            var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
+            var connectionRequest = new ConnectionRequestService( RockApp.Current.CreateRockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
             if ( connectionOpportunity != null )
             {
                 if ( connectionOpportunity.ConnectionType != null && connectionRequest != null )
@@ -1958,7 +1959,7 @@ namespace RockWeb.Blocks.Connection
         private List<ConnectorViewModel> GetConnectors( bool includeCurrentPerson, int? campusId )
         {
             var connectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new ConnectionOpportunityConnectorGroupService( rockContext );
 
             var connectors = service.Queryable()
@@ -2093,7 +2094,7 @@ namespace RockWeb.Blocks.Connection
                 startUpScript,
                 true );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
             var connectionRequestService = new ConnectionRequestService( rockContext );
             var connectionStatusService = new ConnectionStatusService( rockContext );
@@ -2376,7 +2377,7 @@ namespace RockWeb.Blocks.Connection
                 string roleName = string.Empty;
                 if ( connectionRequest.AssignedGroupMemberRoleId.HasValue )
                 {
-                    var role = new GroupTypeRoleService( new RockContext() ).Get( connectionRequest.AssignedGroupMemberRoleId.Value );
+                    var role = new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).Get( connectionRequest.AssignedGroupMemberRoleId.Value );
                     roleName = role != null ? role.Name : string.Empty;
                 }
 
@@ -2507,7 +2508,7 @@ namespace RockWeb.Blocks.Connection
 
                 avcAttributesReadOnly.AddDisplayControls( connectionRequest, Rock.Security.Authorization.VIEW, this.CurrentPerson );
 
-                BindConnectionRequestActivitiesGrid( connectionRequest, new RockContext() );
+                BindConnectionRequestActivitiesGrid( connectionRequest, RockApp.Current.CreateRockContext() );
                 BindConnectionRequestWorkflowsGrid();
             }
             else
@@ -2705,7 +2706,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         var existingGroupIds = groups.Select( g => g.Id ).ToList();
 
-                        groups.AddRange( new GroupService( new RockContext() )
+                        groups.AddRange( new GroupService( RockApp.Current.CreateRockContext() )
                             .Queryable().AsNoTracking()
                             .Where( g =>
                                 !existingGroupIds.Contains( g.Id ) &&
@@ -2920,7 +2921,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( personId.HasValue && groupId.HasValue && roleId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var group = new GroupService( rockContext ).Get( groupId.Value );
                     if ( group != null )
@@ -2960,7 +2961,7 @@ namespace RockWeb.Blocks.Connection
             phGroupMemberAttributesView.Controls.Clear();
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var group = new GroupService( rockContext ).Get( groupId.Value );
                     var role = new GroupTypeRoleService( rockContext ).Get( groupMemberRoleId.Value );
@@ -3004,7 +3005,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var group = new GroupService( rockContext ).Get( groupId.Value );
                     var role = new GroupTypeRoleService( rockContext ).Get( groupMemberRoleId.Value );
@@ -3038,7 +3039,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void ShowConnectionOpportunityRequirementsStatuses()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 int connectionRequestId = hfConnectionRequestId.Value.AsInteger();
                 var connectionOpportunityId = hfConnectionOpportunityId.Value.AsInteger();
@@ -3206,7 +3207,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindAttributes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequest = connectionRequestService.Get( hfConnectionRequestId.ValueAsInt() );
@@ -3275,7 +3276,7 @@ namespace RockWeb.Blocks.Connection
             var connectors = new Dictionary<int, Person>();
             ConnectionRequestActivity activity = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( activityGuid != Guid.Empty )
                 {
@@ -3536,7 +3537,7 @@ namespace RockWeb.Blocks.Connection
         private ConnectionRequest GetConnectionRequest( RockContext rockContext = null )
         {
             ConnectionRequest connectionRequest = null;
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var connectionRequestId = GetConnectionRequestIdPageParameter();
 
             if ( connectionRequestId > 0 )

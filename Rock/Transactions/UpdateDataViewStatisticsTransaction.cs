@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using System;
@@ -64,7 +65,7 @@ namespace Rock.Transactions
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dataViewService = new DataViewService( rockContext );
                 var ids = dataViewInfos.Select( d => d.DataViewId ).Distinct().ToList();

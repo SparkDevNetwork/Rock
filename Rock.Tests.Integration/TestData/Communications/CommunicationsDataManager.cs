@@ -17,6 +17,7 @@
 using System;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -33,7 +34,7 @@ namespace Rock.Tests.Integration.TestData.Communications
 
         public bool DeleteSystemCommunication( string communicationIdentifier )
         {
-            var context = new RockContext();
+            var context = RockApp.Current.CreateRockContext();
             var success = DeleteSystemCommunication( communicationIdentifier, context );
             context.SaveChanges();
 
@@ -83,7 +84,7 @@ namespace Rock.Tests.Integration.TestData.Communications
         /// <returns></returns>
         public void SaveSystemCommunication( SystemCommunication newCommunication, CreateExistingItemStrategySpecifier existingItemStrategy = CreateExistingItemStrategySpecifier.Replace )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.WrapTransaction( () =>
             {

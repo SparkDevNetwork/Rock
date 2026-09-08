@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -214,7 +215,7 @@ namespace Rock.Web.UI.Controls
             DataView dataView = null;
             if ( dataViewId.HasValue && dataViewId > 0 )
             {
-                dataView = new DataViewService( new RockContext() ).Get( ItemId.AsInteger() );
+                dataView = new DataViewService( RockApp.Current.CreateRockContext() ).Get( ItemId.AsInteger() );
             }
 
             SetValue( dataView );
@@ -227,7 +228,7 @@ namespace Rock.Web.UI.Controls
         {
             var dataViewIds = ItemIds.AsIntegerList().Where( a => a > 0 ).ToList();
 
-            var dataViews = new DataViewService( new RockContext() ).Queryable().Where( g => dataViewIds.Contains( g.Id ) );
+            var dataViews = new DataViewService( RockApp.Current.CreateRockContext() ).Queryable().Where( g => dataViewIds.Contains( g.Id ) );
             this.SetValues( dataViews );
         }
     }

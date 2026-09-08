@@ -23,6 +23,7 @@ using Rock.Lava;
 using Rock.Web;
 
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
+using Rock.Configuration;
 
 namespace Rock
 {
@@ -116,7 +117,7 @@ END";
             // set timeout to 2 hours, just in case it takes a long time
             int commandTimeoutSeconds = ( int ) new TimeSpan( 2, 0, 0 ).TotalSeconds;
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                 rockContext.Database.ExecuteSqlCommand( @"

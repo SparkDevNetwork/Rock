@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -86,7 +87,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var names = new List<string>();
@@ -146,7 +147,7 @@ namespace Rock.Field.Types
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var guids = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMembers = new GroupMemberService( rockContext ).GetByGuids( guids )
                     .AsNoTracking()
@@ -182,7 +183,7 @@ namespace Rock.Field.Types
                 var groupValue = privateConfigurationValues[GROUP_KEY].FromJsonOrNull<ListItemBag>();
                 if ( groupValue != null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var group = new GroupService( rockContext ).GetNoTracking( groupValue.Value.AsGuid() );
                         if ( group != null )
@@ -203,7 +204,7 @@ namespace Rock.Field.Types
 
             if ( usage != ConfigurationValueUsage.View && publicConfigurationValues?.ContainsKey( GROUP_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_KEY], out int groupId ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var group = new GroupService( rockContext ).GetNoTracking( groupId );
                     if ( group != null )
@@ -256,7 +257,7 @@ namespace Rock.Field.Types
         public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var values = new List<string>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 foreach ( Guid guid in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList() )
@@ -324,7 +325,7 @@ namespace Rock.Field.Types
                 Type specificListType = genericListType.MakeGenericType( type );
                 object specificList = Activator.CreateInstance( specificListType );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
 
@@ -397,7 +398,7 @@ namespace Rock.Field.Types
                 foreach ( var selectedValue in selectedValues )
                 {
                     var searchValue = "," + selectedValue + ",";
-                    var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                    var qryToExtract = new AttributeValueService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
                     var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
 
                     if ( comparisonType != ComparisonType.Contains )
@@ -472,7 +473,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new GroupMemberService( rockContext ).Get( guid.Value );
             }
 
@@ -493,7 +494,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var idValues = new GroupMemberService( rockContext )
                     .Queryable()
@@ -702,7 +703,7 @@ namespace Rock.Field.Types
             {
                 // if there are multiple group members, just pick the first one as the sort value
                 Guid guid = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList().FirstOrDefault();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupMember = new GroupMemberService( rockContext ).Get( guid );
                     if ( groupMember != null )
@@ -768,7 +769,7 @@ namespace Rock.Field.Types
 
                 if ( groupMemberIdList.Any() )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var groupMemberService = new GroupMemberService( rockContext );
                         guids = groupMemberService.Queryable().AsNoTracking().Where( t => groupMemberIdList.Contains( t.Id ) ).Select( a => a.Guid ).ToList();
@@ -797,7 +798,7 @@ namespace Rock.Field.Types
                 List<Guid> selectedGroupMemberGuids = value?.Split( ',' ).AsGuidList();
                 if ( selectedGroupMemberGuids != null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         selectedGroupMemberIds = new GroupMemberService( rockContext ).GetByGuids( selectedGroupMemberGuids ).Select( a => a.Id ).ToList();
                     }
@@ -927,7 +928,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             GroupMember item = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
 
@@ -949,7 +950,7 @@ namespace Rock.Field.Types
             GroupMember item = null;
             if ( id.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
 

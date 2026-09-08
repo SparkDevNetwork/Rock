@@ -26,6 +26,7 @@ using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Communication.Chat;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication.Chat;
+using Rock.Configuration;
 using Rock.Enums.Mobile;
 using Rock.Mobile;
 using Rock.Model;
@@ -83,7 +84,7 @@ namespace Rock.Rest.Controllers
         {
             var site = MobileHelper.GetCurrentApplicationSite();
             var additionalSettings = site?.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = GetPerson( rockContext );
             var deviceData = Request.GetHeader( "X-Rock-DeviceData" ).FromJsonOrNull<DeviceData>();
 
@@ -241,7 +242,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "B35111EB-9EBF-45CC-8BC1-54C01A271841" )]
         public IHttpActionResult UpdateDeviceRegistrationByGuid( Guid personalDeviceGuid, string registration, bool? notificationsEnabled = null )
         {
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new PersonalDeviceService( rockContext );
 
@@ -280,7 +281,7 @@ namespace Rock.Rest.Controllers
             var person = GetPerson();
             var ipAddress = System.Web.HttpContext.Current?.Request?.UserHostAddress;
 
-            using ( var rockContext = new Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannelService = new InteractionChannelService( rockContext );
                 var interactionComponentService = new InteractionComponentService( rockContext );
@@ -512,7 +513,7 @@ namespace Rock.Rest.Controllers
             //
             // Find the user and translate to a mobile person.
             //
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 var userLogin = userLoginService.GetByUserName( loginParameters.Username );
@@ -554,7 +555,7 @@ namespace Rock.Rest.Controllers
                 return BadRequest( "LocationPermissionOptions is null." );
             }
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( locationPermissionOptions.PersonalDeviceGuid == null )
                 {

@@ -22,6 +22,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -111,7 +112,7 @@ namespace Rock.Jobs
         /// </summary>
         public void UpdateGroupHistorical()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             var groupHistoricalService = new GroupHistoricalService( rockContext );
@@ -199,7 +200,7 @@ namespace Rock.Jobs
         /// </summary>
         public void UpdateGroupMemberHistorical()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
@@ -278,7 +279,7 @@ namespace Rock.Jobs
         /// </summary>
         public void UpdateGroupLocationHistorical()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             var groupLocationHistoricalService = new GroupLocationHistoricalService( rockContext );

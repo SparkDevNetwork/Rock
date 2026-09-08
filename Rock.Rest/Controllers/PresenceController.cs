@@ -22,6 +22,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -44,7 +45,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "F354A723-6EF0-4710-A415-E6FF8118B96F" )]
         public HttpResponseMessage Post( List<MACPresence> presenceList )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.WIFI_PRESENCE.AsGuid() );
                 if ( interactionChannel != null )

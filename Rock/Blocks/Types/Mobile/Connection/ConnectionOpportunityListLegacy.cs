@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.ClientService.Connection.ConnectionOpportunity;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Model.Connection.ConnectionOpportunity.Options;
@@ -156,7 +157,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>The <see cref="GetContentViewModel"/> that contains the information about the response.</returns>
         private GetContentViewModel GetConnectionOpportunities( Guid connectionTypeGuid, GetConnectionOpportunitiesFilterViewModel filterViewModel )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var opportunityService = new ConnectionOpportunityService( rockContext );
                 var opportunityClientService = new ConnectionOpportunityClientService( rockContext, RequestContext.CurrentPerson );

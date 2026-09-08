@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -22,7 +23,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
             JsonContainer container;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFile = new BinaryFileService( rockContext ).Get( fuSource.BinaryFileId.Value );
@@ -79,7 +80,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
             public void ImportContainer( JsonContainer container )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.WrapTransactionIf( () =>
                     {
