@@ -252,7 +252,7 @@ namespace Rock.Tv
         /// <returns>The opaque encrypted cookie value the device should send back as <c>.ROCK</c>.</returns>
         internal static string GetAuthenticationTokenFromUsername( string username, RockRequestContext requestContext )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var userLogin = new UserLoginService( rockContext ).GetByUserName( username );
             if ( userLogin == null )
             {

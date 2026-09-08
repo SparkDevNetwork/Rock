@@ -78,7 +78,7 @@ namespace Rock.Rest.Controllers
                 Reason: Preserve v1 REST MFA-granting behavior that existing API
                 consumers depend on; remove when the v1 API is deprecated.
             */
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLogin = new UserLoginService( rockContext ).GetByUserName( userName );
                 var personAliasId = userLogin?.Person?.PrimaryAliasId;

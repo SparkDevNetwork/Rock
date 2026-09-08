@@ -24,6 +24,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
@@ -57,7 +58,7 @@ public class PersonSessionTests : DatabaseTestsBase
         var sessionGuid = Guid.NewGuid();
         int personAliasId;
 
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             Assert.IsNotNull( tedDecker, "Ted Decker test data is required for this test." );
@@ -81,7 +82,7 @@ public class PersonSessionTests : DatabaseTestsBase
             rockContext.SaveChanges();
         }
 
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
             Assert.IsTrue( session.IsActive );
@@ -94,7 +95,7 @@ public class PersonSessionTests : DatabaseTestsBase
             rockContext.SaveChanges();
         }
 
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
             Assert.IsFalse( session.IsActive );
@@ -114,7 +115,7 @@ public class PersonSessionTests : DatabaseTestsBase
     {
         Guid sessionGuid;
 
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             Assert.IsNotNull( tedDecker?.PrimaryAliasId, "Ted Decker test data with a primary alias is required for this test." );
@@ -145,7 +146,7 @@ public class PersonSessionTests : DatabaseTestsBase
             sessionGuid = session.Guid;
         }
 
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
             Assert.IsTrue( session.IsActive );
@@ -156,7 +157,7 @@ public class PersonSessionTests : DatabaseTestsBase
             rockContext.SaveChanges();
         }
 
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
             Assert.IsFalse( session.IsActive );
@@ -177,7 +178,7 @@ public class PersonSessionTests : DatabaseTestsBase
     {
         Guid sessionGuid;
 
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             Assert.IsNotNull( tedDecker?.PrimaryAliasId, "Ted Decker test data with a primary alias is required for this test." );
@@ -199,7 +200,7 @@ public class PersonSessionTests : DatabaseTestsBase
 
         // Sign out against a fresh service/context so the real save pipeline
         // (and the PersonSession.SaveHook that stamps InactiveDateTime) runs.
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
 
@@ -211,7 +212,7 @@ public class PersonSessionTests : DatabaseTestsBase
             Assert.IsNull( requestContext.PersonSession, "SignOut should detach the session from the request context." );
         }
 
-        using ( var rockContext = new RockContext() )
+        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
             var session = rockContext.Set<PersonSession>().First( s => s.Guid == sessionGuid );
             Assert.IsFalse( session.IsActive, "SignOut should mark the current session inactive." );
@@ -245,7 +246,7 @@ public class PersonSessionTests : DatabaseTestsBase
     [IsolatedTestDatabase]
     public void FindOrCreateApiKeySession_SecondCall_ReusesExistingRow()
     {
-        using var rockContext = new RockContext();
+        using var rockContext = RockApp.Current.CreateRockContext();
         var service = new PersonSessionService( rockContext );
         var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
         Assert.IsNotNull( tedDecker?.PrimaryAliasId, "Ted Decker test data with a primary alias is required for this test." );
@@ -302,7 +303,7 @@ public class PersonSessionTests : DatabaseTestsBase
         // seed data already has a matching InteractionDeviceType row.
         const string userAgent = "RockPersonSessionTestAgent/1.0 (PersonSessionUnitTest; rv:1) Gecko/20260101 Firefox/120.0";
 
-        using var rockContext = new RockContext();
+        using var rockContext = RockApp.Current.CreateRockContext();
         var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
         Assert.IsNotNull( tedDecker?.PrimaryAliasId, "Ted Decker test data with a primary alias is required for this test." );
 
@@ -357,7 +358,7 @@ public class PersonSessionTests : DatabaseTestsBase
     {
         const string userAgent = "RockPersonSessionReuseAgent/2.0 (PersonSessionUnitTest; rv:1) Gecko/20260101 Firefox/121.0";
 
-        using var rockContext = new RockContext();
+        using var rockContext = RockApp.Current.CreateRockContext();
         var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
         Assert.IsNotNull( tedDecker?.PrimaryAliasId, "Ted Decker test data with a primary alias is required for this test." );
 
@@ -455,7 +456,7 @@ public class PersonSessionTests : DatabaseTestsBase
     [IsolatedTestDatabase]
     public void GetInteractionSessionId_InsertPath_StampsPersonSessionIdAtInsert()
     {
-        using var rockContext = new RockContext();
+        using var rockContext = RockApp.Current.CreateRockContext();
         var personSession = CreatePersistedComponentPersonSession( rockContext );
         var browserSessionId = Guid.NewGuid();
 
@@ -486,7 +487,7 @@ public class PersonSessionTests : DatabaseTestsBase
     [IsolatedTestDatabase]
     public void GetInteractionSessionId_UpdatePath_AdoptsExistingRowWhenPersonSessionIdNull()
     {
-        using var rockContext = new RockContext();
+        using var rockContext = RockApp.Current.CreateRockContext();
         var personSession = CreatePersistedComponentPersonSession( rockContext );
         var browserSessionId = Guid.NewGuid();
 
@@ -514,7 +515,7 @@ public class PersonSessionTests : DatabaseTestsBase
 
         // Force a re-read so we observe the UPDATE that ran on a separate
         // ADO.NET connection inside SqlQuery<int>.
-        using ( var verifyContext = new RockContext() )
+        using ( var verifyContext = RockApp.Current.CreateRockContext() )
         {
             var row = new InteractionSessionService( verifyContext ).Get( firstId );
             Assert.AreEqual( personSession.Id, row.PersonSessionId,
@@ -532,7 +533,7 @@ public class PersonSessionTests : DatabaseTestsBase
     [IsolatedTestDatabase]
     public void GetInteractionSessionId_UpdatePath_DoesNotTouchOtherRows()
     {
-        using var rockContext = new RockContext();
+        using var rockContext = RockApp.Current.CreateRockContext();
         var personSession = CreatePersistedComponentPersonSession( rockContext );
 
         var interactionService = new InteractionService( rockContext );
@@ -561,7 +562,7 @@ public class PersonSessionTests : DatabaseTestsBase
 
         Assert.AreEqual( targetId, resolvedTargetId );
 
-        using ( var verifyContext = new RockContext() )
+        using ( var verifyContext = RockApp.Current.CreateRockContext() )
         {
             var sessionService = new InteractionSessionService( verifyContext );
             var target = sessionService.Get( targetId );

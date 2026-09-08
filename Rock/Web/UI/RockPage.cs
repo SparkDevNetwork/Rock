@@ -728,7 +728,7 @@ namespace Rock.Web.UI
             Page.Trace.Warn( "Checking for logout request" );
             if ( PageParameter( "Logout" ) != string.Empty )
             {
-                using ( var logoutRockContext = new RockContext() )
+                using ( var logoutRockContext = RockApp.Current.CreateRockContext() )
                 {
                     new PersonSessionService( logoutRockContext ).SignOut( RequestContext );
                 }
@@ -808,7 +808,7 @@ namespace Rock.Web.UI
                      && !RequestContext.MeetsRequirement( AuthenticationRequirement.MultiFactor ) )
                 {
                     // Sign out and redirect to the login page to force two-factor authentication.
-                    using ( var signOutRockContext = new RockContext() )
+                    using ( var signOutRockContext = RockApp.Current.CreateRockContext() )
                     {
                         new PersonSessionService( signOutRockContext ).SignOut( RequestContext );
                     }
@@ -979,7 +979,7 @@ namespace Rock.Web.UI
                         var currentSession = RequestContext?.PersonSession;
                         if ( currentSession?.IsImpersonated() == true )
                         {
-                            using var impersonatorRockContext = new RockContext();
+                            using var impersonatorRockContext = RockApp.Current.CreateRockContext();
                             var impersonatorSession = new PersonSessionService( impersonatorRockContext ).GetImpersonatorSession( currentSession );
                             var impersonatorPerson = impersonatorSession?.PersonAlias?.Person;
 
@@ -1283,7 +1283,7 @@ namespace Rock.Web.UI
                         var currentSession = RequestContext?.PersonSession;
                         if ( canAdministratePage && currentSession?.CreationSource == PersonSessionCreationSource.Impersonation )
                         {
-                            using var impersonatorRockContext = new RockContext();
+                            using var impersonatorRockContext = RockApp.Current.CreateRockContext();
                             var impersonatorSession = new PersonSessionService( impersonatorRockContext ).GetImpersonatorSession( currentSession );
                             var impersonatorPerson = impersonatorSession?.PersonAlias?.Person;
 
@@ -1997,7 +1997,7 @@ namespace Rock.Web.UI
                 return;
             }
 
-            using var rockContext = new RockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var service = new PersonSessionService( rockContext );
 
             // Refetch the current impersonation session through this

@@ -893,7 +893,7 @@ namespace Rock.Security
                 throw new NotSupportedException( "GetSimpleAuthCookie no longer supports admin impersonation. Use PersonSessionService.ImpersonatePerson for that flow." );
             }
 
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var userLogin = new UserLoginService( rockContext ).GetByUserName( userName );
             if ( userLogin == null )
             {
@@ -1061,7 +1061,7 @@ namespace Rock.Security
             var requestContext = Rock.Net.RockRequestContextAccessor.Current
                 ?? throw new InvalidOperationException( "Authorization.SignOut() requires an active request context. Use PersonSessionService.SignOut( requestContext ) instead." );
 
-            using var rockContext = new RockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
 
             new PersonSessionService( rockContext ).SignOut( requestContext );
         }

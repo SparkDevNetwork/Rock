@@ -97,7 +97,7 @@ namespace Rock.RealTime
 
             if ( currentPersonId.HasValue || currentUserId.HasValue )
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var person = currentPersonId.HasValue ? new Model.PersonService( rockContext ).Get( currentPersonId.Value ) : null;
                     var userLogin = currentUserId.HasValue ? new Model.UserLoginService( rockContext ).Get( currentUserId.Value ) : null;

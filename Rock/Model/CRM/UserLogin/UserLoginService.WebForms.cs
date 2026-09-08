@@ -47,7 +47,7 @@ namespace Rock.Model
 
             // Don't wrap in using since we are returning an object that needs
             // its navigation properties to work.
-            return new UserLoginService( new RockContext() )
+            return new UserLoginService( RockApp.Current.CreateRockContext() )
                 .Get( personSession.UserLogin.Id );
         }
 

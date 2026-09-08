@@ -709,7 +709,7 @@ namespace RockWeb
                 // request, and the request context holds references to those
                 // entities. Rock already leaves most per-request RockContexts
                 // undisposed, so this does not introduce a new leak.
-                var rockContext = new Rock.Data.RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 var personSession = new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
 
@@ -794,7 +794,7 @@ namespace RockWeb
 
             try
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
 #pragma warning disable CS0618 // UpgradeLegacyCookieForRequest is intentionally obsolete from day one
                     var upgradedSession = new PersonSessionService( rockContext ).UpgradeLegacyCookieForRequest( rockRequestContext );
