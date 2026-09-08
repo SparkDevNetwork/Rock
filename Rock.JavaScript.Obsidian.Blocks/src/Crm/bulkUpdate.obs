@@ -210,7 +210,7 @@
                                                              :items="groupMemberStatusOptions" />
                                         </OptionalControl>
 
-                                        <AttributeValueControls v-model="groupMemberAttributeUpdateItems" />
+                                        <AttributeValueControls v-model="groupMemberAttributeUpdateItems" isRequiredEnforced />
                                     </template>
                                 </template>
                             </ContentStack>
@@ -283,7 +283,7 @@
                                                 <TextBox v-model="stepNote" textMode="multiline" />
                                             </OptionalControl>
 
-                                            <AttributeValueControls v-model="stepAttributeUpdateItems" />
+                                            <AttributeValueControls v-model="stepAttributeUpdateItems" isRequiredEnforced />
                                         </template>
                                     </template>
                                 </template>
@@ -302,7 +302,8 @@
                         <ul>
                             <li v-for="(change, index) in changeSummary" :key="index">
                                 <template v-for="(segment, segmentIndex) in change" :key="segmentIndex">
-                                    <span v-if="segment.isChip" class="bulk-change-chip">{{ segment.text }}</span>
+                                    <MatrixChangeTable v-if="segment.matrix" :columns="segment.matrix.columns" :rows="segment.matrix.rows" />
+                                    <span v-else-if="segment.isChip" class="bulk-change-chip">{{ segment.text }}</span>
                                     <template v-else>{{ segment.text }}</template>
                                 </template>
                             </li>
@@ -437,10 +438,11 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import AttributeValueControls from "./BulkUpdate/attributeValueControls.partial.obs";
+    import MatrixChangeTable from "./BulkUpdate/matrixChangeTable.partial.obs";
     import { AttributeUpdateItem, ChangeLine, UpdatedFields } from "./BulkUpdate/types.partial";
     import { BulkUpdatePersonResultBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdatePersonResultBag";
     import { BulkUpdateResultBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateResultBag";
-    import { changeChip, changeText, collectActiveAttributeValues, formatAttributeValue, scrollNotificationIntoView, summarizeActiveAttributes, useInvokeBulkUpdateBlockAction } from "./BulkUpdate/utils.partial";
+    import { attributeChangeLine, changeChip, changeText, collectActiveAttributeValues, createAttributeUpdateItems, scrollNotificationIntoView, summarizeActiveAttributes, useInvokeBulkUpdateBlockAction } from "./BulkUpdate/utils.partial";
     import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { BulkUpdateBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateBag";
@@ -582,7 +584,8 @@
         guid: cat.guid,
         name: cat.name,
         description: cat.description,
-        attributes: cat.attributes ?? []
+        attributes: cat.attributes ?? [],
+        matrixAttributeValues: cat.matrixAttributeValues ?? {}
     }));
 
     /**
@@ -593,7 +596,7 @@
         Object.fromEntries(
             attributeCategories.map(cat => [
                 cat.guid,
-                cat.attributes.map(a => ({ attribute: a, isActive: false, value: "" }))
+                createAttributeUpdateItems(cat.attributes, cat.matrixAttributeValues)
             ])
         )
     );
@@ -1341,7 +1344,7 @@
         for (const categoryGuid of Object.keys(attributeValuesByCategory.value)) {
             for (const item of attributeValuesByCategory.value[categoryGuid]) {
                 if (item.isActive) {
-                    changes.push(fieldChange(item.attribute.name ?? "Attribute", formatAttributeValue(item.attribute, item.value)));
+                    changes.push(attributeChangeLine(item.attribute, item.value, ""));
                 }
             }
         }
@@ -1754,20 +1757,18 @@
         }
 
         if (attrResult.isSuccess && attrResult.data) {
+            const attributes = attrResult.data.attributes ?? [];
+            const matrixAttributeValues = attrResult.data.matrixAttributeValues ?? {};
             const attrDict: Record<string, PublicAttributeBag> = {};
-            attrResult.data.forEach(a => {
+            attributes.forEach(a => {
                 if (a.key) {
                     attrDict[a.key] = a;
                 }
             });
 
             groupMemberAttributes.value = attrDict;
-            groupMemberAttributeValues.value = {};
-            groupMemberAttributeUpdateItems.value = attrResult.data.map(a => ({
-                attribute: a,
-                isActive: false,
-                value: ""
-            }));
+            groupMemberAttributeValues.value = { ...matrixAttributeValues };
+            groupMemberAttributeUpdateItems.value = createAttributeUpdateItems(attributes, matrixAttributeValues);
         }
     });
 
@@ -1840,18 +1841,17 @@
         }
 
         if (result.isSuccess && result.data) {
+            const attributes = result.data.attributes ?? [];
+            const matrixAttributeValues = result.data.matrixAttributeValues ?? {};
             const attrDict: Record<string, PublicAttributeBag> = {};
-            result.data.forEach(a => {
+            attributes.forEach(a => {
                 if (a.key) {
                     attrDict[a.key] = a;
                 }
             });
             stepAttributes.value = attrDict;
-            stepAttributeUpdateItems.value = result.data.map(a => ({
-                attribute: a,
-                isActive: false,
-                value: ""
-            }));
+            stepAttributeValues.value = { ...matrixAttributeValues };
+            stepAttributeUpdateItems.value = createAttributeUpdateItems(attributes, matrixAttributeValues);
         }
         else if (result.statusCode === 403) {
             stepNotAuthorizedMessage.value = "You are not authorized to update steps for the selected step type.";
