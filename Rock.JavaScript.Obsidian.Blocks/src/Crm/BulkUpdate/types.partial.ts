@@ -17,6 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
+import { BulkUpdateAttributesBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateAttributesBag";
 import { BulkUpdateBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateBag";
 import { BulkUpdatePersonBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdatePersonBag";
 import { GroupRolesResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/groupRolesResponseBag";
@@ -68,6 +69,29 @@ export type ChangeSegment = {
 
     /** Whether this segment is a chip (a dynamic entity or value name). */
     isChip: boolean;
+
+    /**
+     * When set, the segment renders as a table of matrix items rather than as
+     * text, so a Matrix attribute shows the same rows the operator entered.
+     */
+    matrix?: ChangeMatrix;
+};
+
+/**
+ * The rows and columns of a Matrix attribute value, ready to render as a table.
+ * Both come from the value the matrix editor produced, so the table matches the
+ * grid shown while the value was being entered.
+ */
+export type ChangeMatrix = {
+    /** The item attributes forming the columns, in the editor's display order. */
+    columns: PublicAttributeBag[];
+
+    /**
+     * One entry per item, in the editor's display order. Each maps an attribute
+     * key to that item's public view value, which the column's field type
+     * renders.
+     */
+    rows: Record<string, string>[];
 };
 
 /**
@@ -131,14 +155,16 @@ export type BulkUpdateBlockActionInvoker = {
 
     /**
      * Loads the group member attribute set (filtered to `ShowOnBulk`) for
-     * the picked group's group-type. Used by the Update-in-Group panel to
-     * drive the per-attribute opt-in editor.
+     * the picked group's group-type, along with the values that seed each
+     * editor. Used by the Update-in-Group panel to drive the per-attribute
+     * opt-in editor.
      */
-    getGroupMemberAttributes(groupGuid: Guid): Promise<HttpResult<PublicAttributeBag[]>>;
+    getGroupMemberAttributes(groupGuid: Guid): Promise<HttpResult<BulkUpdateAttributesBag>>;
 
     /**
      * Loads the step attribute set (filtered to `ShowOnBulk`) for the
-     * picked step type. Used by the Add Step and Update Step panels.
+     * picked step type, along with the values that seed each editor. Used by
+     * the Add Step and Update Step panels.
      */
-    getStepAttributes(stepTypeGuid: Guid): Promise<HttpResult<PublicAttributeBag[]>>;
+    getStepAttributes(stepTypeGuid: Guid): Promise<HttpResult<BulkUpdateAttributesBag>>;
 };
