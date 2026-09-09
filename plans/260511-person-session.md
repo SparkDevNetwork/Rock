@@ -736,12 +736,12 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 
 ### Legacy cookie upgrade
 
-- [ ] A user with a legacy `.ROCK` cookie from before the deployment makes a request: the cookie is silently upgraded; a `PersonSession` is created with `CreationSource = Legacy` and `IssuedDateTime = ticket.IssueDate`; the cookie on the response is new-format.
-- [ ] The user is NOT forced to re-log in.
-- [ ] A second request with the same legacy cookie (e.g. from a client that does not honor `Set-Cookie`) hits the existing `PersonSession` row; no duplicate is created.
-- [ ] A legacy cookie with `IsImpersonated = true` is dropped on first request; the request is anonymous; no `PersonSession` is created.
-- [ ] The kill switch (`RejectAuthenticationCookiesIssuedBefore`) correctly marks an upgraded session inactive if its `IssuedDateTime` precedes the threshold.
-- [ ] An upgraded session reports `Authenticated` strength (NOT `Elevated` or `MultiFactor`) until the user next authenticates.
+- [x] A user with a legacy `.ROCK` cookie from before the deployment makes a request: the cookie is silently upgraded; a `PersonSession` is created with `CreationSource = Legacy` and `IssuedDateTime = ticket.IssueDate`; the cookie on the response is new-format.
+- [x] The user is NOT forced to re-log in.
+- [x] A second request with the same legacy cookie (e.g. from a client that does not honor `Set-Cookie`) hits the existing `PersonSession` row; no duplicate is created.
+- [x] A legacy cookie with `IsImpersonated = true` is dropped on first request; the request is anonymous; no `PersonSession` is created.
+- [x] The kill switch (`RejectAuthenticationCookiesIssuedBefore`) correctly marks an upgraded session inactive if its `IssuedDateTime` precedes the threshold.
+- [x] An upgraded session reports `Authenticated` strength (NOT `Elevated` or `MultiFactor`) until the user next authenticates.
 
 ### Cookie reissue
 
