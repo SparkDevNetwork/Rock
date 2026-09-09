@@ -111,6 +111,17 @@
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * If set then the editor's background syntax validation worker is disabled.
+         * Useful when the content is not exactly the selected language (for example a
+         * Vue single-file component edited in HTML mode), where the validator would
+         * otherwise report false errors. Syntax highlighting is unaffected.
+         */
+        disableValidation: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -208,6 +219,10 @@
             editor.getSession().setMode(`ace/mode/${modeName.value}`);
             editor.getSession().setUseWrapMode(!props.noLineWrap);
             editor.setReadOnly(props.disabled);
+
+            if (props.disableValidation) {
+                editor.getSession().setUseWorker(false);
+            }
         }
         else if (editor && props.editor === "monaco" && typeof editor.updateOptions === "function") {
             editor.updateOptions({
@@ -295,6 +310,10 @@
             editor.getSession().setValue(internalValue.value);
             editor.setShowPrintMargin(false);
             editor.setReadOnly(props.disabled);
+
+            if (props.disableValidation) {
+                editor.getSession().setUseWorker(false);
+            }
 
             // Disable warning about block scrolling.
             editor.$blockScrolling = Infinity;
