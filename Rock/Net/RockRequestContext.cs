@@ -637,6 +637,46 @@ namespace Rock.Net
         }
 
         /// <summary>
+        /// Re-seats the AsyncLocal-backed <see cref="IRockRequestContextAccessor"/>
+        /// from the context stashed on <see cref="HttpContext.Items"/> by
+        /// <see cref="AttachToCurrentRequest(HttpContext)"/> when the AsyncLocal
+        /// value has been lost crossing a pipeline-step boundary. No-op when no
+        /// context was attached for this request or the AsyncLocal already holds it.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Intended to be called at the start of each pipeline step (via
+        /// <c>HttpApplication.OnExecuteRequestStep</c>) by the WebForms host module.
+        /// An AsyncLocal written in <c>Application_BeginRequest</c> does not reliably
+        /// flow to later pipeline steps once the request crosses an async boundary
+        /// (an awaited continuation, or a thread-agile hand-off under load); the
+        /// framework restores the ExecutionContext captured before BeginRequest ran
+        /// and the value is gone. Re-seating from the reliable
+        /// <see cref="HttpContext.Items"/> store restores it for the step and
+        /// everything it flows into.
+        /// </para>
+        /// <para>
+        /// This lives here, rather than in the host, because the accessor's setter is
+        /// exposed only on the internal <see cref="RockRequestContextAccessor"/>, not
+        /// on the public <see cref="IRockRequestContextAccessor"/> interface.
+        /// </para>
+        /// </remarks>
+        /// <param name="httpContext">The current HTTP context for the executing step.</param>
+        internal static void ReseatCurrentRequestFromItems( System.Web.HttpContextBase httpContext )
+        {
+            if ( !( httpContext?.Items[HttpContextItemsKey] is RockRequestContext requestContext ) )
+            {
+                return;
+            }
+
+            var accessor = RockApp.Current?.GetService<IRockRequestContextAccessor>();
+            if ( accessor is RockRequestContextAccessor internalAccessor && internalAccessor.RockRequestContext == null )
+            {
+                internalAccessor.RockRequestContext = requestContext;
+            }
+        }
+
+        /// <summary>
         /// Sets the resolved identity (<see cref="CurrentPerson"/> and
         /// <see cref="CurrentUser"/>) for this request. Both are set together
         /// so they cannot drift out of sync.

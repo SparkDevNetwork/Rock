@@ -72,6 +72,51 @@ namespace Rock.Web.HttpModules
             context.BeginRequest += Application_BeginRequest;
             context.EndRequest += Application_EndRequest;
             context.Error += Application_Error;
+
+            /*
+                9/9/26 - CLAUDE
+
+                Re-seat the AsyncLocal-backed RockRequestContext from HttpContext.Items
+                at the start of each pipeline step. RockRequestContext.AttachToCurrentRequest
+                (called in Application_BeginRequest) sets both stores, but an AsyncLocal
+                written during a pipeline event does not flow to later steps once the
+                request crosses an async boundary (a real awaited continuation, or a
+                thread-agile hand-off under load), so downstream consumers (RockPage, the
+                REST ServiceScopeHandler, OWIN middleware) could read null. OnExecuteRequestStep
+                (.NET Framework 4.7.1+) runs on the correct ExecutionContext for each step, so
+                re-seating here restores the value for the step and everything it flows into.
+                It lives on this module rather than Global.asax because the accessor's setter
+                is exposed only on the internal RockRequestContextAccessor, which RockWeb
+                cannot reach.
+
+                Reason: Fix intermittent "no RockRequestContext was attached" failures from the AsyncLocal not flowing across pipeline steps.
+            */
+            try
+            {
+                context.OnExecuteRequestStep( ( httpContext, nextStep ) =>
+                {
+                    try
+                    {
+                        RockRequestContext.ReseatCurrentRequestFromItems( httpContext );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // Re-seating is best-effort; never let it fault the request. The
+                        // consumer's own null guard still handles a genuinely missing context.
+                        System.Diagnostics.Debug.WriteLine( ex.Message );
+                    }
+
+                    // Always advance the pipeline, even if re-seating threw above.
+                    nextStep();
+                } );
+            }
+            catch ( Exception ex )
+            {
+                // OnExecuteRequestStep requires the app to be running on .NET Framework
+                // 4.7.1+. If that is somehow not the case, log and continue rather than
+                // failing module initialization; the prior behavior is unchanged.
+                System.Diagnostics.Debug.WriteLine( ex.Message );
+            }
         }
 
         /// <summary>
