@@ -328,10 +328,28 @@ END
 
         /// <summary>
         /// Removes the PMM component EntityType row itself. All attributes/values pointing at
-        /// it were removed by <see cref="NA_DeletePmmComponentAttributesAndValues"/> above.
+        /// it were removed by <see cref="NA_DeletePmmComponentAttributesAndValues"/> above; any
+        /// remaining <c>[Auth]</c> rows whose <c>EntityTypeId</c> points at the PMM EntityType
+        /// (per-component VIEW/EDIT/ADMINISTRATE grants that admins may have configured over
+        /// the years) MUST be deleted here first — the <c>Auth.EntityTypeId</c> FK will
+        /// otherwise block the EntityType delete with a FK violation (observed on an
+        /// alpha-test server during the v20 rollout).
         /// </summary>
         private void NA_DeletePmmEntityType()
         {
+            Sql( $@"
+DECLARE @PmmEntityTypeId INT =
+    ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{PmmEntityTypeGuid}' );
+
+IF @PmmEntityTypeId IS NOT NULL
+BEGIN
+    -- Auth rows that grant/deny actions on the PMM component EntityType itself
+    -- (EntityId = 0 means ""all instances of this EntityType"" in Rock's auth model).
+    DELETE FROM [Auth]
+    WHERE [EntityTypeId] = @PmmEntityTypeId;
+END
+" );
+
             RockMigrationHelper.DeleteEntityType( PmmEntityTypeGuid );
         }
 
