@@ -699,6 +699,21 @@ namespace Rock.CheckIn.Registration
                     groupMemberService.Add( currentFamilyMember );
 
                     rockContext.SaveChanges();
+
+                    // Default a newly created adult to combined (family) giving, matching
+                    // GroupService.SaveNewFamily and the other add-person paths in Rock.
+                    // Only people created during this registration are affected; existing
+                    // people keep their current giving setting so a deliberate "give
+                    // individually" choice is preserved.
+                    if ( familyPersonState.IsAdult && saveResult.NewPersonList.Any( p => p.Id == familyPersonState.PersonId.Value ) )
+                    {
+                        var newAdult = personService.Get( familyPersonState.PersonId.Value );
+                        if ( newAdult != null && !newAdult.GivingGroupId.HasValue )
+                        {
+                            newAdult.GivingGroupId = primaryFamily.Id;
+                            rockContext.SaveChanges();
+                        }
+                    }
                 }
             }
 
