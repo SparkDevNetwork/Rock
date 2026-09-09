@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System;
-using System.Linq;
-
-using Rock.Security;
-
-namespace Rock.Plugin.HotFixes
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    using System.Linq;
+
+    using Rock.Security;
+
     /*
         8/31/2026 - CLAUDE
 
@@ -31,11 +31,15 @@ namespace Rock.Plugin.HotFixes
         Content block type they place on a page.
 
         This migration deliberately does NOT create the ForgeContent table or seed
-        the Cms skill. Both belong to the AddForgeContentAndCmsSkill EF migration,
-        which runs before any plugin migration; duplicating them here would either
-        fight that migration for ownership of the rows or fail outright. The Cms
-        skill's guid is still referenced below, because the agents have to attach
-        the skill and enumerate its enabled tools.
+        the Cms skill. Both belong to the earlier AddForgeContentAndCmsSkill EF
+        migration; duplicating them here would fight that migration for ownership
+        of the rows. The Cms skill's guid is still referenced below, because the
+        agents have to attach the skill and enumerate its enabled tools.
+
+        9/9/2026: this seeding originally shipped as plugin hotfix 999 while the
+        feature was in development. It was folded into this EF migration so the
+        feature ships as schema plus seeding in EF migrations only, with no
+        hotfix numbering to coordinate.
 
         Three things here are easy to get wrong and are deliberate:
 
@@ -51,17 +55,20 @@ namespace Rock.Plugin.HotFixes
            AdditionalSettingsJson, so every tool guid has to be enumerated.
 
         3. The agent rows are created only when absent, never updated apart from the
-           pre-release rename. There is no IsSystem flag on AIAgent, so an
-           administrator is free to retune the instructions or the enabled tools;
-           re-running this migration must not stomp that. The skills and tools ARE
-           upserted, because their names and descriptions are ours to correct.
+           pre-release rename and the IsSystem flag. Both agents are system agents
+           (IsSystem = 1), so they cannot be deleted and their instructions cannot
+           be edited through the UI; the flag is also set on rows seeded by the
+           earlier hotfix, which created them with IsSystem = 0. An administrator
+           can still retune the enabled tools, so re-running this migration must not
+           stomp the skill attachments. The skills and tools ARE upserted, because
+           their names and descriptions are ours to correct.
 
-           So that a later migration can still ship instruction fixes to agents
-           nobody has tuned, each row's AdditionalSettingsJson carries the
-           SHA-256 of the seeded Instructions text under SeededInstructionsHash.
-           A future migration hashes the row's current Instructions, and updates
-           the text (and the hash) only when the two match. A row whose text no
-           longer matches has been tuned and is left alone.
+           So that a later migration can still ship instruction fixes safely, each
+           row's AdditionalSettingsJson carries the SHA-256 of the seeded
+           Instructions text under SeededInstructionsHash. A future migration hashes
+           the row's current Instructions, and updates the text (and the hash) only
+           when the two match. A row whose text no longer matches was changed
+           outside the UI and is left alone.
 
         Security is administrator-only rather than the staff-wide default the Staff
         Agent uses. These tools create pages, write code that runs in visitors'
@@ -74,9 +81,7 @@ namespace Rock.Plugin.HotFixes
     /// Adds the Code Composer MCP and chat agents, the Forge Content block type, and
     /// the code-based skills the agents carry.
     /// </summary>
-    /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 999, "20.0" )]
-    public class AddCodeComposer : Migration
+    public partial class AddCodeComposer : Rock.Migrations.RockMigration
     {
         #region Constants
 
@@ -94,6 +99,18 @@ namespace Rock.Plugin.HotFixes
         /// The Guid of the Code Composer MCP Agent AIAgent row.
         /// </summary>
         private const string CodeComposerMcpAgentGuid = "DC44435A-8900-4AB4-9EB3-1756FCC1B355";
+
+        /// <summary>
+        /// The display name of the Code Composer MCP Agent. Carries the
+        /// Experimental suffix while the feature is in preview.
+        /// </summary>
+        private const string CodeComposerMcpAgentName = "Code Composer MCP Agent (Experimental)";
+
+        /// <summary>
+        /// The display name of the Code Composer Chat Agent. Carries the
+        /// Experimental suffix while the feature is in preview.
+        /// </summary>
+        private const string CodeComposerChatAgentName = "Code Composer Chat Agent (Experimental)";
 
         /// <summary>
         /// The MCP slug the Code Composer MCP Agent is served under (/api/v2/mcp/code-composer).
@@ -267,25 +284,42 @@ Your client may have its own file, browser, or shell tools. When it provides a b
 
         #endregion Instructions
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
         public override void Up()
         {
-            RegisterEntityTypes();
-            AddForgeContentBlockType();
-            AddForgeContentBuilderSkill();
-            AddLavaApplicationBuilderSkill();
-            AddCommunityKnowledgeBaseSkill();
-            AddCodeComposerMcpAgent();
-            AddCodeComposerChatAgent();
-            AttachSkillsToAgents();
+            RegisterEntityTypes_Up();
+            AddForgeContentBlockType_Up();
+            AddForgeContentBuilderSkill_Up();
+            AddLavaApplicationBuilderSkill_Up();
+            AddCommunityKnowledgeBaseSkill_Up();
+            AddCodeComposerMcpAgent_Up();
+            AddCodeComposerChatAgent_Up();
+            AttachSkillsToAgents_Up();
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
         public override void Down()
         {
-            // Intentionally empty. Removing the agents would discard any tuning an
-            // administrator has done to their instructions or enabled tools, and the
-            // skills may be attached to other agents by then.
+            /*
+                9/9/2026 - CLAUDE
+
+                The EntityType rows are deliberately left in place, matching the
+                AddForgeContentAndCmsSkill migration: startup registration recreates
+                them, they carry no configuration, and deleting them would orphan
+                anything else that came to reference them. The agents are removed
+                first because AIAgentSkill cascades from both AIAgent and AISkill,
+                then the skills (which cascade to their tools), then the block type.
+                The Cms skill is not touched here; it belongs to the earlier migration.
+
+                Reason: A downgrade must remove what this migration seeded and nothing more.
+            */
+            RemoveCodeComposerAgents_Down();
+            RemoveSkillsAndTools_Down();
+            RemoveForgeContentBlockType_Down();
         }
 
         #region Entity Types and Block Type
@@ -299,7 +333,7 @@ Your client may have its own file, browser, or shell tools. When it provides a b
         /// The ForgeContent and Cms skill EntityTypes are registered by the
         /// AddForgeContentAndCmsSkill EF migration and are not repeated here.
         /// </summary>
-        private void RegisterEntityTypes()
+        private void RegisterEntityTypes_Up()
         {
             RockMigrationHelper.UpdateEntityType(
                 "Rock.Blocks.Cms.ForgeContentDetail",
@@ -333,7 +367,7 @@ Your client may have its own file, browser, or shell tools. When it provides a b
         /// UpdateBlockTypeByGuid is intentionally avoided because it deletes by
         /// path and can wipe entity-based block types.
         /// </summary>
-        private void AddForgeContentBlockType()
+        private void AddForgeContentBlockType_Up()
         {
             RockMigrationHelper.AddOrUpdateEntityBlockType(
                 "Forge Content",
@@ -341,6 +375,16 @@ Your client may have its own file, browser, or shell tools. When it provides a b
                 "Rock.Blocks.Cms.ForgeContentDetail",
                 "CMS",
                 BlockTypeGuid );
+        }
+
+        /// <summary>
+        /// Removes the Forge Content block type. Any Forge Content block placements
+        /// must already be gone; the BlockType foreign key would otherwise block the
+        /// delete, which is the same behavior every other block type Down has.
+        /// </summary>
+        private void RemoveForgeContentBlockType_Down()
+        {
+            RockMigrationHelper.DeleteBlockType( BlockTypeGuid );
         }
 
         #endregion Entity Types and Block Type
@@ -367,7 +411,7 @@ Your client may have its own file, browser, or shell tools. When it provides a b
         /// a side-by-side evaluation kept the split, so each skill carries
         /// focused guidance and its own guids.
         /// </summary>
-        private void AddForgeContentBuilderSkill()
+        private void AddForgeContentBuilderSkill_Up()
         {
             AddOrUpdateCodeAISkill(
                 "Forge Content Builder Skill",
@@ -404,7 +448,7 @@ Your client may have its own file, browser, or shell tools. When it provides a b
         /// tools: the endpoint authoring loop that feeds Forge Content
         /// components their data.
         /// </summary>
-        private void AddLavaApplicationBuilderSkill()
+        private void AddLavaApplicationBuilderSkill_Up()
         {
             AddOrUpdateCodeAISkill(
                 "Lava Application Builder Skill",
@@ -465,7 +509,7 @@ Your client may have its own file, browser, or shell tools. When it provides a b
         /// itself carries no security rules: every tool is read-only and both
         /// agents that receive it are already administrator-gated.
         /// </summary>
-        private void AddCommunityKnowledgeBaseSkill()
+        private void AddCommunityKnowledgeBaseSkill_Up()
         {
             /*
                 8/18/2026 - CLAUDE
@@ -535,6 +579,29 @@ Your client may have its own file, browser, or shell tools. When it provides a b
                 "BCE7AD22-3768-4DEE-A2E1-71BC324905EE" );
         }
 
+        /// <summary>
+        /// Removes the seeded security, tools, and skills for the Forge Content
+        /// Builder, Lava Application Builder, and Community Knowledge Base skills.
+        /// Deleting an AISkill cascades to its AISkillTool and AIAgentSkill rows.
+        /// Startup registration recreates the skills on the next run of a build
+        /// that still contains the skill classes.
+        /// </summary>
+        private void RemoveSkillsAndTools_Down()
+        {
+            RockMigrationHelper.DeleteSecurityAuth( "5D3B7A20-94E6-4C18-B0F5-27A4D9C1E863" );
+            RockMigrationHelper.DeleteSecurityAuth( "A9E64C17-3B85-4D02-96E1-C50F8B27D4A9" );
+            RockMigrationHelper.DeleteSecurityAuth( "1C78E5B3-D40A-4F96-82D7-63B9A0F5C214" );
+            RockMigrationHelper.DeleteSecurityAuth( "F2A91D68-7C35-4E80-B41A-09D6E3C7825F" );
+
+            Sql( $@"
+DELETE FROM [AISkill]
+WHERE [Guid] IN (
+    '{ForgeContentBuilderSkillGuid}'
+    , '{LavaApplicationBuilderSkillGuid}'
+    , '{CommunityKnowledgeBaseSkillGuid}'
+)" );
+        }
+
         #endregion Skills
 
         #region Agent
@@ -542,13 +609,14 @@ Your client may have its own file, browser, or shell tools. When it provides a b
         /// <summary>
         /// Creates the Code Composer MCP Agent as an MCP server, if it does not already exist.
         /// </summary>
-        private void AddCodeComposerMcpAgent()
+        private void AddCodeComposerMcpAgent_Up()
         {
-            // Create-only, never update. An administrator may retune the
-            // instructions, and re-running this migration must not discard that.
-            // The one exception is the rename below: a row still carrying one of
-            // the pre-release default names ('Vibe Agent', 'Vibe MCP Agent') has
-            // not been tuned, so it is safe to bring in line with the shipped name.
+            // Create-only, never update, apart from two corrections to rows seeded
+            // by earlier pre-release builds: a row still carrying one of the earlier
+            // default names ('Vibe Agent', 'Vibe MCP Agent', 'Code Composer MCP
+            // Agent') has not been renamed by hand, so it is safe to bring in line
+            // with the shipped name; and every existing row is marked as a system
+            // agent, because the hotfix created it with IsSystem = 0.
             Sql( $@"
 IF NOT EXISTS (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{CodeComposerMcpAgentGuid}')
 BEGIN
@@ -558,15 +626,17 @@ BEGIN
         , [Instructions]
         , [AgentType]
         , [AudienceType]
+        , [IsSystem]
         , [AdditionalSettingsJson]
         , [Guid]
     )
     VALUES (
-        'Code Composer MCP Agent'
+        '{CodeComposerMcpAgentName}'
         , 'An MCP server that lets an AI client build custom UI in this instance: a page, a Forge Content block, the Vue component it renders, and the Lava endpoints feeding it.'
         , '{CodeComposerMcpAgentInstructions.Replace( "'", "''" )}'
         , {( int ) Enums.AI.Agent.AgentType.Mcp}
         , {( int ) Enums.AI.Agent.AudienceType.Internal}
+        , 1
         , '{{ ""McpAgentSettings"": {{ ""Slug"": ""{CodeComposerMcpAgentSlug}"", ""IsExcludingSystemSkills"": false }}, ""{SeededInstructionsHashKey}"": ""{GetSha256Hex( CodeComposerMcpAgentInstructions )}"" }}'
         , '{CodeComposerMcpAgentGuid}'
     )
@@ -574,9 +644,14 @@ END
 ELSE
 BEGIN
     UPDATE [AIAgent]
-    SET [Name] = 'Code Composer MCP Agent'
+    SET [Name] = '{CodeComposerMcpAgentName}'
     WHERE [Guid] = '{CodeComposerMcpAgentGuid}'
-        AND [Name] IN ('Vibe Agent', 'Vibe MCP Agent')
+        AND [Name] IN ('Vibe Agent', 'Vibe MCP Agent', 'Code Composer MCP Agent')
+
+    UPDATE [AIAgent]
+    SET [IsSystem] = 1
+    WHERE [Guid] = '{CodeComposerMcpAgentGuid}'
+        AND [IsSystem] = 0
 END" );
 
             RockMigrationHelper.AddSecurityAuthForAIAgent(
@@ -602,10 +677,11 @@ END" );
         /// Creates the Code Composer Chat Agent, if it does not already exist. Same skills
         /// and tools as the MCP agent on Rock's own chat transport, following the
         /// Staff Agent precedent for chat agents: create-only (except the
-        /// pre-release rename from 'Vibe Chat Agent'), no additional settings,
-        /// markdown presentation guidance in the instructions.
+        /// pre-release rename and the IsSystem correction, as for the MCP agent),
+        /// no additional settings, markdown presentation guidance in the
+        /// instructions.
         /// </summary>
-        private void AddCodeComposerChatAgent()
+        private void AddCodeComposerChatAgent_Up()
         {
             Sql( $@"
 IF NOT EXISTS (SELECT [Id] FROM [AIAgent] WHERE [Guid] = '{CodeComposerChatAgentGuid}')
@@ -616,15 +692,17 @@ BEGIN
         , [Instructions]
         , [AgentType]
         , [AudienceType]
+        , [IsSystem]
         , [AdditionalSettingsJson]
         , [Guid]
     )
     VALUES (
-        'Code Composer Chat Agent'
+        '{CodeComposerChatAgentName}'
         , 'A chat agent that builds custom UI in this instance from Rock''s own chat: a page, a Forge Content block, the Vue component it renders, and the Lava endpoints feeding it.'
         , '{CodeComposerChatAgentInstructions.Replace( "'", "''" )}'
         , {( int ) Enums.AI.Agent.AgentType.Chat}
         , {( int ) Enums.AI.Agent.AudienceType.Internal}
+        , 1
         , '{{ ""{SeededInstructionsHashKey}"": ""{GetSha256Hex( CodeComposerChatAgentInstructions )}"" }}'
         , '{CodeComposerChatAgentGuid}'
     )
@@ -632,9 +710,14 @@ END
 ELSE
 BEGIN
     UPDATE [AIAgent]
-    SET [Name] = 'Code Composer Chat Agent'
+    SET [Name] = '{CodeComposerChatAgentName}'
     WHERE [Guid] = '{CodeComposerChatAgentGuid}'
-        AND [Name] = 'Vibe Chat Agent'
+        AND [Name] IN ('Vibe Chat Agent', 'Code Composer Chat Agent')
+
+    UPDATE [AIAgent]
+    SET [IsSystem] = 1
+    WHERE [Guid] = '{CodeComposerChatAgentGuid}'
+        AND [IsSystem] = 0
 END" );
 
             RockMigrationHelper.AddSecurityAuthForAIAgent(
@@ -719,7 +802,7 @@ END" );
         /// Attaches the four skills to both agents with explicit enabled-tool
         /// lists. Attaching a skill alone does not expose its tools.
         /// </summary>
-        private void AttachSkillsToAgents()
+        private void AttachSkillsToAgents_Up()
         {
             AttachSkillToAgent( CodeComposerMcpAgentGuid, CmsSkillGuid, CmsSkillEnabledTools );
             AttachSkillToAgent( CodeComposerMcpAgentGuid, ForgeContentBuilderSkillGuid, ForgeContentBuilderSkillEnabledTools );
@@ -730,6 +813,26 @@ END" );
             AttachSkillToAgent( CodeComposerChatAgentGuid, ForgeContentBuilderSkillGuid, ForgeContentBuilderSkillEnabledTools );
             AttachSkillToAgent( CodeComposerChatAgentGuid, LavaApplicationBuilderSkillGuid, LavaApplicationBuilderSkillEnabledTools );
             AttachSkillToAgent( CodeComposerChatAgentGuid, CommunityKnowledgeBaseSkillGuid, CommunityKnowledgeBaseSkillEnabledTools );
+        }
+
+        /// <summary>
+        /// Removes the two Code Composer agents and their security rules. Deleting
+        /// an AIAgent cascades to its AIAgentSkill rows, so the skill attachments
+        /// added by <see cref="AttachSkillsToAgents_Up"/> go with it.
+        /// </summary>
+        private void RemoveCodeComposerAgents_Down()
+        {
+            RockMigrationHelper.DeleteSecurityAuth( "7FB09F45-4FB1-45FE-A994-E130F6543078" );
+            RockMigrationHelper.DeleteSecurityAuth( "4D692452-3031-4854-A6AF-61A900C3D8A2" );
+            RockMigrationHelper.DeleteSecurityAuth( "555E5B64-1F3F-4117-B108-20ADB95F8A04" );
+            RockMigrationHelper.DeleteSecurityAuth( "0CCA182B-7827-4FE7-BA69-B63C79BDE4D3" );
+
+            Sql( $@"
+DELETE FROM [AIAgent]
+WHERE [Guid] IN (
+    '{CodeComposerMcpAgentGuid}'
+    , '{CodeComposerChatAgentGuid}'
+)" );
         }
 
         #endregion Agent
