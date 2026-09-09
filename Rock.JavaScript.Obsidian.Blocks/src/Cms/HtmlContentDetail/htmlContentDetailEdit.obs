@@ -5,7 +5,6 @@
                  :tabs="tabs"
                  title="Edit HTML"
                  saveText="Save"
-                 :isSaveButtonDisabled="!isDirty"
                  @save="onSave">
         <template #prepend>
             <NotificationBox v-if="errorMessage" alertType="danger">
@@ -77,9 +76,6 @@
     const markupWarnings = ref<string[]>([]);
     const isMarkupWarningAcknowledged = ref(false);
 
-    /** A snapshot of the loaded version, used to detect unsaved changes. */
-    let loadedBag: HtmlContentEditBag | null = null;
-
     // #endregion Values
 
     // #region Computed Values
@@ -89,21 +85,6 @@
         return options.value?.isVersioningEnabled
             ? [TabName.Content, TabName.VersionHistory]
             : [TabName.Content];
-    });
-
-    /**
-     * Whether anything the server would persist differs from the loaded
-     * version. Save stays disabled until it does.
-     */
-    const isDirty = computed((): boolean => {
-        if (!editBag.value || !loadedBag) {
-            return false;
-        }
-
-        return (editBag.value.content ?? "") !== (loadedBag.content ?? "")
-            || (editBag.value.startDateTime ?? null) !== (loadedBag.startDateTime ?? null)
-            || (editBag.value.expireDateTime ?? null) !== (loadedBag.expireDateTime ?? null)
-            || editBag.value.approvalStatus !== loadedBag.approvalStatus;
     });
 
     // #endregion Computed Values
@@ -135,7 +116,6 @@
      */
     function loadVersion(bag: HtmlContentEditBag): void {
         editBag.value = bag;
-        loadedBag = JSON.parse(JSON.stringify(bag));
         isOverwriteCurrentVersion.value = false;
         clearMarkupWarnings();
     }
