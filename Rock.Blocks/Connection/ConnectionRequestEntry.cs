@@ -518,10 +518,10 @@ namespace Rock.Blocks.Connection
             SetCampusInitialization( box, currentPerson );
             SetFieldVisibility( box );
             SetOptions( box );
-            SetOpportunities( box );
+            SetOpportunities( box, currentPerson );
             SetPersonAttributes( box, currentPerson );
 
-            box.IsFirstTimeGuestOpportunityConfigured = GetAttributeValue( AttributeKey.FirstTimeGuestOpportunity ).AsGuidOrNull().HasValue;
+            box.IsFirstTimeGuestOpportunityConfigured = IsFirstTimeGuestOpportunityAvailable( currentPerson );
 
             // Configured but offering nothing: warn editors that the chosen connection type(s)
             // have no active opportunities, so they recognize a data/config gap rather than a defect.
@@ -614,7 +614,7 @@ namespace Rock.Blocks.Connection
         /// <summary>
         /// Populates the offered opportunities, each with its public connection request attributes, on the box.
         /// </summary>
-        private void SetOpportunities( ConnectionRequestEntryInitializationBox box )
+        private void SetOpportunities( ConnectionRequestEntryInitializationBox box, Person currentPerson )
         {
             var connectionTypeGuids = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
 
@@ -624,6 +624,17 @@ namespace Rock.Blocks.Connection
                 return;
             }
 
+            /*
+                09/08/26 - JMH
+
+                Only offer opportunities the visitor is authorized to VIEW. An opportunity inherits its
+                security from its ConnectionType, so a type restricted to certain groups must not surface
+                its opportunities on this public form to a visitor outside those groups. VIEW is evaluated
+                in memory because IsAuthorized cannot translate to SQL. The save path re-applies the same
+                check so a crafted payload cannot submit against an opportunity the visitor could not see.
+
+                Reason: Gate offered opportunities by View security.
+            */
             var opportunities = new ConnectionOpportunityService( RockContext )
                 .Queryable()
                 .Include( o => o.ConnectionType )
@@ -633,7 +644,8 @@ namespace Rock.Blocks.Connection
                     connectionTypeGuids.Contains( o.ConnectionType.Guid ) )
                 .OrderBy( o => o.PublicName )
                 .ThenBy( o => o.Name )
-                .ToList();
+                .ToList()
+                .Where( o => o.IsAuthorized( Authorization.VIEW, currentPerson ) );
 
             box.Opportunities = opportunities
                 .Select( o => new ConnectionRequestEntryOpportunityBag
@@ -1639,7 +1651,7 @@ namespace Rock.Blocks.Connection
                     .Include( o => o.ConnectionType )
                     .FirstOrDefault( o => o.Id == opportunityId.Value );
 
-                if ( !IsOpportunitySelectable( opportunity, allowedConnectionTypeGuids ) )
+                if ( !IsOpportunitySelectable( opportunity, allowedConnectionTypeGuids, currentPerson ) )
                 {
                     continue;
                 }
@@ -1662,15 +1674,17 @@ namespace Rock.Blocks.Connection
                 requestsToSave.Add( request );
             }
 
-            // The first-time-guest opportunity is admin-configured and therefore trusted; it is exempt from the
-            // allowed-Connection-Types membership check but must still be active before a request is added.
+            // The first-time-guest opportunity is admin-configured, so it is exempt from the allowed-Connection-Types
+            // membership check, but it must still be active and the visitor must be authorized to view it before a
+            // request is added, matching how the listed opportunities are gated.
             if ( bag.IsFirstTimeGuest && firstTimeGuestOpportunityGuid.HasValue )
             {
                 var firstTimeGuestOpportunity = opportunityService.Queryable()
                     .Include( o => o.ConnectionType )
                     .FirstOrDefault( o => o.Guid == firstTimeGuestOpportunityGuid.Value );
 
-                if ( IsOpportunityActive( firstTimeGuestOpportunity ) )
+                if ( IsOpportunityActive( firstTimeGuestOpportunity )
+                    && firstTimeGuestOpportunity.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     var request = BuildConnectionRequest( firstTimeGuestOpportunity, person, campusId, bag.AdditionalComments );
                     request.LoadAttributes( RockContext );
@@ -1704,6 +1718,33 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
+        /// Indicates whether the configured first-time-guest opportunity is available to the visitor: it must be set,
+        /// active under an active connection type, and authorized for the visitor to view.
+        /// </summary>
+        /// <param name="currentPerson">The authenticated visitor, or <c>null</c> for an anonymous visitor.</param>
+        /// <remarks>
+        /// This gates the first-time-guest option on the form so it is not offered when the visitor could not use it.
+        /// The save path re-applies the same active and view checks before creating the request.
+        /// </remarks>
+        private bool IsFirstTimeGuestOpportunityAvailable( Person currentPerson )
+        {
+            var opportunityGuid = GetAttributeValue( AttributeKey.FirstTimeGuestOpportunity ).AsGuidOrNull();
+
+            if ( !opportunityGuid.HasValue )
+            {
+                return false;
+            }
+
+            var opportunity = new ConnectionOpportunityService( RockContext )
+                .Queryable()
+                .Include( o => o.ConnectionType )
+                .FirstOrDefault( o => o.Guid == opportunityGuid.Value );
+
+            return IsOpportunityActive( opportunity )
+                && opportunity.IsAuthorized( Authorization.VIEW, currentPerson );
+        }
+
+        /// <summary>
         /// Indicates whether an opportunity is active and belongs to an active connection type.
         /// </summary>
         private bool IsOpportunityActive( ConnectionOpportunity opportunity )
@@ -1716,12 +1757,17 @@ namespace Rock.Blocks.Connection
 
         /// <summary>
         /// Indicates whether an opportunity may be selected through this block: it must be active, under an active
-        /// connection type, and that connection type must be one the block's Connection Types setting allows.
+        /// connection type, that connection type must be one the block's Connection Types setting allows, and the
+        /// visitor must be authorized to view the opportunity.
         /// </summary>
-        private bool IsOpportunitySelectable( ConnectionOpportunity opportunity, HashSet<Guid> allowedConnectionTypeGuids )
+        /// <param name="opportunity">The submitted opportunity to validate.</param>
+        /// <param name="allowedConnectionTypeGuids">The connection type Guids the block's setting exposes.</param>
+        /// <param name="currentPerson">The authenticated visitor, or <c>null</c> for an anonymous submission.</param>
+        private bool IsOpportunitySelectable( ConnectionOpportunity opportunity, HashSet<Guid> allowedConnectionTypeGuids, Person currentPerson )
         {
             return IsOpportunityActive( opportunity )
-                && allowedConnectionTypeGuids.Contains( opportunity.ConnectionType.Guid );
+                && allowedConnectionTypeGuids.Contains( opportunity.ConnectionType.Guid )
+                && opportunity.IsAuthorized( Authorization.VIEW, currentPerson );
         }
 
         /// <summary>
