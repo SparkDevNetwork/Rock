@@ -3073,7 +3073,7 @@ namespace Rock.Blocks.Communication
                         };
                         result.WasRequestedPersonFound = true;
 
-                        return result;
+                        return ApplyAdditionalMergeValues( rockContext, communication, result );
                     }
                     else
                     {
@@ -3129,7 +3129,7 @@ namespace Rock.Blocks.Communication
                         };
                         result.WasRequestedPersonFound = true;
 
-                        return result;
+                        return ApplyAdditionalMergeValues( rockContext, communication, result );
                     }
                     else
                     {
@@ -3156,7 +3156,7 @@ namespace Rock.Blocks.Communication
                             };
                             result.WasRequestedPersonFound = true;
 
-                            return result;
+                            return ApplyAdditionalMergeValues( rockContext, communication, result );
                         }
                     }
                 }
@@ -3186,7 +3186,7 @@ namespace Rock.Blocks.Communication
                         };
                         result.WasRequestedPersonFound = true;
 
-                        return result;
+                        return ApplyAdditionalMergeValues( rockContext, communication, result );
                     }
                 }
                 else
@@ -3217,8 +3217,49 @@ namespace Rock.Blocks.Communication
                     PersonAlias = currentPerson.PrimaryAlias
                 };
 
+                return ApplyAdditionalMergeValues( rockContext, communication, result );
+            }
+        }
+
+        /// <summary>
+        /// Applies the additional merge values from the matching persisted communication recipient
+        /// to the sample recipient used to build the preview.
+        /// </summary>
+        /// <param name="rockContext">The database context used to look up the persisted recipient.</param>
+        /// <param name="communication">The communication whose additional merge fields drive the lookup.</param>
+        /// <param name="result">The sample recipient result to populate.</param>
+        /// <returns>The same <paramref name="result"/>, with additional merge values applied when a matching recipient row exists.</returns>
+        private SampleCommunicationRecipientResult ApplyAdditionalMergeValues( RockContext rockContext, Model.Communication communication, SampleCommunicationRecipientResult result )
+        {
+            var recipient = result?.CommunicationRecipient;
+
+            if ( recipient?.PersonAlias == null || communication.AdditionalMergeFields?.Any() != true )
+            {
                 return result;
             }
+
+            /*
+                09/09/26 - JMH
+
+                Additional merge field values are stored on each persisted CommunicationRecipient row.
+                Most preview paths build a fresh sample recipient that carries no additional merge
+                values, so those fields resolve to blank in the preview. Copy the values from the
+                matching persisted recipient row when one exists. The sample recipient may be someone
+                without a persisted row (a "preview as" person, an unsaved manual recipient, or the
+                logged-in fallback), so this is a best-effort lookup rather than a required match.
+
+                Reason: Preview did not resolve additional merge fields for the sample recipient.
+            */
+            var persistedRecipient = new CommunicationRecipientService( rockContext )
+                .GetByCommunicationId( communication.Id )
+                .FirstOrDefault( cr => cr.PersonAlias.Id == recipient.PersonAlias.Id );
+
+            if ( persistedRecipient != null )
+            {
+                recipient.AdditionalMergeValues = persistedRecipient.AdditionalMergeValues;
+            }
+
+            return result;
         }
 
         /// <summary>
