@@ -33,7 +33,6 @@ internal sealed partial class CmsSkill
     [AgentUsage( "Use ListPages instead when you want to walk the page tree one level at a time." )]
     [AgentToolGuid( "8968B4EF-3A1D-472A-9BC6-17A80B8F824F" )]
     public AgentToolResult ListPagesForSite(
-        [Description( "The IdKey or guid of the site whose pages should be listed." )]
         string siteIdKey,
 
         string cursor = null )
@@ -68,11 +67,7 @@ internal sealed partial class CmsSkill
             .Select( p => CreateSummaryPageResult( p, rockContext ) )
             .ToList() );
 
-        var historyPage = cursorPage.WithItems( cursorPage.Items.Select( p => new KeyNameResult
-        {
-            Id = p.Id,
-            Name = p.InternalName
-        } ) );
+        var historyPage = cursorPage.WithItems( cursorPage.Items.Select( p => KeyNameResult.FromCache( p ) ) );
 
         return helper.GetPaginatedResult( resultPage, historyPage );
     }

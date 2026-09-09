@@ -1062,7 +1062,12 @@ export const Page = {
      */
     MyAccountSecurity: "290C53DC-0960-484C-B314-8301882A454C",
     /**
-     * Gets the My Connections page guid.
+     * Gets the My Connection Opportunities page guid.
+     * ParentPage: Connections
+     */
+    MyConnectionOpportunities: "29C23E3B-13E3-4FF6-883C-0EFA1C7C40B9",
+    /**
+     * Gets the My Connection Requests page guid.
      * ParentPage: Connections
      */
     MyConnections: "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B",

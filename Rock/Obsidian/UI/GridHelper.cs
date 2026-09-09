@@ -84,6 +84,7 @@ namespace Rock.Obsidian.UI
                         entitySetItems.Add( new EntitySetItem
                         {
                             EntityId = entityId,
+                            Order = item.Order,
                             AdditionalMergeValues = item.AdditionalMergeValues
                         } );
                     }
@@ -94,6 +95,7 @@ namespace Rock.Obsidian.UI
                     entitySetItems.AddRange( entitySetBag.Items.Select( i => new EntitySetItem
                     {
                         EntityId = 0,
+                        Order = i.Order,
                         AdditionalMergeValues = i.AdditionalMergeValues
                     } ) );
                 }

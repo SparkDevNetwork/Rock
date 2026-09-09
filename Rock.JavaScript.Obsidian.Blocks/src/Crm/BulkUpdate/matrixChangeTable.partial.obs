@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="table-responsive">
+        <table class="grid-table table table-condensed table-light">
+            <thead>
+                <tr>
+                    <th v-for="column in columns" :key="column.attributeGuid">{{ column.name }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(row, rowIndex) in rows" :key="rowIndex">
+                    <td v-for="column in columns" :key="column.attributeGuid">
+                        <component :is="cellComponents[column.attributeGuid]"
+                                   :modelValue="row[column.key ?? ''] ?? ''"
+                                   :configurationValues="column.configurationValues ?? {}" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { Component, PropType, computed } from "vue";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { Guid } from "@Obsidian/Types";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        /**
+         * The item attributes forming the columns, in the order the matrix
+         * editor displayed them.
+         */
+        columns: {
+            type: Array as PropType<PublicAttributeBag[]>,
+            required: true
+        },
+
+        /**
+         * One entry per matrix item, each mapping an attribute key to that
+         * item's public view value.
+         */
+        rows: {
+            type: Array as PropType<Record<string, string>[]>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /**
+     * The component that renders each column's cells, keyed by attribute
+     * identifier. This is the same condensed component the matrix editor's grid
+     * uses, so a value reads here exactly as it did while being entered.
+     */
+    const cellComponents = computed((): Record<Guid, Component> => {
+        const components: Record<Guid, Component> = {};
+
+        for (const column of props.columns) {
+            const configurationValues = column.configurationValues ?? {};
+            const fieldType = getFieldType(column.fieldTypeGuid) ?? getFieldType(FieldType.Text);
+
+            if (fieldType) {
+                components[column.attributeGuid] = fieldType.getCondensedFormattedComponent(configurationValues);
+            }
+        }
+
+        return components;
+    });
+
+    // #endregion Computed Values
+</script>

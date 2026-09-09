@@ -70,63 +70,18 @@ namespace Rock.Reporting
         /// </exception>
         internal static ObsidianGridResult Build( Report report, RockContext rockContext, RockRequestContext requestContext )
         {
-            var reportEntityTypeCache = EntityTypeCache.Get( report.EntityTypeId.Value );
-            var reportEntityType = reportEntityTypeCache?.GetEntityType();
-            if ( reportEntityType == null )
-            {
-                throw new InvalidOperationException( $"Unable to resolve the entity type for report '{report.Name}'." );
-            }
+            // Resolve the entity type, classify the report's fields, and build the
+            // entity query. This shared step is also used by the AI agent report
+            // runner so the two cannot drift.
+            var reportQuery = ReportQueryBuilder.Create( report, rockContext );
 
-            var entityFieldsForEntity = EntityHelper.GetEntityFields( reportEntityType );
-
-            var selectedEntityFields = new Dictionary<int, EntityField>();
-            var selectedAttributes = new Dictionary<int, AttributeCache>();
-            var selectedComponents = new Dictionary<int, ReportField>();
+            var reportEntityType = reportQuery.EntityType;
+            var queryable = reportQuery.Queryable;
+            var selectedEntityFields = reportQuery.EntityFields;
+            var selectedAttributes = reportQuery.Attributes;
+            var selectedComponents = reportQuery.Components;
 
             var orderedReportFields = report.ReportFields.OrderBy( a => a.ColumnOrder ).ToList();
-            var columnIndex = 0;
-
-            foreach ( var reportField in orderedReportFields )
-            {
-                columnIndex++;
-
-                if ( reportField.ReportFieldType == ReportFieldType.Property )
-                {
-                    var entityField = entityFieldsForEntity.FirstOrDefault( a => a.Name == reportField.Selection );
-                    if ( entityField != null )
-                    {
-                        selectedEntityFields.Add( columnIndex, entityField );
-                    }
-                }
-                else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
-                {
-                    Guid.TryParse( reportField.Selection, out var attributeGuid );
-                    var attribute = AttributeCache.Get( attributeGuid );
-                    if ( attribute != null )
-                    {
-                        selectedAttributes.Add( columnIndex, attribute );
-                    }
-                }
-                else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
-                {
-                    selectedComponents.Add( columnIndex, reportField );
-                }
-            }
-
-            var reportGetQueryableArgs = new ReportGetQueryableArgs
-            {
-                ReportDbContext = rockContext,
-                EntityFields = selectedEntityFields,
-                Attributes = selectedAttributes,
-                SelectComponents = selectedComponents,
-                IsCommunication = false
-            };
-
-            var queryable = report.GetQueryable( reportGetQueryableArgs );
-            if ( queryable == null )
-            {
-                throw new InvalidOperationException( "Report.GetQueryable returned null." );
-            }
 
             // Materialize the whole result set (client-side paging per accepted regression).
             var rowObjects = new List<object>();
@@ -149,7 +104,7 @@ namespace Rock.Reporting
             var plans = new List<ColumnPlan>();
             var descriptors = new List<ObsidianGridColumnDescriptor>();
 
-            columnIndex = 0;
+            var columnIndex = 0;
             foreach ( var reportField in orderedReportFields )
             {
                 columnIndex++;

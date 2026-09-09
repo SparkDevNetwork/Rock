@@ -109,6 +109,12 @@ namespace Rock.Model
 
             // ignoring EmailSection,CategoryId
 
+            if ( new Service<FlexibleDocument>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, FlexibleDocument.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );

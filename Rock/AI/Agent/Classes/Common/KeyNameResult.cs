@@ -137,6 +137,29 @@ namespace Rock.AI.Agent.Classes.Common
             };
         }
 
+        /// <summary>
+        /// Creates a new <see cref="KeyNameResult"/> from the provided cached
+        /// entity. The name is taken from <see cref="object.ToString()"/>, which
+        /// each cache overrides to return its display name (for example
+        /// <c>EntityTypeCache</c> returns its friendly name).
+        /// </summary>
+        /// <param name="cache">The cached entity to create the result from.</param>
+        /// <returns>A <see cref="KeyNameResult"/> object that represents the cached entity, or <c>null</c> if <paramref name="cache"/> was also <c>null</c>.</returns>
+        public static KeyNameResult FromCache( Rock.Web.Cache.IEntityCache cache )
+        {
+            if ( cache == null )
+            {
+                return null;
+            }
+
+            return new KeyNameResult
+            {
+                Id = cache.Id,
+                Guid = cache.Guid,
+                Name = cache.ToString()
+            };
+        }
+
         #endregion
     }
 }

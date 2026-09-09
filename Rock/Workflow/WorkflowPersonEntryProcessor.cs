@@ -183,7 +183,18 @@ namespace Rock.Workflow
                 var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), _rockContext );
 
                 var numberTypeMobile = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), _rockContext );
-                var messagingEnabled = personBag.IsMessagingEnabled ?? existingMobilePhone?.IsMessagingEnabled ?? true;
+
+                // Match the WebForms Person Entry behavior for the IsMessagingEnabled (SMS
+                // opt-in) flag: default a new mobile number to messaging-enabled, and only
+                // apply the submitted value when the SMS opt-in checkbox was actually shown.
+                // When it is hidden the individual never saw the checkbox, so its unshown
+                // (unchecked) client value must not leave the number as not messaging-enabled.
+                var messagingEnabled = existingMobilePhone?.IsMessagingEnabled ?? true;
+                if ( form.PersonEntrySmsOptInEntryOption == WorkflowActionFormShowHideOption.Show )
+                {
+                    messagingEnabled = personBag.IsMessagingEnabled ?? messagingEnabled;
+                }
+
                 var isUnlisted = existingMobilePhone?.IsUnlisted ?? false;
 
                 person.UpdatePhoneNumber( numberTypeMobile.Id, personBag.MobilePhoneCountryCode, personBag.MobilePhoneNumber, messagingEnabled, isUnlisted, _rockContext );

@@ -814,9 +814,7 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
             Title = form.PersonEntryTitle,
             Description = form.PersonEntryDescription,
             IsHeadingSeparatorShown = form.PersonEntryShowHeadingSeparator,
-            SectionTypeValue = form.PersonEntrySectionTypeValueId.HasValue
-                ? GetDefinedValueKeyName( form.PersonEntrySectionTypeValueId.Value, rockContext )
-                : null,
+            SectionTypeValue = GetDefinedValueKeyName( form.PersonEntrySectionTypeValueId, rockContext ),
             PreHtml = preHtml,
             IsPreHtmlTruncated = isPreHtmlTruncated,
             PostHtml = postHtml,
@@ -846,24 +844,12 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
             IsInactiveCampusIncluded = form.GetAdditionalSettingsOrNull<Rock.Workflow.FormBuilder.PersonEntryAdditionalSettings>()?.IncludeInactiveCampus ?? true,
             IsHiddenIfCurrentPersonKnown = form.PersonEntryHideIfCurrentPersonKnown,
 
-            ConnectionStatusValue = form.PersonEntryConnectionStatusValueId.HasValue
-                ? GetDefinedValueKeyName( form.PersonEntryConnectionStatusValueId.Value, rockContext )
-                : null,
-            RecordStatusValue = form.PersonEntryRecordStatusValueId.HasValue
-                ? GetDefinedValueKeyName( form.PersonEntryRecordStatusValueId.Value, rockContext )
-                : null,
-            RecordSourceValue = form.PersonEntryRecordSourceValueId.HasValue
-                ? GetDefinedValueKeyName( form.PersonEntryRecordSourceValueId.Value, rockContext )
-                : null,
-            AddressTypeValue = form.PersonEntryGroupLocationTypeValueId.HasValue
-                ? GetDefinedValueKeyName( form.PersonEntryGroupLocationTypeValueId.Value, rockContext )
-                : null,
-            CampusStatusValue = form.PersonEntryCampusStatusValueId.HasValue
-                ? GetDefinedValueKeyName( form.PersonEntryCampusStatusValueId.Value, rockContext )
-                : null,
-            CampusTypeValue = form.PersonEntryCampusTypeValueId.HasValue
-                ? GetDefinedValueKeyName( form.PersonEntryCampusTypeValueId.Value, rockContext )
-                : null
+            ConnectionStatusValue = GetDefinedValueKeyName( form.PersonEntryConnectionStatusValueId, rockContext ),
+            RecordStatusValue = GetDefinedValueKeyName( form.PersonEntryRecordStatusValueId, rockContext ),
+            RecordSourceValue = GetDefinedValueKeyName( form.PersonEntryRecordSourceValueId, rockContext ),
+            AddressTypeValue = GetDefinedValueKeyName( form.PersonEntryGroupLocationTypeValueId, rockContext ),
+            CampusStatusValue = GetDefinedValueKeyName( form.PersonEntryCampusStatusValueId, rockContext ),
+            CampusTypeValue = GetDefinedValueKeyName( form.PersonEntryCampusTypeValueId, rockContext )
         };
     }
 
@@ -884,19 +870,7 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
             return null;
         }
 
-        var attribute = AttributeCache.Get( attributeGuid.Value, rockContext );
-
-        if ( attribute == null )
-        {
-            return null;
-        }
-
-        return new KeyNameResult
-        {
-            Id = attribute.Id,
-            Guid = attribute.Guid,
-            Name = attribute.Name
-        };
+        return KeyNameResult.FromCache( AttributeCache.Get( attributeGuid.Value, rockContext ) );
     }
 
     /// <summary>
@@ -1091,24 +1065,17 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
     /// <summary>
     /// Builds a key and name reference for a category.
     /// </summary>
-    /// <param name="categoryId">The identifier of the category.</param>
+    /// <param name="categoryId">The identifier of the category, if set.</param>
     /// <param name="rockContext">The context to read through.</param>
-    /// <returns>The reference, or <c>null</c> when the category no longer exists.</returns>
-    private static KeyNameResult GetCategoryKeyName( int categoryId, RockContext rockContext )
+    /// <returns>The reference, or <c>null</c> when unset or no longer present.</returns>
+    private static KeyNameResult GetCategoryKeyName( int? categoryId, RockContext rockContext )
     {
-        var category = CategoryCache.Get( categoryId, rockContext );
-
-        if ( category == null )
+        if ( !categoryId.HasValue )
         {
             return null;
         }
 
-        return new KeyNameResult
-        {
-            Id = category.Id,
-            Guid = category.Guid,
-            Name = category.Name
-        };
+        return KeyNameResult.FromCache( CategoryCache.Get( categoryId.Value, rockContext ) );
     }
 
     /// <summary>
@@ -1268,24 +1235,17 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
     /// <summary>
     /// Builds a key and name reference for a defined value.
     /// </summary>
-    /// <param name="definedValueId">The identifier of the defined value.</param>
+    /// <param name="definedValueId">The identifier of the defined value, if set.</param>
     /// <param name="rockContext">The context to read through.</param>
-    /// <returns>The reference, or <c>null</c> when the value no longer exists.</returns>
-    private static KeyNameResult GetDefinedValueKeyName( int definedValueId, RockContext rockContext )
+    /// <returns>The reference, or <c>null</c> when unset or no longer present.</returns>
+    private static KeyNameResult GetDefinedValueKeyName( int? definedValueId, RockContext rockContext )
     {
-        var definedValue = DefinedValueCache.Get( definedValueId, rockContext );
-
-        if ( definedValue == null )
+        if ( !definedValueId.HasValue )
         {
             return null;
         }
 
-        return new KeyNameResult
-        {
-            Id = definedValue.Id,
-            Guid = definedValue.Guid,
-            Name = definedValue.Value
-        };
+        return KeyNameResult.FromCache( DefinedValueCache.Get( definedValueId.Value, rockContext ) );
     }
 
     #endregion

@@ -48,7 +48,6 @@ internal sealed partial class CmsSkill
         [Description( "Where the new block lives: Page, Layout, or Site. Optional; inferred from whichever of pageIdKey, layoutIdKey, or siteIdKey is provided." )]
         BlockLocation? blockLocation = null,
 
-        [Description( "The IdKey or guid of the page to add the block to." )]
         string pageIdKey = null,
 
         [Description( "The IdKey or guid of the layout to add the block to. The block renders on every page using the layout." )]
@@ -66,7 +65,6 @@ internal sealed partial class CmsSkill
         [Description( "The zone to place the block in, which is a named region within the layout and not a layout name. Call GetPage to see the zones a page's layout has. Defaults to 'Main' when adding." )]
         SetOrClear<string> zone = null,
 
-        [Description( "The block settings to set, as attribute key and value pairs." )]
         List<AttributeValueResult> attributeValues = null )
     {
         using var rockContext = RockApp.Current.CreateRockContext();

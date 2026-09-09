@@ -62,6 +62,24 @@ namespace Rock.Model
         }
     }
 
+    [HasQueryableAttributes( typeof( FlexibleDocumentModel.FlexibleDocumentModelQueryableAttributeValue ), nameof( FlexibleDocumentModelAttributeValues ) )]
+    public partial class FlexibleDocumentModel
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<FlexibleDocumentModelQueryableAttributeValue> FlexibleDocumentModelAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class FlexibleDocumentModelQueryableAttributeValue : QueryableAttributeValue
+        {
+        }
+    }
+
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
@@ -120,6 +138,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Description = source.Description;
             target.Documentation = source.Documentation;
+            target.ForeignGuid = source.ForeignGuid;
+            target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.Key = source.Key;

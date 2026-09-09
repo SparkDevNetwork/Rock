@@ -85,9 +85,7 @@ internal sealed partial class CmsSkill
             Description = pageCache.Description,
             SiteName = pageCache.Site,
             Url = GetPageUrl( pageCache ),
-            ParentPage = parentPage != null
-                ? new KeyNameResult { Id = parentPage.Id, Name = parentPage.InternalName }
-                : null,
+            ParentPage = KeyNameResult.FromCache( parentPage ),
             Layout = layout != null
                 ? new LayoutResult
                 {
@@ -104,11 +102,7 @@ internal sealed partial class CmsSkill
             Blocks = blocks,
             AttributeValues = page.GetAttributeValueResults( AgentRequestContext ).ToList()
         } )
-            .WithHistoryContent( new KeyNameResult
-            {
-                Id = pageCache.Id,
-                Name = pageCache.InternalName
-            } );
+            .WithHistoryContent( KeyNameResult.FromCache( pageCache ) );
     }
 
     #endregion

@@ -72,11 +72,7 @@ internal sealed partial class CmsSkill
             } )
             .ToList() );
 
-        var historyPage = cursorPage.WithItems( cursorPage.Items.Select( bt => new KeyNameResult
-        {
-            Id = bt.Id,
-            Name = bt.Name
-        } ) );
+        var historyPage = cursorPage.WithItems( cursorPage.Items.Select( bt => KeyNameResult.FromCache( bt ) ) );
 
         return helper.GetPaginatedResult( resultPage, historyPage );
     }

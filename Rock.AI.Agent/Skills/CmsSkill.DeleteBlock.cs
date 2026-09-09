@@ -35,7 +35,6 @@ internal sealed partial class CmsSkill
     [AgentUsage( "Deleting a block is permanent and takes its settings and any authored content with it. Confirm the exact block with the user before deleting, and never delete a block the user did not name explicitly." )]
     [AgentToolGuid( "B30F66EA-0D9E-4854-BB82-A96BE7719D00" )]
     public AgentToolResult DeleteBlock(
-        [Description( "The IdKey or guid of the block to delete." )]
         string blockIdKey )
     {
         using var rockContext = RockApp.Current.CreateRockContext();

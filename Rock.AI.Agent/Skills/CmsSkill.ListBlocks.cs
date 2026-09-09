@@ -33,13 +33,10 @@ internal sealed partial class CmsSkill
     [AgentUsage( "Layout and site blocks render on every page that uses the layout or site, so check all three scopes when asking what renders on a page." )]
     [AgentToolGuid( "98F33433-0712-4248-9C71-EAE4D9F9CA38" )]
     public AgentToolResult ListBlocks(
-        [Description( "The IdKey or guid of a page to list the blocks of." )]
         string pageIdKey = null,
 
-        [Description( "The IdKey or guid of a layout to list the blocks of." )]
         string layoutIdKey = null,
 
-        [Description( "The IdKey or guid of a site to list the blocks of." )]
         string siteIdKey = null,
 
         string cursor = null )
@@ -71,11 +68,7 @@ internal sealed partial class CmsSkill
             .Select( b => CreateSummaryBlockResult( b, rockContext ) )
             .ToList() );
 
-        var historyPage = cursorPage.WithItems( cursorPage.Items.Select( b => new KeyNameResult
-        {
-            Id = b.Id,
-            Name = b.Name
-        } ) );
+        var historyPage = cursorPage.WithItems( cursorPage.Items.Select( b => KeyNameResult.FromCache( b ) ) );
 
         return helper.GetPaginatedResult( resultPage, historyPage );
     }
