@@ -29,9 +29,9 @@ internal sealed partial class LavaApplicationBuilderSkill
 {
     #region Tool(s)
 
-    [Description( "Deletes a Lava application this skill previously created, along with any endpoints it created inside it." )]
+    [Description( "Deletes a Lava application the current person can administrate, along with every endpoint inside it." )]
     [AgentToolPreamble( "Deleting the Lava application." )]
-    [AgentUsage( "Only applications created by this skill, containing only endpoints created by this skill, can be deleted. Use it to clean up scratch applications when a build is finished." )]
+    [AgentUsage( "Deleting an application is permanent and takes every endpoint in it, their security rules, and every page component that calls them offline. Before calling, read the application with GetLavaApplication, name the exact application and its endpoints to the user, and get their explicit confirmation. Never delete an application the user did not name explicitly. Use it to clean up scratch applications when a build is abandoned." )]
     [AgentToolGuid( "C08E5A93-D1B6-4F74-82D0-46F3C9E17B58" )]
     public AgentToolResult DeleteLavaApplication(
         [Description( "The slug of the Lava application to delete." )]
@@ -64,42 +64,17 @@ internal sealed partial class LavaApplicationBuilderSkill
             return helper.ErrorResult;
         }
 
-        // The provenance stamp is the whole safety model: the skill can only
-        // unwind its own work, never something a person built through the
-        // admin pages.
-        if ( application.ForeignKey != AgentProvenanceKey )
-        {
-            helper.AddError( $"The '{applicationSlug}' application was not created by this skill, so it cannot be deleted here. Ask the user to remove it through the Lava Applications admin pages." );
-
-            return helper.ErrorResult;
-        }
-
-        // A single hand-authored endpoint anywhere in the application blocks
-        // the whole delete, so a person's work can never ride along with the
-        // cleanup.
-        var foreignEndpoints = application.LavaEndpoints
-            .Where( e => e.ForeignKey != AgentProvenanceKey )
-            .Select( e => e.Slug )
-            .ToList();
-
-        if ( foreignEndpoints.Any() )
-        {
-            helper.AddError( $"The '{applicationSlug}' application contains endpoints that were not created by this skill ({string.Join( ", ", foreignEndpoints )}), so it cannot be deleted here. Ask the user to remove it through the Lava Applications admin pages." );
-
-            return helper.ErrorResult;
-        }
-
         var endpointService = new LavaEndpointService( rockContext );
         var deletedEndpointCount = application.LavaEndpoints.Count;
 
         // Auth rows reference their entity by loose id and would otherwise
-        // survive the delete as orphans. Only the skill's own rules go.
+        // survive the delete as orphans.
         foreach ( var endpoint in application.LavaEndpoints )
         {
-            DeleteSkillOwnedRules( rockContext, endpoint.TypeId, endpoint.Id );
+            DeleteAuthRules( rockContext, endpoint.TypeId, endpoint.Id );
         }
 
-        DeleteSkillOwnedRules( rockContext, application.TypeId, application.Id );
+        DeleteAuthRules( rockContext, application.TypeId, application.Id );
 
         endpointService.DeleteRange( application.LavaEndpoints.ToList() );
         applicationService.Delete( application );

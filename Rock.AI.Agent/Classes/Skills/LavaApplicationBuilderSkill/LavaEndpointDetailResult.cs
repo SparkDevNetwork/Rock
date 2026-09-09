@@ -65,8 +65,8 @@ internal class LavaEndpointDetailResult
 
     /// <summary>
     /// Who may execute this endpoint when it answers for itself
-    /// (EndpointExecute mode), as rigged by this skill. <c>null</c> in the
-    /// application modes, where the application's audience governs.
+    /// (EndpointExecute mode), from its Execute allow rules. <c>null</c> in
+    /// the application modes, where the application's audience governs.
     /// </summary>
     public List<string> Audiences { get; set; }
 

@@ -55,14 +55,17 @@ namespace Rock.AI.Agent.Skills;
     The one exception is a template that enables a write-capable command,
     which is never test-executed; see TestExecute for why.
 
-    Everything this skill creates is stamped with a ForeignKey provenance
-    value, and the tools that change or remove existing records refuse any
-    record that does not carry it. That stamp is the entire safety model for
-    destructive operations: the skill can rework and unwind its own work and
-    nothing else.
+    Authorization is the whole safety model. An earlier version also stamped
+    a provenance value into ForeignKey and refused to change or delete
+    anything without it; that repurposed a column meant for foreign-system
+    identifiers, diverged from the authorization-only shape every other
+    shipped delete tool uses, and left the agent unable to help with any
+    application built through the admin pages. A skill may now change any
+    application the acting person can administrate, and the destructive
+    tools rely on confirm-first usage guidance the way the Cms skill's do.
 
     Reason: MCP-driven Lava endpoint authoring that feeds the Forge Content
-    flow, gated on ADMINISTRATE and scoped by provenance.
+    flow, gated on ADMINISTRATE.
 */
 
 internal sealed partial class LavaApplicationBuilderSkill
@@ -74,16 +77,6 @@ internal sealed partial class LavaApplicationBuilderSkill
     /// route itself and is not related to the application being addressed.
     /// </summary>
     private static readonly string RouteVersion = "1";
-
-    /// <summary>
-    /// The ForeignKey value stamped on applications and endpoints this skill
-    /// creates. The destructive tools only accept records carrying it, so
-    /// the skill can clean up after itself without being able to change or
-    /// delete anything a person authored. This literal predates the class
-    /// rename from LavaDataSkill and must never change: stamped rows exist,
-    /// and the string is an opaque provenance token, not a class reference.
-    /// </summary>
-    private static readonly string AgentProvenanceKey = "AI-Agent:LavaDataSkill";
 
     /// <summary>
     /// The permission key of the raw SQL Lava command, as returned by
@@ -425,38 +418,20 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     }
 
     /// <summary>
-    /// Determines whether the entity carries any rules for the action that
-    /// the skill does not own. Once an administrator has authored their own
-    /// rules, the audience belongs to them and the skill must not rewrite it.
-    /// </summary>
-    /// <param name="rockContext">The context to read the rules from.</param>
-    /// <param name="entityTypeId">The entity type of the secured entity.</param>
-    /// <param name="entityId">The identifier of the secured entity.</param>
-    /// <param name="action">The authorization action whose rules are inspected.</param>
-    /// <returns><c>true</c> when a rule without the skill's provenance stamp exists.</returns>
-    private static bool HasHandAuthoredRules( RockContext rockContext, int entityTypeId, int entityId, string action )
-    {
-        return new AuthService( rockContext )
-            .GetAuths( entityTypeId, entityId, action )
-            .ToList()
-            .Any( a => a.ForeignKey != AgentProvenanceKey );
-    }
-
-    /// <summary>
-    /// Describes the audience the skill has rigged for an action, from the
-    /// allow rules it owns, so a read tool can report who may execute
-    /// without the agent having to remember the create-time result.
+    /// Describes who is allowed an action on an entity, from its allow
+    /// rules, so a read tool can report who may execute without the agent
+    /// having to remember the create-time result.
     /// </summary>
     /// <param name="rockContext">The context to read the rules from.</param>
     /// <param name="entityTypeId">The entity type of the secured entity.</param>
     /// <param name="entityId">The identifier of the secured entity.</param>
     /// <param name="action">The authorization action whose rules are described.</param>
-    /// <returns>One phrase per skill-owned allow rule, in rule order. Empty when the skill has rigged nothing.</returns>
+    /// <returns>One phrase per allow rule, in rule order. Empty when the entity has no allow rules for the action.</returns>
     private static List<string> GetAudienceDescriptions( RockContext rockContext, int entityTypeId, int entityId, string action )
     {
         return new AuthService( rockContext )
             .GetAuths( entityTypeId, entityId, action )
-            .Where( a => a.ForeignKey == AgentProvenanceKey && a.AllowOrDeny == "A" )
+            .Where( a => a.AllowOrDeny == "A" )
             .OrderBy( a => a.Order )
             .Select( a => new { a.SpecialRole, GroupName = a.Group != null ? a.Group.Name : null } )
             .ToList()
@@ -472,30 +447,35 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                     return "anyone who is logged in";
                 }
 
-                return $"members of the '{a.GroupName}' security role";
+                if ( a.GroupName.IsNotNullOrWhiteSpace() )
+                {
+                    return $"members of the '{a.GroupName}' security role";
+                }
+
+                // A rule for one specific person. The tools never write these,
+                // but an administrator can.
+                return "a specific person";
             } )
             .ToList();
     }
 
     /// <summary>
-    /// Removes every authorization rule the skill wrote for an entity that
-    /// is being deleted. Auth rows are tied to their entity by loose id, so
-    /// nothing else removes them and they would otherwise linger as orphans.
-    /// Rules a person authored are left for Rock's own cleanup.
+    /// Removes every authorization rule of an entity that is being deleted.
+    /// Auth rows are tied to their entity by loose id, so nothing else removes
+    /// them and they would otherwise linger as orphans.
     /// </summary>
     /// <param name="rockContext">The context to delete the rules with. The caller saves.</param>
     /// <param name="entityTypeId">The entity type of the entity being deleted.</param>
     /// <param name="entityId">The identifier of the entity being deleted.</param>
-    private static void DeleteSkillOwnedRules( RockContext rockContext, int entityTypeId, int entityId )
+    private static void DeleteAuthRules( RockContext rockContext, int entityTypeId, int entityId )
     {
         var authService = new AuthService( rockContext );
 
-        var skillOwnedRules = authService
+        var rules = authService
             .Get( entityTypeId, entityId )
-            .Where( a => a.ForeignKey == AgentProvenanceKey )
             .ToList();
 
-        authService.DeleteRange( skillOwnedRules );
+        authService.DeleteRange( rules );
     }
 
     /*
@@ -511,20 +491,20 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
         required audience parameter, closes that gap at the only moment the
         intended audience is reliably known.
 
-        The rows are stamped with the provenance ForeignKey and only stamped
-        rows are ever deleted, mirroring the skill's safety model for the
-        entities themselves: the skill reworks its own rigging and never
-        touches rules a person authored.
+        Passing audiences replaces every existing rule for the action, the
+        way the Security dialog would if an administrator rewrote the list.
+        The tool descriptions say so, and the agent instructions tell the
+        agent to read the current audience first and change it only when the
+        user asked for a security change.
 
         Reason: Endpoints must be callable by the audience the user chose,
         not just by the administrator who built them.
     */
 
     /// <summary>
-    /// Replaces the skill-owned rules for one action on an entity with one
-    /// allow rule per resolved audience, leaving any person-authored rules
-    /// untouched. Used for an application's ExecuteView and for an
-    /// endpoint's Execute.
+    /// Replaces the rules for one action on an entity with one allow rule
+    /// per resolved audience and a deny-all tail. Used for an application's
+    /// ExecuteView and for an endpoint's Execute.
     /// </summary>
     /// <param name="rockContext">The context to write the rules with.</param>
     /// <param name="entityTypeId">The entity type of the secured entity.</param>
@@ -535,13 +515,11 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
     {
         var authService = new AuthService( rockContext );
 
-        var skillOwnedRules = authService
+        var existingRules = authService
             .GetAuths( entityTypeId, entityId, action )
-            .ToList()
-            .Where( a => a.ForeignKey == AgentProvenanceKey )
             .ToList();
 
-        foreach ( var rule in skillOwnedRules )
+        foreach ( var rule in existingRules )
         {
             authService.Delete( rule );
         }
@@ -566,8 +544,7 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                 Action = action,
                 AllowOrDeny = "A",
                 SpecialRole = grant.SpecialRole,
-                GroupId = grant.GroupId,
-                ForeignKey = AgentProvenanceKey
+                GroupId = grant.GroupId
             } );
         }
 
@@ -583,8 +560,7 @@ If SQL is genuinely unavoidable, tell the user which endpoint needs it, what the
                 Order = order,
                 Action = action,
                 AllowOrDeny = "D",
-                SpecialRole = SpecialRole.AllUsers,
-                ForeignKey = AgentProvenanceKey
+                SpecialRole = SpecialRole.AllUsers
             } );
         }
 

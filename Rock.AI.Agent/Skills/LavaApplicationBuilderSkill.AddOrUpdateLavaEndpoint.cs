@@ -36,7 +36,7 @@ internal sealed partial class LavaApplicationBuilderSkill
 
     /// <summary>
     /// The content type new endpoints declare when the definition does not
-    /// name one. Endpoints created by this skill exist to feed authored
+    /// name one. Endpoints created through this tool exist to feed authored
     /// components, so they return JSON rather than the historical default of
     /// HTML.
     /// </summary>
@@ -57,11 +57,11 @@ internal sealed partial class LavaApplicationBuilderSkill
         The endpoint's natural key (application slug, endpoint slug, HTTP
         method) decides the path: missing means add, present means update.
 
-        The two paths keep the gates they had as separate tools. Adding
-        stamps the provenance ForeignKey; updating requires that stamp, so
-        the skill can rework its own endpoints but never silently overwrite
-        one a person authored, and re-gates Sql only when this call changes
-        the enabled commands.
+        Both paths are gated on ADMINISTRATE of the containing application,
+        and the update path re-gates Sql only when this call changes the
+        enabled commands. An earlier version also required a provenance
+        stamp on the endpoint; see the note in LavaAuthoring.cs for why that
+        was removed.
 
         The containing application must already exist. This tool used to
         create it implicitly, which turned a misspelled applicationSlug into
@@ -74,10 +74,10 @@ internal sealed partial class LavaApplicationBuilderSkill
     */
     [Description( "Adds a new Lava endpoint or updates an existing one, keyed by slug and HTTP method, within an existing Lava application. Returns the result of test-executing the template." )]
     [AgentToolPreamble( "Saving the Lava endpoint." )]
-    [AgentUsage( "applicationSlug groups a block's endpoints; reuse the same slug for every endpoint of one dashboard. The application must already exist; create it with AddOrUpdateLavaApplication first." )]
+    [AgentUsage( "applicationSlug groups a block's endpoints; reuse the same slug for every endpoint of one feature. The application must already exist; create it with AddOrUpdateLavaApplication first." )]
     [AgentUsage( "Endpoints are keyed by slug AND method, so the same slug with Get and with Post are two different endpoints. When the endpoint already exists it is updated in place; otherwise it is created." )]
     [AgentUsage( "An update replaces the whole template, so send the complete Lava rather than a fragment. Read it with GetLavaEndpoint first if you did not write the current version. Omitted definition fields are left unchanged on an update, so a template-only edit cannot quietly change the endpoint's security mode or commands." )]
-    [AgentUsage( "Only endpoints created by this skill can be updated; anything a person authored has to be changed through the Lava Applications admin pages." )]
+    [AgentUsage( "Any endpoint in an application the current person can administrate can be updated, including ones built through the admin pages. Read it with GetLavaEndpoint before replacing a template you did not write, and tell the user when you are changing something they or a colleague authored." )]
     [AgentUsage( "definition.enabledLavaCommands must include every command the template uses or the template will fail at runtime. Use 'RockEntity' to read, 'RockEntityModify' to add or update, and 'RockEntityDelete' to delete. These cover almost everything, including charts and totals. A template that starts using a new command needs that command added here too, or it will silently return nothing where the command was." )]
     [AgentUsage( "Do not request 'Sql'. It is refused unless you also pass sqlJustification, which you may only supply after telling the user why the entity commands cannot do the job and getting their explicit approval. Rewriting the template with entity commands is nearly always the correct response to that refusal." )]
     [AgentUsage( "Always pass testParameters when the template reads Body or QueryString, with realistic values, so the parameter path is proven rather than assumed. Without it the test renders with no request data and a template that reads Body.x is only exercised down its missing-parameter branch." )]
@@ -87,7 +87,7 @@ internal sealed partial class LavaApplicationBuilderSkill
     [AgentUsage( "By default an endpoint inherits the application's read audience (ApplicationView). When one endpoint must be callable by a narrower or different set of people than the rest of the application, for example a write endpoint only leaders may call, pass definition.audiences with one or more values ('Public', 'AllAuthenticatedPeople', or exact security role names, mapped with ResolveAudience). That switches the endpoint to EndpointExecute and writes its own Execute rules. In EndpointExecute mode nobody outside the listed audiences can call it, Rock Administrators included, so add the administrator's role if they need to test it." )]
     [AgentToolGuid( "5F1E8C29-A47B-4D63-B905-E26A1D79F4C8" )]
     public AgentToolResult AddOrUpdateLavaEndpoint(
-        [Description( "The slug of the Lava application the endpoint belongs to. Reuse one slug per dashboard so all of its endpoints group under one application." )]
+        [Description( "The slug of the Lava application the endpoint belongs to. Reuse one slug per feature so all of its endpoints group under one application." )]
         string applicationSlug,
 
         [Description( "The slug of the endpoint to add or update." )]
@@ -241,8 +241,7 @@ internal sealed partial class LavaApplicationBuilderSkill
                 CodeTemplate = codeTemplate,
                 EnabledLavaCommands = isSettingCommands ? enabledLavaCommands.Value.ToStringSafe() : string.Empty,
                 SecurityMode = securityMode,
-                IsActive = true,
-                ForeignKey = AgentProvenanceKey
+                IsActive = true
             };
 
             // These endpoints exist to feed components, so they default to
@@ -258,26 +257,6 @@ internal sealed partial class LavaApplicationBuilderSkill
         }
         else
         {
-            // The provenance stamp is the whole safety model: the skill can
-            // only rework its own endpoints, never something a person built
-            // through the admin pages.
-            if ( endpoint.ForeignKey != AgentProvenanceKey )
-            {
-                helper.AddError( $"An endpoint already exists at '{applicationSlug}/{endpointSlug}' for the {method} method, but it was not created by this skill, so it cannot be changed here. Ask the user to edit it through the Lava Applications admin pages, or use a different endpoint slug." );
-
-                return helper.ErrorResult;
-            }
-
-            // Once an administrator has authored their own Execute rules on
-            // the endpoint, the audience belongs to them; rewriting it here
-            // would silently undo a decision made in the admin pages.
-            if ( hasEndpointAudiences && HasHandAuthoredRules( rockContext, endpoint.TypeId, endpoint.Id, Authorization.EXECUTE ) )
-            {
-                helper.AddError( $"An administrator has added their own Execute security rules to the '{endpointSlug}' endpoint, so its audiences cannot be changed here. Ask the user to adjust them through the Lava Applications admin pages." );
-
-                return helper.ErrorResult;
-            }
-
             endpoint.CodeTemplate = codeTemplate;
 
             // Security mode, commands and content type are left alone when

@@ -41,7 +41,7 @@ internal sealed partial class ForgeContentBuilderSkill
     [AgentUsage( "Before saving a submitting component, trace each control's documented v-model shape through the exact payload field and endpoint input. A DropDownList emits its selected option value string, while many entity pickers emit a ListItemBag. Test endpoints with the exact payload the saved component sends, not alternate display-name parameters." )]
     [AgentToolGuid( "3E97A0C5-48D2-4F16-85B9-C1D7E63A2F40" )]
     public AgentToolResult AddOrUpdateForgeContent(
-        [Description( "The id of the Forge Content block placement to write." )]
+        [Description( "The IdKey or guid of the Forge Content block placement, as returned by AddOrUpdateBlock or GetPage." )]
         string blockId,
 
         [Description( "The authored Vue single-file-component source." )]
@@ -173,7 +173,7 @@ internal sealed partial class ForgeContentBuilderSkill
             CompiledVueVersion = compileResult.VueVersion
         } )
             .WithInstructions( "The component compiled and saved. Compiling proves syntax only; it does not prove the component works. Before telling the user it is done, verify the data contract yourself: for each endpoint this component invokes, call AddOrUpdateLavaEndpoint again with the same template plus testParameters shaped exactly like the payload the component sends. State whether the scenario should return records. When records are expected, require a nonempty collection, inspect at least one complete item, and confirm its property names, casing, identities, and value shapes match the focused control or Grid Reference and every component access. An empty collection or success false response is not a passing test for an expected-success scenario." )
-            .WithInstructions( "Load the real page and verify one functional slice before reporting completion: a known record must travel from Rock through the saved endpoint into its intended control, or an authorized primary action must complete and show its persisted result. A page load, compilation, or render-only endpoint test is not enough." )
+            .WithInstructions( "The assigned Rock tools cannot load the rendered page. Tell the user which page to open, which record they should see, and in which control, and treat the build as unverified until they confirm. Compilation and a render-only endpoint test are not verification." )
             .WithInstructions( "Then remind the user to view the page as a normal member, not as an administrator, before trusting it: the component runs as whoever views the page." );
     }
 

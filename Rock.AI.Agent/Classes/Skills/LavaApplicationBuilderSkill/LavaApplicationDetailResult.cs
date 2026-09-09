@@ -49,10 +49,10 @@ internal class LavaApplicationDetailResult : EntityResultBase
     public bool IsActive { get; set; }
 
     /// <summary>
-    /// Who may execute the application's ApplicationView endpoints, as
-    /// rigged by this skill. Empty when the skill has not set a read
-    /// audience, in which case only Rock Administrators and Lava
-    /// Application Developers can call them.
+    /// Who may execute the application's ApplicationView endpoints, from its
+    /// ExecuteView allow rules. Empty when no read audience has been set, in
+    /// which case only Rock Administrators and Lava Application Developers
+    /// can call them.
     /// </summary>
     public List<string> ReadAudiences { get; set; }
 

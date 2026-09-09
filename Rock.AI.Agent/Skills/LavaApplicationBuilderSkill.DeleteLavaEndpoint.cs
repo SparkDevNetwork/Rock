@@ -29,9 +29,9 @@ internal sealed partial class LavaApplicationBuilderSkill
 {
     #region Tool(s)
 
-    [Description( "Deletes a Lava endpoint this skill previously created, so exploration and diagnostics can clean up after themselves." )]
+    [Description( "Deletes a Lava endpoint from an application the current person can administrate, so exploration and diagnostics can clean up after themselves." )]
     [AgentToolPreamble( "Deleting the Lava endpoint." )]
-    [AgentUsage( "Only endpoints created by this skill can be deleted; anything a person authored has to be removed through the Lava Applications admin pages. Use this to clean up diagnostic and scratch endpoints instead of leaving them for the user." )]
+    [AgentUsage( "Deleting an endpoint is permanent and breaks any component that calls it. Scratch and diagnostic endpoints you created in this conversation can be removed without ceremony; for anything else, name the exact endpoint to the user and get their explicit confirmation first. Never delete an endpoint the user did not name explicitly." )]
     [AgentToolGuid( "49A7D3E1-8F60-4B25-96C4-B1E5A08D3F72" )]
     public AgentToolResult DeleteLavaEndpoint(
         [Description( "The slug of the Lava application the endpoint belongs to." )]
@@ -53,22 +53,12 @@ internal sealed partial class LavaApplicationBuilderSkill
             return helper.ErrorResult;
         }
 
-        // The provenance stamp is the whole safety model: the skill can only
-        // unwind its own work, never something a person built through the
-        // admin pages.
-        if ( endpoint.ForeignKey != AgentProvenanceKey )
-        {
-            helper.AddError( $"The '{endpointSlug}' endpoint was not created by this skill, so it cannot be deleted here. Ask the user to remove it through the Lava Applications admin pages." );
-
-            return helper.ErrorResult;
-        }
-
         var application = endpoint.LavaApplication;
         var endpointId = endpoint.Id;
 
         // Auth rows reference the endpoint by loose id and would otherwise
         // survive it as orphans.
-        DeleteSkillOwnedRules( rockContext, endpoint.TypeId, endpoint.Id );
+        DeleteAuthRules( rockContext, endpoint.TypeId, endpoint.Id );
 
         new LavaEndpointService( rockContext ).Delete( endpoint );
 
@@ -89,9 +79,9 @@ internal sealed partial class LavaApplicationBuilderSkill
             RemainingEndpointCount = remainingCount
         } );
 
-        if ( remainingCount == 0 && application.ForeignKey == AgentProvenanceKey )
+        if ( remainingCount == 0 )
         {
-            result.WithInstructions( $"The '{application.Slug}' application now has no endpoints and was created by this skill. If it is no longer needed, remove it with DeleteLavaApplication so it does not linger as clutter." );
+            result.WithInstructions( $"The '{application.Slug}' application now has no endpoints. If it is no longer needed, ask the user whether to remove it with DeleteLavaApplication so it does not linger as clutter." );
         }
 
         return result;

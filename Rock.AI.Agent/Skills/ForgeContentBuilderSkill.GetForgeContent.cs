@@ -32,10 +32,10 @@ internal sealed partial class ForgeContentBuilderSkill
 
     [Description( "Reads the current authored source of a Forge Content block placement so it can be iterated on." )]
     [AgentToolPreamble( "Reading the current component source." )]
-    [AgentUsage( "blockId is the id of the Forge Content block placement to read." )]
+    [AgentUsage( "blockId is the IdKey of the Forge Content block placement to read, as returned by AddOrUpdateBlock or GetPage." )]
     [AgentToolGuid( "D24F8B61-9C07-4E5A-B173-60A4F2C8E9D3" )]
     public AgentToolResult GetForgeContent(
-        [Description( "The id of the Forge Content block placement to read." )]
+        [Description( "The IdKey or guid of the Forge Content block placement, as returned by AddOrUpdateBlock or GetPage." )]
         string blockId )
     {
         using var rockContext = RockApp.Current.CreateRockContext();

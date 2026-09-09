@@ -53,7 +53,7 @@ internal sealed partial class ForgeContentBuilderSkill
             Version = Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
             FullVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber()
         } )
-            .WithInstructions( "Before authoring component UI, call the Community Knowledge Base skill's GetKnowledgeBaseOverview tool and locate the Rock Coding Guide topic. Pass the returned topic key unchanged to GetTopic, open the root article listed by that topic, and follow the guide's own routing for the requested outcome. Retrieve only the material assigned by the selected Playbook. Never construct or guess a topic or article key." );
+            .WithInstructions( "Before authoring component UI or Lava endpoints, open the coding guide topic advertised by the Community Knowledge Base skill's GetKnowledgeBaseOverview: pass its topic key unchanged to GetTopic, open the root article it lists, and follow that article's routing for the requested outcome. Retrieve only what the route assigns. Never construct or guess a topic or article key." );
     }
 
     #endregion

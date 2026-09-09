@@ -62,9 +62,9 @@ internal sealed partial class LavaApplicationBuilderSkill
         Reason: One create path for applications, keyed updates, no implicit
         creation side effects.
     */
-    [Description( "Adds a new Lava application or updates one this skill created. Applications group a block's endpoints and must exist before endpoints can be added." )]
+    [Description( "Adds a new Lava application or updates an existing one the current person can administrate. Applications group a block's endpoints and must exist before endpoints can be added." )]
     [AgentToolPreamble( "Saving the Lava application." )]
-    [AgentUsage( "Create one application per block, named after the dashboard, then pass its slug to every AddOrUpdateLavaEndpoint call so security is rigged once for the whole block." )]
+    [AgentUsage( "Create one application per block, named after the feature, then pass its slug to every AddOrUpdateLavaEndpoint call so security is rigged once for the whole block." )]
     [AgentUsage( "The slug cannot be changed after creation; it is the address every component's useLavaApp binding uses. To rename what the user sees, update the name." )]
     [AgentUsage( "audiences decides who may call the application's endpoints and is required when adding. Ask the user who the page is for, then pass one or more values: 'Public' for anonymous visitors, 'AllAuthenticatedPeople' for anyone who is logged in, or security role names for restricted data. Several roles can be granted at once, for example ['RSR - Staff Workers', 'Worship Team Leaders']. When the user describes people rather than naming a role, call ResolveAudience first to map the description onto exact values. If a value does not match, the error lists the roles to choose from." )]
     [AgentUsage( "Never choose 'Public' on the user's behalf. It exposes the application's read endpoints to anonymous visitors and must come from the user." )]
@@ -82,7 +82,7 @@ internal sealed partial class LavaApplicationBuilderSkill
         [Description( "What the application is for." )]
         SetOrClear<string> description = null,
 
-        [Description( "Who may call the application's read endpoints, as one or more values: 'Public' (everyone, including anonymous visitors), 'AllAuthenticatedPeople' (anyone who is logged in), or the exact names of security roles. Every value is granted, so ['Staff', 'Volunteers'] opens the endpoints to members of either role. Required when adding. On an update, provide it only to replace the audience; the new list replaces the old one entirely." )]
+        [Description( "Who may call the application's read endpoints, as one or more values: 'Public' (everyone, including anonymous visitors), 'AllAuthenticatedPeople' (anyone who is logged in), or the exact names of security roles. Every value is granted, so ['Staff', 'Volunteers'] opens the endpoints to members of either role. Required when adding. On an update, omit it to leave the current ExecuteView rules alone; providing it replaces every existing ExecuteView rule, including any an administrator added by hand." )]
         List<string> audiences = null,
 
         [Description( "Whether the application and its endpoints can be called." )]
@@ -131,28 +131,9 @@ internal sealed partial class LavaApplicationBuilderSkill
         {
             application = helper.GetRequiredEntity<LavaApplication>( lavaApplicationIdKey, checkSecurity: false );
 
-            if ( application != null )
+            if ( application != null && slug.IsNotNullOrWhiteSpace() && slug != application.Slug )
             {
-                // The provenance stamp is the whole safety model: the skill
-                // can only rework its own applications, never something a
-                // person built through the admin pages.
-                if ( application.ForeignKey != AgentProvenanceKey )
-                {
-                    helper.AddError( $"The '{application.Slug}' Lava application was not created by this skill, so it cannot be changed here. Ask the user to edit it through the Lava Applications admin pages." );
-                }
-
-                if ( slug.IsNotNullOrWhiteSpace() && slug != application.Slug )
-                {
-                    helper.AddError( $"The slug of a Lava application cannot be changed; it is the address every component's useLavaApp binding uses. Update the name instead, or create a new application." );
-                }
-
-                // Once an administrator has authored their own execute-view
-                // rules, the audience belongs to them; rewriting it here
-                // would silently undo a decision made in the admin pages.
-                if ( hasAudiences && HasHandAuthoredRules( rockContext, application.TypeId, application.Id, LavaApplication.EXECUTE_VIEW ) )
-                {
-                    helper.AddError( $"An administrator has added their own security rules to the '{application.Slug}' Lava application, so its audience cannot be changed here. Ask the user to adjust the ExecuteView rules through the Lava Applications admin pages." );
-                }
+                helper.AddError( $"The slug of a Lava application cannot be changed; it is the address every component's useLavaApp binding uses. Update the name instead, or create a new application." );
             }
         }
 
@@ -199,8 +180,7 @@ internal sealed partial class LavaApplicationBuilderSkill
                 Name = name.Value,
                 Slug = slug,
                 IsActive = isActive ?? true,
-                ConfigurationRiggingJson = EmptyConfigurationRigging,
-                ForeignKey = AgentProvenanceKey
+                ConfigurationRiggingJson = EmptyConfigurationRigging
             };
 
             applicationService.Add( application );
@@ -268,7 +248,7 @@ internal sealed partial class LavaApplicationBuilderSkill
                 Reason: Mandate the Coding Guide routing on the channel that
                 survives instruction drift.
             */
-            result.WithInstructions( "Before writing an endpoint template for this application, call the Community Knowledge Base skill's GetKnowledgeBaseOverview tool and locate the Rock Coding Guide topic. Pass the returned topic key unchanged to GetTopic, open the root article listed by that topic, and follow the guide's own routing for the endpoint outcome. Retrieve every Contract, Reference article, schema article, and source lookup assigned by the selected Playbook. SearchKnowledge is not authoritative evidence for exact entity property names. Never construct or guess a topic or article key." );
+            result.WithInstructions( "Before writing an endpoint template for this application, follow the coding guide route the Community Knowledge Base skill's GetKnowledgeBaseOverview result points you to, and retrieve every article and source lookup it assigns for the endpoint outcome. SearchKnowledge is not authoritative evidence for exact entity property names. Never construct or guess a topic or article key." );
         }
 
         return result;
