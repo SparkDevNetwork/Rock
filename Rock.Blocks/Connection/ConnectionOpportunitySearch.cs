@@ -526,62 +526,22 @@ namespace Rock.Blocks.Connection
 
                 // Leave the comparison unset when the client did not send one so
                 // checkbox-style field types keep their natural "any of" filter.
-                ComparisonType? comparisonType = filterValue.ComparisonType.HasValue
-                    ? ( ComparisonType ) filterValue.ComparisonType.Value
-                    : ( ComparisonType? ) null;
-
-                /*
-                    8/27/26 - MSE
-
-                    Empty values are intentionally passed through to the field type
-                    rather than skipped here. AttributeFilterExpression owns the
-                    empty-value rules: IsBlank and IsNotBlank filter without a value,
-                    EqualTo and NotEqualTo with no value become IsBlank and IsNotBlank
-                    on field types that support them, and everything else yields a
-                    NoAttributeFilterExpression that is dropped below. This is the
-                    same path the WebForms ApplyAttributeQueryFilter took.
-
-                    The value is discarded for IsBlank and IsNotBlank, as WebForms
-                    GetFilterValues did. The filter control hides the value input for
-                    those comparisons but keeps whatever was typed before, and field
-                    types that compare the string Value column (Time, Social Media
-                    Account) would otherwise match that stale text instead of blanks.
-
-                    Reason: Preserve the WebForms attribute filter semantics for blank values.
-                */
-                var isBlankComparison = comparisonType == ComparisonType.IsBlank
-                    || comparisonType == ComparisonType.IsNotBlank;
-
                 var publicComparisonValue = new ComparisonValue
                 {
-                    ComparisonType = comparisonType,
-                    Value = isBlankComparison ? string.Empty : filterValue.Value
+                    ComparisonType = filterValue.ComparisonType.HasValue
+                        ? ( ComparisonType ) filterValue.ComparisonType.Value
+                        : ( ComparisonType? ) null,
+                    Value = filterValue.Value
                 };
 
-                var filterValues = attribute.FieldType.Field
-                    .GetPrivateFilterValue( publicComparisonValue, attribute.ConfigurationValues )
-                    .FromJsonOrNull<List<string>>();
+                var attributeExpression = ExpressionHelper.GetAttributeFilterExpression( connectionOpportunityService, parameterExpression, attribute, publicComparisonValue );
 
-                if ( filterValues == null || !filterValues.Any() )
+                if ( attributeExpression == null )
                 {
                     continue;
                 }
 
-                var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
-
-                if ( entityField == null )
-                {
-                    continue;
-                }
-
-                var expression = ExpressionHelper.GetAttributeExpression( connectionOpportunityService, parameterExpression, entityField, filterValues );
-
-                if ( expression == null || expression is NoAttributeFilterExpression )
-                {
-                    continue;
-                }
-
-                qry = qry.Where( parameterExpression, expression );
+                qry = qry.Where( parameterExpression, attributeExpression );
             }
 
             return qry;

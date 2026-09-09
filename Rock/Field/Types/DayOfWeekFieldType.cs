@@ -63,6 +63,21 @@ namespace Rock.Field.Types
 
         #region Filter Control
 
+        /// <inheritdoc/>
+        public override string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !publicValue.ComparisonType.HasValue )
+            {
+                publicValue = new ComparisonValue
+                {
+                    ComparisonType = Rock.Model.ComparisonType.EqualTo,
+                    Value = publicValue.Value
+                };
+            }
+
+            return base.GetPrivateFilterValue( publicValue, privateConfigurationValues );
+        }
+
         /// <summary>
         /// Converts the type of the value to property.
         /// </summary>

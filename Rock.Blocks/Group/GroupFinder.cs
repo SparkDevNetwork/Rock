@@ -1178,23 +1178,14 @@ namespace Rock.Blocks.Group
                     comparisonType = postedComparison;
                 }
 
-                // The client sends the field type's own public filter value. The field type converts it to
-                // its private filter representation, a JSON [comparisonType, value] pair, which is exactly
-                // what the expression builder consumes. Field-type-specific encodings (such as a Defined
-                // Value's JSON) are handled by the field type rather than parsed here.
+                // The client sends the field type's own public filter value. The shared helper hands it to
+                // the field type for conversion to its private filter representation, so field-type-specific
+                // encodings (such as a Defined Value's JSON) are handled by the field type rather than
+                // parsed here, and every block converts filter values the same way.
                 var publicComparisonValue = new ComparisonValue { ComparisonType = comparisonType, Value = filterValue.Value };
-                var filterValues = attribute.FieldType.Field.GetPrivateFilterValue( publicComparisonValue, attribute.ConfigurationValues )
-                    .FromJsonOrNull<List<string>>();
+                var expression = ExpressionHelper.GetAttributeFilterExpression( groupService, parameterExpression, attribute, publicComparisonValue );
 
-                if ( filterValues == null || !filterValues.Any() )
-                {
-                    continue;
-                }
-
-                var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
-                var expression = ExpressionHelper.GetAttributeExpression( groupService, parameterExpression, entityField, filterValues );
-
-                if ( expression == null || expression is NoAttributeFilterExpression )
+                if ( expression == null )
                 {
                     continue;
                 }

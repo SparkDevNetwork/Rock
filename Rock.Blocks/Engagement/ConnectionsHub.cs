@@ -1127,58 +1127,15 @@ namespace Rock.Blocks.Engagement
 
                     Reason: Preserve field-type-specific structural whitespace.
                 */
-                var rawValue = filterEntry.Value;
-                if ( rawValue == "null" )
-                {
-                    rawValue = string.Empty;
-                }
-
-                // Translate the public (client) value to its private (database) form so
-                // that defined-value Guids, person aliases, etc. compare correctly
-                // against what is actually stored in the attribute value.
-                var filterValue = rawValue.IsNotNullOrWhiteSpace()
-                    ? PublicAttributeHelper.GetPrivateValue( attribute, rawValue )
-                    : rawValue;
-
-                var isBlankComparison = filterEntry.ComparisonType.HasValue
-                    && ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( filterEntry.ComparisonType.Value );
-
-                if ( !isBlankComparison && filterValue.IsNullOrWhiteSpace() )
-                {
-                    continue;
-                }
-
-                var entityField = EntityHelper.GetEntityFieldForAttribute( attribute, false );
-                if ( entityField == null )
-                {
-                    continue;
-                }
-
-                // If the client did not specify a comparison type, fall back to the
-                // field type's default (Contains for text-style fields, EqualTo otherwise).
-                var comparisonType = filterEntry.ComparisonType;
-                if ( !comparisonType.HasValue && filterValue.IsNotNullOrWhiteSpace() )
-                {
-                    var supportedTypes = entityField.FieldType.Field.FilterComparisonType;
-                    comparisonType = supportedTypes.HasFlag( ComparisonType.Contains )
-                        ? ComparisonType.Contains
-                        : ComparisonType.EqualTo;
-                }
-
-                // Pack the args in the shape ExpressionHelper expects: optional comparison
-                // type as the first element, then the value(s).
-                var filterArgs = new List<string>();
-                if ( comparisonType.HasValue )
-                {
-                    filterArgs.Add( comparisonType.ConvertToInt().ToString() );
-                }
-
-                filterArgs.Add( filterValue );
-
+                // Translate the public (client) value to its private (database) form and
+                // build the predicate. The shared helper owns that conversion so that
+                // defined-value Guids, person aliases, etc. compare correctly against
+                // what is actually stored, and so blank values and a missing comparison
+                // type are handled the same way in every block.
                 var parameterExpression = connectionRequestService.ParameterExpression;
-                var attributeExpression = ExpressionHelper.GetAttributeExpression( connectionRequestService, parameterExpression, entityField, filterArgs );
+                var attributeExpression = ExpressionHelper.GetAttributeFilterExpression( connectionRequestService, parameterExpression, attribute, filterEntry );
 
-                if ( attributeExpression is NoAttributeFilterExpression )
+                if ( attributeExpression == null )
                 {
                     continue;
                 }
