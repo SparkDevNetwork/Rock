@@ -360,4 +360,24 @@
     }
 
     // #endregion
+
+    // #region Watchers
+
+    // Clear the selected template if no longer offered in the filtered list.
+    watch(filteredCommunicationTemplates, () => {
+        const selectedGuid = internalCommunicationTemplateGuid.value;
+
+        if (!selectedGuid) {
+            return;
+        }
+
+        const isSelectedTemplateOffered = filteredCommunicationTemplates.value
+            .some(communicationTemplate => areEqual(communicationTemplate.guid, selectedGuid));
+
+        if (!isSelectedTemplateOffered) {
+            internalCommunicationTemplateGuid.value = null;
+        }
+    }, { immediate: true });
+
+    // #endregion
 </script>

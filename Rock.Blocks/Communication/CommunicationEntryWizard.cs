@@ -1303,11 +1303,13 @@ namespace Rock.Blocks.Communication
                 hasTemplateToApply = communicationTemplateInfo != null;
             }
 
-            // NOTE: Only set the selected template if the user has auth for this template
-            // and the template supports the Email Wizard
+            // NOTE: Only set the selected template if the user has auth for this template and the template supports
+            // email or SMS. If this preselected template does not support an authorized, selected medium, it will
+            // become deselected in the client, requiring the individual to make a new template selection.
             if ( communicationTemplateInfo?.CommunicationTemplate != null
                 && communicationTemplateInfo.CommunicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson )
-                && GetSupportsEmailWizard( communicationTemplateInfo.CommunicationTemplate ) )
+                && ( GetSupportsEmailWizard( communicationTemplateInfo.CommunicationTemplate )
+                    || GetSupportsSms( communicationTemplateInfo.CommunicationTemplate ) ) )
             {
                 shouldApplyTemplateToCommunication = hasTemplateToApply;
                 return GetCommunicationTemplateDetailBag( communicationTemplateInfo );
@@ -1922,6 +1924,16 @@ namespace Rock.Blocks.Communication
             var cacheKey = $"{nameof( CommunicationEntryWizard )}:SupportsEmailWizard:{GetCurrentPerson()?.Id ?? 0}:{communicationTemplate.Id}:{communicationTemplate.ModifiedDateTime?.Ticks ?? 0}";
 
             return ( bool ) RockCache.GetOrAddExisting( cacheKey, null, () => communicationTemplate.SupportsEmailWizard(), TimeSpan.FromMinutes( 10 ) );
+        }
+
+        /// <summary>
+        /// Determines whether a communication template can be used for SMS.
+        /// </summary>
+        /// <param name="communicationTemplate">The communication template to check.</param>
+        /// <returns><see langword="true"/> if the template can be used for SMS; otherwise, <see langword="false"/>.</returns>
+        private bool GetSupportsSms( CommunicationTemplate communicationTemplate )
+        {
+            return communicationTemplate.HasSMSTemplate();
         }
 
         /// <summary>
