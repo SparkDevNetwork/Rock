@@ -219,11 +219,26 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Deletes the EntityType.
+        /// Deletes the EntityType, along with any <c>[Auth]</c> rows that reference it via
+        /// <c>Auth.EntityTypeId</c> (per-EntityType VIEW/EDIT/ADMINISTRATE grants that admins
+        /// may have configured). Removing those Auth rows first prevents the
+        /// <c>FK_dbo.Auth_dbo.EntityType_EntityTypeId</c> constraint from blocking the delete.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteEntityType( string guid )
         {
+            // Delete any [Auth] rows that reference this EntityType first; otherwise the
+            // FK_dbo.Auth_dbo.EntityType_EntityTypeId constraint will block the delete.
+            Migration.Sql( $@"
+DECLARE @EntityTypeId INT = ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '{guid}' );
+
+IF @EntityTypeId IS NOT NULL
+BEGIN
+    DELETE FROM [Auth]
+    WHERE [EntityTypeId] = @EntityTypeId;
+END
+" );
+
             DeleteByGuid( guid, "EntityType" );
         }
 
