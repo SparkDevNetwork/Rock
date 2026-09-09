@@ -1,0 +1,224 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div v-if="options.isVersioningEnabled" class="col-md-6">
+            <StaticFormControl label="Current Version" :modelValue="versionText" />
+        </div>
+
+        <div v-if="options.isApprovalRequired" class="col-md-6">
+            <ButtonGroup v-if="options.isCurrentPersonApprover"
+                         v-model="approvalStatusValue"
+                         label="Approval Status"
+                         formGroupClasses="d-flex flex-column align-items-end"
+                         :items="approvalStatusItems" />
+
+            <StaticFormControl v-else label="Approval Status" modelValue="">
+                <HighlightLabel :labelType="approvalLabelType" :tooltip="approvalTooltip" tooltipPlacement="top">
+                    {{ approvalText }}
+                </HighlightLabel>
+            </StaticFormControl>
+        </div>
+    </div>
+
+    <HtmlEditor v-model="content"
+                :startInCodeEditorMode="options.isCodeEditorDefault"
+                toolbar="full"
+                :mergeFields="options.mergeFields ?? undefined"
+                :encryptedDocumentRootFolder="options.encryptedDocumentRootFolder ?? ''"
+                :encryptedImageRootFolder="options.encryptedImageRootFolder ?? ''"
+                :userSpecificRoot="options.isUserSpecificRoot" />
+
+    <DateRangePicker v-model="displayDates"
+                     label="Display Dates"
+                     help="The dates this content is available to display. Leave blank on either end for no limit. Requires approval to take effect, if approval is required." />
+
+    <CheckBox v-if="options.isVersioningEnabled"
+              v-model="isOverwriteCurrentVersion"
+              label="Overwrite Current Version"
+              help="Whether saving replaces the current version instead of creating a new one." />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, watch } from "vue";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { HtmlContentApprovalStatus } from "@Obsidian/Enums/Cms/htmlContentApprovalStatus";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { propertyRef, updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { HtmlContentEditBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentEditBag";
+    import { HtmlContentEditOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentEditOptionsBag";
+
+    const props = defineProps({
+        /** The version being edited. */
+        modelValue: {
+            type: Object as PropType<HtmlContentEditBag>,
+            required: true
+        },
+
+        /** Block-derived options that decide which controls are shown. */
+        options: {
+            type: Object as PropType<HtmlContentEditOptionsBag>,
+            required: true
+        },
+
+        /** Whether saving replaces the loaded version instead of creating a new one. */
+        isOverwriteCurrentVersion: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: HtmlContentEditBag): void;
+        (e: "update:isOverwriteCurrentVersion", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const isOverwriteCurrentVersion = useVModelPassthrough(props, "isOverwriteCurrentVersion", emit);
+
+    const content = propertyRef(props.modelValue.content ?? "", "Content");
+    const startDateTime = propertyRef(props.modelValue.startDateTime ?? null, "StartDateTime");
+    const expireDateTime = propertyRef(props.modelValue.expireDateTime ?? null, "ExpireDateTime");
+    const approvalStatus = propertyRef(props.modelValue.approvalStatus, "ApprovalStatus");
+
+    const propRefs = [content, startDateTime, expireDateTime, approvalStatus];
+
+    const approvalStatusItems = [
+        { value: String(HtmlContentApprovalStatus.PendingApproval), text: "Pending", selectedBtnType: BtnType.Warning },
+        { value: String(HtmlContentApprovalStatus.Approved), text: "Approved", selectedBtnType: BtnType.Success },
+        { value: String(HtmlContentApprovalStatus.Denied), text: "Denied", selectedBtnType: BtnType.Danger }
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** "Version 3", or "Version 2 of 3" when an older version is loaded. */
+    const versionText = computed((): string => {
+        const version = props.modelValue.version;
+        const maxVersion = props.modelValue.maxVersion;
+
+        if (version === 0) {
+            return "New";
+        }
+
+        return maxVersion && maxVersion !== version
+            ? `Version ${version} of ${maxVersion}`
+            : `Version ${version}`;
+    });
+
+    /** Whether the current person's edits must go back through review. */
+    const isDemotedOnEdit = computed((): boolean => {
+        return props.options.isApprovalRequired && !props.options.isCurrentPersonApprover;
+    });
+
+    /** The start and expire dates in the shape the DateRangePicker expects. */
+    const displayDates = computed<DateRangeParts>({
+        get(): DateRangeParts {
+            return {
+                lowerValue: startDateTime.value,
+                upperValue: expireDateTime.value
+            };
+        },
+        set(value: DateRangeParts): void {
+            startDateTime.value = value.lowerValue || null;
+            expireDateTime.value = value.upperValue || null;
+        }
+    });
+
+    /** String adapter for the ButtonGroup, which binds a string while the bag holds the numeric enum. */
+    const approvalStatusValue = computed<string>({
+        get(): string {
+            return String(approvalStatus.value);
+        },
+        set(value: string): void {
+            approvalStatus.value = Number(value) as HtmlContentApprovalStatus;
+        }
+    });
+
+    /** Read-only status text for non-approvers. */
+    const approvalText = computed((): string => {
+        switch (approvalStatus.value) {
+            case HtmlContentApprovalStatus.Approved:
+                return "Approved";
+            case HtmlContentApprovalStatus.Denied:
+                return "Denied";
+            default:
+                return "Pending";
+        }
+    });
+
+    /** HighlightLabel type for the read-only status. */
+    const approvalLabelType = computed((): "success" | "danger" | "warning" => {
+        switch (approvalStatus.value) {
+            case HtmlContentApprovalStatus.Approved:
+                return "success";
+            case HtmlContentApprovalStatus.Denied:
+                return "danger";
+            default:
+                return "warning";
+        }
+    });
+
+    /** "Approved by Alisha Admin on Monday, August 17, 2026", or empty while pending. */
+    const approvalTooltip = computed((): string => {
+        if (approvalStatus.value === HtmlContentApprovalStatus.PendingApproval) {
+            return "";
+        }
+
+        const verb = approvalStatus.value === HtmlContentApprovalStatus.Denied ? "Denied" : "Approved";
+        const name = props.modelValue.approvedByName;
+        const date = props.modelValue.approvedDateTime
+            ? RockDateTime.parseISO(props.modelValue.approvedDateTime)?.toASPString("D")
+            : null;
+
+        if (name && date) {
+            return `${verb} by ${name} on ${date}`;
+        }
+
+        if (name) {
+            return `${verb} by ${name}`;
+        }
+
+        return date ? `${verb} on ${date}` : "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    // A non-approver's content edit sends the version back to Pending; a value pushed in by the parent does not.
+    watch(content, () => {
+        if (isDemotedOnEdit.value && content.value !== (props.modelValue.content ?? "")) {
+            approvalStatus.value = HtmlContentApprovalStatus.PendingApproval;
+        }
+    });
+
+    // Sync all local refs when the parent replaces the model value.
+    watch(() => props.modelValue, () => {
+        updateRefValue(content, props.modelValue.content ?? "");
+        updateRefValue(startDateTime, props.modelValue.startDateTime ?? null);
+        updateRefValue(expireDateTime, props.modelValue.expireDateTime ?? null);
+        updateRefValue(approvalStatus, props.modelValue.approvalStatus);
+    });
+
+    // Emit an updated model value whenever any tracked field changes.
+    watch(propRefs, () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            content: content.value,
+            startDateTime: startDateTime.value,
+            expireDateTime: expireDateTime.value,
+            approvalStatus: approvalStatus.value
+        });
+    });
+
+    // #endregion Watchers
+</script>
