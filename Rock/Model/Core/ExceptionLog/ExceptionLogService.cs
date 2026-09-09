@@ -205,9 +205,7 @@ namespace Rock.Model
             // not be the same within the context of the new thread.
             var exceptionLog = PopulateExceptionLog( ex, request, personAlias );
 
-            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
-            // recursively writing to the database.
-            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+            LogExceptionsInBackground( ex, exceptionLog );
         }
 
         /// <summary>
@@ -224,9 +222,7 @@ namespace Rock.Model
             exceptionLog.Source = ex.Source;
             exceptionLog.StackTrace = ex.StackTrace;
 
-            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
-            // recursively writing to the database.
-            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+            LogExceptionsInBackground( ex, exceptionLog );
         }
 
         /// <summary>
@@ -236,6 +232,47 @@ namespace Rock.Model
         public static void LogException( string message )
         {
             LogException( new Exception( message ) );
+        }
+
+        /// <summary>
+        /// Common entry point for the public logging methods. Spins off the real
+        /// logging work to a background thread so the caller is not blocked while
+        /// recursively writing to the database.
+        /// </summary>
+        /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
+        /// <param name="log">The initial <see cref="ExceptionLog"/> built for the exception.</param>
+        private static void LogExceptionsInBackground( Exception ex, ExceptionLog log )
+        {
+            /*
+                9/9/26 - CLAUDE
+
+                The unit test sink check must happen HERE, synchronously on the
+                calling thread, rather than inside LogExceptions on the
+                background thread. RockApp.Current is scoped per test (each test
+                swaps it in and out), so by the time a background Task.Run
+                executes, the calling test's scope may already be gone - or worse,
+                a different test's scope may be current, whose mocked RockContext
+                we would then land on. Resolving the sink on the calling thread
+                captures it against the correct scope.
+
+                When a sink is registered (unit test framework), capture the
+                exception and return without touching a database or a background
+                thread. In production no sink is registered, so this behaves
+                exactly as before: the work is spun off to a background thread.
+
+                Reason: Resolve the exception sink against the calling test's
+                scope, not whatever scope happens to be current later.
+            */
+            var exceptionSink = RockApp.Current?.GetService( typeof( IExceptionLogSink ) ) as IExceptionLogSink;
+            if ( exceptionSink != null )
+            {
+                exceptionSink.AddException( ex );
+                return;
+            }
+
+            // Spin off a new thread to handle the real logging work so the caller
+            // is not blocked whilst recursively writing to the database.
+            Task.Run( () => LogExceptions( ex, log, true ) );
         }
 
         /// <summary>

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -92,10 +93,22 @@ namespace Rock.Tests.Shared.TestFramework
             var databaseConfigurationMock = new Mock<IDatabaseConfiguration>( MockBehavior.Loose );
             databaseConfigurationMock.Setup( m => m.IsDatabaseAvailable ).Returns( true );
 
+            // Register sinks that capture the side effects a unit test would
+            // otherwise fire against the shared mocked context: background
+            // exception logging and message bus publishing. With these in place
+            // the bus never tries to reach a real transport (so it never logs a
+            // "bus was not ready" exception) and any exception that is logged is
+            // captured here instead of being written to the mocked RockContext
+            // on a background thread.
+            var exceptionLogSink = new TestExceptionLogSink();
+            var busMessageSink = new TestBusMessageSink();
+
             var app = CreateRockApp( "Server=localhost\\MockInstance;Database=Rock", sc =>
             {
                 sc.AddSingleton( rockContextFactory );
                 sc.AddSingleton<IDatabaseConfiguration>( databaseConfigurationMock.Object );
+                sc.AddSingleton<IExceptionLogSink>( exceptionLogSink );
+                sc.AddSingleton<IBusMessageSink>( busMessageSink );
                 configureApp?.Invoke( sc );
             } );
 
@@ -235,6 +248,26 @@ namespace Rock.Tests.Shared.TestFramework
         public class RockAppScope : IDisposable
         {
             public RockApp App { get; }
+
+            /// <summary>
+            /// Gets a snapshot of the exceptions that were logged via
+            /// <c>ExceptionLogService</c> during this scope. Under the test
+            /// framework these are captured rather than written to the database,
+            /// so a test can assert on what was (or was not) logged.
+            /// </summary>
+            public IReadOnlyList<Exception> LoggedExceptions =>
+                ( App.GetService( typeof( IExceptionLogSink ) ) as TestExceptionLogSink )?.Exceptions
+                ?? ( IReadOnlyList<Exception> ) Array.Empty<Exception>();
+
+            /// <summary>
+            /// Gets a snapshot of the messages that were published, sent, or
+            /// requested on the <c>RockMessageBus</c> during this scope. Under the
+            /// test framework these are captured rather than sent to a real
+            /// transport, so a test can assert on what was published.
+            /// </summary>
+            public IReadOnlyList<object> PublishedBusMessages =>
+                ( App.GetService( typeof( IBusMessageSink ) ) as TestBusMessageSink )?.Messages
+                ?? ( IReadOnlyList<object> ) Array.Empty<object>();
 
             private readonly RockApp _previousApp;
 
