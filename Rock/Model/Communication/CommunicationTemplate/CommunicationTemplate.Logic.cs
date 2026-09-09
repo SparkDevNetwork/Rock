@@ -137,6 +137,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns true if this Communication Template has a Push Message for a Push Template.
+        /// </summary>
+        /// <returns><c>true</c> if [has push template]; otherwise, <c>false</c>.</returns>
+        public bool HasPushTemplate()
+        {
+            return !string.IsNullOrWhiteSpace( this.PushMessage );
+        }
+
+        /// <summary>
         /// When checking for security, if a template does not have specific rules, first check the category it belongs to, but then check the default entity security for templates.
         /// </summary>
         public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
