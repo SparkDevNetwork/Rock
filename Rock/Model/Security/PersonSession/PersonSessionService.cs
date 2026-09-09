@@ -377,11 +377,34 @@ public partial class PersonSessionService
     /// </summary>
     /// <param name="requestContext">The current <see cref="RockRequestContext"/>, or <c>null</c> when no request is in scope.</param>
     /// <param name="userLoginId">The <c>UserLogin.Id</c> resolved from the legacy ticket's <c>Name</c> field.</param>
-    /// <param name="ticketIssueDate">The legacy ticket's <c>IssueDate</c>. Becomes the new row's <see cref="PersonSession.IssuedDateTime"/> so the <c>RejectAuthenticationCookiesIssuedBefore</c> kill switch is correct for upgraded sessions.</param>
+    /// <param name="ticketIssueDate">The legacy ticket's <c>IssueDate</c>. Truncated to whole seconds and stored as the new row's <see cref="PersonSession.IssuedDateTime"/> so repeated presentations resolve to the same row and the <c>RejectAuthenticationCookiesIssuedBefore</c> kill switch stays correct for upgraded sessions. See the engineering note in the method body for why the sub-second precision is dropped.</param>
     /// <returns>The <see cref="PersonSession"/> matching the composite key, or a newly created one.</returns>
     internal PersonSession FindOrCreateLegacyUpgradeSession( RockRequestContext requestContext, int userLoginId, DateTime ticketIssueDate )
     {
         var rockContext = Context as RockContext;
+
+        /*
+            9/9/26 - CLAUDE
+
+            Truncate the ticket's IssueDate to whole seconds before it is used
+            as a lookup key or an insert value. PersonSession.IssuedDateTime is
+            a SQL `datetime` column, which rounds stored values to a ~3.33 ms
+            grid, but FormsAuthenticationTicket.IssueDate carries full DateTime
+            tick precision. Matching the grid-rounded stored value against the
+            raw high-precision value with `==` (see FindLegacyUpgradeSession)
+            failed whenever the sub-grid remainder was non-zero, which is why
+            the concurrent-insert recovery re-find below resolved only
+            intermittently. Whole seconds are exactly representable on the
+            `datetime` grid, so the C# value and the stored value are identical
+            and the equality is stable. Two distinct legacy tickets for the
+            same UserLogin issued within the same second collapse to one row,
+            which is acceptable for an idempotent upgrade, and truncating
+            toward the past keeps the RejectAuthenticationCookiesIssuedBefore
+            kill switch on the safe side.
+
+            Reason: Prevent intermittent legacy-cookie upgrade failures from datetime precision loss.
+        */
+        ticketIssueDate = ticketIssueDate.AddTicks( -( ticketIssueDate.Ticks % TimeSpan.TicksPerSecond ) );
 
         var existing = FindLegacyUpgradeSession( userLoginId, ticketIssueDate );
         if ( existing != null )

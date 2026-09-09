@@ -3112,9 +3112,12 @@ public class PersonSessionServiceTests
     /// A non-impersonation legacy ticket whose <c>Name</c> resolves to a
     /// known <see cref="UserLogin"/> upgrades to a new <see cref="PersonSession"/>
     /// with <c>CreationSource = Legacy</c> and <c>IssuedDateTime</c>
-    /// equal to <c>ticket.IssueDate</c>. The latter is what makes the
-    /// <c>RejectAuthenticationCookiesIssuedBefore</c> kill switch correct
-    /// for upgraded sessions.
+    /// equal to <c>ticket.IssueDate</c> truncated to whole seconds. The
+    /// latter is what makes the <c>RejectAuthenticationCookiesIssuedBefore</c>
+    /// kill switch correct for upgraded sessions; the whole-second truncation
+    /// keeps the value on the SQL <c>datetime</c> grid so the composite-key
+    /// lookup stays exact (see
+    /// <c>UpgradeLegacyTicket_TruncatesSubSecondIssueDate</c>).
     /// </summary>
     [TestMethod]
     public void UpgradeLegacyTicket_CreatesLegacySession_ForValidNonImpersonationTicket()
@@ -3125,6 +3128,7 @@ public class PersonSessionServiceTests
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
 
         var ticketIssueDate = RockDateTime.Now.AddDays( -10 );
+        var expectedIssuedDateTime = TruncateToSecond( ticketIssueDate );
         var ticket = BuildTicket( "ted", ticketIssueDate, isImpersonated: false );
         var requestContext = BuildRequestContext( new TrackingResponseContext() );
 
@@ -3136,7 +3140,7 @@ public class PersonSessionServiceTests
         Assert.IsNotNull( session );
         Assert.AreEqual( PersonSessionCreationSource.Legacy, session.CreationSource );
         Assert.AreEqual( 7, session.UserLoginId );
-        Assert.AreEqual( ticketIssueDate, session.IssuedDateTime );
+        Assert.AreEqual( expectedIssuedDateTime, session.IssuedDateTime );
         Assert.IsTrue( session.IsActive );
         Assert.IsTrue( session.IsPersistent );
     }
@@ -3300,9 +3304,9 @@ public class PersonSessionServiceTests
 
     /// <summary>
     /// The upgraded session's <c>IssuedDateTime</c> equals the legacy
-    /// ticket's <c>IssueDate</c>. This is what makes the
-    /// <c>RejectAuthenticationCookiesIssuedBefore</c> kill switch correct
-    /// for upgraded sessions on subsequent requests — the kill-switch
+    /// ticket's <c>IssueDate</c> truncated to whole seconds. This is what
+    /// makes the <c>RejectAuthenticationCookiesIssuedBefore</c> kill switch
+    /// correct for upgraded sessions on subsequent requests — the kill-switch
     /// comparison runs against <c>PersonSession.IssuedDateTime</c>, and
     /// the upgrade path is the only place where that value comes from
     /// outside the system clock. (The kill-switch behavior itself is
@@ -3318,6 +3322,7 @@ public class PersonSessionServiceTests
         SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
 
         var ticketIssueDate = RockDateTime.Now.AddDays( -45 );
+        var expectedIssuedDateTime = TruncateToSecond( ticketIssueDate );
         var ticket = BuildTicket( "ted", ticketIssueDate, isImpersonated: false );
         var requestContext = BuildRequestContext( new TrackingResponseContext() );
 
@@ -3327,7 +3332,45 @@ public class PersonSessionServiceTests
 #pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.IsNotNull( session );
-        Assert.AreEqual( ticketIssueDate, session.IssuedDateTime );
+        Assert.AreEqual( expectedIssuedDateTime, session.IssuedDateTime );
+    }
+
+    /// <summary>
+    /// A legacy ticket whose <c>IssueDate</c> carries sub-second precision
+    /// (the common case, since <c>FormsAuthenticationTicket.IssueDate</c>
+    /// keeps full <see cref="DateTime"/> tick precision) is truncated to
+    /// whole seconds before it is stored and before it is used as the
+    /// composite-key lookup value. This keeps <c>IssuedDateTime</c> on the
+    /// SQL <c>datetime</c> grid so the re-find after a concurrent-insert
+    /// unique-constraint violation resolves reliably instead of
+    /// intermittently. Regression guard for the datetime-precision bug in
+    /// the legacy upgrade path.
+    /// </summary>
+    [TestMethod]
+    public void UpgradeLegacyTicket_TruncatesSubSecondIssueDate()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200 );
+
+        // Deliberately give the ticket a non-zero sub-second component so the
+        // truncation is observable.
+        var ticketIssueDate = new DateTime( 2026, 1, 15, 8, 30, 45, 123, DateTimeKind.Local ).AddTicks( 4567 );
+        var expectedIssuedDateTime = new DateTime( 2026, 1, 15, 8, 30, 45, DateTimeKind.Local );
+        var ticket = BuildTicket( "ted", ticketIssueDate, isImpersonated: false );
+        var requestContext = BuildRequestContext( new TrackingResponseContext() );
+
+        var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
+        var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        Assert.IsNotNull( session );
+        Assert.AreEqual( expectedIssuedDateTime, session.IssuedDateTime,
+            "Sub-second precision must be dropped so IssuedDateTime lands on the SQL datetime grid." );
+        Assert.AreEqual( 0, session.IssuedDateTime.Millisecond,
+            "IssuedDateTime must have no millisecond component after truncation." );
     }
 
     /// <summary>
@@ -3568,6 +3611,16 @@ public class PersonSessionServiceTests
             userData: userData,
             cookiePath: "/"
         );
+    }
+
+    /// <summary>
+    /// Truncates a <see cref="DateTime"/> to whole seconds, mirroring the
+    /// normalization the legacy upgrade path applies to the ticket's
+    /// <c>IssueDate</c> before it becomes <c>PersonSession.IssuedDateTime</c>.
+    /// </summary>
+    private static DateTime TruncateToSecond( DateTime value )
+    {
+        return value.AddTicks( -( value.Ticks % TimeSpan.TicksPerSecond ) );
     }
 
     /// <summary>
