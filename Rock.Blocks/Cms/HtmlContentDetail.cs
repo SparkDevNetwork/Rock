@@ -435,6 +435,22 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Determines whether a content row belongs to this block and context,
+        /// using the same filter the service applies when reading content.
+        /// </summary>
+        /// <param name="htmlContent">The content row to check.</param>
+        /// <param name="entityValue">The entity value that scopes this block's content.</param>
+        /// <returns><see langword="true"/> if the row is within scope; otherwise <see langword="false"/>.</returns>
+        private bool IsContentInScope( HtmlContent htmlContent, string entityValue )
+        {
+            var htmlContentService = new HtmlContentService( RockContext );
+
+            return htmlContentService
+                .AddFilterLogic( htmlContentService.Queryable(), BlockId, entityValue )
+                .Any( c => c.Id == htmlContent.Id );
+        }
+
+        /// <summary>
         /// Derives the three-state approval status from the entity's IsApproved
         /// flag and approver fields. A denied version is unapproved but records
         /// who denied it, while a pending version records nobody.
@@ -596,6 +612,35 @@ namespace Rock.Blocks.Cms
                     ? GetVersionBags( entityValue, latestVersion?.Version )
                     : null
             } );
+        }
+
+        /// <summary>
+        /// Gets a specific version of the content so the editor can load it,
+        /// typically from the Select button in Version History.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the HtmlContent version.</param>
+        /// <returns>The edit bag for that version, or a not-found result when it does not belong to this block.</returns>
+        [BlockAction]
+        public BlockActionResult GetVersion( string idKey )
+        {
+            if ( !IsCurrentPersonAuthorized( Authorization.EDIT ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this content." );
+            }
+
+            var entityValue = GetEntityValue();
+            var htmlContentService = new HtmlContentService( RockContext );
+            var htmlContent = htmlContentService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            // Treat another block's version as not found so a guessed key cannot expose foreign content.
+            if ( htmlContent == null || !IsContentInScope( htmlContent, entityValue ) )
+            {
+                return ActionNotFound( "The requested version could not be found." );
+            }
+
+            var maxVersion = htmlContentService.GetLatestVersion( BlockId, entityValue )?.Version;
+
+            return ActionOk( GetEditBag( htmlContent, maxVersion ) );
         }
 
         #endregion Block Actions
