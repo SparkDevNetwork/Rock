@@ -21,6 +21,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using HtmlAgilityPack;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Enums.Cms;
@@ -304,7 +306,6 @@ namespace Rock.Blocks.Cms
         /// Loads the active content for the entity value, resolves any Lava,
         /// and expands Rock's relative URL tokens.
         /// </summary>
-        /// <param name="entityValue">The entity value that scopes the content.</param>
         /// <returns>The rendered HTML, or an empty string when no content is active.</returns>
         private string RenderActiveContent( string entityValue )
         {
@@ -326,7 +327,6 @@ namespace Rock.Blocks.Cms
         /// Replaces the "~~/" theme and "~/" application URL tokens. The theme
         /// token is replaced first so the application token does not consume it.
         /// </summary>
-        /// <param name="html">The HTML containing URL tokens.</param>
         /// <returns>The HTML with absolute URLs.</returns>
         private string ResolveRockUrlTokens( string html )
         {
@@ -409,7 +409,6 @@ namespace Rock.Blocks.Cms
         /// Gets the value for the configured Context Parameter, preferring the
         /// page parameter and falling back to the page's context entity Id.
         /// </summary>
-        /// <param name="contextParameter">The Context Parameter block setting.</param>
         /// <returns>The parameter value, or an empty string when neither source has one.</returns>
         private string GetContextParameterValue( string contextParameter )
         {
@@ -427,7 +426,6 @@ namespace Rock.Blocks.Cms
         /// Determines whether the current person is authorized for the given
         /// security action on this block.
         /// </summary>
-        /// <param name="action">The security action, such as Edit or Approve.</param>
         /// <returns><see langword="true"/> if authorized; otherwise <see langword="false"/>.</returns>
         private bool IsCurrentPersonAuthorized( string action )
         {
@@ -438,16 +436,134 @@ namespace Rock.Blocks.Cms
         /// Determines whether a content row belongs to this block and context,
         /// using the same filter the service applies when reading content.
         /// </summary>
-        /// <param name="htmlContent">The content row to check.</param>
-        /// <param name="entityValue">The entity value that scopes this block's content.</param>
         /// <returns><see langword="true"/> if the row is within scope; otherwise <see langword="false"/>.</returns>
         private bool IsContentInScope( HtmlContent htmlContent, string entityValue )
         {
+            return GetScopedContentQuery( entityValue ).Any( c => c.Id == htmlContent.Id );
+        }
+
+        /// <summary>
+        /// Gets a query of every content row that belongs to this block and
+        /// context, using the same filter the service applies when reading
+        /// content so shared Context Name rows are included.
+        /// </summary>
+        /// <returns>The scoped content query.</returns>
+        private IQueryable<HtmlContent> GetScopedContentQuery( string entityValue )
+        {
             var htmlContentService = new HtmlContentService( RockContext );
 
-            return htmlContentService
-                .AddFilterLogic( htmlContentService.Queryable(), BlockId, entityValue )
-                .Any( c => c.Id == htmlContent.Id );
+            return htmlContentService.AddFilterLogic( htmlContentService.Queryable(), BlockId, entityValue );
+        }
+
+        /// <summary>
+        /// Gets the content row the editor was loaded from, identified by its
+        /// version number within this block's scope.
+        /// </summary>
+        /// <returns>The matching row, or null when the editor started from a blank block.</returns>
+        private HtmlContent GetContentVersion( string entityValue, int version )
+        {
+            return GetScopedContentQuery( entityValue )
+                .Where( c => c.Version == version )
+                .OrderByDescending( c => c.ModifiedDateTime )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the version number a newly created row should receive.
+        /// </summary>
+        /// <returns>One more than the highest existing version, or 1 when versioning is off or nothing exists.</returns>
+        private int GetNextVersion( string entityValue )
+        {
+            if ( !IsVersioningEnabled )
+            {
+                return 1;
+            }
+
+            var maxVersion = GetScopedContentQuery( entityValue ).Max( c => ( int? ) c.Version ) ?? 0;
+
+            return maxVersion + 1;
+        }
+
+        /// <summary>
+        /// Parses the content with HtmlAgilityPack and returns the reasons for
+        /// any mismatched or malformed tags. Lava is neutralized first so its
+        /// tags are not reported as HTML errors.
+        /// </summary>
+        /// <returns>The warning reasons, empty when the markup is clean.</returns>
+        private static List<string> GetMarkupWarnings( string content )
+        {
+            var document = new HtmlDocument();
+            document.LoadHtml( content.IsLavaTemplate() ? content.SanitizeLava() : content );
+
+            return document.ParseErrors
+                .Select( error => error.Reason )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines whether a save request would leave the row exactly as it
+        /// is, so an idle Save by a non-approver cannot demote live content.
+        /// </summary>
+        /// <returns><see langword="true"/> if nothing would change; otherwise <see langword="false"/>.</returns>
+        private static bool IsUnchanged( HtmlContent htmlContent, SaveHtmlContentRequestBag request )
+        {
+            return htmlContent.Content == ( request.Content ?? string.Empty )
+                && htmlContent.StartDateTime == request.StartDateTime.AsDateTime()
+                && htmlContent.ExpireDateTime == request.ExpireDateTime.AsDateTime()
+                && GetApprovalStatus( htmlContent ) == request.ApprovalStatus;
+        }
+
+        /// <summary>
+        /// Applies the WebForms approval rules onto the content's IsApproved
+        /// flag and approver fields, extended with the Denied state the
+        /// redesigned status toggle and tooltip need.
+        /// </summary>
+        /// <param name="htmlContent">The row being saved.</param>
+        /// <param name="requestedStatus">The status the editor asked for.</param>
+        /// <param name="isContentChanged">Whether the content text differs from the loaded version.</param>
+        /// <returns><see langword="true"/> if the saved version is waiting for approval; otherwise <see langword="false"/>.</returns>
+        private bool ApplyApprovalStatus( HtmlContent htmlContent, HtmlContentApprovalStatus requestedStatus, bool isContentChanged )
+        {
+            if ( !IsApprovalRequired )
+            {
+                SetApprovalStatus( htmlContent, HtmlContentApprovalStatus.Approved );
+                return false;
+            }
+
+            if ( IsCurrentPersonAuthorized( Authorization.APPROVE ) )
+            {
+                SetApprovalStatus( htmlContent, requestedStatus );
+                return !htmlContent.IsApproved;
+            }
+
+            // As in WebForms, a non-approver only sends the version back for review when the text itself changed.
+            if ( isContentChanged )
+            {
+                SetApprovalStatus( htmlContent, HtmlContentApprovalStatus.PendingApproval );
+            }
+
+            return !htmlContent.IsApproved;
+        }
+
+        /// <summary>
+        /// Writes a three-state status onto the entity's columns: approved and
+        /// denied both record the current person as the reviewer, pending
+        /// records nobody. Pending must clear the reviewer because an unapproved
+        /// row that still names one reads back as Denied.
+        /// </summary>
+        private void SetApprovalStatus( HtmlContent htmlContent, HtmlContentApprovalStatus status )
+        {
+            htmlContent.IsApproved = status == HtmlContentApprovalStatus.Approved;
+
+            if ( status == HtmlContentApprovalStatus.PendingApproval )
+            {
+                htmlContent.ApprovedByPersonAliasId = null;
+                htmlContent.ApprovedDateTime = null;
+                return;
+            }
+
+            htmlContent.ApprovedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+            htmlContent.ApprovedDateTime = RockDateTime.Now;
         }
 
         /// <summary>
@@ -455,7 +571,6 @@ namespace Rock.Blocks.Cms
         /// flag and approver fields. A denied version is unapproved but records
         /// who denied it, while a pending version records nobody.
         /// </summary>
-        /// <param name="htmlContent">The content to inspect.</param>
         /// <returns>The derived approval status.</returns>
         private static HtmlContentApprovalStatus GetApprovalStatus( HtmlContent htmlContent )
         {
@@ -473,8 +588,6 @@ namespace Rock.Blocks.Cms
         /// Builds the edit bag for a version of the content, or for a brand new
         /// version when no content exists yet.
         /// </summary>
-        /// <param name="htmlContent">The version to load, or null when nothing has been saved.</param>
-        /// <param name="maxVersion">The highest version number that exists, or null when nothing has been saved.</param>
         /// <returns>The bag the editor binds to.</returns>
         private HtmlContentEditBag GetEditBag( HtmlContent htmlContent, int? maxVersion )
         {
@@ -545,8 +658,6 @@ namespace Rock.Blocks.Cms
         /// Builds the Version History rows for the block's content, newest first.
         /// Content bodies are deliberately left out so a long history stays cheap.
         /// </summary>
-        /// <param name="entityValue">The entity value that scopes the content.</param>
-        /// <param name="currentVersion">The highest version number, used to flag the current row.</param>
         /// <returns>The version rows.</returns>
         private List<HtmlContentVersionBag> GetVersionBags( string entityValue, int? currentVersion )
         {
@@ -618,7 +729,6 @@ namespace Rock.Blocks.Cms
         /// Gets a specific version of the content so the editor can load it,
         /// typically from the Select button in Version History.
         /// </summary>
-        /// <param name="idKey">The identifier key of the HtmlContent version.</param>
         /// <returns>The edit bag for that version, or a not-found result when it does not belong to this block.</returns>
         [BlockAction]
         public BlockActionResult GetVersion( string idKey )
@@ -641,6 +751,82 @@ namespace Rock.Blocks.Cms
             var maxVersion = htmlContentService.GetLatestVersion( BlockId, entityValue )?.Version;
 
             return ActionOk( GetEditBag( htmlContent, maxVersion ) );
+        }
+
+        /// <summary>
+        /// Saves the editor's content as a new version or over the loaded one,
+        /// applying markup validation and the approval rules.
+        /// </summary>
+        /// <returns>The save outcome, including any markup warnings that blocked it.</returns>
+        [BlockAction]
+        public BlockActionResult Save( SaveHtmlContentRequestBag request )
+        {
+            if ( !IsCurrentPersonAuthorized( Authorization.EDIT ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this content." );
+            }
+
+            if ( request == null )
+            {
+                return ActionBadRequest( "The content to save is required." );
+            }
+
+            var newContent = request.Content ?? string.Empty;
+            var isMarkupValidated = GetAttributeValue( AttributeKey.ValidateMarkup ).AsBoolean();
+
+            // Warn once about bad markup; a second save with the warning acknowledged proceeds.
+            if ( isMarkupValidated && !request.IsMarkupWarningAcknowledged )
+            {
+                var markupWarnings = GetMarkupWarnings( newContent );
+
+                if ( markupWarnings.Any() )
+                {
+                    return ActionOk( new SaveHtmlContentResponseBag
+                    {
+                        IsSaved = false,
+                        MarkupWarnings = markupWarnings
+                    } );
+                }
+            }
+
+            var entityValue = GetEntityValue();
+            var htmlContent = GetContentVersion( entityValue, request.Version );
+
+            if ( htmlContent != null && IsUnchanged( htmlContent, request ) )
+            {
+                return ActionOk( new SaveHtmlContentResponseBag { IsSaved = true } );
+            }
+
+            var isContentChanged = htmlContent == null || htmlContent.Content != newContent;
+            var isNewVersionRequired = htmlContent == null
+                || ( isContentChanged && IsVersioningEnabled && !request.IsOverwriteCurrentVersion );
+
+            if ( isNewVersionRequired )
+            {
+                htmlContent = new HtmlContent
+                {
+                    BlockId = BlockId,
+                    EntityValue = entityValue,
+                    Version = GetNextVersion( entityValue )
+                };
+
+                new HtmlContentService( RockContext ).Add( htmlContent );
+            }
+
+            htmlContent.Content = newContent;
+            htmlContent.StartDateTime = request.StartDateTime.AsDateTime();
+            htmlContent.ExpireDateTime = request.ExpireDateTime.AsDateTime();
+
+            var isApprovalPending = ApplyApprovalStatus( htmlContent, request.ApprovalStatus, isContentChanged );
+
+            RockContext.SaveChanges();
+            HtmlContentService.FlushCachedContent( BlockId, entityValue );
+
+            return ActionOk( new SaveHtmlContentResponseBag
+            {
+                IsSaved = true,
+                IsApprovalPending = isApprovalPending
+            } );
         }
 
         #endregion Block Actions
