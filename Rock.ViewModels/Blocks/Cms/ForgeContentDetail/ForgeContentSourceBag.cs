@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,22 +15,19 @@
 // </copyright>
 //
 
-namespace Rock.Cms
+namespace Rock.ViewModels.Blocks.Cms.ForgeContentDetail
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// The response returned by the GetEditContent block action, carrying the
+    /// authored source to the editor opened from the block's configuration bar.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
+    public class ForgeContentSourceBag
     {
         /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
+        /// Gets or sets the clean Vue source the author wrote, or null when
+        /// the block has no component yet.
         /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
-
-        /// <summary>
-        /// Determines the content type returned by the endpoint's response.
-        /// </summary>
-        public string ContentType { get; set; } = "text/html";
+        /// <value>The authored Vue source.</value>
+        public string Source { get; set; }
     }
-
 }

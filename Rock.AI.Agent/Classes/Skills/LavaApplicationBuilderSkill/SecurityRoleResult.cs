@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,22 +15,23 @@
 // </copyright>
 //
 
-namespace Rock.Cms
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
+
+/// <summary>
+/// One security role an audience can name, as listed by ResolveAudience.
+/// The name is the exact value to pass in the audiences parameter of
+/// AddOrUpdateLavaApplication.
+/// </summary>
+internal class SecurityRoleResult
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// The name of the security role, exactly as AddOrUpdateLavaApplication
+    /// expects it.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
-    {
-        /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
-        /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
+    public string Name { get; set; }
 
-        /// <summary>
-        /// Determines the content type returned by the endpoint's response.
-        /// </summary>
-        public string ContentType { get; set; } = "text/html";
-    }
-
+    /// <summary>
+    /// The description of the security role, when one has been entered.
+    /// </summary>
+    public string Description { get; set; }
 }

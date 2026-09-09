@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,22 +15,26 @@
 // </copyright>
 //
 
-namespace Rock.Cms
+namespace Rock.ViewModels.Blocks.Cms.ForgeContentDetail
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// The box that contains all the initialization information for the
+    /// Forge Content block.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
+    public class ForgeContentDetailInitializationBox : BlockBox
     {
         /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
+        /// Gets or sets the compiled SystemJS module string used to render the
+        /// component in view mode.
         /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
+        /// <value>The compiled component module.</value>
+        public string CompiledContent { get; set; }
 
         /// <summary>
-        /// Determines the content type returned by the endpoint's response.
+        /// Gets or sets a value indicating whether the current person may edit
+        /// this component through the block configuration bar.
         /// </summary>
-        public string ContentType { get; set; } = "text/html";
+        /// <value><c>true</c> if the current person may edit; otherwise <c>false</c>.</value>
+        public bool IsEditable { get; set; }
     }
-
 }

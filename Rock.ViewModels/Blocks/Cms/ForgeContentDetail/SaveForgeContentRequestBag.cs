@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,22 +15,22 @@
 // </copyright>
 //
 
-namespace Rock.Cms
+namespace Rock.ViewModels.Blocks.Cms.ForgeContentDetail
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// The request sent to the SaveContent block action when an authorized
+    /// editor saves an authored forge content.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
+    /// <remarks>
+    /// The request carries only the source. The server is the sole compile
+    /// path, so compiled output is never accepted from a caller.
+    /// </remarks>
+    public class SaveForgeContentRequestBag
     {
         /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
+        /// Gets or sets the clean Vue source the author wrote.
         /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
-
-        /// <summary>
-        /// Determines the content type returned by the endpoint's response.
-        /// </summary>
-        public string ContentType { get; set; } = "text/html";
+        /// <value>The authored Vue source.</value>
+        public string Source { get; set; }
     }
-
 }
