@@ -119,17 +119,17 @@
         return props.options.isApprovalRequired && !props.options.isCurrentPersonApprover;
     });
 
-    /** The start and expire dates in the shape the DateRangePicker expects. */
-    const displayDates = computed<DateRangeParts>({
+    /** The start and expire dates in the shape the DateRangePicker expects. The picker emits undefined when both are cleared. */
+    const displayDates = computed<DateRangeParts | undefined>({
         get(): DateRangeParts {
             return {
                 lowerValue: startDateTime.value,
                 upperValue: expireDateTime.value
             };
         },
-        set(value: DateRangeParts): void {
-            startDateTime.value = value.lowerValue || null;
-            expireDateTime.value = value.upperValue || null;
+        set(value: DateRangeParts | undefined): void {
+            startDateTime.value = value?.lowerValue || null;
+            expireDateTime.value = value?.upperValue || null;
         }
     });
 
