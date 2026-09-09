@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -40,6 +41,23 @@ namespace Rock.Lava.Fluid
         private readonly LavaFluidParser _parser = new LavaFluidParser();
 
         private static readonly Guid _engineIdentifier = new Guid( "605445FE-6ECC-4E67-9A95-98F7173F7389" );
+
+        /*
+            9/9/26 - CLAUDE
+
+            A compiled filter delegate is a pure function of the filter's MethodInfo: given the same
+            method, BuildCompiledFilterDelegate always emits an identical delegate. Compiling the
+            expression tree is relatively expensive, and OnRegisterFilter runs it once per filter
+            every time an engine is initialized. In production the engine is normally initialized
+            once, so the cost is paid a single time; but the unit test suite creates many engine
+            instances, recompiling the same ~100 filter delegates on every initialization (profiled
+            at ~10% of test CPU time). Caching the delegates by MethodInfo across all engine
+            instances eliminates the redundant compilation. A ConcurrentDictionary is used because
+            filter registration can occur on multiple threads.
+
+            Reason: Cache compiled filter delegates by MethodInfo to avoid recompiling them per engine.
+        */
+        private static readonly ConcurrentDictionary<MethodInfo, Func<object[], object>> _compiledFilterDelegates = new ConcurrentDictionary<MethodInfo, Func<object[], object>>();
 
         /// <summary>
         /// The descriptive name of the engine.
@@ -478,7 +496,7 @@ namespace Rock.Lava.Fluid
 
             var firstParameterIndex = 1 + ( hasContextParameter ? 1 : 0 );
 
-            var compiledFilter = BuildCompiledFilterDelegate( lavaFilterMethod, lavaFilterMethodParameters );
+            var compiledFilter = _compiledFilterDelegates.GetOrAdd( lavaFilterMethod, m => BuildCompiledFilterDelegate( m, lavaFilterMethodParameters ) );
 
             // Define the Fluid-compatible filter function that will wrap the Lava filter method.
             ValueTask<FluidValue> fluidFilterFunction( FluidValue input, FilterArguments arguments, TemplateContext context )
