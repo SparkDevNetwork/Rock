@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
 
 using Rock;
 using Rock.Attribute;
@@ -206,6 +208,22 @@ namespace Rock.Blocks.Cms
 
         #endregion Attribute Strings
 
+        #region Properties
+
+        /// <summary>
+        /// Gets a value indicating whether content changes must be approved
+        /// before they display.
+        /// </summary>
+        private bool IsApprovalRequired => GetAttributeValue( AttributeKey.RequireApproval ).AsBoolean();
+
+        /// <summary>
+        /// Gets a value indicating whether previous versions are preserved. This
+        /// is true when either Enable Versioning or Require Approval is on.
+        /// </summary>
+        private bool IsVersioningEnabled => GetAttributeValue( AttributeKey.SupportVersions ).AsBoolean() || IsApprovalRequired;
+
+        #endregion Properties
+
         #region RockBlockType Overrides
 
         /// <inheritdoc/>
@@ -226,47 +244,29 @@ namespace Rock.Blocks.Cms
             }
         }
 
-        /// <inheritdoc/>
-        public override object GetObsidianBlockInitialization()
-        {
-            return new HtmlContentDetailOptionsBag();
-        }
-
         #endregion RockBlockType Overrides
 
         #region Fields
 
-        private RenderedContent _renderedContent;
+        /// <summary>
+        /// The merge fields the editor's picker always offers, in the picker's
+        /// "Field^Type|Label" format. Context entities are appended per request.
+        /// </summary>
+        private static readonly string[] _standardEditorMergeFields = new[]
+        {
+            "GlobalAttribute",
+            "CurrentPerson^Rock.Model.Person|Current Person",
+            "Campuses",
+            "PageParameter",
+            "RockVersion",
+            "Date",
+            "Time",
+            "DayOfWeek"
+        };
 
         #endregion Fields
 
         #region Methods
-
-        /// <summary>
-        /// Renders the content once per request and captures any failure so the
-        /// error can be reported through the options bag instead of the HTML.
-        /// </summary>
-        /// <returns>The rendered HTML or the error message.</returns>
-        private RenderedContent GetRenderedContent()
-        {
-            // The framework builds the options bag before it asks for the initial HTML, so both read from this one result.
-            if ( _renderedContent != null )
-            {
-                return _renderedContent;
-            }
-
-            try
-            {
-                _renderedContent = new RenderedContent { Html = GetContentHtml() };
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex );
-                _renderedContent = new RenderedContent { ErrorMessage = ex.Message };
-            }
-
-            return _renderedContent;
-        }
 
         /// <summary>
         /// Gets the HTML to display for the current request, serving it from
@@ -423,7 +423,182 @@ namespace Rock.Blocks.Cms
             return GetContextEntity()?.Id.ToString() ?? string.Empty;
         }
 
+        /// <summary>
+        /// Determines whether the current person is authorized for the given
+        /// security action on this block.
+        /// </summary>
+        /// <param name="action">The security action, such as Edit or Approve.</param>
+        /// <returns><see langword="true"/> if authorized; otherwise <see langword="false"/>.</returns>
+        private bool IsCurrentPersonAuthorized( string action )
+        {
+            return BlockCache.IsAuthorized( action, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Derives the three-state approval status from the entity's IsApproved
+        /// flag and approver fields. A denied version is unapproved but records
+        /// who denied it, while a pending version records nobody.
+        /// </summary>
+        /// <param name="htmlContent">The content to inspect.</param>
+        /// <returns>The derived approval status.</returns>
+        private static HtmlContentApprovalStatus GetApprovalStatus( HtmlContent htmlContent )
+        {
+            if ( htmlContent.IsApproved )
+            {
+                return HtmlContentApprovalStatus.Approved;
+            }
+
+            return htmlContent.ApprovedByPersonAliasId.HasValue
+                ? HtmlContentApprovalStatus.Denied
+                : HtmlContentApprovalStatus.PendingApproval;
+        }
+
+        /// <summary>
+        /// Builds the edit bag for a version of the content, or for a brand new
+        /// version when no content exists yet.
+        /// </summary>
+        /// <param name="htmlContent">The version to load, or null when nothing has been saved.</param>
+        /// <param name="maxVersion">The highest version number that exists, or null when nothing has been saved.</param>
+        /// <returns>The bag the editor binds to.</returns>
+        private HtmlContentEditBag GetEditBag( HtmlContent htmlContent, int? maxVersion )
+        {
+            if ( htmlContent == null )
+            {
+                return new HtmlContentEditBag
+                {
+                    ApprovalStatus = IsApprovalRequired
+                        ? HtmlContentApprovalStatus.PendingApproval
+                        : HtmlContentApprovalStatus.Approved
+                };
+            }
+
+            return new HtmlContentEditBag
+            {
+                Version = htmlContent.Version,
+                MaxVersion = maxVersion,
+                Content = htmlContent.Content,
+                StartDateTime = htmlContent.StartDateTime?.ToString( "s" ),
+                ExpireDateTime = htmlContent.ExpireDateTime?.ToString( "s" ),
+                ApprovalStatus = GetApprovalStatus( htmlContent ),
+                ApprovedByName = htmlContent.ApprovedByPersonAlias?.Person?.FullName,
+                ApprovedDateTime = htmlContent.ApprovedDateTime?.ToString( "s" )
+            };
+        }
+
+        /// <summary>
+        /// Builds the block-derived options that decide which editor features
+        /// are shown and how the editor is configured.
+        /// </summary>
+        /// <returns>The edit options.</returns>
+        private HtmlContentEditOptionsBag GetEditOptions()
+        {
+            return new HtmlContentEditOptionsBag
+            {
+                IsVersioningEnabled = IsVersioningEnabled,
+                IsApprovalRequired = IsApprovalRequired,
+                IsCurrentPersonApprover = IsCurrentPersonAuthorized( Authorization.APPROVE ),
+                IsCodeEditorDefault = GetAttributeValue( AttributeKey.UseCodeEditor ).AsBoolean(),
+                EncryptedDocumentRootFolder = Encryption.EncryptString( GetAttributeValue( AttributeKey.DocumentRootFolder ) ),
+                EncryptedImageRootFolder = Encryption.EncryptString( GetAttributeValue( AttributeKey.ImageRootFolder ) ),
+                IsUserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean(),
+                MergeFields = GetEditorMergeFields()
+            };
+        }
+
+        /// <summary>
+        /// Gets the merge fields offered by the editor's merge field picker: the
+        /// block's standard set plus one entry per context entity on the page.
+        /// </summary>
+        /// <returns>Merge field definitions in the picker's "Field^Type|Label" format.</returns>
+        private List<string> GetEditorMergeFields()
+        {
+            var mergeFields = _standardEditorMergeFields.ToList();
+
+            foreach ( var contextEntityType in RequestContext.GetContextEntityTypes() )
+            {
+                if ( LavaHelper.IsLavaDataObject( RequestContext.GetContextEntity( contextEntityType ) ) )
+                {
+                    mergeFields.Add( $"Context.{contextEntityType.Name}^{contextEntityType.FullName}|Current {contextEntityType.Name} (Context)|Context" );
+                }
+            }
+
+            return mergeFields;
+        }
+
+        /// <summary>
+        /// Builds the Version History rows for the block's content, newest first.
+        /// Content bodies are deliberately left out so a long history stays cheap.
+        /// </summary>
+        /// <param name="entityValue">The entity value that scopes the content.</param>
+        /// <param name="currentVersion">The highest version number, used to flag the current row.</param>
+        /// <returns>The version rows.</returns>
+        private List<HtmlContentVersionBag> GetVersionBags( string entityValue, int? currentVersion )
+        {
+            var versions = new HtmlContentService( RockContext )
+                .GetContent( BlockId, entityValue )
+                .ThenByDescending( c => c.ModifiedDateTime )
+                .Select( c => new
+                {
+                    c.Id,
+                    c.Version,
+                    c.ModifiedDateTime,
+                    ModifiedByPerson = c.ModifiedByPersonAlias.Person,
+                    c.IsApproved,
+                    ApprovedByPerson = c.ApprovedByPersonAlias.Person,
+                    c.StartDateTime,
+                    c.ExpireDateTime
+                } )
+                .ToList();
+
+            return versions
+                .Select( v => new HtmlContentVersionBag
+                {
+                    IdKey = IdHasher.Instance.GetHash( v.Id ),
+                    Version = v.Version,
+                    VersionText = $"Version {v.Version}",
+                    ModifiedDateTime = v.ModifiedDateTime?.ToString( "s" ),
+                    ModifiedByName = v.ModifiedByPerson?.FullName,
+                    IsApproved = v.IsApproved,
+                    ApprovedByName = v.ApprovedByPerson?.FullName,
+                    StartDateTime = v.StartDateTime?.ToString( "s" ),
+                    ExpireDateTime = v.ExpireDateTime?.ToString( "s" ),
+                    IsCurrent = v.Version == currentVersion
+                } )
+                .ToList();
+        }
+
         #endregion Methods
+
+        #region Block Actions
+
+        /// <summary>
+        /// Gets everything the Edit HTML modal needs when it opens: the latest
+        /// version for the editor, the block-derived options, and the version
+        /// history when versioning is enabled.
+        /// </summary>
+        /// <returns>The edit box, or a forbidden result when the person cannot edit.</returns>
+        [BlockAction]
+        public BlockActionResult GetEditContent()
+        {
+            if ( !IsCurrentPersonAuthorized( Authorization.EDIT ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this content." );
+            }
+
+            var entityValue = GetEntityValue();
+            var latestVersion = new HtmlContentService( RockContext ).GetLatestVersion( BlockId, entityValue );
+
+            return ActionOk( new HtmlContentEditBox
+            {
+                Content = GetEditBag( latestVersion, latestVersion?.Version ),
+                Options = GetEditOptions(),
+                Versions = IsVersioningEnabled
+                    ? GetVersionBags( entityValue, latestVersion?.Version )
+                    : null
+            } );
+        }
+
+        #endregion Block Actions
 
         #region IHasCustomActions Implementation
 
@@ -446,26 +621,6 @@ namespace Rock.Blocks.Cms
         }
 
         #endregion IHasCustomActions Implementation
-
-        #region Support Classes
-
-        /// <summary>
-        /// The outcome of rendering the block's content for the current request.
-        /// </summary>
-        private sealed class RenderedContent
-        {
-            /// <summary>
-            /// The rendered HTML, or an empty string when rendering failed.
-            /// </summary>
-            public string Html { get; set; } = string.Empty;
-
-            /// <summary>
-            /// The error message when rendering failed, otherwise null.
-            /// </summary>
-            public string ErrorMessage { get; set; }
-        }
-
-        #endregion Support Classes
 
         #region CurrentBrowser Merge Field Wrapper
 
