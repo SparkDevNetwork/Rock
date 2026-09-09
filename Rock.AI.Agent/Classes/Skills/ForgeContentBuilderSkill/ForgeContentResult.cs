@@ -13,24 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-namespace Rock.Cms
+namespace Rock.AI.Agent.Classes.Skills.ForgeContentBuilderSkill;
+
+/// <summary>
+/// Result model for the authored source of a Forge Content block placement.
+/// </summary>
+internal class ForgeContentResult
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// The authored Vue single-file-component source.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
-    {
-        /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
-        /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
+    public string Source { get; set; }
 
-        /// <summary>
-        /// Determines the content type returned by the endpoint's response.
-        /// </summary>
-        public string ContentType { get; set; } = "text/html";
-    }
-
+    /// <summary>
+    /// The Vue version the stored compiled output was compiled against.
+    /// </summary>
+    public string CompiledVueVersion { get; set; }
 }

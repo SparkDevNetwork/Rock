@@ -1,0 +1,148 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="error"
+                     alertType="danger">{{ error }}</NotificationBox>
+
+    <component v-else-if="control"
+               :is="control" />
+</template>
+
+<script setup lang="ts">
+    import { Component, markRaw, PropType, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        /** The compiled SystemJS module string produced at save time. */
+        compiledContent: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        }
+    });
+
+    // #region Types
+
+    /** A loaded module namespace as returned by the SystemJS loader. */
+    type SystemModule = Record<string, unknown>;
+
+    /** The declaration function passed to a `System.register` call. */
+    type SystemRegisterDeclare = (
+        exportFn: (name: string | Record<string, unknown>, value?: unknown) => void,
+        context: { import: (id: string) => Promise<SystemModule> }
+    ) => {
+        setters: ((module: SystemModule) => void)[];
+        execute: () => void;
+    };
+
+    // #endregion Types
+
+    // #region Values
+
+    const control = ref<Component | null>(null);
+    const error = ref("");
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Instantiates the stored `System.register` module without routing a blob or data
+     * URL through Rock's SystemJS resolver.
+     *
+     * Rock's resolver appends a `.js` extension and a `?fingerprint` query to any URL,
+     * which a blob or data URL cannot carry, so importing the compiled content by URL
+     * fails. Instead this captures the module's registration through a local `System`
+     * shim, resolves each real `@Obsidian/...` dependency through the loader (those
+     * specifiers resolve correctly), and drives the setters and execute step directly.
+     *
+     * @param moduleSource The compiled `System.register` module string.
+     *
+     * @returns The default-exported component, or null if none was exported.
+     */
+    async function instantiateModule(moduleSource: string): Promise<Component | null> {
+        const loader = (window as unknown as { System?: { import: (id: string) => Promise<SystemModule> } }).System;
+
+        if (!loader) {
+            throw new Error("The Obsidian loader is not available.");
+        }
+
+        const captured: { deps: string[]; declare: SystemRegisterDeclare | null } = {
+            deps: [],
+            declare: null
+        };
+
+        const registerShim = {
+            register(deps: string[], declare: SystemRegisterDeclare): void {
+                captured.deps = deps;
+                captured.declare = declare;
+            }
+        };
+
+        // Evaluate the compiled module with a shim `System` so the register call is
+        // captured instead of being loaded by URL. This is the same class of module
+        // evaluation SystemJS performs internally; no template compiler is involved.
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval
+        new Function("System", moduleSource)(registerShim);
+
+        const declare = captured.declare;
+        if (!declare) {
+            throw new Error("The compiled content did not register a module.");
+        }
+
+        // Resolve every dependency through the real loader (these are normal
+        // `@Obsidian/...` and `vue` specifiers that the import map resolves).
+        const dependencyModules = await Promise.all(captured.deps.map(dep => loader.import(dep)));
+
+        const moduleExports: Record<string, unknown> = {};
+        const exportFn = (name: string | Record<string, unknown>, value?: unknown): void => {
+            if (typeof name === "object") {
+                Object.assign(moduleExports, name);
+            }
+            else {
+                moduleExports[name] = value;
+            }
+        };
+
+        const instance = declare(exportFn, { import: (id: string) => loader.import(id) });
+        captured.deps.forEach((_dep, index) => instance.setters[index](dependencyModules[index]));
+        instance.execute();
+
+        return (moduleExports.default as Component) ?? null;
+    }
+
+    /**
+     * Loads and mounts the compiled component.
+     */
+    async function loadComponent(): Promise<void> {
+        control.value = null;
+        error.value = "";
+
+        if (!props.compiledContent) {
+            return;
+        }
+
+        try {
+            const component = await instantiateModule(props.compiledContent);
+
+            if (component) {
+                control.value = markRaw(component);
+            }
+            else {
+                error.value = "The content did not produce a component.";
+            }
+        }
+        catch (e) {
+            console.error(e);
+            error.value = "The content could not be loaded.";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.compiledContent, () => {
+        loadComponent();
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>

@@ -13,24 +13,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-namespace Rock.Cms
+using Rock.AI.Agent.Classes.Entity;
+
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
+
+/// <summary>
+/// Trimmed reference to a Lava application, used as the history content for
+/// results whose full payload (the endpoint list) is too large to keep in
+/// session context.
+/// </summary>
+internal class LavaApplicationReferenceResult : EntityResultBase
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// The name of the application.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
-    {
-        /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
-        /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
+    public string Name { get; set; }
 
-        /// <summary>
-        /// Determines the content type returned by the endpoint's response.
-        /// </summary>
-        public string ContentType { get; set; } = "text/html";
-    }
-
+    /// <summary>
+    /// The slug the application is addressed by.
+    /// </summary>
+    public string ApplicationSlug { get; set; }
 }

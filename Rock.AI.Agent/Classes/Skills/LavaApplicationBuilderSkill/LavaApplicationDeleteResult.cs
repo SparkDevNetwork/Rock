@@ -13,24 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-namespace Rock.Cms
+namespace Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
+
+/// <summary>
+/// Result model for a Lava application that was deleted by the skill.
+/// </summary>
+internal class LavaApplicationDeleteResult
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// Whether the application was deleted.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
-    {
-        /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
-        /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
+    public bool IsDeleted { get; set; }
 
-        /// <summary>
-        /// Determines the content type returned by the endpoint's response.
-        /// </summary>
-        public string ContentType { get; set; } = "text/html";
-    }
+    /// <summary>
+    /// The slug of the application that was deleted.
+    /// </summary>
+    public string ApplicationSlug { get; set; }
 
+    /// <summary>
+    /// How many of the skill's own endpoints were deleted along with the
+    /// application.
+    /// </summary>
+    public int DeletedEndpointCount { get; set; }
 }

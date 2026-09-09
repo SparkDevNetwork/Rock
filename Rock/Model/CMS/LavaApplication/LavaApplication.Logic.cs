@@ -53,7 +53,8 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            // If the person is a Rock Admin always allow access to View/Edit/Administrate (but not Execute).
+            // If the person is a Rock Admin or Lava Application Developer always allow, for every
+            // action including the Execute* actions. This matches LavaApplicationCache.IsAuthorized.
             // The RoleCache.Get() calls can return null when a role is inactive or missing, so the results
             // must be null-checked before testing role membership.
             var isInOverrideRole = RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() )?.IsPersonInRole( person.Guid ) == true

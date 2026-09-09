@@ -13,24 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-namespace Rock.Cms
+namespace Rock.AI.Agent.Classes.Skills.ForgeContentBuilderSkill;
+
+/// <summary>
+/// Result model describing the Rock version this instance is running.
+/// </summary>
+internal class RockVersionResult
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// The semantic version of this Rock instance, e.g. <c>1.20.0</c>. Pass this
+    /// to release-scoped knowledge base lookups.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
-    {
-        /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
-        /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
+    public string Version { get; set; }
 
-        /// <summary>
-        /// Determines the content type returned by the endpoint's response.
-        /// </summary>
-        public string ContentType { get; set; } = "text/html";
-    }
-
+    /// <summary>
+    /// The full product version string of this Rock instance.
+    /// </summary>
+    public string FullVersion { get; set; }
 }

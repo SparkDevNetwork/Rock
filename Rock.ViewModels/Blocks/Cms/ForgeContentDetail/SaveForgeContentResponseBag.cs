@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,22 +15,19 @@
 // </copyright>
 //
 
-namespace Rock.Cms
+namespace Rock.ViewModels.Blocks.Cms.ForgeContentDetail
 {
     /// <summary>
-    /// Additional settings for the Lava Endpoints.
+    /// The response returned by the SaveContent block action after a
+    /// successful server-side compile and save.
     /// </summary>
-    internal class LavaEndpointAdditionalSettings
+    public class SaveForgeContentResponseBag
     {
         /// <summary>
-        /// Determines if cross-site forgery protection should be enabled.
+        /// Gets or sets the compiled SystemJS module string the server produced,
+        /// so the editor can render the saved component without a page reload.
         /// </summary>
-        public bool EnableCrossSiteForgeryProtection { get; set; } = true;
-
-        /// <summary>
-        /// Determines the content type returned by the endpoint's response.
-        /// </summary>
-        public string ContentType { get; set; } = "text/html";
+        /// <value>The compiled component module.</value>
+        public string CompiledContent { get; set; }
     }
-
 }
