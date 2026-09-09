@@ -133,7 +133,7 @@ export const BlockType = {
     MobileOutreachAddContact: "DE2F490D-2598-40E8-8170-4753DDC0A0B0",
     /** The mobile contact profile &gt; Contact Profile block type."/&gt; */
     MobileOutreachContactProfile: "40E200AD-1E29-4855-A8A4-8055A63753FF",
-    /** The mobile my contact &gt; My Contact block type. */
+    /** The mobile my contacts &gt; My Contacts block type. */
     MobileOutreachMyContacts: "5C8E3D6E-1F2D-4A2D-8E3C-2F3B1C6D7E8F",
     /** The mobile Outreach Beacon Dashboard &gt; Beacon Dashboard block type. */
     MobileOutreachOutreachBeaconDashboard: "A1B2C3D4-E5F6-4789-ABCD-1234567890AB",

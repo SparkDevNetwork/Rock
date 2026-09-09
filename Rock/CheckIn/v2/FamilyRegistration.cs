@@ -336,6 +336,7 @@ namespace Rock.CheckIn.v2
 
                     UpdateFamilyAttributeValues( primaryFamily, registrationFamily );
                     EnsurePeopleInPrimaryFamilyAreMembersOfGroup( primaryFamily, registrationPeople );
+                    EnsureNewPrimaryFamilyAdultsGiveWithFamily( primaryFamily, registrationPeople, saveResult );
                     EnsurePeopleNotInPrimaryFamilyHaveAFamily( registrationPeople, defaultCampusId, saveResult );
                     RemoveFamilyMembers( primaryFamily, removedPersonIdKeys, saveResult );
 
@@ -403,6 +404,7 @@ namespace Rock.CheckIn.v2
                     registrationPeople.Add( (individual, person) );
 
                     EnsurePeopleInPrimaryFamilyAreMembersOfGroup( primaryFamily, registrationPeople );
+                    EnsureNewPrimaryFamilyAdultsGiveWithFamily( primaryFamily, registrationPeople, saveResult );
                     EnsurePeopleNotInPrimaryFamilyHaveAFamily( registrationPeople, defaultCampusId, saveResult, adults );
 
                     saveResult.PrimaryFamily = primaryFamily;
@@ -1373,6 +1375,48 @@ namespace Rock.CheckIn.v2
 
                     _rockContext.SaveChanges();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Defaults any newly created adults in the primary family to combined
+        /// (family) giving, matching the behavior of
+        /// <see cref="GroupService.SaveNewFamily"/> and the other add-person
+        /// paths in Rock. Only people that were created during this operation
+        /// are affected; existing people keep their current giving setting so a
+        /// deliberate "give individually" choice is preserved.
+        /// </summary>
+        /// <param name="family">The primary family group.</param>
+        /// <param name="people">The list of all people being registered.</param>
+        /// <param name="saveResult">The save result used to identify people that were newly created.</param>
+        internal void EnsureNewPrimaryFamilyAdultsGiveWithFamily( Group family, List<(ValidPropertiesBox<RegistrationPersonBag> RegistrationPerson, Person Person)> people, FamilyRegistrationSaveResult saveResult )
+        {
+            var familyRelationshipGuids = _template.SameFamilyKnownRelationshipRoleGuids;
+            var newPersonIds = saveResult.NewPersonList.Select( p => p.Id ).ToList();
+
+            var newPrimaryFamilyAdults = people
+                .Where( p => p.RegistrationPerson.Bag.IsAdult
+                    && ( p.RegistrationPerson.Bag.RelationshipToAdult == null
+                        || p.RegistrationPerson.Bag.RelationshipToAdult.Value.IsNullOrWhiteSpace()
+                        || familyRelationshipGuids.Contains( p.RegistrationPerson.Bag.RelationshipToAdult.Value.AsGuid() ) )
+                    && newPersonIds.Contains( p.Person.Id ) )
+                .Select( p => p.Person )
+                .ToList();
+
+            var hasChanges = false;
+
+            foreach ( var adult in newPrimaryFamilyAdults )
+            {
+                if ( !adult.GivingGroupId.HasValue )
+                {
+                    adult.GivingGroupId = family.Id;
+                    hasChanges = true;
+                }
+            }
+
+            if ( hasChanges )
+            {
+                _rockContext.SaveChanges();
             }
         }
 

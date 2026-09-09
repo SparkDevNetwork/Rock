@@ -44,6 +44,33 @@ namespace Rock.Tests.Shared.TestFramework
         /// <param name="rockContextMock">The mock <see cref="RockContext"/> to setup.</param>
         public static void SetupAutoDbSets( this RockMock<RockContext> rockContextMock )
         {
+            /*
+                9/9/26 - CLAUDE
+
+                A single mocked RockContext is shared by everything in a test
+                scope (RockApp.Current.CreateRockContext() returns the same
+                instance every call). The main test thread is expected to be the
+                only caller, so this dictionary - and the backing List<T> in each
+                DbSet built by GetDbSetMock, and the enumeration in
+                ExecuteSaveChanges - are deliberately NOT thread-safe.
+
+                Background threads (exception logging, bus publishing) used to
+                reach this mock via RockApp.Current and mutate these collections
+                concurrently, which produced intermittent IndexOutOfRangeException
+                / "collection was modified" failures in CI. Those background
+                writers are now diverted to sinks (IExceptionLogSink,
+                IBusMessageSink) before they touch the mock, so single-threaded
+                access holds again.
+
+                If a future change reintroduces concurrent access to the mocked
+                context, make autoDbSets a ConcurrentDictionary, snapshot it in
+                ExecuteSaveChanges, and guard the per-set List<T> operations
+                (Add/Remove/AddRange and the queryable enumerations) in
+                GetDbSetMock - a single lock per mock is simplest.
+
+                Reason: Document why these collections are intentionally not
+                thread-safe and how to harden them if that ever changes.
+            */
             var autoDbSets = new Dictionary<Type, IEnumerable>();
 
             rockContextMock.Setup( m => m.Set<It.IsAnyType>() ).Returns( new InvocationFunc( invocation =>

@@ -1233,16 +1233,18 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             globalStyles.addStyle(`.${GlobalCssClasses.marginParagraph}`, `margin: 0;`);
 
             // Add non-editable global styles.
+            // Do not set `height: 100%` on the root elements or the wrapper here.
+            // Clients that honor these styles (e.g. iOS Mail) stretch the wrapper
+            // past its content and expose the gray body background as a scrollable
+            // blank area below short emails.
             globalStyles.addStyle(`html, body`,
                 `/* Remove client-specific spacing around root elements. */
                 margin: 0;
-                padding: 0;
-                height: 100%;`
+                padding: 0;`
             );
 
             globalStyles.addStyle(`.email-wrapper`,
-                `width: 100%;
-                height: 100%;`
+                `width: 100%;`
             );
 
             styleElement.textContent = generateCssRulesets(globalStyles.styles);

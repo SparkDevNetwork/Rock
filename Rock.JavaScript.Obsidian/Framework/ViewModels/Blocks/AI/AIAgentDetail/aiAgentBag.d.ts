@@ -88,6 +88,13 @@ export type AIAgentBag = {
      */
     isExcludingSystemSkills: boolean;
 
+    /**
+     * Gets or sets a value indicating whether this agent is part of the
+     * Rock core system. System agents cannot be deleted and their
+     * instructions cannot be modified.
+     */
+    isSystem: boolean;
+
     /** The friendly name of the agent that will be used to identify it in the UI. */
     name?: string | null;
 

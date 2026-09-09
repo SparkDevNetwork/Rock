@@ -2949,6 +2949,16 @@ namespace Rock.Blocks.Event
                         multipleFamilyGroupIds[familyGuid] :
                         singleFamilyId.Value;
                     PersonService.AddPersonToFamily( person, true, familyId.Value, familyRoleId, rockContext );
+
+                    // Default new adults to combined (family) giving so their contributions
+                    // roll up with the family, matching PersonService.SaveNewPerson (which
+                    // does this for the registrant that creates the family). This person is
+                    // newly created, so there is no existing giving preference to preserve.
+                    if ( familyRoleId == adultRoleId )
+                    {
+                        person.GivingGroupId = familyId;
+                        rockContext.SaveChanges();
+                    }
                 }
                 else
                 {
