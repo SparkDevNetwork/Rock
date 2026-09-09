@@ -1304,12 +1304,13 @@ namespace Rock.Blocks.Communication
             }
 
             // NOTE: Only set the selected template if the user has auth for this template and the template supports
-            // email or SMS. If this preselected template does not support an authorized, selected medium, it will
-            // become deselected in the client, requiring the individual to make a new template selection.
+            // email, SMS, or push. If this preselected template does not support an authorized, selected medium, it
+            // will become deselected in the client, requiring the individual to make a new template selection.
             if ( communicationTemplateInfo?.CommunicationTemplate != null
                 && communicationTemplateInfo.CommunicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson )
                 && ( GetSupportsEmailWizard( communicationTemplateInfo.CommunicationTemplate )
-                    || GetSupportsSms( communicationTemplateInfo.CommunicationTemplate ) ) )
+                    || GetSupportsSms( communicationTemplateInfo.CommunicationTemplate )
+                    || GetSupportsPush( communicationTemplateInfo.CommunicationTemplate ) ) )
             {
                 shouldApplyTemplateToCommunication = hasTemplateToApply;
                 return GetCommunicationTemplateDetailBag( communicationTemplateInfo );
@@ -1892,6 +1893,9 @@ namespace Rock.Blocks.Communication
                 IsSmsSupported = communicationTemplateInfo.CommunicationTemplate.HasSMSTemplate()
                     || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid()
                     || communicationTemplateInfo.CommunicationTemplate.Guid == "6280214C-404E-4F4E-BC33-7A5D4CDF8DBC".AsGuid(), // TODO Replace with SystemGuid once preview status is removed.
+                IsPushSupported = communicationTemplateInfo.CommunicationTemplate.HasPushTemplate()
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid()
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == "6280214C-404E-4F4E-BC33-7A5D4CDF8DBC".AsGuid(), // TODO Replace with SystemGuid once preview status is removed.
                 Name = communicationTemplateInfo.CommunicationTemplate.Name,
                 Description = communicationTemplateInfo.CommunicationTemplate.Description,
                 ImageUrl = communicationTemplateInfo.CommunicationTemplate.ImageFileId.HasValue
@@ -1934,6 +1938,16 @@ namespace Rock.Blocks.Communication
         private bool GetSupportsSms( CommunicationTemplate communicationTemplate )
         {
             return communicationTemplate.HasSMSTemplate();
+        }
+
+        /// <summary>
+        /// Determines whether a communication template can be used for push notifications.
+        /// </summary>
+        /// <param name="communicationTemplate">The communication template to check.</param>
+        /// <returns><see langword="true"/> if the template can be used for push notifications; otherwise, <see langword="false"/>.</returns>
+        private bool GetSupportsPush( CommunicationTemplate communicationTemplate )
+        {
+            return communicationTemplate.HasPushTemplate();
         }
 
         /// <summary>

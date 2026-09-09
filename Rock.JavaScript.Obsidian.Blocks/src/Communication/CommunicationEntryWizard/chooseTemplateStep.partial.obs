@@ -272,6 +272,12 @@
                 return communicationTemplate.isSmsSupported;
             });
         }
+        else if (props.communicationType === CommunicationType.PushNotification
+            || (props.communicationType === CommunicationType.RecipientPreference && props.allowedMediums.includes(CommunicationType.PushNotification))) {
+            templates = templates.filter(communicationTemplate => {
+                return communicationTemplate.isPushSupported;
+            });
+        }
 
         return templates;
     });
