@@ -40,6 +40,12 @@ export type HtmlContentEditBox = {
     options?: HtmlContentEditOptionsBag | null;
 
     /**
+     * Gets or sets the security grant token the editor's controls, such as
+     * the image browser, use to reach the asset manager endpoints.
+     */
+    securityGrantToken?: string | null;
+
+    /**
      * Gets or sets the version history rows, newest version first. This is
      * null when versioning is not enabled for the block.
      */

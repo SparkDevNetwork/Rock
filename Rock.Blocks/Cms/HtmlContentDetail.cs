@@ -30,6 +30,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Cms.HtmlContentDetail;
 using Rock.ViewModels.Cms;
@@ -259,6 +260,12 @@ namespace Rock.Blocks.Cms
                     {ex.Message.EncodeHtml()}
                 </div>";
             }
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
         }
 
         #endregion RockBlockType Overrides
@@ -654,6 +661,22 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Builds the security grant the editor's controls present to the asset
+        /// manager endpoints, which do not trust the session on their own.
+        /// </summary>
+        /// <returns>The encoded security grant token.</returns>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new SecurityGrant();
+
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+
+            return securityGrant.ToToken();
+        }
+
+        /// <summary>
         /// Builds the Version History rows for the block's content, newest first.
         /// Content bodies are deliberately left out so a long history stays cheap.
         /// </summary>
@@ -721,7 +744,8 @@ namespace Rock.Blocks.Cms
                 Options = GetEditOptions(),
                 Versions = IsVersioningEnabled
                     ? GetVersionBags( entityValue, latestVersion?.Version )
-                    : null
+                    : null,
+                SecurityGrantToken = GetSecurityGrantToken()
             } );
         }
 

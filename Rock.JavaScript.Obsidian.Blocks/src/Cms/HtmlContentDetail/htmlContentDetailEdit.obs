@@ -43,7 +43,7 @@
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TabbedModal from "@Obsidian/Controls/tabbedModal.obs";
-    import { useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { HtmlContentEditBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentEditBag";
     import { HtmlContentEditBox } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentEditBox";
@@ -61,6 +61,10 @@
 
     const invokeBlockAction = useInvokeBlockAction();
     const reloadBlock = useReloadBlock();
+
+    // Provided empty up front so the editor's controls can inject it before the token arrives.
+    const securityGrant = getSecurityGrant(null);
+    provideSecurityGrant(securityGrant);
 
     // #region Values
 
@@ -104,6 +108,7 @@
             return;
         }
 
+        securityGrant.updateToken(result.data.securityGrantToken);
         options.value = result.data.options;
         versions.value = result.data.versions ?? [];
         loadVersion(result.data.content);

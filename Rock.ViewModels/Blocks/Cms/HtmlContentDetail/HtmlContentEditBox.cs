@@ -41,5 +41,11 @@ namespace Rock.ViewModels.Blocks.Cms.HtmlContentDetail
         /// null when versioning is not enabled for the block.
         /// </summary>
         public List<HtmlContentVersionBag> Versions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token the editor's controls, such as
+        /// the image browser, use to reach the asset manager endpoints.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }
