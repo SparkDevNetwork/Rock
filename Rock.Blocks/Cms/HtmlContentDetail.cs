@@ -100,15 +100,21 @@ namespace Rock.Blocks.Cms
         Order = 4,
         Key = AttributeKey.ValidateMarkup )]
 
-    [CustomDropdownListField(
-        "Versioning & Approval",
-        Description = "Preserves previous versions of the content and, optionally, requires changes to be approved before they display. Approval requires versioning.",
-        ListSource = AttributeStrings.VersioningModeListSource,
-        IsRequired = true,
-        DefaultValue = VersioningMode.Off,
+    [BooleanField(
+        "Enable Versioning",
+        Description = "Preserves previous versions of the content. Required for approval to be enabled.",
+        DefaultBooleanValue = false,
         Category = AttributeCategory.VersioningAndApproval,
         Order = 5,
-        Key = AttributeKey.VersioningAndApprovalMode )]
+        Key = AttributeKey.SupportVersions )]
+
+    [BooleanField(
+        "Require Approval",
+        Description = "Whether content changes must be approved before they display. Requires versioning to be enabled.",
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.VersioningAndApproval,
+        Order = 6,
+        Key = AttributeKey.RequireApproval )]
 
     [TextField(
         "Context Parameter",
@@ -173,7 +179,8 @@ namespace Rock.Blocks.Cms
             public const string CacheDuration = "CacheDuration";
             public const string ContextParameter = "ContextParameter";
             public const string ContextName = "ContextName";
-            public const string VersioningAndApprovalMode = "VersioningAndApprovalMode";
+            public const string SupportVersions = "SupportVersions";
+            public const string RequireApproval = "RequireApproval";
             public const string CacheTags = "CacheTags";
             public const string ValidateMarkup = "ValidateMarkup";
         }
@@ -186,29 +193,12 @@ namespace Rock.Blocks.Cms
             public const string Behavior = "Behavior";
         }
 
-        /// <summary>
-        /// The stored values of the Versioning &amp; Approval setting.
-        /// </summary>
-        private static class VersioningMode
-        {
-            public const string Off = "Off";
-            public const string VersioningOnly = "VersioningOnly";
-            public const string VersioningWithApproval = "VersioningWithApproval";
-        }
-
         #endregion Keys
 
         #region Attribute Strings
 
         private static class AttributeStrings
         {
-            /// <summary>
-            /// The choices offered by the Versioning &amp; Approval setting.
-            /// </summary>
-            public const string VersioningModeListSource = VersioningMode.Off + "^Off,"
-                + VersioningMode.VersioningOnly + "^Versioning Only,"
-                + VersioningMode.VersioningWithApproval + "^Versioning with Approval";
-
             /// <summary>
             /// Supplies the Cache Tags setting with the values of the Cache Tags defined type.
             /// </summary>
@@ -224,21 +214,15 @@ namespace Rock.Blocks.Cms
         #region Properties
 
         /// <summary>
-        /// Gets the configured Versioning &amp; Approval mode, one of the
-        /// <see cref="VersioningMode"/> values.
-        /// </summary>
-        private string CurrentVersioningMode => GetAttributeValue( AttributeKey.VersioningAndApprovalMode );
-
-        /// <summary>
         /// Gets a value indicating whether previous versions are preserved.
         /// </summary>
-        private bool IsVersioningEnabled => CurrentVersioningMode == VersioningMode.VersioningOnly || IsApprovalRequired;
+        private bool IsVersioningEnabled => GetAttributeValue( AttributeKey.SupportVersions ).AsBoolean() || IsApprovalRequired;
 
         /// <summary>
         /// Gets a value indicating whether content changes must be approved
         /// before they display.
         /// </summary>
-        private bool IsApprovalRequired => CurrentVersioningMode == VersioningMode.VersioningWithApproval;
+        private bool IsApprovalRequired => GetAttributeValue( AttributeKey.RequireApproval ).AsBoolean();
 
         #endregion Properties
 
