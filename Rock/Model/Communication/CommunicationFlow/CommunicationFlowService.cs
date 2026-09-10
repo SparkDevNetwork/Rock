@@ -198,6 +198,41 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Moves a one-time flow's instance onto the specified schedule start date when its first communication
+        /// has not been created yet, so schedule edits made before the flow begins sending are honored.
+        /// <para>
+        ///     This method does not call <c>SaveChanges</c>; the caller is responsible for persisting any changes.
+        /// </para>
+        /// </summary>
+        /// <param name="oneTimeFlow">The one-time communication flow whose instance should be checked. Must not be <c>null</c>.</param>
+        /// <param name="scheduleStartDate">The date the flow's schedule starts on.</param>
+        /// <returns><c>true</c> when the instance was updated.</returns>
+        internal bool UpdateOneTimeFlowInstanceStartDate( CommunicationFlow oneTimeFlow, DateTime scheduleStartDate )
+        {
+            var isUpdated = false;
+
+            var staleInstance = oneTimeFlow.TriggerType == CommunicationFlowTriggerType.OneTime
+                ? oneTimeFlow.CommunicationFlowInstances.FirstOrDefault( i => i.StartDate != scheduleStartDate )
+                : null;
+
+            if ( staleInstance != null && Context is RockContext rockContext )
+            {
+                // The start date is locked in once the first communication exists.
+                var isStartDateLocked = new CommunicationFlowInstanceCommunicationService( rockContext )
+                    .GetByCommunicationFlowInstance( staleInstance.Id )
+                    .Any();
+
+                if ( !isStartDateLocked )
+                {
+                    staleInstance.StartDate = scheduleStartDate;
+                    isUpdated = true;
+                }
+            }
+
+            return isUpdated;
+        }
+
+        /// <summary>
         /// Automatically assigns the specified person to an appropriate communication flow instance.
         /// <para>
         ///     If a valid instance exists and no communications have been sent or scheduled, the person will be added to that instance.
