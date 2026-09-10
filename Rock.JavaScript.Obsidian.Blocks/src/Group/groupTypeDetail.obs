@@ -11,7 +11,7 @@
                  :entityKey="entityKey"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="isDeleteVisible"
                  :isEditVisible="isEditable"
                  :isFollowVisible="true"
                  :isSecurityHidden="false"
@@ -103,6 +103,18 @@
     });
 
     const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    /*
+        9/10/26 - MSE
+
+        System group types still allow editing of some properties (the edit
+        panel disables the restricted ones). Hide delete only.
+
+        Reason: IsSystem must not hide the Edit button.
+    */
+    const isDeleteVisible = computed((): boolean => {
         return config.isEditable === true && groupTypeViewBag.value?.isSystem !== true;
     });
 
