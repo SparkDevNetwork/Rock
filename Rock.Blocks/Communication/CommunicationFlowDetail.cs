@@ -165,6 +165,9 @@ namespace Rock.Blocks.Communication
                 return actionError;
             }
 
+            // Set this aside for comparison below, so we'll know when the schedule has been updated.
+            var originalScheduleICalendarContent = entity.Schedule?.iCalendarContent;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBag( this.RockContext, entity, bag ) )
             {
@@ -183,6 +186,19 @@ namespace Rock.Blocks.Communication
             {
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( this.RockContext );
+
+                var isOneTimeScheduleChanged = !isNew
+                    && entity.TriggerType == CommunicationFlowTriggerType.OneTime
+                    && entity.Schedule != null
+                    && originalScheduleICalendarContent != entity.Schedule.iCalendarContent;
+
+                // Saving refreshed the schedule's EffectiveStartDate, so FirstStartDateTime now reflects the edit.
+                var scheduleStartDate = isOneTimeScheduleChanged ? entity.Schedule.FirstStartDateTime?.Date : null;
+
+                if ( scheduleStartDate.HasValue && entityService.UpdateOneTimeFlowInstanceStartDate( entity, scheduleStartDate.Value ) )
+                {
+                    RockContext.SaveChanges();
+                }
             } );
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
