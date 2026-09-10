@@ -56,8 +56,9 @@ namespace Rock.Model
         /// <param name="attributeValueParameter">The attribute value parameter.</param>
         /// <param name="parentIdProperty">The parent identifier property.</param>
         /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="usePersistedTextValue">When <c>true</c>, selects the attribute value's persisted display text as a string instead of the raw stored value.</param>
         /// <returns></returns>
-        private Expression GetAttributeValueExpression( IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId )
+        private Expression GetAttributeValueExpression( IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId, bool usePersistedTextValue = false )
         {
             MemberExpression attributeIdProperty = Expression.Property( attributeValueParameter, "AttributeId" );
             MemberExpression entityIdProperty = Expression.Property( attributeValueParameter, "EntityId" );
@@ -74,13 +75,23 @@ namespace Rock.Model
 
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
 
-            var attributeCache = AttributeCache.Get( attributeId );
             var attributeValueFieldName = "Value";
             Type attributeValueFieldType = typeof( string );
-            if ( attributeCache != null )
+
+            if ( usePersistedTextValue )
             {
-                attributeValueFieldName = attributeCache.FieldType.Field.AttributeValueFieldName;
-                attributeValueFieldType = attributeCache.FieldType.Field.AttributeValueFieldType;
+                // The persisted display text is always a string column and needs no
+                // field type resolution.
+                attributeValueFieldName = "PersistedTextValue";
+            }
+            else
+            {
+                var attributeCache = AttributeCache.Get( attributeId );
+                if ( attributeCache != null )
+                {
+                    attributeValueFieldName = attributeCache.FieldType.Field.AttributeValueFieldName;
+                    attributeValueFieldType = attributeCache.FieldType.Field.AttributeValueFieldType;
+                }
             }
 
             MemberExpression valueProperty = Expression.Property( attributeValueParameter, attributeValueFieldName );

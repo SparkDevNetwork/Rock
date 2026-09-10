@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -56,7 +57,7 @@ namespace Rock.Achievement
             // Create any attributes that need to be created
             int modelEntityTypeId = EntityTypeCache.Get( typeof( AchievementType ) ).Id;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var component in Components )
                 {

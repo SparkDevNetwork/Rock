@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -105,7 +106,7 @@ namespace Rock.Transactions
                 {
                     foreach ( var wfDetail in WorkflowDetails )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var workflow = Rock.Model.Workflow.Activate( workflowType, wfDetail.Name );
                             workflow.InitiatorPersonAliasId = InitiatorPersonAliasId;

@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -337,7 +338,7 @@ namespace RockWeb.Blocks.Event
         {
             int? registrationTemplatePlacementId = this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ) );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -640,7 +641,7 @@ namespace RockWeb.Blocks.Event
             var groupType = GroupTypeCache.Get( hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger() );
 
             _groupTypeRoles = groupType.Roles.ToList();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
             var groupService = new GroupService( rockContext );
@@ -866,7 +867,7 @@ namespace RockWeb.Blocks.Event
             bool inTemplateMode = registrationInstanceId == null;
             pwRegistrationTemplateConfiguration.Visible = inTemplateMode;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             DataViewFilter dataViewFilter = null;
 
@@ -949,7 +950,7 @@ namespace RockWeb.Blocks.Event
             AddGroupMemberAttributeFilters( true );
             cbHideFullGroups.Checked = placementConfiguration.HideFullGroups;
 
-            var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
+            var registrationTemplateFeeService = new RegistrationTemplateFeeService( RockApp.Current.CreateRockContext() );
             var templateFees = registrationTemplateFeeService.Queryable().Where( f => f.RegistrationTemplateId == registrationTemplateId ).ToList();
 
             ddlFeeName.Items.Clear();
@@ -1002,7 +1003,7 @@ namespace RockWeb.Blocks.Event
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
 
             var placementConfiguration = GetPlacementConfiguration() ?? new PlacementConfiguration();
@@ -1080,7 +1081,7 @@ namespace RockWeb.Blocks.Event
             var groupRegistrationInstanceIds = _placementGroupIdRegistrationInstanceIds.GetValueOrDefault( placementGroup.Id, new List<int>() );
             if ( groupRegistrationInstanceIds.Any() )
             {
-                hlInstanceName.Text = new RegistrationInstanceService( new RockContext() ).GetByIds( groupRegistrationInstanceIds ).Select( a => a.Name ).ToList().AsDelimited( ",", "and" );
+                hlInstanceName.Text = new RegistrationInstanceService( RockApp.Current.CreateRockContext() ).GetByIds( groupRegistrationInstanceIds ).Select( a => a.Name ).ToList().AsDelimited( ",", "and" );
                 hlInstanceName.Visible = true;
 
                 // if there is exactly one registration instance that has this as a placement group, set what instance this group placement is associated with
@@ -1191,7 +1192,7 @@ namespace RockWeb.Blocks.Event
         {
             List<Group> placementGroups;
             var groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             nbAddExistingPlacementMultipleGroupsWarning.Visible = false;
             nbAddExistingPlacementGroupWarning.Visible = false;
 
@@ -1317,7 +1318,7 @@ namespace RockWeb.Blocks.Event
         protected void gpNewPlacementGroupParentGroup_SelectItem( object sender, EventArgs e )
         {
             int groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
-            var selectedParentGroup = new GroupService( new RockContext() ).Get( gpNewPlacementGroupParentGroup.SelectedValue.AsInteger() );
+            var selectedParentGroup = new GroupService( RockApp.Current.CreateRockContext() ).Get( gpNewPlacementGroupParentGroup.SelectedValue.AsInteger() );
             if ( !IsValidParentGroup( selectedParentGroup, groupTypeId ) )
             {
                 var groupType = GroupTypeCache.Get( groupTypeId );
@@ -1360,7 +1361,7 @@ namespace RockWeb.Blocks.Event
         {
             int groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
             var selectedGroupIds = gpAddExistingPlacementGroup.SelectedValuesAsInt();
-            var selectedGroups = new GroupService( new RockContext() )
+            var selectedGroups = new GroupService( RockApp.Current.CreateRockContext() )
                 .Queryable().AsNoTracking()
                 .Where( g => selectedGroupIds.Contains( g.Id ) )
                 .ToList();
@@ -1427,7 +1428,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         private bool HasValidChildGroups( int parentGroupId, int groupTypeId, out string errorMessage )
         {
-            var childPlacementGroups = new GroupService( new RockContext() ).Queryable().Where( a => a.ParentGroupId == parentGroupId && a.IsActive == true ).ToList();
+            var childPlacementGroups = new GroupService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.ParentGroupId == parentGroupId && a.IsActive == true ).ToList();
             if ( childPlacementGroups.Count() == 0 )
             {
                 errorMessage = "The selected parent group does not have any active child groups.";
@@ -1470,7 +1471,7 @@ namespace RockWeb.Blocks.Event
 
             if ( dataViewFilter != null )
             {
-                CreateFilterControl( dataViewFilter, false, new RockContext() );
+                CreateFilterControl( dataViewFilter, false, RockApp.Current.CreateRockContext() );
             }
 
             AddRegistrantAttributeFilters( false );
@@ -1849,7 +1850,7 @@ namespace RockWeb.Blocks.Event
             int? feeId = ddlFeeName.SelectedValue.AsIntegerOrNull();
             if ( feeId.HasValue )
             {
-                var feeItems = new RegistrationTemplateFeeItemService( new RockContext() ).Queryable().Where( a => a.RegistrationTemplateFeeId == feeId );
+                var feeItems = new RegistrationTemplateFeeItemService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.RegistrationTemplateFeeId == feeId );
 
                 foreach ( var feeItem in feeItems )
                 {

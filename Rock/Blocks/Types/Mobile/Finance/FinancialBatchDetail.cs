@@ -38,6 +38,7 @@ using Rock.SystemGuid;
 using Rock.Web.Cache;
 
 using BatchStatus = Rock.Model.BatchStatus;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -391,7 +392,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <returns></returns>
         private async Task ExtractAndPopulateMicrDataAsync( int imageId, string idKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var cts = new CancellationTokenSource( TimeSpan.FromMinutes( 2 ) );
 

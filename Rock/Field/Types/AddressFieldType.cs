@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -60,7 +61,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new LocationService( rockContext );
                 var location = service.GetNoTracking( locationGuid.Value );
@@ -87,7 +88,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                location = new LocationService( new RockContext() ).Get( guid.Value );
+                location = new LocationService( RockApp.Current.CreateRockContext() ).Get( guid.Value );
             }
 
             if ( location != null )
@@ -139,7 +140,7 @@ namespace Rock.Field.Types
 
             var globalAttributesCache = GlobalAttributesCache.Get();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -190,7 +191,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new LocationService( rockContext ).Get( guid.Value );
             }
 
@@ -238,7 +239,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationId = new LocationService( rockContext ).GetId( guid.Value );
 
@@ -270,6 +271,24 @@ namespace Rock.Field.Types
                 new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.Country ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.GeoPoint ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.GeoFence ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Stores a Location reference rather than an address, which the name does not suggest.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the Location table, not its id or idKey and not a written out address. Only one value is stored, so a comma separated list is not valid here. The address is held on the Location record, so this refers to a location that already exists rather than carrying the address itself.",
+                Instructions = "To find the correct value, read the locations and take the guid of the one you want."
             };
         }
 
@@ -330,7 +349,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationService = new LocationService( rockContext );
                 string result = null;
@@ -398,7 +417,7 @@ namespace Rock.Field.Types
 
             if ( isGuid )
             {
-                location = new LocationService( new RockContext() ).Get( guid );
+                location = new LocationService( RockApp.Current.CreateRockContext() ).Get( guid );
             }
             else
             {
@@ -433,7 +452,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new LocationService( new RockContext() ).Get( guid );
+            var item = new LocationService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -445,7 +464,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new LocationService( new RockContext() ).Get( id ?? 0 );
+            var item = new LocationService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

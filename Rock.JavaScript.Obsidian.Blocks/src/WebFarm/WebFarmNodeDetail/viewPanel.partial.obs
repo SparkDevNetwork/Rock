@@ -51,6 +51,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import Chart from "@Obsidian/Controls/chart.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     const props = defineProps({
         modelValue: {
@@ -68,7 +69,23 @@
 
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
-    const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
+
+    const parsedChartData: ChartData = JSON.parse(props.modelValue?.chartData ?? "{}");
+    const chartDataset = parsedChartData?.datasets?.[0];
+
+    if (chartDataset) {
+        // Canvas can't resolve CSS custom properties, so the border color is resolved here and the
+        // translucent fill is derived from it, rather than being colored server-side.
+        const color = getCssVariableValue(chartDataset.borderColor as string, "#615FFF");
+        const rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+
+        chartDataset.borderColor = color;
+        chartDataset.backgroundColor = rgb
+            ? `rgba(${parseInt(rgb[1], 16)}, ${parseInt(rgb[2], 16)}, ${parseInt(rgb[3], 16)}, 0.25)`
+            : color;
+    }
+
+    const chartData = ref<ChartData>(parsedChartData);
     const options = ref<ChartOptions>({
         responsive: true,
         maintainAspectRatio: false,

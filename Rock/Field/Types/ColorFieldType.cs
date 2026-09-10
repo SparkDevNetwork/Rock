@@ -48,6 +48,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A single CSS colour. A hex value such as #4a90d9 is always accepted; whether a named colour is accepted depends on how the field is configured."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

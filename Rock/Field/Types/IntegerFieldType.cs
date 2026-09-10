@@ -199,6 +199,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A whole number. Rock parses this with Int32, so it must fit a 32 bit signed integer and must not carry a decimal point, thousands separators or a currency symbol."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

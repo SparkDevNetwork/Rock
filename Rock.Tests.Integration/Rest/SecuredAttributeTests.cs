@@ -9,6 +9,7 @@ using System.Web.Http.Controllers;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Controllers;
@@ -27,7 +28,7 @@ namespace Rock.Tests.Integration.Rest
         {
             // Set PIN authentication Active status to false
             var activeAttributeGuid = Guid.Parse( "f8926e80-1cd1-4dfd-ac1f-28b5dc75b207" );
-            var attributeService = new AttributeService( new RockContext() );
+            var attributeService = new AttributeService( RockApp.Current.CreateRockContext() );
             var activeAttribute = attributeService.Queryable().FirstOrDefault( a => a.Guid == activeAttributeGuid );
 
             var pinAuthentication = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );

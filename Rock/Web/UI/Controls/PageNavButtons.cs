@@ -19,6 +19,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Web.UI;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -266,7 +267,7 @@ namespace Rock.Web.UI.Controls
         {
             var pages = new List<PageCache>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( PageCache page in rootPage.GetPages( rockContext ) )
                 {

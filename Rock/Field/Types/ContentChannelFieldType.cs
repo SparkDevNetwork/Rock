@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -118,7 +119,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ContentChannelService( rockContext ).Get( guid.Value );
             }
 
@@ -149,7 +150,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelId = new ContentChannelService( rockContext ).GetId( guid.Value );
 
@@ -176,6 +177,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the ContentChannel table. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the content channels and take the guid of the one you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -207,7 +224,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var contentChannels = new ContentChannelService( new RockContext() ).Queryable()
+            var contentChannels = new ContentChannelService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( a => a.ContentChannelType.ShowInChannelList == true )
                 .OrderBy( d => d.Name )
                 .Select( a => new
@@ -273,7 +290,7 @@ namespace Rock.Field.Types
             Guid? guid = GetEditValue( control, configurationValues ).AsGuidOrNull();
             if ( guid.HasValue )
             {
-                return new ContentChannelService( new RockContext() ).GetId( guid.Value );
+                return new ContentChannelService( RockApp.Current.CreateRockContext() ).GetId( guid.Value );
             }
             else
             {
@@ -292,7 +309,7 @@ namespace Rock.Field.Types
             Guid? itemGuid = null;
             if ( id.HasValue && id > 0 )
             {
-                itemGuid = new ContentChannelService( new RockContext() ).GetGuid( id.Value );
+                itemGuid = new ContentChannelService( RockApp.Current.CreateRockContext() ).GetGuid( id.Value );
             }
 
             if ( itemGuid.HasValue )

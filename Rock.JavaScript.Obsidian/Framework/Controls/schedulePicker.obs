@@ -59,6 +59,16 @@
             type: Boolean,
             default: true
         },
+
+        /**
+         * When true, restrict the tree to schedules eligible for check-in
+         * (schedules whose Check-in Start Offset is set). Leaf items outside
+         * that set are pruned server-side.
+         */
+        includeCheckInSchedulesOnly: {
+            type: Boolean,
+            default: false
+        },
     });
 
     const emit = defineEmits<{
@@ -97,6 +107,7 @@
         provider.includeInactive = includeInactive.value;
         provider.includePublicOnly = props.showOnlyPublic;
         provider.includeCategoryGuids = props.includeCategoryGuids;
+        provider.includeCheckInSchedulesOnly = props.includeCheckInSchedulesOnly;
         provider.securityGrantToken = securityGrantToken.value;
 
         itemProvider.value = provider;
@@ -108,7 +119,7 @@
 
     // #region Watchers
 
-    watch([includeInactive, () => props.showOnlyPublic, () => props.includeCategoryGuids], refreshItemProvider);
+    watch([includeInactive, () => props.showOnlyPublic, () => props.includeCategoryGuids, () => props.includeCheckInSchedulesOnly], refreshItemProvider);
 
     // Keep security token up to date, but don't need refetch data
     watch(securityGrantToken, () => {

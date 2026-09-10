@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundChecksController"/> class.
         /// </summary>
-        public BackgroundChecksController() : base( new Rock.Model.BackgroundCheckService( new Rock.Data.RockContext() ) ) { } 
+        public BackgroundChecksController() : base( new Rock.Model.BackgroundCheckService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

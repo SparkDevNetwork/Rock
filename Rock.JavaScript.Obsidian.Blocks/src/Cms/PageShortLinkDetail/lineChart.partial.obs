@@ -34,6 +34,7 @@
 <script setup lang="ts">
     import { onMounted, PropType, shallowRef, watch } from "vue";
     import { Chart, ChartConfiguration, ChartData, ChartOptions, ChartType } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     type Rgba = {
         r: number;
@@ -116,10 +117,12 @@
     }
 
     /**
-     * Gets the standard color set for this chart.
+     * Gets the standard color set for this chart. This cycles through the
+     * shared categorical chart colors so it stays in sync with theme changes.
      */
     function getStandardColors(): Rgba[] {
-        const colors = ["#709ac7", "#80bb7c", "#f26863", "#80afcb", "#e48480", "#c48cb2", "#ea872e", "#f4cf68", "#968e8b", "#489b98", "#b18772", "#d67493"];
+        const fallbackColors = ["#709ac7", "#80bb7c", "#f26863", "#80afcb", "#e48480", "#c48cb2", "#ea872e", "#f4cf68"];
+        const colors = fallbackColors.map((fallback, index) => getCssVariableValue(`--color-categorical-${index + 1}`, fallback));
 
         return colors.map(c => parseCssColor(c));
     }

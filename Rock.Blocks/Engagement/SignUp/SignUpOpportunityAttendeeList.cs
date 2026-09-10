@@ -401,8 +401,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 return EditModeMessage.NotAuthorizedToView( Rock.Model.Group.FriendlyTypeName );
             }
 
-            var signUpGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SIGNUP_GROUP )?.Id ?? 0;
-            if ( group.GroupTypeId != signUpGroupTypeId && group.GroupType?.InheritedGroupTypeId != signUpGroupTypeId )
+            if ( !SignUpOpportunityHelper.IsSignUpGroupType( group.GroupTypeId ) )
             {
                 return "The selected group is not of a type that can be edited as a sign-up group.";
             }

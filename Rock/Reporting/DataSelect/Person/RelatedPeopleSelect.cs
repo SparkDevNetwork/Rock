@@ -24,6 +24,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -561,7 +562,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( groupType != null )
             {
-                var selectableRoles = new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupType.Id );
+                var selectableRoles = new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).GetByGroupTypeId( groupType.Id );
 
                 // Exclude the Owner Role from the list of selectable Roles because a Person cannot be related to themselves.
                 var ownerGuid = GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();

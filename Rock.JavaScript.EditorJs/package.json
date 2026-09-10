@@ -1,5 +1,9 @@
 {
   "private": true,
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "scripts": {
     "build": "webpack --no-color",
     "clean": "tsc --build --clean"

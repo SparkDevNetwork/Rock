@@ -17,6 +17,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -62,7 +63,7 @@ namespace Rock.Tests.Integration.Core.Storage
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var assetStorageProviderService = new AssetStorageProviderService( rockContext );
                     assetStorageProvider = assetStorageProviderService.Get( _assetStorageProviderServiceGuid );

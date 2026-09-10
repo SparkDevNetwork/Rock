@@ -18,6 +18,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -74,7 +75,7 @@ namespace Rock.Web.UI.Controls
                 picker.Items.Add( new ListItem() );
             }
 
-            var stepStatusService = new StepStatusService( new RockContext() );
+            var stepStatusService = new StepStatusService( RockApp.Current.CreateRockContext() );
             var statuses = stepStatusService.Queryable().AsNoTracking()
                 .Where( ss =>
                     ss.StepProgramId == picker.StepProgramId.Value &&

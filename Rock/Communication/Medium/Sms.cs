@@ -24,6 +24,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tasks;
@@ -109,7 +110,7 @@ namespace Rock.Communication.Medium
         {
             errorMessage = string.Empty;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // the person associated with the System Phone Number
                 Person toPerson = null;
@@ -241,7 +242,7 @@ namespace Rock.Communication.Medium
                 return;
             }
 
-            var personAliasService = new PersonAliasService( new RockContext() );
+            var personAliasService = new PersonAliasService( RockApp.Current.CreateRockContext() );
             var workflowAttributeValues = new Dictionary<string, string>();
             workflowAttributeValues.Add( "FromPhone", fromPhone );
             workflowAttributeValues.Add( "Message", message );
@@ -343,7 +344,7 @@ namespace Rock.Communication.Medium
         private int? GetCommunicationId( SystemPhoneNumberCache fromPhone, int fromPersonAliasId, int daysPastToSearch )
         {
             // This is the last communication
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var recipientService = new CommunicationRecipientService( rockContext );
                 var latestRecipientCommunication = recipientService

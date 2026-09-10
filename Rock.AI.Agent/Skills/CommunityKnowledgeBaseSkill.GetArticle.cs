@@ -53,7 +53,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentPurpose( "Reads a curated article and reveals what sits beneath it." )]
     [AgentUsage( "Read an article, then choose which of its child articles to open next. This is how a topic is explored a little at a time rather than all at once." )]
     [AgentToolPrerequisite( "Take articleKey from GetTopic or from a parent article's child list. Never construct or edit a key." )]
-    [AgentToolReturnDescription( "The article's full content, its summary, the topic it belongs to, and its child articles with their keys." )]
+    [AgentToolReturnDescription( "The article exactly as the knowledge service returns it, including its content, summary, the topic it belongs to, its retrieval_key, and its child articles with their own keys." )]
     [AgentToolGuid( "BCE7AD22-3768-4DEE-A2E1-71BC324905EE" )]
     [AgentToolPreamble( "Reading Topic Article" )]
     public async Task<AgentToolResult> GetArticle( string articleKey )
@@ -87,19 +87,8 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             return DescribeFailure( response );
         }
 
-        var data = response.Data;
-
-        var result = new ArticleResult
-        {
-            ArticleKey = data.GetString( "retrieval_key" ) ?? articleKey,
-            Topic = data.GetString( "topic" ),
-            Title = data.GetString( "title" ),
-            Summary = data.GetString( "summary" ),
-            Content = data.GetString( "content" ),
-            ChildArticles = ReadArticleSummaries( data.GetArray( "child_articles" ) )
-        };
-
-        return Success( result );
+        return Success( response.Data.ToPlainObject() )
+            .WithMetadata( response.Meta.ToPlainMetadata() );
     }
 
     #endregion

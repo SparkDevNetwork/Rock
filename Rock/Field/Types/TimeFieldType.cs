@@ -89,6 +89,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A time of day written as hours, minutes and seconds on a 24 hour clock, as in 13:30:00 for half past one in the afternoon. Rock parses this as a TimeSpan, so a display style value such as '1:30 PM' is not stored here."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

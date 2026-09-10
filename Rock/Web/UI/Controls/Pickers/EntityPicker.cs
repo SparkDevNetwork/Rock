@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -436,7 +437,7 @@ namespace Rock.Web.UI.Controls
             _etpEntityType.ID = this.ID + "_etpEntityType";
             _etpEntityType.Required = false;
             _etpEntityType.IncludeGlobalOption = false;
-            _etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).Queryable().Where( a => a.IsEntity == true && a.SingleValueFieldTypeId.HasValue ).ToList();
+            _etpEntityType.EntityTypes = new EntityTypeService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.IsEntity == true && a.SingleValueFieldTypeId.HasValue ).ToList();
             _etpEntityType.AutoPostBack = true;
             _etpEntityType.SelectedIndexChanged += _etpEntityType_SelectedIndexChanged;
             Controls.Add( _etpEntityType );

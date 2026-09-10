@@ -40,6 +40,7 @@ using Rock.ViewModels.Event;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -806,18 +807,24 @@ namespace Rock.Model
                 var startDateMin = allDistinctAttendanceOccurrence.Min( a => a.OccurrenceDate );
                 var endDateMax = allDistinctAttendanceOccurrence.Max( a => a.OccurrenceDate ).AddDays( 1 );
                 var filteredAttendanceOccurrence = allDistinctAttendanceOccurrence
-                    .GroupBy( o => o.Schedule )
-                    .SelectMany( kvp =>
-                    {
-                        // Remove Schedule Exclusions
-                        var schedule = kvp.Key;
-                        var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
-                        .Select( dt => dt.Date )
-                        .ToHashSet();
+                    // Occurrences created without a schedule (null) have no recurrence to validate against,
+                    // so pass them through the schedule-exclusion step unchanged instead of dropping them
+                    // (which would also throw a NullReferenceException below) (Fixes #7032).
+                    .Where( o => o.Schedule == null )
+                    .Concat( allDistinctAttendanceOccurrence
+                        .Where( o => o.Schedule != null )
+                        .GroupBy( o => o.Schedule )
+                        .SelectMany( kvp =>
+                        {
+                            // Remove Schedule Exclusions
+                            var schedule = kvp.Key;
+                            var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
+                            .Select( dt => dt.Date )
+                            .ToHashSet();
 
-                        return kvp
-                            .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
-                    } )
+                            return kvp
+                                .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
+                        } ) )
                     .GroupBy( o => o.Group.GroupType)
                     .SelectMany( kvp =>
                     {
@@ -826,7 +833,7 @@ namespace Rock.Model
                         var groupTypeExclusions = groupType.GroupScheduleExclusions;
                         return kvp
                             .Where( ao => !groupTypeExclusions.Any( e => e.StartDate <= ao.OccurrenceDate.Date && e.EndDate >= ao.OccurrenceDate ) );
-                    } ) 
+                    } )
                     .ToHashSet();
 
                 sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQueryList.Where( a => filteredAttendanceOccurrence.Contains( a.Occurrence ) )
@@ -908,18 +915,24 @@ namespace Rock.Model
                 var startDateMin = allDistinctAttendanceOccurrence.Min( a => a.OccurrenceDate );
                 var endDateMax = allDistinctAttendanceOccurrence.Max( a => a.OccurrenceDate ).AddDays( 1 );
                 var filteredAttendanceOccurrence = allDistinctAttendanceOccurrence
-                    .GroupBy( o => o.Schedule )
-                    .SelectMany( kvp =>
-                    {
-                        // Remove Schedule Exclusions
-                        var schedule = kvp.Key;
-                        var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
-                        .Select( dt => dt.Date )
-                        .ToHashSet();
+                    // Occurrences created without a schedule (null) have no recurrence to validate against,
+                    // so pass them through the schedule-exclusion step unchanged instead of dropping them
+                    // (which would also throw a NullReferenceException below) (Fixes #7032).
+                    .Where( o => o.Schedule == null )
+                    .Concat( allDistinctAttendanceOccurrence
+                        .Where( o => o.Schedule != null )
+                        .GroupBy( o => o.Schedule )
+                        .SelectMany( kvp =>
+                        {
+                            // Remove Schedule Exclusions
+                            var schedule = kvp.Key;
+                            var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
+                            .Select( dt => dt.Date )
+                            .ToHashSet();
 
-                        return kvp
-                            .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
-                    } )
+                            return kvp
+                                .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
+                        } ) )
                     .GroupBy( o => o.Group.GroupType )
                     .SelectMany( kvp =>
                     {
@@ -2319,7 +2332,7 @@ namespace Rock.Model
             }
 
             // use a new RockContext to use for adding attending resources so that get can get saved to the database without saving any changes associated with the current rockContext
-            var groupAssignmentAttendanceRockContext = new RockContext();
+            var groupAssignmentAttendanceRockContext = RockApp.Current.CreateRockContext();
             var groupAssignmentAttendanceService = new AttendanceService( groupAssignmentAttendanceRockContext );
 
             /* 2020-08-03 MDP
@@ -3086,7 +3099,7 @@ namespace Rock.Model
             }
 
             var attendanceImportList = attendancesImport.Attendances;
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             DateTime importDateTime = RockDateTime.Now;
 
@@ -3251,7 +3264,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -3321,7 +3334,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

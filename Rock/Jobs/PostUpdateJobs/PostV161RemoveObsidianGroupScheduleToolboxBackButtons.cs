@@ -21,6 +21,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 
 using System.ComponentModel;
+using Rock.Configuration;
 
 namespace Rock.Jobs.PostUpdateJobs
 {
@@ -48,7 +49,7 @@ namespace Rock.Jobs.PostUpdateJobs
         /// <inheritdoc />
         public override void Execute()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 RemoveBackButtons( rockContext );
                 FlushAttributesFromCache( rockContext );

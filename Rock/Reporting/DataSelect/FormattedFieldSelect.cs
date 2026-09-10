@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.UI.Controls;
 using Newtonsoft.Json;
@@ -527,7 +528,7 @@ namespace Rock.Reporting.DataSelect
         static public List<string> GetNavigationPropertyNames( Type entityType )
         {
             var dbContext = Rock.Reflection.GetDbContextForEntityType( entityType );
-            var workspace = ( ( IObjectContextAdapter ) new RockContext() ).ObjectContext.MetadataWorkspace;
+            var workspace = ( ( IObjectContextAdapter ) RockApp.Current.CreateRockContext() ).ObjectContext.MetadataWorkspace;
             var itemCollection = ( ObjectItemCollection ) ( workspace.GetItemCollection( DataSpace.OSpace ) );
             var metaEntityType = itemCollection
                 .OfType<EntityType>()

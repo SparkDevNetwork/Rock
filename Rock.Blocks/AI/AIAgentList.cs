@@ -140,6 +140,7 @@ namespace Rock.Blocks.AI
                 .AddTextField( "role", a => a.AgentType == AgentType.Chat ? a.GetAdditionalSettings<ChatAgentSettings>().Role.ToString() : string.Empty )
                 .AddTextField( "type", a => a.AgentType.GetDisplayName() )
                 .AddTextField( "audience", a => a.AudienceType.GetDisplayName() )
+                .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
@@ -166,6 +167,11 @@ namespace Rock.Blocks.AI
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {AIAgent.FriendlyTypeName}." );
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( $"This {AIAgent.FriendlyTypeName} is a system agent and cannot be deleted." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

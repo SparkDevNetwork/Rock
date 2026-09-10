@@ -32,9 +32,6 @@ describe("Issue 5610", () => {
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
 
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
-
         const instance = mountBlock(RegistrationEntry,
             getConfigurationValues(),
             blockActions);
@@ -56,13 +53,16 @@ describe("Issue 5610", () => {
             expect(instance.find(".registrationentry-registrant > div:nth-child(1)").isVisible()).toBe(true);
         });
 
-        // Clear the family member selection. I can't find a better way to do
-        // this because Ant Select does not have an actual HTML element backing
-        // it that we can change to trigger the update.
+        // Select "New Family Member" so the registrant is treated as a new
+        // person with blank, editable attributes. The Family Member dropdown is
+        // required, so it must have a value for form navigation to proceed. I
+        // can't find a better way to set this because Ant Select does not have
+        // an actual HTML element backing it that we can change to trigger the
+        // update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
             .findAllComponents({ name: "DropDownList" })[0]
             .vm
-            .$emit("update:modelValue", "");
+            .$emit("update:modelValue", "NEW");
 
         // Because we are modifying data directly, wait for all the computations
         // to finish in Vue.
@@ -123,9 +123,6 @@ describe("Issue 5610", () => {
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
 
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
-
         const instance = mountBlock(RegistrationEntry,
             getConfigurationValues(),
             blockActions, {
@@ -148,13 +145,16 @@ describe("Issue 5610", () => {
             expect(instance.find(".registrationentry-registrant > div:nth-child(1)").isVisible()).toBe(true);
         });
 
-        // Clear the family member selection. I can't find a better way to do
-        // this because Ant Select does not have an actual HTML element backing
-        // it that we can change to trigger the update.
+        // Select "New Family Member" so the registrant is treated as a new
+        // person with blank, editable attributes. The Family Member dropdown is
+        // required, so it must have a value for form navigation to proceed. I
+        // can't find a better way to set this because Ant Select does not have
+        // an actual HTML element backing it that we can change to trigger the
+        // update.
         instance.get(".registrationentry-registrant > div:nth-child(1)")
             .findAllComponents({ name: "DropDownList" })[0]
             .vm
-            .$emit("update:modelValue", "");
+            .$emit("update:modelValue", "NEW");
 
         // Because we are modifying data directly, wait for all the computations
         // to finish in Vue.
@@ -214,9 +214,6 @@ describe("Issue 5610", () => {
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
 
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
-
         const instance = mountBlock(RegistrationEntry,
             getConfigurationValues(),
             blockActions, {
@@ -260,9 +257,6 @@ describe("Issue 5610", () => {
         const blockActions = mockBlockActions({
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
-
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
 
         const instance = mountBlock(RegistrationEntry,
             getConfigurationValues(),

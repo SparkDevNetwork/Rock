@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionTypeSourcesController"/> class.
         /// </summary>
-        public ConnectionTypeSourcesController() : base( new Rock.Model.ConnectionTypeSourceService( new Rock.Data.RockContext() ) ) { } 
+        public ConnectionTypeSourcesController() : base( new Rock.Model.ConnectionTypeSourceService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

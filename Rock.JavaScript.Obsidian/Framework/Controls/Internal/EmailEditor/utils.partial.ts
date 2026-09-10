@@ -820,14 +820,12 @@ export function ensureBodyWrapsEmailWrapper(document: Document): HTMLTableElemen
     wrapperTable.setAttribute("width", "100%");
     wrapperTable.setAttribute("role", "presentation");
     wrapperTable.style.minWidth = "100%";
-    wrapperTable.style.height = "100%"; // Forces full-height behavior
 
     const wrapperTbody = document.createElement("tbody");
     const wrapperRow = document.createElement("tr");
     const wrapperCell = document.createElement("td");
     wrapperCell.setAttribute("align", "center");
     wrapperCell.setAttribute("valign", "top"); // Prevent content from being squashed
-    wrapperCell.style.height = "100%"; // Ensures row stretches
 
     // Create `.email-row` (full width row)
 
@@ -4164,7 +4162,7 @@ function addOrUpdateMetaTag(emailDocument: Document, name: string, content: stri
 }
 
 function createBodyGlobalAdapter(): BodyGlobalAdapter {
-    const globalVersions = ["v0", "v17.3-alpha", "v18.2", "v19.1", "v19.3"] as const;
+    const globalVersions = ["v0", "v17.3-alpha", "v18.2", "v19.1", "v19.3", "v20.1"] as const;
     type BodyGlobalVersion = (typeof globalVersions)[number];
 
     const attributeValues = {
@@ -4505,6 +4503,56 @@ function createBodyGlobalAdapter(): BodyGlobalAdapter {
                 emailDocument.querySelectorAll(`.component:not([data-component-background-color="true"]) .padding-wrapper-for-row`).forEach(element => {
                     setAttributePropertyValue(element, "bgcolor", bgcolorValue);
                 });
+            }
+        },
+
+        /*
+            - Removes the `height: 100%` declarations on `html`, `body`, and
+              `.email-wrapper` (both the `rock-styles` rules and the inline styles
+              on the wrapper table and its cell). Clients that honor them (e.g.
+              iOS Mail) stretch the wrapper past its content and expose the gray
+              body background as a scrollable blank area below short emails. The
+              mobile `min-height: 100vh` counterpart was removed in v19.1.
+              Existing emails are repaired on load: the version bump makes
+              migrateGlobalProps re-run this write.
+         */
+        "v20.1": {
+            version: "v20.1",
+
+            readGlobalProps(emailDocument: Document): BodyGlobalProps {
+                return adapters["v19.3"].readGlobalProps(emailDocument);
+            },
+
+            writeGlobalProps(emailDocument: Document, globalProps: BodyGlobalProps): void {
+                adapters["v19.3"].writeGlobalProps(emailDocument, globalProps);
+
+                addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v20.1");
+
+                const updatedRules: CSSRule[] = [];
+
+                const removeFullHeight = (rule: CSSStyleRule): void => {
+                    if (rule.style.getPropertyValue("height") === "100%") {
+                        rule.style.removeProperty("height");
+                        updatedRules.push(rule);
+                    }
+                };
+
+                // Remove `height: 100%` from the `rock-styles` rules.
+                findRockStyleRules(emailDocument, "html, body").forEach(removeFullHeight);
+                findRockStyleRules(emailDocument, `.${EmailWrapperCssClass}`).forEach(removeFullHeight);
+
+                synchronizeRulesToDom(updatedRules);
+
+                // Remove the same declaration inlined on the wrapper table and its cell.
+                const wrapperTable = emailDocument.querySelector(`table.${EmailWrapperCssClass}`);
+                if (isHTMLElement(wrapperTable) && wrapperTable.style.getPropertyValue("height") === "100%") {
+                    wrapperTable.style.removeProperty("height");
+                }
+
+                const wrapperCell = wrapperTable?.querySelector(":scope > tbody > tr > td");
+                if (isHTMLElement(wrapperCell) && wrapperCell.style.getPropertyValue("height") === "100%") {
+                    wrapperCell.style.removeProperty("height");
+                }
             }
         }
     };

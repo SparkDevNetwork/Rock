@@ -313,9 +313,10 @@ namespace Rock.Blocks.Store
         /// <returns>The Link Organization page URL.</returns>
         private string GetLinkOrganizationPageUrl()
         {
+            // Use the page reference rather than RequestUri, which points at the BlockActions API endpoint during a block reload rather than this page.
             var queryParams = new Dictionary<string, string>
             {
-                { "ReturnUrl", RequestContext.RequestUri?.PathAndQuery }
+                { "ReturnUrl", RequestContext.PageReference?.BuildUrl() }
             };
 
             return this.GetLinkedPageUrl( AttributeKey.LinkOrganizationPage, queryParams );

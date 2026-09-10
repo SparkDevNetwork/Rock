@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -50,7 +51,7 @@ namespace Rock.Field.Types
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var workflowTypeName = new WorkflowTypeService( rockContext ).GetSelect( guid.Value, a => a.Name );
                         if ( workflowTypeName != null )
@@ -127,7 +128,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new WorkflowTypeService( rockContext ).Get( guid.Value );
             }
 
@@ -148,7 +149,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowTypeId = new WorkflowTypeService( rockContext ).GetId( guid.Value );
 
@@ -177,6 +178,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the WorkflowType table. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the workflow types and take the guid of the one you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -224,7 +241,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         itemGuid = new WorkflowTypeService( rockContext ).GetGuid( itemId.Value );
                     }
@@ -254,7 +271,7 @@ namespace Rock.Field.Types
                 // get the item (or null) and set it
                 if ( guid.HasValue )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     item = new WorkflowTypeService( rockContext ).GetNoTracking( guid.Value );
                 }
 
@@ -271,7 +288,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            return new WorkflowTypeService( new RockContext() ).GetId( guid );
+            return new WorkflowTypeService( RockApp.Current.CreateRockContext() ).GetId( guid );
         }
 
         /// <summary>
@@ -282,7 +299,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new WorkflowTypeService( new RockContext() ).Get( id ?? 0 );
+            var item = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

@@ -320,6 +320,18 @@ Guid - ContentChannelItem Guid";
             public int ItemId { get; set; }
 
             public DateTime ExpiresAt { get; set; }
+
+            /// <summary>
+            /// The friendly referrer name read at render time, when the Referer header is still the
+            /// visitor's true referrer rather than this page.
+            /// </summary>
+            public string Referrer { get; set; }
+
+            /// <summary>
+            /// The page URL read at render time so the registration action can parse the
+            /// UTM parameters the visitor actually arrived with.
+            /// </summary>
+            public string PageUrl { get; set; }
         }
 
         #endregion Keys and Constants
@@ -525,11 +537,16 @@ Guid - ContentChannelItem Guid";
                 InteractionOperation = "View",
                 PersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId,
                 UserAgent = RequestContext?.ClientInformation?.UserAgent,
-                IPAddress = RequestContext?.ClientInformation?.IpAddress
+                IPAddress = RequestContext?.ClientInformation?.IpAddress,
+                // Captured when the token was issued, matching the page view convention of storing
+                // the friendly referrer name in ChannelCustomIndexed1.
+                InteractionChannelCustomIndexed1 = payload.Referrer,
+                // The page URL captured when the token was issued; CreateInteraction parses the
+                // utm_ parameters from it, matching how page view interactions are recorded.
+                InteractionData = payload.PageUrl
             };
 
-            // The registration request carries the visitor's UTM cookie (the page-render request
-            // strips it from the request collection), so read the UTM values here to attribute them.
+            // The UTM cookie is only a fallback for fields the page URL did not supply.
             var utmInfo = UtmHelper.GetUtmCookieDataFromRequest( RequestContext );
             UtmHelper.AddUtmInfoToInteractionTransactionInfo( info, utmInfo );
 
@@ -649,13 +666,27 @@ Guid - ContentChannelItem Guid";
                 return bag;
             }
 
+            // The Referer header is only correct on this navigation request. The registration block
+            // action that actually writes the interaction sees this page as its own referrer, so the
+            // value is captured here and carried forward inside the token.
+            var referrerUrl = RequestContext.GetHeader( "Referer" ).FirstOrDefault();
+            var referrer = Uri.TryCreate( referrerUrl, UriKind.Absolute, out var referrerUri )
+                ? ReferrerHelper.GetFriendlyReferrerNameFromHost( referrerUri.Host )
+                : null;
+
+            // The registration block action's own URL is the API endpoint, so the page URL with its
+            // utm_ parameters has to be captured here and carried forward inside the token.
+            var pageUrl = RequestContext.RequestUri?.ToString();
+
             // Encrypting the payload (rather than sending Item Id + Guid as separate fields) means
             // the client cannot point the registration at a different item or extend the lifetime.
             var payload = new InteractionTokenPayload
             {
                 Guid = Guid.NewGuid(),
                 ItemId = contentChannelItem.Id,
-                ExpiresAt = RockDateTime.Now.Add( InteractionTokenLifetime )
+                ExpiresAt = RockDateTime.Now.Add( InteractionTokenLifetime ),
+                Referrer = referrer,
+                PageUrl = pageUrl
             };
 
             bag.InteractionToken = Rock.Security.Encryption.EncryptString( payload.ToJson() );
@@ -1138,7 +1169,7 @@ Guid - ContentChannelItem Guid";
 
                 Reason: Prevent ObjectDisposedException on cached items during Lava rendering.
             */
-            var itemRockContext = new RockContext();
+            var itemRockContext = RockApp.Current.CreateRockContext();
             var query = new ContentChannelItemService( itemRockContext )
                 .Queryable()
                 .Include( c => c.ContentChannel );

@@ -17,6 +17,7 @@
                              v-model:recipients="recipients"
                              v-model:segmentCriteria="segmentCriteria"
                              :allowedMediums="allowedMediums"
+                             :standaloneMediums="standaloneMediums"
                              :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                              :customText="customText"
                              :communicationId="communicationId"
@@ -446,17 +447,17 @@
             && isBulkEmailThresholdExceeded();
     });
 
-    const allowedMediums = computed<CommunicationType[]>(() => {
-        const allowedCommunicationTypes: CommunicationType[] = [];
+    function mapMediumsToCommunicationTypes(mediums: ListItemBag[] | null | undefined): CommunicationType[] {
+        const communicationTypes: CommunicationType[] = [];
 
-        function tryAdd(allowedCommunicationType: CommunicationType): void {
-            if (!allowedCommunicationTypes.includes(allowedCommunicationType)) {
-                allowedCommunicationTypes.push(allowedCommunicationType);
+        function tryAdd(communicationType: CommunicationType): void {
+            if (!communicationTypes.includes(communicationType)) {
+                communicationTypes.push(communicationType);
             }
         }
 
-        if (config.mediums?.length) {
-            for (const mediumGuid of config.mediums.filter(medium => !!medium.value).map(medium => medium.value!)) {
+        if (mediums?.length) {
+            for (const mediumGuid of mediums.filter(medium => !!medium.value).map(medium => medium.value!)) {
                 if (areEqual(mediumGuid, EntityType.CommunicationMediumEmail)) {
                     tryAdd(CommunicationType.Email);
                 }
@@ -472,8 +473,16 @@
             }
         }
 
-        return allowedCommunicationTypes;
-    });
+        return communicationTypes;
+    }
+
+    // The mediums Recipient Preference composes and delivers through (Email and SMS). Used for the
+    // editor flow, recipient counts, and confirmation.
+    const allowedMediums = computed<CommunicationType[]>(() => mapMediumsToCommunicationTypes(config.mediums));
+
+    // The standalone medium options the sender may directly choose. Honors exactly the block setting,
+    // so a medium excluded from the setting (for example SMS) is not offered as a standalone option.
+    const standaloneMediums = computed<CommunicationType[]>(() => mapMediumsToCommunicationTypes(config.standaloneMediums));
 
     const communicationTemplateListItems = computed<ListItemBag[]>(() => {
         if (!communicationTemplates.value) {

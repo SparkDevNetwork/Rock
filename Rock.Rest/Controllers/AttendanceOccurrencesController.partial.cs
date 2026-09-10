@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.Http;
 using Ical.Net;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -41,7 +42,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "D5B342D0-CDFF-4895-9716-B1EEEF19C38C" )]
         public List<GroupOccurrenceResponse> GetFutureGroupOccurrences( int groupId, DateTime? toDateTime = null, string locationIds = null, string scheduleIds = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Configuration.ProxyCreationEnabled = false;
                 var group = new GroupService( rockContext ).Get( groupId );
@@ -67,7 +68,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "07AE6B44-790D-42C5-AA02-BBEFA63E97ED" )]
         public AttendanceOccurrence CreateGroupOccurrence( int groupId, DateTime occurrenceDate, int? scheduleId = null, int? locationId = null )
         {
-            return new AttendanceOccurrenceService( new RockContext() ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
+            return new AttendanceOccurrenceService( RockApp.Current.CreateRockContext() ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
         }
 
         /// <summary>

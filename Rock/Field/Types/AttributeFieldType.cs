@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -62,7 +63,7 @@ namespace Rock.Field.Types
                     var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
                     if ( entityType != null )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             Rock.Model.AttributeService attributeService = new Model.AttributeService( rockContext );
                             IQueryable<Rock.Model.Attribute> attributeQuery;
@@ -145,7 +146,7 @@ namespace Rock.Field.Types
                 {
                     if ( rockContext == null )
                     {
-                        rockContext = new RockContext();
+                        rockContext = RockApp.Current.CreateRockContext();
                         attributeService = new AttributeService( rockContext );
                     }
 
@@ -276,7 +277,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new Model.AttributeService( rockContext ).Get( guid.Value );
             }
 
@@ -313,7 +314,7 @@ namespace Rock.Field.Types
                 {
                     if ( rockContext == null )
                     {
-                        rockContext = new RockContext();
+                        rockContext = RockApp.Current.CreateRockContext();
                         attributeService = new AttributeService( rockContext );
                     }
 
@@ -351,6 +352,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of an Attribute. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the attributes of the entity type this setting is filtered to and take the guid of the one you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -385,7 +402,7 @@ namespace Rock.Field.Types
             etp.Label = "Entity Type";
             etp.Help = "The Entity Type to select attributes for.";
 
-            var entityTypeList = new Model.EntityTypeService( new RockContext() ).GetEntities().ToList();
+            var entityTypeList = new Model.EntityTypeService( RockApp.Current.CreateRockContext() ).GetEntities().ToList();
             etp.EntityTypes = entityTypeList;
 
             // Add checkbox for deciding if the defined values list is renedered as a drop
@@ -551,7 +568,7 @@ namespace Rock.Field.Types
                     var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
                     if ( entityType != null )
                     {
-                        Rock.Model.AttributeService attributeService = new Model.AttributeService( new RockContext() );
+                        Rock.Model.AttributeService attributeService = new Model.AttributeService( RockApp.Current.CreateRockContext() );
                         IQueryable<Rock.Model.Attribute> attributeQuery;
                         if ( configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) && configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
                         {

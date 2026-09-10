@@ -43,6 +43,9 @@ export type CommunicationEntryWizardCommunicationTemplateListItemBag = {
     /** Gets or sets a value indicating whether this template supports Email communications. */
     isEmailSupported?: boolean | null;
 
+    /** Gets or sets a value indicating whether this template supports Push communications. */
+    isPushSupported?: boolean | null;
+
     /** Gets or sets a value indicating whether this template supports SMS communications. */
     isSmsSupported?: boolean | null;
 

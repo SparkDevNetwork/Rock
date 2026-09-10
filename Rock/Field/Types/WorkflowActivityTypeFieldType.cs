@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -205,7 +206,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new WorkflowActivityTypeService( rockContext ).Get( guid.Value );
             }
 
@@ -225,7 +226,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowActivityTypeId = WorkflowActivityTypeCache.GetId( guid.Value );
 
@@ -254,6 +255,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of an activity type belonging to the workflow type this setting is part of. Not its id or idKey.",
+                Instructions = "To find the correct value, read the workflow type this setting belongs to and take the guid of the activity you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -290,7 +307,7 @@ namespace Rock.Field.Types
             // Add empty field because the default value dropdown list will only be populated after the workflow type index have been changed.
             ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
-            Rock.Model.WorkflowTypeService workflowTypeService = new Model.WorkflowTypeService( new RockContext() );
+            Rock.Model.WorkflowTypeService workflowTypeService = new Model.WorkflowTypeService( RockApp.Current.CreateRockContext() );
             foreach ( var workflowType in workflowTypeService.Queryable().OrderBy( w => w.Name ) )
             {
                 ddl.Items.Add( new ListItem( workflowType.Name, workflowType.Guid.ToString() ) );
@@ -376,7 +393,7 @@ namespace Rock.Field.Types
 
             if ( workflowTypeGuid.HasValue )
             {
-                var workflowTypeService = new WorkflowTypeService( new RockContext() );
+                var workflowTypeService = new WorkflowTypeService( RockApp.Current.CreateRockContext() );
                 workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
             }
 
@@ -456,7 +473,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new WorkflowActivityTypeService( new RockContext() ).Get( guid );
+            var item = new WorkflowActivityTypeService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -468,7 +485,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new WorkflowActivityTypeService( new RockContext() ).Get( id ?? 0 );
+            var item = new WorkflowActivityTypeService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Web;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -32,7 +33,7 @@ namespace Rock.Model
             string virtualPath = string.Empty;
             if ( fileId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) fileId );
                     if ( binaryFile != null )

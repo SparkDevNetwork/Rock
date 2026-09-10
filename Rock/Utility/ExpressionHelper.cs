@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -189,6 +190,89 @@ namespace Rock.Utility
         }
 
         /// <summary>
+        /// Builds the filter expression for a single attribute filter whose comparison
+        /// and value were supplied by a remote client, such as an Obsidian block.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is the counterpart to <c>IFieldType.ApplyAttributeQueryFilter</c>, which
+        /// is only usable from WebForms because it reads the selection out of a server
+        /// control. The client value is handed to the field type for conversion to its
+        /// private filter representation, so field-type-specific encodings are honored
+        /// and the resulting filter values match what the WebForms path produced.
+        /// </para>
+        /// <para>
+        /// Combining the result is left to the caller, because blocks legitimately
+        /// differ: some AND every filter onto a single query, some group by attribute
+        /// qualifier, and some resolve matching identifiers separately.
+        /// </para>
+        /// </remarks>
+        /// <param name="serviceInstance">The service for the entity being filtered.</param>
+        /// <param name="parameterExpression">The parameter expression to build against. Pass this same instance to the <c>Where</c> call that consumes the result.</param>
+        /// <param name="attribute">The attribute being filtered on.</param>
+        /// <param name="publicComparisonValue">The comparison type and value as supplied by the client. A <c>null</c> comparison type is preserved, letting checkbox-style field types apply their natural "any of" filter.</param>
+        /// <returns>The filter expression, or <c>null</c> when the selection should not filter anything.</returns>
+        [RockInternal( "21.0" )]
+        public static Expression GetAttributeFilterExpression( IService serviceInstance, ParameterExpression parameterExpression, AttributeCache attribute, ComparisonValue publicComparisonValue )
+        {
+            if ( serviceInstance == null || parameterExpression == null || attribute == null || publicComparisonValue == null )
+            {
+                return null;
+            }
+
+            var field = attribute.FieldType?.Field;
+
+            if ( field == null )
+            {
+                return null;
+            }
+
+            // Discard the value for IsBlank and IsNotBlank, as the WebForms
+            // GetFilterValues did. Filter controls hide the value input for those
+            // comparisons but keep whatever was entered before, and field types that
+            // compare the string Value column would match that stale text instead of
+            // blanks. Every other empty value is passed through so the field type's
+            // own empty-value rules apply, such as EqualTo with no value becoming
+            // IsBlank.
+            var isBlankComparison = publicComparisonValue.ComparisonType == ComparisonType.IsBlank
+                || publicComparisonValue.ComparisonType == ComparisonType.IsNotBlank;
+
+            var comparisonValue = new ComparisonValue
+            {
+                ComparisonType = publicComparisonValue.ComparisonType,
+                Value = isBlankComparison ? string.Empty : publicComparisonValue.Value
+            };
+
+            var filterValues = field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues )
+                .FromJsonOrNull<List<string>>();
+
+            if ( filterValues == null || !filterValues.Any() )
+            {
+                return null;
+            }
+
+            // Not limited to filterable attributes, matching the WebForms
+            // ApplyAttributeQueryFilter. HasFilterControl only reports whether a
+            // field type renders a WebForms filter control, so limiting on it here
+            // would drop attributes that an Obsidian client can still filter on.
+            var entityField = EntityHelper.GetEntityFieldForAttribute( attribute, false );
+
+            if ( entityField == null )
+            {
+                return null;
+            }
+
+            var attributeExpression = GetAttributeExpression( serviceInstance, parameterExpression, entityField, filterValues );
+
+            if ( attributeExpression == null || attributeExpression is NoAttributeFilterExpression )
+            {
+                return null;
+            }
+
+            return attributeExpression;
+        }
+
+        /// <summary>
         /// Builds an expression for an attribute field
         /// </summary>
         /// <param name="rockContext">The database context.</param>
@@ -352,7 +436,7 @@ namespace Rock.Utility
                             var qualifierGroupTypeId = attributeCache.EntityTypeQualifierValue.AsInteger();
 
                             List<int> inheritedGroupTypeIds = null;
-                            using (var groupTypeRockContext = new RockContext() )
+                            using (var groupTypeRockContext = RockApp.Current.CreateRockContext() )
                             {
                                 var groupType = new GroupTypeService( groupTypeRockContext ).Get( qualifierGroupTypeId );
                                 inheritedGroupTypeIds = groupType.GetAllDependentGroupTypeIds( groupTypeRockContext );

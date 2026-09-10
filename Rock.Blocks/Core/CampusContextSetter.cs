@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Model;
@@ -343,7 +344,7 @@ namespace Rock.Blocks.Core
         private Campus SetCampusContext( int campusId, bool refreshPage, string originalUrl, out string redirectUrl )
         {
             var pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
-            var campus = new CampusService( new RockContext() ).Get( campusId );
+            var campus = new CampusService( RockApp.Current.CreateRockContext() ).Get( campusId );
 
             if ( campus != null )
             {

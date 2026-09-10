@@ -22,6 +22,7 @@ using Http.TestLibrary;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
@@ -73,7 +74,7 @@ namespace Rock.Tests.Integration.Core.Storage
 
         private AssetStorageProvider GetAssetStorageProvider()
         {
-            var assetStorageService = new AssetStorageProviderService( new RockContext() );
+            var assetStorageService = new AssetStorageProviderService( RockApp.Current.CreateRockContext() );
             AssetStorageProvider assetStorageProvider = assetStorageService.Get( 1 ); // this is the stock, local file system provider
             assetStorageProvider.LoadAttributes();
             assetStorageProvider.SetAttributeValue( "RootFolder", "TestFolder" );

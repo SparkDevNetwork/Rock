@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -100,7 +101,7 @@ namespace Rock.Pbx
         /// <returns></returns>
         public static int CdrPersonLookupFromPhone(string phoneNumber)
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );

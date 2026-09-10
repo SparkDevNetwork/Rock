@@ -32,6 +32,7 @@ using Rock.Model.Groups.Group.Options;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -1112,7 +1113,7 @@ namespace Rock.Model
             List<string> familyMemberNames = new List<string>();
             string primaryLastName = string.Empty;
 
-            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext ?? new RockContext() );
+            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext ?? RockApp.Current.CreateRockContext() );
             var groupId = group.Id;
 
             var familyMembersQry = groupMemberService.Queryable( false ).Where( a => a.GroupId == groupId );
@@ -1892,7 +1893,7 @@ namespace Rock.Model
                 return null;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
 
             var group = groupService.Queryable()
@@ -1951,6 +1952,13 @@ namespace Rock.Model
             targetGroup.CreatedByPersonAliasId = copyGroupOptions.CreatedByPersonAliasId;
             targetGroup.ModifiedByPersonAliasId = copyGroupOptions.CreatedByPersonAliasId;
             targetGroup.IsSystem = false;
+
+            // Clear the chat channel key so the copy doesn't share the source group's external chat channel. Each
+            // group must have its own unique key; leaving the source's value here would cause both groups to resolve
+            // to the same channel, incorrectly-populating a group. If enabled, the next ChatSync will assign this
+            // copy its own key.
+            // See https://github.com/SparkDevNetwork/Rock/issues/7007
+            targetGroup.ChatChannelKey = null;
 
             groupGuidDictionary.Add( sourceGroup.Guid, targetGroup.Guid );
 
@@ -2203,7 +2211,7 @@ namespace Rock.Model
         /// <param name="groupId">The group identifier.</param>
         public static void DeleteSecurityRoleGroup( int groupId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.WrapTransaction( () =>
             {
                 // Get the target group.

@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -189,7 +190,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             string result = "Group Member";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupGuids = selection.Split( ',' ).AsGuidList();
             var groups = new GroupService( rockContext ).GetByGuids( groupGuids );
 
@@ -252,7 +253,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             GroupPicker groupPicker = controls[0] as GroupPicker;
             List<int> groupIdList = groupPicker.SelectedValues.AsIntegerList();
-            var groupGuids = new GroupService( new RockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
+            var groupGuids = new GroupService( RockApp.Current.CreateRockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
 
             return groupGuids.AsDelimited( "," );
         }
@@ -273,7 +274,7 @@ namespace Rock.Reporting.DataFilter.Person
             GroupPicker groupPicker = controls[0] as GroupPicker;
 
             List<Guid> groupGuids = selection.Split( ',' ).AsGuidList();
-            var groups = new GroupService( new RockContext() ).GetByGuids( groupGuids );
+            var groups = new GroupService( RockApp.Current.CreateRockContext() ).GetByGuids( groupGuids );
             if ( groups != null )
             {
                 groupPicker.SetValues( groups );

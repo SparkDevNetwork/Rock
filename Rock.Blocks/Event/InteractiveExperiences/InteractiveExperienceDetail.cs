@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
@@ -72,7 +73,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag>();
 
@@ -485,7 +486,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -949,7 +950,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -975,7 +976,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new InteractiveExperienceService( rockContext );
                 var binaryFileService = new BinaryFileService( rockContext );
@@ -1055,7 +1056,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 // manipulation of entities we needed this. Otherwise the entity
                 // loaded from the old RockContext would pull a non-proxy object
                 // from cache which causes ToListItemBag() to fail.
-                using ( var freshRockContext = new RockContext() )
+                using ( var freshRockContext = RockApp.Current.CreateRockContext() )
                 {
                     entity = new InteractiveExperienceService( freshRockContext ).Get( entity.Id );
                     entity.LoadAttributes( rockContext );
@@ -1073,7 +1074,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new InteractiveExperienceService( rockContext );
                 var interactiveExperienceAnswerService = new InteractiveExperienceAnswerService( rockContext );
@@ -1114,7 +1115,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1168,7 +1169,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult SaveAction( string idKey, ValidPropertiesBox<InteractiveExperienceActionBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( idKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1196,7 +1197,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 // Using a second context isn't normal, but we need to ensure we get
                 // a proxy object back if we created a new action rather than
                 // the cached non-proxy version.
-                using ( var freshRockContext = new RockContext() )
+                using ( var freshRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var freshAction = new InteractiveExperienceActionService( freshRockContext ).Get( box.Bag.Guid );
 
@@ -1218,7 +1219,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult ReorderAction( string idKey, Guid actionGuid, Guid? beforeActionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( idKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1244,7 +1245,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult DeleteAction( string idKey, Guid actionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var actionService = new InteractiveExperienceActionService( rockContext );
                 var answerService = new InteractiveExperienceAnswerService( rockContext );

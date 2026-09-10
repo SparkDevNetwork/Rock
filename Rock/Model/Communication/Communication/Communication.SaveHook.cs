@@ -16,6 +16,7 @@
 //
 
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -41,7 +42,7 @@ namespace Rock.Model
                 var attachmentBinaryFilesIds = Entity.Attachments.Select( a => a.BinaryFileId ).ToList();
                 if ( attachmentBinaryFilesIds.Any() )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var temporaryBinaryFiles = new BinaryFileService( rockContext ).GetByIds( attachmentBinaryFilesIds ).Where( a => a.IsTemporary == true ).ToList();
                         {

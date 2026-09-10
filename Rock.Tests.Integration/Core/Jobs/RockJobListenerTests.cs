@@ -23,6 +23,7 @@ using Rock.Tests.Integration.TestFramework.Database;
 using SmtpServer;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
+using Rock.Configuration;
 
 namespace Rock.Tests.Integration.Core.Jobs
 {
@@ -67,7 +68,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( expectedExceptionMessage, actualJob.LastStatusMessage );
             Assert.AreEqual( "Exception", actualJob.LastStatus );
 
-            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedExceptionMessage );
+            var exceptions = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Where( els => els.Description == expectedExceptionMessage );
             Assert.HasCount( 1, exceptions );
         }
 
@@ -168,7 +169,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( $"One or more exceptions occurred. First Exception: {expectedExceptionMessage} 1", actualJob.LastStatusMessage );
             Assert.AreEqual( "Exception", actualJob.LastStatus );
 
-            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description.Contains( expectedExceptionMessage ) );
+            var exceptions = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Where( els => els.Description.Contains( expectedExceptionMessage ) );
             Assert.IsGreaterThan( 1, exceptions.Count() );
         }
 
@@ -184,7 +185,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( expectedExceptionMessage, actualJob.LastStatusMessage );
             Assert.AreEqual( "Exception", actualJob.LastStatus );
 
-            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedExceptionMessage );
+            var exceptions = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Where( els => els.Description == expectedExceptionMessage );
             Assert.HasCount( 1, exceptions );
         }
 
@@ -192,7 +193,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         public async Task RockJobListenerShouldHandleWarningExceptionCorrectly()
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
-            var expectedExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
+            var expectedExceptionsCount = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Count();
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.Warning, expectedResultMessage );
 
             await RunJob( jobDataMapDictionary );
@@ -202,7 +203,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
             Assert.AreEqual( "Warning", actualJob.LastStatus );
 
-            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
+            var exceptions = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
             Assert.HasCount( 1, exceptions );
         }
 
@@ -219,7 +220,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
             Assert.AreEqual( "Warning", actualJob.LastStatus );
 
-            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
+            var exceptions = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
             Assert.HasCount( 1, exceptions );
         }
 
@@ -236,7 +237,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
             Assert.AreEqual( "Warning", actualJob.LastStatus );
 
-            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
+            var exceptions = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
             Assert.HasCount( 1, exceptions );
         }
 
@@ -244,12 +245,12 @@ namespace Rock.Tests.Integration.Core.Jobs
         public async Task RockJobListenerShouldHandleSuccessCorrectly()
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Success!";
-            var expectedExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
+            var expectedExceptionsCount = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Count();
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.Success, expectedResultMessage );
 
             await RunJob( jobDataMapDictionary );
 
-            var actualExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
+            var actualExceptionsCount = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable().Count();
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
@@ -263,7 +264,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         {
             var job = GetAddTestJob( jobDataMapDictionary, jobNotificationStatus );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
 
@@ -364,7 +365,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 testJob.SetAttributeValue( kv.Key, kv.Value );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var serviceJobService = new ServiceJobService( rockContext );
 
@@ -386,7 +387,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
         public void RemoveTestJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var serviceJobService = new ServiceJobService( rockContext );
                 var testJob = serviceJobService.Get( TestJobGuidString.AsGuid() );

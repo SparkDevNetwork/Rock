@@ -25,6 +25,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -80,7 +81,7 @@ namespace Rock.Jobs
             List<int> groupRequirementsCalculatedPersonIds = new List<int>();
 
             // Get the list of group requirements that are based on a DataView or SQL.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupRequirementService = new GroupRequirementService( rockContext );
 
             int insertedCount = 0;
@@ -100,7 +101,7 @@ namespace Rock.Jobs
             foreach ( var groupRequirement in groupRequirements )
             {
                 // Create a new data context for each requirement to ensure performance is scalable.
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
 
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -249,7 +250,7 @@ namespace Rock.Jobs
                             { "MeetsPersonIds", meetsPersonIdList.ConvertToIdListParameter( "MeetsPersonIds" ) }
                         };
 
-                        var mergeResult = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spUpdateGroupMemberRequirements", System.Data.CommandType.StoredProcedure, parameters );
+                        var mergeResult = new DbService( RockApp.Current.CreateRockContext() ).GetDataTableFromSqlCommand( "spUpdateGroupMemberRequirements", System.Data.CommandType.StoredProcedure, parameters );
 
                         // Update counts based on the results from the Stored Procedure execution.
                         insertedCount += mergeResult.Rows.Count > 0

@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -377,7 +378,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( IsEditingGroup == true )
             {
-                Group group = new GroupService( new RockContext() ).Get( _groupId );
+                Group group = new GroupService( RockApp.Current.CreateRockContext() ).Get( _groupId );
                 group.LoadAttributes();
 
                 avcAttributes.AddEditControls( group, Rock.Security.Authorization.EDIT, CurrentPerson );
@@ -385,7 +386,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( IsEditingGroupMember == true )
             {
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
                 var groupMember = groupMemberService.Get( this.CurrentGroupMemberId );
@@ -460,7 +461,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveGroup_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             GroupService groupService = new GroupService( rockContext );
 
             Group group = groupService.Get( _groupId );
@@ -616,7 +617,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveGroupMember_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             GroupTypeRole role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
@@ -736,7 +737,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GetAttributeValue( AttributeKey.AllowGroupMemberDelete ).AsBoolean() )
             {
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
                 var groupMember = groupMemberService.Get( this.CurrentGroupMemberId );
@@ -782,7 +783,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupMember = groupMemberService.GetByGroupIdAndPersonId( _groupId, CurrentPersonId.Value ).FirstOrDefault();
@@ -812,7 +813,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupMember = groupMemberService.GetByGroupIdAndPersonId( _groupId, CurrentPersonId.Value ).FirstOrDefault();
@@ -942,7 +943,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _groupId > 0 )
             {
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
                 GroupService groupService = new GroupService( rockContext );
 
                 var qry = groupService
@@ -1012,7 +1013,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( _groupId != -1 )
             {
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
                 GroupService groupService = new GroupService( rockContext );
 
                 var qry = groupService
@@ -1106,7 +1107,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ConfigureGroupLocationControls( Group group )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             ddlMember.Items.Clear();
 
             var groupType = GroupTypeCache.Get( group.GroupTypeId );
@@ -1284,7 +1285,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 // redirect to the add page provided
-                var group = new GroupService( new RockContext() ).Get( _groupId );
+                var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( _groupId );
                 if ( group != null )
                 {
                     var queryParams = new Dictionary<string, string>();
@@ -1308,7 +1309,7 @@ namespace RockWeb.Blocks.Groups
             pnlGroupView.Visible = false;
             pnlEditGroupMember.Visible = true;
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             var groupMember = groupMemberService.Get( groupMemberId );
@@ -1370,7 +1371,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupMemberId">The group member identifier.</param>
         private void DisplayDeleteGroupMember( int groupMemberId )
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             var groupMember = groupMemberService.Get( groupMemberId );
@@ -1392,7 +1393,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupId">The group identifier.</param>
         private void LoadGroupMemberDropDowns( int groupId )
         {
-            Group group = new GroupService( new RockContext() ).Get( groupId );
+            Group group = new GroupService( RockApp.Current.CreateRockContext() ).Get( groupId );
             if ( group != null )
             {
                 ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
@@ -1410,7 +1411,7 @@ namespace RockWeb.Blocks.Groups
             // create communication
             if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CommunicationPage ) ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new Rock.Model.CommunicationService( rockContext );
                 var communication = new Rock.Model.Communication();
                 communication.IsBulkCommunication = false;
@@ -1454,7 +1455,7 @@ namespace RockWeb.Blocks.Groups
             // create communication
             if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CommunicationPage ) ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new Rock.Model.CommunicationService( rockContext );
                 var communication = new Rock.Model.Communication();
                 communication.IsBulkCommunication = false;

@@ -1,0 +1,59 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="check-in-panel mobile-check-in-launcher-qr-code">
+        <div class="panel-header">
+            <h6 class="title">Scan Code For Labels</h6>
+        </div>
+
+        <div class="body">
+            <img class="mobile-check-in-launcher-qr-code-image"
+                 :src="imageUrl"
+                 alt="Check-in QR Code"
+                 width="500"
+                 height="500">
+        </div>
+    </div>
+</template>
+
+<style>
+/*
+    The code follows the content of whichever state it appears in, and the gap
+    between panels belongs to the page column rather than to the panels in it.
+*/
+.mobile-check-in-launcher .mobile-check-in-launcher-qr-code {
+    margin-top: var(--spacing-xsmall);
+
+    /*
+        The code carries its own four module quiet zone, which reads as white
+        space above and below it, so the panel adds as little of its own as it
+        can and the heading sits close to the code it labels.
+    */
+    gap: var(--spacing-tiny);
+}
+
+.mobile-check-in-launcher .mobile-check-in-launcher-qr-code .title {
+    margin: 0;
+}
+
+/*
+    The code takes as much of the panel as it can while staying square.
+*/
+.mobile-check-in-launcher .mobile-check-in-launcher-qr-code-image {
+    align-self: center;
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        /** The url of the QR code image a kiosk scans to print the labels. */
+        imageUrl: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+</script>

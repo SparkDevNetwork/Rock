@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -268,7 +269,7 @@ namespace Rock.Web.UI.Controls
                         {
                             if ( _pointPicker.SelectedValue != null )
                             {
-                                return new LocationService( new RockContext() ).GetByGeoPoint( _pointPicker.SelectedValue );
+                                return new LocationService( RockApp.Current.CreateRockContext() ).GetByGeoPoint( _pointPicker.SelectedValue );
                             }
                             else
                             {
@@ -279,7 +280,7 @@ namespace Rock.Web.UI.Controls
                         {
                             if ( _polygonPicker.SelectedValue != null )
                             {
-                                return new LocationService( new RockContext() ).GetByGeoFence( _polygonPicker.SelectedValue );
+                                return new LocationService( RockApp.Current.CreateRockContext() ).GetByGeoFence( _polygonPicker.SelectedValue );
                             }
                             else
                             {
@@ -288,7 +289,7 @@ namespace Rock.Web.UI.Controls
                         }
                     default:
                         {
-                            return new LocationService( new RockContext() ).Get( _namedPicker.SelectedValueAsId() ?? 0 );
+                            return new LocationService( RockApp.Current.CreateRockContext() ).Get( _namedPicker.SelectedValueAsId() ?? 0 );
                         }
                 }
             }
@@ -438,7 +439,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    var location = new LocationService( new RockContext() ).Get( locationId.Value );
+                    var location = new LocationService( RockApp.Current.CreateRockContext() ).Get( locationId.Value );
                     if ( location != null )
                     {
                         this.Location = location;
@@ -685,7 +686,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _pointPicker_SelectGeography( object sender, EventArgs e )
         {
-            Location = new LocationService( new RockContext() ).GetByGeoPoint( _pointPicker.SelectedValue );
+            Location = new LocationService( RockApp.Current.CreateRockContext() ).GetByGeoPoint( _pointPicker.SelectedValue );
             LocationSelected( sender, e );
         }
 
@@ -696,7 +697,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _polygonPicker_SelectGeography( object sender, EventArgs e )
         {
-            Location = new LocationService( new RockContext() ).GetByGeoFence( _polygonPicker.SelectedValue );
+            Location = new LocationService( RockApp.Current.CreateRockContext() ).GetByGeoFence( _polygonPicker.SelectedValue );
             LocationSelected( sender, e );
         }
 

@@ -53,6 +53,7 @@
     import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
     import Chart from "@Obsidian/Controls/chart.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     const props = defineProps({
         modelValue: {
@@ -189,8 +190,34 @@
                             ${getCurrentJobRunnerIcon(node.isCurrentJobRunner)}`;
     };
 
+    /** Converts a hex color to an rgba() string at the given alpha, for a translucent chart fill. */
+    const hexToRgba = (hex: string, alpha: number): string => {
+        const parsed = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+        if (!parsed) {
+            return hex;
+        }
+
+        const r = parseInt(parsed[1], 16);
+        const g = parseInt(parsed[2], 16);
+        const b = parseInt(parsed[3], 16);
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
     const getChartData = (chartData: string): ChartData => {
-        return JSON.parse(chartData);
+        const data = JSON.parse(chartData);
+        const dataset = data?.datasets?.[0];
+
+        if (dataset) {
+            // Canvas can't resolve CSS custom properties, so the border color is resolved here and the
+            // translucent fill is derived from it, rather than being colored server-side.
+            const color = getCssVariableValue(dataset.borderColor, "#615FFF");
+            dataset.borderColor = color;
+            dataset.backgroundColor = hexToRgba(color, 0.25);
+        }
+
+        return data;
     };
 
     // #endregion

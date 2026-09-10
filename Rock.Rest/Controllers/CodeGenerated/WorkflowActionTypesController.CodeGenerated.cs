@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActionTypesController"/> class.
         /// </summary>
-        public WorkflowActionTypesController() : base( new Rock.Model.WorkflowActionTypeService( new Rock.Data.RockContext() ) ) { } 
+        public WorkflowActionTypesController() : base( new Rock.Model.WorkflowActionTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

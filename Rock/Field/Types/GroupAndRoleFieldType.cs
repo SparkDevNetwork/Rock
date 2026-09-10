@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -59,7 +60,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( groupGuid.HasValue )
                 {
@@ -187,7 +188,7 @@ namespace Rock.Field.Types
 
             var entityReferences = new List<ReferencedEntity>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( groupGuid.HasValue )
                 {
@@ -238,6 +239,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Three guids joined by pipes, in the order GroupType.Guid|Group.Guid|GroupTypeRole.Guid. All three parts are required and the order is fixed.",
+                Instructions = "To find the correct value, look up the group, then take its group type guid, its own guid, and the guid of the role within that group type."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -353,7 +370,7 @@ namespace Rock.Field.Types
             GroupAndRolePicker groupAndRolePicker = control as GroupAndRolePicker;
             if ( groupAndRolePicker != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 Guid? groupTypeGuid = null;
                 Guid? groupGuid = null;
@@ -411,7 +428,7 @@ namespace Rock.Field.Types
                 groupAndRolePicker.GroupRoleId = null;
 
                 string[] parts = ( value ?? string.Empty ).Split( '|' );
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 if ( parts.Length >= 1 )
                 {
                     var groupType = new GroupTypeService( rockContext ).Get( parts[0].AsGuid() );

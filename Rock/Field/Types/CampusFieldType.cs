@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -60,7 +61,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var configurationProperties = new Dictionary<string, string>();
 
@@ -407,7 +408,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new CampusService( rockContext ).Get( guid.Value );
             }
 
@@ -475,20 +476,14 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
-            var campuses = GetListSource( privateConfigurationValues )
-                .Select( kvp => new ListItemBag
-                {
-                    Value = kvp.Key,
-                    Text = kvp.Value
-                } )
-                .OrderBy( c => c.Text )
-                .ToList();
-
+            // No Values. Campuses are rows a caller can look up, and listing them here
+            // would repeat that data on every attribute described rather than leaving
+            // it to one deliberate call.
             return new FieldTypeHints
             {
-                IsCompleteList = true,
-                Values = campuses,
-                ValueFormat = $"A guid that represents a single entity from the Campus table.",
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the Campus table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = "To find the correct value, read the campuses and take the guid of the one you want. The field's configuration may limit which campuses are allowed by type, status, or an explicit list."
             };
         }
 

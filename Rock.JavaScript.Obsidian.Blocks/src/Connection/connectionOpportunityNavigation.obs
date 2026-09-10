@@ -262,6 +262,7 @@
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { updateRefValue } from "@Obsidian/Utility/component";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { Enumerable } from "@Obsidian/Utility/linq";
@@ -405,9 +406,9 @@
         }
 
         return [
-            { label: "On Track", data: [navigationDetails.value.totalOnTrackRequestsCount], color: "var(--color-success-strong)" },
-            { label: "Due Soon", data: [navigationDetails.value.totalDueSoonRequestsCount], color: "#F59E0B" },
-            { label: "Overdue", data: [navigationDetails.value.totalOverdueRequestsCount], color: "#EF4444" }
+            { label: "On Track", data: [navigationDetails.value.totalOnTrackRequestsCount], color: "var(--color-positive-primary)" },
+            { label: "Due Soon", data: [navigationDetails.value.totalDueSoonRequestsCount], color: "var(--color-caution-primary)" },
+            { label: "Overdue", data: [navigationDetails.value.totalOverdueRequestsCount], color: "var(--color-negative-primary)" }
         ];
     });
 
@@ -471,12 +472,12 @@
             {
                 label: "New",
                 data: newRequestCountsPlusOne.value,
-                color: "#06B6D4"
+                color: getCssVariableValue("--color-metric-primary", "#06B6D4")
             },
             {
                 label: "Completed",
                 data: completedRequestCountsPlusOne.value,
-                color: "#22C55E"
+                color: getCssVariableValue("--color-positive-primary", "#22C55E")
             }
         ];
 

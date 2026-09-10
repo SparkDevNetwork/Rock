@@ -52,14 +52,6 @@ namespace Rock.Blocks.Crm.PersonDetail
         IsRequired = false,
         Order = 0 )]
 
-    [IntegerField(
-        "Years To Display",
-        Key = AttributeKey.YearsToDisplay,
-        Description = "The number of years of history to include, counting back from today.",
-        IsRequired = true,
-        DefaultIntegerValue = 10,
-        Order = 1 )]
-
     #endregion Block Attributes
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
@@ -74,7 +66,6 @@ namespace Rock.Blocks.Crm.PersonDetail
         private static class AttributeKey
         {
             public const string GroupTypes = "GroupTypes";
-            public const string YearsToDisplay = "YearsToDisplay";
         }
 
         private static class PageParameterKey
@@ -291,8 +282,8 @@ namespace Rock.Blocks.Crm.PersonDetail
                 ? selectedGroupTypeIds
                 : GetBlockSettingGroupTypeIds();
 
-            var yearsToDisplay = GetAttributeValue( AttributeKey.YearsToDisplay ).AsIntegerOrNull() ?? 10;
-            var startDateTime = DateTime.SpecifyKind( RockDateTime.Now.AddYears( -yearsToDisplay ), DateTimeKind.Unspecified );
+            // Match the legacy behavior of always showing the last ten years of history.
+            var startDateTime = DateTime.SpecifyKind( RockDateTime.Now.AddYears( -10 ), DateTimeKind.Unspecified );
             var stopDateTime = HistoricalTracking.MaxExpireDateTime;
 
             // The service applies per-record VIEW authorization using the current person, so it must be passed.

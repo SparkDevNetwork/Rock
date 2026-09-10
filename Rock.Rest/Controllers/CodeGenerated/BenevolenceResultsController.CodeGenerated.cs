@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BenevolenceResultsController"/> class.
         /// </summary>
-        public BenevolenceResultsController() : base( new Rock.Model.BenevolenceResultService( new Rock.Data.RockContext() ) ) { } 
+        public BenevolenceResultsController() : base( new Rock.Model.BenevolenceResultService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

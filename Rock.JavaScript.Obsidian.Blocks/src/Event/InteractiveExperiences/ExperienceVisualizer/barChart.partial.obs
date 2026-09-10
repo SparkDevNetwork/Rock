@@ -43,6 +43,7 @@
     import { visualizerProps } from "./util.partial";
     import { Chart, ChartConfiguration, ChartData, ChartTypeRegistry, ScaleOptions } from "@Obsidian/Libs/chart";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     type Rgba = {
         r: number;
@@ -109,7 +110,8 @@
             .filter(c => c !== "");
 
         if (barColors.length === 0) {
-            barColors = ["#709ac7", "#80bb7c", "#f26863", "#80afcb", "#e48480", "#c48cb2", "#ea872e", "#f4cf68", "#968e8b", "#489b98", "#b18772", "#d67493"];
+            const fallbackColors = ["#709ac7", "#80bb7c", "#f26863", "#80afcb", "#e48480", "#c48cb2", "#ea872e", "#f4cf68"];
+            barColors = fallbackColors.map((fallback, index) => getCssVariableValue(`--color-categorical-${index + 1}`, fallback));
         }
 
         return barColors.map(c => parseCssColor(c));

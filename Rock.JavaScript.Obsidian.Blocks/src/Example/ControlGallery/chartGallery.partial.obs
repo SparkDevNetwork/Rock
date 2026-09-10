@@ -28,6 +28,11 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
     import { ChartType, ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+
+    // The demo cycles through the shared categorical chart colors so it stays
+    // in sync with theme changes instead of hardcoding its own palette.
+    const categoricalColors = [1, 2, 3, 4, 5, 6].map(num => getCssVariableValue(`--color-categorical-${num}`));
 
     const type = ref<ChartType>("bar");
     const data = ref<ChartData>({
@@ -40,20 +45,20 @@
         plugins: { legend: { display: false } },
         elements: {
             bar: {
-                backgroundColor: ["#369", "#396", "#639", "#693", "#936", "#963"],
-                borderColor: ["#146", "#164", "#416", "#461", "#614", "#641"],
+                backgroundColor: [...categoricalColors],
+                borderColor: [...categoricalColors],
                 borderWidth: 2
             },
 
             line: {
-                borderColor: "#e93",
+                borderColor: categoricalColors[4],
                 borderWidth: 9,
                 tension: .5
             },
 
             point: {
-                backgroundColor: ["#369", "#396", "#639", "#693", "#936", "#963"],
-                borderColor: ["#146", "#164", "#416", "#461", "#614", "#641"],
+                backgroundColor: [...categoricalColors],
+                borderColor: [...categoricalColors],
                 radius: 5,
                 hoverRadius: 8,
             }
@@ -74,7 +79,7 @@
             options.value.elements.bar.borderColor = (options.value.elements.bar?.borderColor as [])?.reverse?.();
             options.value.elements.point.backgroundColor = (options.value.elements.point?.backgroundColor as [])?.reverse?.();
             options.value.elements.point.borderColor = (options.value.elements.point?.borderColor as [])?.reverse?.();
-            options.value.elements.line.borderColor = ["#39e", "#3e9", "#93e", "#9e3", "#e39", "#e93"][Math.floor(Math.random() * 6)];
+            options.value.elements.line.borderColor = categoricalColors[Math.floor(Math.random() * categoricalColors.length)];
             let sizeBasis = Math.floor(Math.random() * 8) + 2;
             options.value.elements.line.borderWidth = sizeBasis;
             options.value.elements.point.radius = sizeBasis * 1.25;

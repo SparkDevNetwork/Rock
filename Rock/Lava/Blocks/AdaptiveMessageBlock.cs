@@ -22,6 +22,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -133,7 +134,7 @@ namespace Rock.Lava.Blocks
                     }
                 }
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var isTrackViews = parms.GetValueOrNull( ParameterTrackviews ).AsBooleanOrNull();
                 var person = context.GetMergeField( "Person" ) as Model.Person;
                 if ( person == null )

@@ -16,6 +16,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 
@@ -38,7 +39,7 @@ namespace Rock.Model
 
             int? usageCountRemaining;
             var registrationInstanceId = registrationInstance.Id;
-            var registrationInstanceFeesQuery = new RegistrationRegistrantFeeService( new RockContext() ).Queryable().Where( a => a.RegistrationRegistrant.Registration.RegistrationInstanceId == registrationInstanceId );
+            var registrationInstanceFeesQuery = new RegistrationRegistrantFeeService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.RegistrationRegistrant.Registration.RegistrationInstanceId == registrationInstanceId );
 
             var feeUsedCount = registrationInstanceFeesQuery.Where( a => a.RegistrationTemplateFeeItemId == this.Id ).Sum( a => ( int? ) a.Quantity ) ?? 0;
 

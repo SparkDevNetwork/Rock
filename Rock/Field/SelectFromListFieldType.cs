@@ -188,7 +188,48 @@ namespace Rock.Field.Types
 
         #endregion
 
-        #region Edit Control 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Implemented on the base rather than on each subclass because the stored
+        /// form is identical for all of them: the comma delimited keys that
+        /// <see cref="GetListSource"/> returns, which are guids in every current
+        /// implementation.
+        /// </para>
+        /// <para>
+        /// It describes the shape and not the available values, because finding those
+        /// out costs a query. <see cref="GetListSource"/> hands back a materialized
+        /// list rather than something countable, so a set cannot be judged small
+        /// enough to enumerate without loading all of it first, and most subclasses
+        /// open a RockContext to build theirs.
+        /// </para>
+        /// <para>
+        /// Hints are produced for every attribute in a list, so a query here is paid
+        /// once per attribute described, while a caller that actually wants the values
+        /// can make one deliberate lookup instead. That trade is why this stays cheap.
+        /// </para>
+        /// <para>
+        /// A subclass whose list comes from an in-memory cache can override this, call
+        /// back to it, and fill in Values at no real cost, the way
+        /// <see cref="Types.CampusesFieldType"/> does. That decision belongs to the
+        /// subclass, which is the only thing that knows where its list comes from.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids, separated by commas, each identifying one of the options this field offers. Not ids or idKeys, and not the names shown in the picker.",
+                Instructions = "To find the correct values, read the records this field selects from and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
+        #region Edit Control
 
         /// <summary>
         /// Gets the list source.

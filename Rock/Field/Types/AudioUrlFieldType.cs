@@ -99,6 +99,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A url pointing at an audio file, stored as supplied. It is a link rather than the audio itself, and nothing checks what the url returns, so a url that is not audio saves cleanly and then fails to play."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

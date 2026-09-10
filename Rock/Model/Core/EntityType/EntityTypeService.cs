@@ -311,7 +311,7 @@ namespace Rock.Model
                 entityTypesFromReflection.TryAdd( reflectedType.FullName, entityType );
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeService = new EntityTypeService( rockContext );
 

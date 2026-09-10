@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
@@ -761,7 +762,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                             else
                             {
-                                using ( var rockContext = new RockContext() )
+                                using ( var rockContext = RockApp.Current.CreateRockContext() )
                                 {
                                     var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                                     locationId = location != null ? location.Id : ( int? ) null;
@@ -821,7 +822,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     // Look for duplicates among all other existing alternate ids
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var duplicateAlternateIds = new PersonSearchKeyService( rockContext )
                                                 .Queryable()
@@ -865,7 +866,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                             else
                             {
-                                var rockContext = new RockContext();
+                                var rockContext = RockApp.Current.CreateRockContext();
 
                                 Guid? parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).AsGuidOrNull();
                                 int? groupId = null;
@@ -1045,7 +1046,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlAttributes.Controls.Clear();
             phDuplicates.Controls.Clear();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
             var locationService = new LocationService( rockContext );
 
@@ -1313,7 +1314,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 int? locationId = _verifiedLocations[locationKey];
                 if ( locationId.HasValue )
                 {
-                    RockContext rockContext = new RockContext();
+                    RockContext rockContext = RockApp.Current.CreateRockContext();
                     var groupLocationService = new GroupLocationService( rockContext );
 
                     var groupsAtLocationList = groupLocationService.Queryable().Where( a =>
@@ -1729,7 +1730,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             Duplicates = new Dictionary<Guid, int[]>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var locationService = new LocationService( rockContext );
             var groupService = new GroupService( rockContext );
             var personService = new PersonService( rockContext );
@@ -1852,7 +1853,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="newGroupMemberIds">The new group member ids.</param>
         private void LaunchWorkflows( int groupId, bool isNewGroup, List<Guid> newGroupMemberPersonGuids )
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             // Launch any workflows
             var workflowService = new WorkflowService( rockContext );

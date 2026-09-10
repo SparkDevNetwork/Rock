@@ -23,6 +23,7 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.ClientService.Core.Note;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -994,7 +995,7 @@ namespace Rock.Blocks.Fundraising
         /// <param name="person">The person whose photo changed.</param>
         private void AddOrUpdatePhotoVerifyPending( Person person )
         {
-            using ( var photoRequestRockContext = new RockContext() )
+            using ( var photoRequestRockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( photoRequestRockContext );
                 var photoRequestGroup = new GroupService( photoRequestRockContext ).Get( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );

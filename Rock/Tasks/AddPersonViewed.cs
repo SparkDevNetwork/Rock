@@ -16,6 +16,7 @@
 //
 
 using System;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -42,7 +43,7 @@ namespace Rock.Tasks
                 pvRecord.IpAddress = message.IPAddress;
                 pvRecord.Source = message.Source;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var pvService = new PersonViewedService( rockContext );
                     pvService.Add( pvRecord );

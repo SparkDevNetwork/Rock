@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -50,7 +51,7 @@ namespace Rock.Field.Types
             Guid? eventItemGuid = privateValue.AsGuidOrNull();
             if ( eventItemGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var eventItem = new EventItemService( rockContext ).GetNoTracking( eventItemGuid.Value );
                     if ( eventItem != null )
@@ -90,7 +91,7 @@ namespace Rock.Field.Types
         {
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var eventItem = new EventItemService( rockContext ).Queryable( )
                         .AsNoTracking()
@@ -137,7 +138,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new EventItemService( rockContext ).Get( guid.Value );
             }
 
@@ -154,7 +155,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventItemId = new EventItemService( rockContext ).GetId( guid.Value );
 
@@ -178,6 +179,21 @@ namespace Rock.Field.Types
                 new ReferencedProperty( EntityTypeCache.GetId<EventItem>().Value, nameof( EventItem.Name ) )
             };
         }
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the EventItem table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is the event, not one of its occurrences.",
+                Instructions = "To find the correct value, read the event items and take the guid of the one you want."
+            };
+        }
+
         #endregion
 
         #region WebForms
@@ -227,7 +243,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         itemGuid = new EventItemService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
@@ -254,7 +270,7 @@ namespace Rock.Field.Types
                 Guid? eventItemGuid = value.AsGuidOrNull();
                 if ( eventItemGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         eventItem = new EventItemService( rockContext ).Get( eventItemGuid.Value );
                     }
@@ -273,7 +289,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new EventItemService( new RockContext() ).Get( guid );
+            var item = new EventItemService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -285,7 +301,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new EventItemService( new RockContext() ).Get( id ?? 0 );
+            var item = new EventItemService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

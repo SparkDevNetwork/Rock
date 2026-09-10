@@ -23,6 +23,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -56,7 +57,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelIdKey = PageParameter( PageParameterKey.ContentChannelIdKey );
                 var isUserIntendingToDownloadItems = contentChannelIdKey.IsNotNullOrWhiteSpace();
@@ -148,7 +149,7 @@ namespace Rock.Blocks.Cms
         [BlockAction( "DownloadItem" )]
         public BlockActionResult DownloadItem( LibraryViewerDownloadItemBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelData = GetCurrentContentChannelQuery( rockContext )
                     .Select( c => new
@@ -217,7 +218,7 @@ namespace Rock.Blocks.Cms
                 return ActionNotFound();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var item = ConvertToItemBag( response.Data, rockContext );
                 return ActionOk( item );

@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Core
 {
@@ -714,7 +715,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction( "Search" )]
         public BlockActionResult GetSearchResults( SearchRequestBag requestBag )
         {
-            using( var rockContext = new RockContext() )
+            using( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var searchComponent = SearchContainer.Instance.Components
                                    .Select( c => c.Value.Value )

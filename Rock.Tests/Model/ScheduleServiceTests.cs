@@ -32,7 +32,7 @@ namespace Rock.Tests.Model
         [TestMethod]
         public void UpdateScheduleDates_ShouldNotCreateScheduleDates_WhenScheduleIsNotActive()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -62,7 +62,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShoulCreateScheduleDates_WhenScheduleIsActive()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -92,7 +92,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldNotCreateScheduleDates_ThatAlreadyExist()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -130,7 +130,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldRemoveScheduleDates_ThatAreNoLongerValid()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -170,7 +170,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldNotCreateScheduleDates_ThatAreExcluded()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -216,7 +216,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldReturnZero_WhenNoSchedulesExist()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var startDate = RockDateTime.New( 2022, 1, 1 ).Value;
@@ -232,7 +232,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldReturnZero_WhenNoDateChangesNeeded()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -274,7 +274,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldNotThrow_WhenScheduleHasNoICalendarContent()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -299,7 +299,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldSetEndDateTime_WhenScheduleHasZeroDuration()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var schedule = new Schedule
@@ -336,7 +336,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldRespectExclusion_ThatOverlapsStartOrEnd()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -384,7 +384,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldThrowOperationCanceledException_WhenCancellationRequested()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 
@@ -418,7 +418,7 @@ END:VCALENDAR",
         [TestMethod]
         public void UpdateScheduleDates_ShouldUpdateEndDateTime_WhenDurationChanges()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
 

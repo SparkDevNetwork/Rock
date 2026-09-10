@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "An open source CMS, Relationship Management System (RMS) and Church Management System (ChMS) all rolled into one.",
   "main": "index.js",
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "dependencies": {
     "sass": "^1.77.4"
   },

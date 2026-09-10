@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -109,7 +110,7 @@ namespace Rock.Transactions
 
             if ( workflows.Any() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Loop through benevolenceWorkflows and launch appropriate workflow
                     foreach ( var benevolenceWorkflow in workflows )

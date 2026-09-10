@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -404,7 +405,7 @@ WHERE [RootPath] = '/Themes/KioskStark' AND IsSystem = 1
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );
@@ -421,7 +422,7 @@ WHERE [RootPath] = '/Themes/KioskStark' AND IsSystem = 1
         {
             var groupGuid = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var group = new GroupService( rockContext ).Get( groupGuid );
 
             if ( group == null )

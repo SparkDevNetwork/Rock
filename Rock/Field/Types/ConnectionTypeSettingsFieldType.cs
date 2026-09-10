@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -74,7 +75,7 @@ namespace Rock.Field.Types
 
             if ( opportunityGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     opportunityName = new ConnectionOpportunityService( rockContext )
                         .Queryable()
@@ -147,7 +148,7 @@ namespace Rock.Field.Types
                 return publicConfigurationValues;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var types = ConnectionTypeCache.All()
                     .Where( t => t.IsActive )
@@ -208,6 +209,21 @@ namespace Rock.Field.Types
 
         #endregion Edit Control
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Up to four guids separated by pipes, in the order connection type, connection opportunity, connection status, connection source, as in a1|b2|c3|d4. Any part may be left empty to leave that selection unset, and trailing parts may be omitted entirely, so a value with only the first two pipes sets just the type and opportunity.",
+                Instructions = "Each guid identifies a row in its own table: ConnectionType, ConnectionOpportunity, ConnectionStatus, and DefinedValue for the source. The opportunity, status and source all belong to the connection type named in the first part, so they are only meaningful alongside it."
+            };
+        }
+
+        #endregion
+
         #region Parse Helpers
 
         /// <summary>
@@ -239,7 +255,7 @@ namespace Rock.Field.Types
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( typeGuid.HasValue )
                 {
@@ -279,7 +295,7 @@ namespace Rock.Field.Types
 
             var references = new List<ReferencedEntity>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( typeGuid.HasValue )
                 {

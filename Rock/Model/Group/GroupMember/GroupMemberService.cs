@@ -20,6 +20,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.RealTime.Topics;
@@ -1071,7 +1072,7 @@ namespace Rock.Model
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
         internal static IQueryable<GroupMember> WhereMembersWhoFirstAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var attendanceOccurenceService = new AttendanceService( rockContext );
             var limitDate = RockDateTime.Now.AddDays( amtOfWeeks * -7 );
@@ -1107,7 +1108,7 @@ namespace Rock.Model
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
         internal static IQueryable<GroupMember> WhereMembersWhoAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var attendanceOccurenceService = new AttendanceService( rockContext );
             var limitDate = RockDateTime.Now.AddDays( amtOfWeeks * -7 );
@@ -1144,6 +1145,9 @@ namespace Rock.Model
 
             public DateTimeOffset? DateTimeAdded { get; }
 
+            /// <inheritdoc cref="GroupMember.IsArchived"/>
+            public bool IsArchived { get; }
+
             public GroupMemberUpdatedState( GroupMember groupMember, EntityContextState state )
             {
                 if ( groupMember == null )
@@ -1158,6 +1162,7 @@ namespace Rock.Model
                 GroupId = groupMember.GroupId;
                 GroupRoleId = groupMember.GroupRoleId;
                 DateTimeAdded = groupMember.DateTimeAdded?.ToRockDateTimeOffset();
+                IsArchived = groupMember.IsArchived;
             }
         }
 
@@ -1174,7 +1179,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -1255,7 +1260,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -1330,6 +1335,7 @@ namespace Rock.Model
 						GroupMemberGuid = item.Guid,
 						GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
                         DateTimeAdded = item.DateTimeAdded,
+                        IsArchived = item.IsArchived,
                         Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
 						{   
 							PersonIdKey = person.IdKey,

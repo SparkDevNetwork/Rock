@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -157,7 +158,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<ServiceJob> GetListQueryable( RockContext rockContext )
         {
-            var jobService = new ServiceJobService( new RockContext() );
+            var jobService = new ServiceJobService( RockApp.Current.CreateRockContext() );
 
             var queryable = jobService.GetAllJobs();
 
@@ -255,7 +256,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ServiceJobService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
@@ -290,7 +291,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public async Task<BlockActionResult> RunNow( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ServiceJobService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

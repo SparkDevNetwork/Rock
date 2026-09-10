@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Cms;
@@ -157,7 +158,7 @@ namespace Rock.Cms.ContentCollection
             // Process each content collection as single update.
             var collectionItems = items.GroupBy( i => i.ContentCollectionId );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentCollectionService = new ContentCollectionService( rockContext );
 

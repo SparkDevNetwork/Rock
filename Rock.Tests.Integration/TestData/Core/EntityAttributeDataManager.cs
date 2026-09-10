@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -57,7 +58,7 @@ namespace Rock.Tests.Integration.TestData.Core
         public List<Rock.Model.Attribute> AddEntityAttributes( List<AddEntityAttributeArgs> args, RockContext rockContext = null )
         {
             var saveChanges = ( rockContext == null );
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var attributeService = new AttributeService( rockContext );
             var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;

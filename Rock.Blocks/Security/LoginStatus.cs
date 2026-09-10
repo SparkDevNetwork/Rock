@@ -46,6 +46,7 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         KeyPrompt = "Title",
         ValuePrompt = "Link",
+        AllowLava = true,
         Order = 0 )]
 
     [LinkedPage( "My Account Page",

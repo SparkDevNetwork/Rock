@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -111,8 +112,8 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private static class PageParameterKey
         {
-            public const string ConnectionRequestId = "ConnectionRequestId";
-            public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+            public const string Request = "Request";
+            public const string ConnectionOpportunity = "ConnectionOpportunity";
         }
 
         #endregion
@@ -471,7 +472,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( e.Key == "Requester" )
                 {
@@ -560,7 +561,7 @@ namespace RockWeb.Blocks.Connection
 
         protected void gRequests_Delete( object sender, RowEventArgs e )
         {
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new ConnectionRequestService( rockContext );
                 var connectionRequest = service.Get( e.RowKeyId );
@@ -638,7 +639,7 @@ namespace RockWeb.Blocks.Connection
         {
             SummaryState = new List<ConnectionTypeSummary>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var opportunitiesQuery = new ConnectionOpportunityService( rockContext ).Queryable();
 
             var typeFilter = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
@@ -909,7 +910,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void SetFilter()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 sdrpLastActivityDateRange.DelimitedValues = rFilter.GetFilterPreference( "LastActivityDateRange" );
                 var personService = new PersonService( rockContext );
@@ -988,7 +989,7 @@ namespace RockWeb.Blocks.Connection
                 gRequests.IsDeleteEnabled = opportunitySummary.CanEdit;
                 gRequests.ColumnsOfType<DeleteField>().First().Visible = opportunitySummary.CanEdit;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Get queryable of all requests that belong to the selected opportunity, and user is authorized to view (based on security or connector group)
                     var requestsQuery = new ConnectionRequestService( rockContext )
@@ -1326,19 +1327,41 @@ namespace RockWeb.Blocks.Connection
         private void NavigateToConnectionPage( int connectionRequestId )
         {
             var connectionType = SummaryState.Where( t => t.Opportunities.Any( o => o.Id == SelectedOpportunityId.Value ) ).FirstOrDefault();
+            var parameters = GetDetailPageParameters( connectionRequestId );
+
             if ( GetAttributeValue( AttributeKey.UseConnectionRequestDetailPageFromConnectionType ).AsBoolean() &&
                  ( connectionType.ConnectionRequestDetailPageId.HasValue || connectionType.ConnectionRequestDetailPageRouteId.HasValue ) )
             {
-                Dictionary<string, string> pageParameters = new Dictionary<string, string>();
-                pageParameters.Add( PageParameterKey.ConnectionRequestId, connectionRequestId.ToString() );
-                pageParameters.Add( PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId.ToStringSafe() );
-                var pageReference = new Rock.Web.PageReference( connectionType.ConnectionRequestDetailPageId ?? 0, connectionType.ConnectionRequestDetailPageRouteId ?? 0, pageParameters );
+                var pageReference = new Rock.Web.PageReference( connectionType.ConnectionRequestDetailPageId ?? 0, connectionType.ConnectionRequestDetailPageRouteId ?? 0, parameters );
                 NavigateToPage( pageReference );
             }
             else
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionRequestId, connectionRequestId, PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId );
+                NavigateToLinkedPage( AttributeKey.DetailPage, parameters );
             }
+        }
+
+        /// <summary>
+        /// Gets the page parameter values for a connection request detail page link. A request identifier
+        /// of zero is the add indicator rather than an identifier, so it is passed through.
+        /// </summary>
+        /// <param name="connectionRequestId">The connection request identifier, or zero to add.</param>
+        /// <returns>The page parameter values.</returns>
+        private Dictionary<string, string> GetDetailPageParameters( int connectionRequestId )
+        {
+            var requestParameter = connectionRequestId > 0
+                ? IdHasher.Instance.GetHash( connectionRequestId )
+                : "0";
+
+            var opportunityParameter = SelectedOpportunityId.HasValue
+                ? IdHasher.Instance.GetHash( SelectedOpportunityId.Value )
+                : string.Empty;
+
+            return new Dictionary<string, string>
+            {
+                { PageParameterKey.Request, requestParameter },
+                { PageParameterKey.ConnectionOpportunity, opportunityParameter }
+            };
         }
 
         #endregion

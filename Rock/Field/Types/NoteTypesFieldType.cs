@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -58,7 +59,7 @@ namespace Rock.Field.Types
             if ( usage == ConfigurationValueUsage.Configure )
             {
                 // Put all the entities under the to be displayed in EntityPicker Dropdown in the Attribute Configuration Modal.
-                publicConfigurationValues[ENTITY_TYPES] = new EntityTypeService( new RockContext() )
+                publicConfigurationValues[ENTITY_TYPES] = new EntityTypeService( RockApp.Current.CreateRockContext() )
                     .GetEntities()
                     .OrderBy( e => e.FriendlyName )
                     .ThenBy( e => e.Name )
@@ -77,7 +78,7 @@ namespace Rock.Field.Types
                 publicConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Guid.ToString();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !string.IsNullOrWhiteSpace( entityType?.Name ) && entityTypeName != None.IdValue )
                 {
@@ -249,6 +250,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the NoteType table, separated by commas. Not their ids or idKeys.",
+                Instructions = "To find the correct values, read the note types and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -382,7 +398,7 @@ namespace Rock.Field.Types
                 ( ( RockCheckBoxList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( string.IsNullOrWhiteSpace( entityTypeName ) )
                 {

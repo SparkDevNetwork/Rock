@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Groups.GroupMemberList;
 using Rock.Common.Mobile.Enums;
 using Rock.Common.Mobile.ViewModel;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Mobile.JsonFields;
@@ -439,7 +440,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>IEnumerable&lt;GroupMember&gt;.</returns>
         private static IEnumerable<GroupMember> FilterGroupMembers( Group group, FilterBag filterBag, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var groupTypeCache = GroupTypeCache.Get( group.GroupTypeId );
 
@@ -600,7 +601,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             filterBag = filterBag ?? new FilterBag();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
 
@@ -704,7 +705,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public object GetGroupDetails()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
                 var group = new GroupService( rockContext ).Get( groupGuid );

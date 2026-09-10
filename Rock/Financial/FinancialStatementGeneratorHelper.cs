@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Observability;
@@ -86,7 +87,7 @@ namespace Rock.Financial
                     throw new FinancialGivingStatementArgumentException( "FinancialStatementGeneratorOptions options must be specified" );
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     FinancialStatementTemplate financialStatementTemplate = new FinancialStatementTemplateService( rockContext ).Get( financialStatementGeneratorOptions.FinancialStatementTemplateId ?? 0 );
                     if ( financialStatementTemplate == null )
@@ -339,7 +340,7 @@ namespace Rock.Financial
                 prepActivity?.Dispose();
                 // END PREP
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     FinancialStatementTemplate financialStatementTemplate = new FinancialStatementTemplateService( rockContext ).GetNoTracking( financialStatementGeneratorOptions.FinancialStatementTemplateId ?? 0 );
                     if ( financialStatementTemplate == null )
@@ -936,7 +937,7 @@ namespace Rock.Financial
                 }
 
                 var personIds = personList.Select( a => a.Id ).ToList();
-                var optedOutPersonQry = new AttributeValueService( new RockContext() ).Queryable().Where( a => a.AttributeId == doNotSendGivingStatementAttributeId );
+                var optedOutPersonQry = new AttributeValueService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.AttributeId == doNotSendGivingStatementAttributeId );
                 if ( personIds.Count == 1 )
                 {
                     int entityPersonId = personIds[0];
@@ -1264,7 +1265,7 @@ namespace Rock.Financial
                 throw new FinancialGivingStatementArgumentException( "Document Type must be specified" );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var documentType = new DocumentTypeService( rockContext )
                     .Queryable()
                     .AsNoTracking()
@@ -1342,7 +1343,7 @@ namespace Rock.Financial
             {
                 if ( saveOptions.OverwriteDocumentsOfThisTypeWithSamePurposeKey == true && doNotSave == false )
                 {
-                    using ( var deleteDocContext = new RockContext() )
+                    using ( var deleteDocContext = RockApp.Current.CreateRockContext() )
                     {
                         var deleteDocumentService = new DocumentService( deleteDocContext );
 

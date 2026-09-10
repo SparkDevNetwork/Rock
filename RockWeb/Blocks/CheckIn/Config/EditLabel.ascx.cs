@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -76,7 +77,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             if ( !Page.IsPostBack )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     int? binaryFileId = PageParameter( "BinaryFileId" ).AsIntegerOrNull();
                     if ( binaryFileId.HasValue )
@@ -150,7 +151,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             if ( fileId.HasValue )
             {
                 hfBinaryFileId.Value = fileId.Value.ToString();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var file = new BinaryFileService( rockContext ).Get( fileId.Value );
                     if ( file != null )
@@ -170,7 +171,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             int? binaryFileId = hfBinaryFileId.Value.AsIntegerOrNull();
             if ( binaryFileId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var binaryFile = binaryFileService.Get( binaryFileId.Value );
@@ -215,7 +216,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnPrint_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var device = new DeviceService( rockContext ).Get( ddlDevice.SelectedValueAsInt() ?? 0 );
                 if ( device != null )

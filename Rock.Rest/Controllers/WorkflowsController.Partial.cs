@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -40,7 +41,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "16F650EB-59BB-4BFA-AFF1-DD6E90FAC8A4" )]
         public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var workflowType = WorkflowTypeCache.Get( workflowTypeId );
 
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )

@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 
@@ -77,8 +78,22 @@ namespace Rock.Model
         ///
         /// <summary>
         /// Specifies the number of prefix characters of the Exception Message property that are examined when grouping similar exceptions.
+        /// This is the number of <see cref="ExceptionLog.Description"/> characters that are hashed into <see cref="ExceptionLog.ExceptionGroupHash"/>.
         /// </summary>
-        public static readonly int DescriptionGroupingPrefixLength = 95;
+        /*
+            8/26/26 - MSE
+
+            This was 95 for years without a documented reason ( 4db90eb ), and on real data 95 characters were often nothing but
+            boilerplate wrapper text, which merged genuinely different errors into one row. 255 is also the length of the
+            description the Exception List block now displays, so the block now groups by exactly what it shows.
+
+            Changing this value alone does NOT change how exceptions are grouped: the grouping is performed by the
+            ExceptionGroupHash computed column, whose definition (LEFT( [Description], 255 )) lives in the
+            AddExceptionLogExceptionGroupHash migration. Keep the two in sync.
+
+            Reason: Group by the same 255 characters that are displayed, instead of an arbitrary 95.
+        */
+        public static readonly int DescriptionGroupingPrefixLength = 255;
 
         /// <summary>
         /// Filter a query for exceptions at the innermost or lowest level of the exception hierarchy.
@@ -105,6 +120,10 @@ namespace Rock.Model
         /// <summary>
         /// Filter a query for exceptions having a description matching the specified prefix.
         /// </summary>
+        /// <remarks>
+        /// This filter is not covered by an index. Prefer <see cref="FilterByExceptionGroupHash(IQueryable{ExceptionLog}, byte[])"/>
+        /// when filtering to the exceptions that the Exception List block groups together.
+        /// </remarks>
         /// <param name="query">The query.</param>
         /// <param name="descriptionPrefix">The description prefix.</param>
         /// <returns></returns>
@@ -120,7 +139,45 @@ namespace Rock.Model
             return query;
         }
 
+        /// <summary>
+        /// Filter a query for exceptions belonging to the specified exception group, that is, having the same
+        /// <see cref="ExceptionLog.ExceptionGroupHash"/>.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="exceptionGroupHash">The <see cref="ExceptionLog.ExceptionGroupHash"/> of the group.</param>
+        /// <returns>The filtered query.</returns>
+        internal IQueryable<ExceptionLog> FilterByExceptionGroupHash( IQueryable<ExceptionLog> query, byte[] exceptionGroupHash )
+        {
+            return query.Where( e => e.ExceptionGroupHash == exceptionGroupHash );
+        }
+
         #endregion Filters
+
+        #region Formatting
+
+        /// <summary>
+        /// Gets the description to display for an exception group: the leading
+        /// <see cref="DescriptionGroupingPrefixLength"/> characters of the description, with an ellipsis appended
+        /// when the description was cut, so it reads like the truncated descriptions on the Exception Occurrences
+        /// grid.
+        /// </summary>
+        /// <param name="descriptionPrefix">
+        /// The leading characters of the group's <see cref="ExceptionLog.Description"/>. This is expected to have
+        /// been read with at most <see cref="DescriptionGroupingPrefixLength"/> characters, which is what allows
+        /// reaching that length to be read as "there was more".
+        /// </param>
+        /// <returns>The description to display.</returns>
+        internal static string GetDisplayDescription( string descriptionPrefix )
+        {
+            if ( descriptionPrefix != null && descriptionPrefix.Length >= DescriptionGroupingPrefixLength )
+            {
+                return descriptionPrefix + "...";
+            }
+
+            return descriptionPrefix;
+        }
+
+        #endregion Formatting
 
         #region Operations
 
@@ -148,9 +205,7 @@ namespace Rock.Model
             // not be the same within the context of the new thread.
             var exceptionLog = PopulateExceptionLog( ex, request, personAlias );
 
-            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
-            // recursively writing to the database.
-            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+            LogExceptionsInBackground( ex, exceptionLog );
         }
 
         /// <summary>
@@ -167,9 +222,7 @@ namespace Rock.Model
             exceptionLog.Source = ex.Source;
             exceptionLog.StackTrace = ex.StackTrace;
 
-            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
-            // recursively writing to the database.
-            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+            LogExceptionsInBackground( ex, exceptionLog );
         }
 
         /// <summary>
@@ -179,6 +232,47 @@ namespace Rock.Model
         public static void LogException( string message )
         {
             LogException( new Exception( message ) );
+        }
+
+        /// <summary>
+        /// Common entry point for the public logging methods. Spins off the real
+        /// logging work to a background thread so the caller is not blocked while
+        /// recursively writing to the database.
+        /// </summary>
+        /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
+        /// <param name="log">The initial <see cref="ExceptionLog"/> built for the exception.</param>
+        private static void LogExceptionsInBackground( Exception ex, ExceptionLog log )
+        {
+            /*
+                9/9/26 - CLAUDE
+
+                The unit test sink check must happen HERE, synchronously on the
+                calling thread, rather than inside LogExceptions on the
+                background thread. RockApp.Current is scoped per test (each test
+                swaps it in and out), so by the time a background Task.Run
+                executes, the calling test's scope may already be gone - or worse,
+                a different test's scope may be current, whose mocked RockContext
+                we would then land on. Resolving the sink on the calling thread
+                captures it against the correct scope.
+
+                When a sink is registered (unit test framework), capture the
+                exception and return without touching a database or a background
+                thread. In production no sink is registered, so this behaves
+                exactly as before: the work is spun off to a background thread.
+
+                Reason: Resolve the exception sink against the calling test's
+                scope, not whatever scope happens to be current later.
+            */
+            var exceptionSink = RockApp.Current?.GetService( typeof( IExceptionLogSink ) ) as IExceptionLogSink;
+            if ( exceptionSink != null )
+            {
+                exceptionSink.AddException( ex );
+                return;
+            }
+
+            // Spin off a new thread to handle the real logging work so the caller
+            // is not blocked whilst recursively writing to the database.
+            Task.Run( () => LogExceptions( ex, log, true ) );
         }
 
         /// <summary>
@@ -233,7 +327,7 @@ namespace Rock.Model
                 }
 
                 // Write ExceptionLog record to database.
-                using ( var rockContext = new Rock.Data.RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var exceptionLogService = new ExceptionLogService( rockContext );
                     exceptionLogService.Add( exceptionLog );

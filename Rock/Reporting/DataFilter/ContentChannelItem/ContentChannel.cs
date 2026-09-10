@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -71,7 +72,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var contentChannelOptions = new ContentChannelService( new RockContext() ).Queryable()
+            var contentChannelOptions = new ContentChannelService( RockApp.Current.CreateRockContext() ).Queryable()
                .Where( a => a.ContentChannelType.ShowInChannelList == true )
                .OrderBy( d => d.Name )
                .ToList()
@@ -153,7 +154,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var contentChannel = new ContentChannelService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var contentChannel = new ContentChannelService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
 
                 if ( contentChannel != null )
                 {
@@ -176,7 +177,7 @@ function() {
             contentChannelPicker.Label = "Content Channel";
 
             contentChannelPicker.Items.Clear();
-            var contentChannelList = new ContentChannelService( new RockContext() ).Queryable()
+            var contentChannelList = new ContentChannelService( RockApp.Current.CreateRockContext() ).Queryable()
                .Where( a => a.ContentChannelType.ShowInChannelList == true )
                .OrderBy( d => d.Name )
                .Select( a => new
@@ -216,7 +217,7 @@ function() {
         public override string GetSelection( Type entityType, Control[] controls )
         {
             int? contentChannelId = ( controls[0] as RockDropDownList ).SelectedValueAsId();
-            var contentChannelGuid = new ContentChannelService( new RockContext() ).GetGuid( contentChannelId ?? 0 );
+            var contentChannelGuid = new ContentChannelService( RockApp.Current.CreateRockContext() ).GetGuid( contentChannelId ?? 0 );
             return contentChannelGuid.ToString();
         }
 
@@ -231,7 +232,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var contentChannelId = new ContentChannelService( new RockContext() ).GetId( selectionValues[0].AsGuid() );
+                var contentChannelId = new ContentChannelService( RockApp.Current.CreateRockContext() ).GetId( selectionValues[0].AsGuid() );
                 if ( contentChannelId.HasValue )
                 {
                     ( controls[0] as RockDropDownList ).SetValue( contentChannelId );
@@ -252,7 +253,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var contentChannelId = new ContentChannelService( new RockContext() ).GetId( selectionValues[0].AsGuid() );
+                var contentChannelId = new ContentChannelService( RockApp.Current.CreateRockContext() ).GetId( selectionValues[0].AsGuid() );
                 var qry = new ContentChannelItemService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => p.ContentChannelId == contentChannelId );
 

@@ -25,6 +25,7 @@ using Http.TestLibrary;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Controllers;
@@ -136,12 +137,10 @@ namespace Rock.Tests.Integration.Performance.Crm.Person
                 {
                     using ( var request = simulator.SimulateRequest( new Uri( "http://www.rocksolidchurch.com/" ) ) )
                     {
-                        TestHelper.StartTimer( $"** Search {i}: [{searchField}]='{searchText}'" );
                         var controller = new PeopleController();
                         var result = controller.Search( name: nameSearchText,
                             includeDetails: includeDetails,
                             address: addressSearchText );
-                        TestHelper.EndTimer( $"** Search {i}: [{searchField}]='{searchText}'" );
 
                         var resultItems = result.ToList();
 
@@ -163,7 +162,7 @@ namespace Rock.Tests.Integration.Performance.Crm.Person
             {
                 var searchText = searchStrings[i];
 
-                var dataContext = new RockContext();
+                var dataContext = RockApp.Current.CreateRockContext();
                 var locationService = new LocationService( dataContext );
                 var items = locationService.Queryable()
                     .AsNoTracking()

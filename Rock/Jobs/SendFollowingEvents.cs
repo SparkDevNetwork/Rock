@@ -23,6 +23,7 @@ using System.Reflection;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -70,7 +71,7 @@ namespace Rock.Jobs
             {
                 var exceptionMsgs = new List<string>();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var followingService = new FollowingService( rockContext );
                     var followingEventTypeService = new FollowingEventTypeService( rockContext );

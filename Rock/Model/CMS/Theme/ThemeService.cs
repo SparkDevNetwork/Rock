@@ -186,7 +186,7 @@ namespace Rock.Model
         [RockObsolete( "19.0" )]
         public static List<string> CompileAll( CancellationToken cancellationToken )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var themes = new ThemeService( rockContext ).Queryable().ToList();
                 var legacyPurposeId = DefinedValueCache.Get( SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_LEGACY.AsGuid(), rockContext ).Id;
@@ -226,7 +226,7 @@ namespace Rock.Model
         [RockObsolete( "19.0" )]
         internal static void BuildTheme( int themeId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var theme = new ThemeService( rockContext ).Get( themeId );
 

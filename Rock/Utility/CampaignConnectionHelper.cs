@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -39,7 +40,7 @@ namespace Rock.Utility
         /// <returns></returns>
         public static int GetEntitySet( CampaignItem campaignConfiguration )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
             var connectionRequestService = new ConnectionRequestService( rockContext );
@@ -223,7 +224,7 @@ namespace Rock.Utility
         /// <returns></returns>
         public static int GetPendingConnectionCount( CampaignItem campaignConnectionItem, Person connectorPerson )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var entitySetService = new EntitySetService( rockContext );
             var entitySetId = GetEntitySet( campaignConnectionItem );
 
@@ -361,7 +362,7 @@ namespace Rock.Utility
         /// <param name="numberOfRequestsRemaining">The number of requests remaining.</param>
         public static void AddConnectionRequestsForPerson( CampaignItem selectedCampaignItem, Person connectorPerson, int numberOfRequests, out int numberOfRequestsRemaining )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             numberOfRequestsRemaining = numberOfRequests;
 
             /* To assign requests, do the following in this order
@@ -476,7 +477,7 @@ namespace Rock.Utility
                 return result;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             List<int?> connectorCampusIds;
             var opportunityService = new ConnectionOpportunityService( rockContext );
 
@@ -490,7 +491,7 @@ namespace Rock.Utility
             // If the person is a member in more than one of opportunity groups, get all the campus ids that the connector can work with
             connectorCampusIds = opportunityConnecterGroupQuery.Where( a => a.ConnectorGroup.Members.Any( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.PersonId == connectorPersonId ) ).Select( a => a.CampusId ).Distinct().ToList();
 
-            // NOTE: if connectorPerson isn't in a ConnectionOpportunityConnectorGroup, there will be no campus ids. The AddCampaignRequests block shouldn't of let them request connections for this campaign
+            // NOTE: if connectorPerson isn't in a ConnectionOpportunityConnectorGroup, there will be no campus ids.
             return connectorCampusIds;
         }
 

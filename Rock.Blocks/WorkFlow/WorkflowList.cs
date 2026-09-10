@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -298,7 +299,7 @@ namespace Rock.Blocks.Workflow
             {
                 int entityTypeId = new Rock.Model.Workflow().TypeId;
                 string workflowQualifier = workflowType.Id.ToString();
-                foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                foreach ( var attributeModel in new AttributeService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&

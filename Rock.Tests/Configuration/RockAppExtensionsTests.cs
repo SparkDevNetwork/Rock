@@ -25,7 +25,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -38,7 +38,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~/" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -51,7 +51,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~/abc" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -64,7 +64,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~/abc/" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -77,7 +77,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~~" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -90,7 +90,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~~" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -103,7 +103,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~~/" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -116,7 +116,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~~/abc" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -129,7 +129,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~~/abc/" );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 
@@ -143,7 +143,7 @@ namespace Rock.Tests.Configuration
 
                 var actualValue = appScope.App.ResolveRockUrl( "~~/abc/", customTheme );
 
-                Assert.That.AreEqual( expectedValue, actualValue );
+                Assert.AreEqual( expectedValue, actualValue );
             }
         }
 

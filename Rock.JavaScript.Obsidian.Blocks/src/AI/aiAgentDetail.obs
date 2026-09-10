@@ -11,7 +11,7 @@
                  :entityKey="entityKey"
                  :isAuditHidden="false"
                  :isBadgesVisible="false"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="isEditable && !isSystem"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="false"
@@ -97,11 +97,23 @@
             return undefined;
         }
 
+        if (isSystem.value) {
+            labels.push({
+                title: "System",
+                type: "default"
+            });
+        }
+
         return labels;
     });
 
     const isEditable = computed((): boolean => {
         return config.isEditable === true;
+    });
+
+    /** Determines if the agent being viewed is a system agent. */
+    const isSystem = computed((): boolean => {
+        return aiAgentViewBag.value?.isSystem === true;
     });
 
     const options = computed((): AIAgentDetailOptionsBag => {

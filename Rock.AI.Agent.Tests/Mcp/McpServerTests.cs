@@ -4,20 +4,18 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.AI.Agent.Mcp;
 using Rock.AI.Agent.Mcp.Protocol;
 using Rock.Enums.AI.Agent;
 using Rock.SystemGuid;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.AI.Agent.Tests.Mcp;
 
 [TestClass]
-public class McpServerTests : MockDatabaseTestsBase
+public class McpServerTests
 {
     private readonly JsonSerializerOptions _serializerOptions = AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public );
 
@@ -38,10 +36,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task HandleRequest_WithMissingId_ReturnsEmptyResponse()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -59,10 +54,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task HandleRequest_WithNotification_ReturnsEmptyResponse()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -80,10 +72,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task HandleRequest_WithNonNotification_ReturnsResponse()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -101,10 +90,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task HandleRequest_WithUnknownMethod_ReturnsError()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -124,10 +110,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task Initialize_WithoutParameters_ReturnsSuccess()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -142,10 +125,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task Initialize_IncludesToolsCapability()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -164,10 +144,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task Initialize_WithProtocolVersion20250618_ReturnsMatchedVersion()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -186,10 +163,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task Initialize_WithProtocolVersion20250326_ReturnsMatchedVersion()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -208,10 +182,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task Initialize_WithSkillInstructions_IncludesInstructions()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var expectedInstructions = "Custom Test Instructions";
         var mcp = new McpServer();
@@ -237,10 +208,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task Ping_WithoutParameters_ReturnsSuccess()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -259,10 +227,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsList_WithoutParameters_ReturnsSuccess()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -277,10 +242,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsList_UsesDoubleUnderscoreAsSeparator()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder()
@@ -310,10 +272,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_WithoutParameters_ReturnsError()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -330,10 +289,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_WithInvalidToolName_ReturnsError()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -351,10 +307,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_WithoutArguments_ReturnsError()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder().Build( buildForMcp: true );
@@ -372,10 +325,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_CallingToolReturningString_IncludesUnstructuredContent()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder()
@@ -398,10 +348,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_CallingToolReturningClass_IncludesUnstructuredContent()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder()
@@ -426,10 +373,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_CallingToolReturningClass_IncludesStructuredContent()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder()
@@ -456,10 +400,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_CallingToolWithIntegerEnum_ParsesEnum()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder()
@@ -480,10 +421,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_CallingToolWithNamedEnum_ParsesEnum()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder()
@@ -504,10 +442,7 @@ public class McpServerTests : MockDatabaseTestsBase
     [TestMethod]
     public async Task ToolsCall_CallingToolWithNullString_CallsMethodWithNull()
     {
-        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        using var scopedApp = TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+        using var scopedApp = TestHelper.CreateScopedRockApp();
 
         var mcp = new McpServer();
         var agent = new AgentBuilder()

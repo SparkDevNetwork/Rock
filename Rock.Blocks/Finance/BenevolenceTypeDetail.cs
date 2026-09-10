@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -479,6 +480,9 @@ namespace Rock.Blocks.Finance
                 entity.SaveAttributeValues( RockContext );
             } );
 
+            // Clear cached triggers since they may have changed.
+            BenevolenceWorkflowService.RemoveCachedTriggers();
+
             return ActionOk( this.GetParentPageUrl() );
         }
 
@@ -490,7 +494,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult IsExistingWorkflow( BenevolenceWorkflowBag workflowBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 BenevolenceWorkflow findWorkFlow = null;
                 var entityId = RequestContext.GetPageParameter( PageParameterKey.BenevolenceTypeId );

@@ -27,6 +27,11 @@ namespace Rock.AI.Agent.Classes.Skills.GroupSkill;
 internal class GroupTypeResult : EntityResultBase
 {
     /// <summary>
+    /// Determines if the group type is not available for use in this skill.
+    /// </summary>
+    public bool IsNotAvailable { get; set; }
+
+    /// <summary>
     /// The name of the group type.
     /// </summary>
     public string Name { get; set; }

@@ -110,9 +110,43 @@ namespace Rock.CheckIn.v2
         /// <returns>A collection of <see cref="ConfigurationAreaBag"/> objects.</returns>
         public virtual List<ConfigurationAreaBag> GetCheckInAreaSummaries( DeviceCache kiosk, GroupTypeCache checkinTemplate )
         {
+            return GetCheckInAreaSummaries( kiosk, checkinTemplate, null );
+        }
+
+        /// <summary>
+        /// Gets the check in area summary bags for all valid check-in areas. If
+        /// a <paramref name="kiosk"/> or <paramref name="checkinTemplate"/> are
+        /// provided then they will be used to filter the results to only areas
+        /// valid for those items. Any areas identified by
+        /// <paramref name="additionalAreaIdKeys"/> that would otherwise be
+        /// filtered out are still included in the result, so that callers
+        /// editing a saved configuration can display selections that live
+        /// outside the current kiosk's scope (for example areas that belong to
+        /// a different campus on a shared saved kiosk template).
+        /// </summary>
+        /// <param name="kiosk">The optional kiosk to filter the results for.</param>
+        /// <param name="checkinTemplate">The optional check-in template to filter all areas to.</param>
+        /// <param name="additionalAreaIdKeys">
+        /// Additional area IdKeys that must always be present in the result,
+        /// even if the kiosk or template filter would exclude them. When
+        /// <c>null</c> or empty, no extra areas are forced in and this behaves
+        /// exactly like the two-parameter overload.
+        /// </param>
+        /// <returns>A collection of <see cref="ConfigurationAreaBag"/> objects.</returns>
+        public virtual List<ConfigurationAreaBag> GetCheckInAreaSummaries( DeviceCache kiosk, GroupTypeCache checkinTemplate, IEnumerable<string> additionalAreaIdKeys )
+        {
             var areas = new Dictionary<string, ConfigurationAreaBag>();
             List<GroupTypeCache> templates;
             HashSet<int> kioskGroupTypeIds = null;
+
+            // Normalize the additional area IdKeys once so we can do fast
+            // lookups while walking the template descendants below. Areas whose
+            // IdKey is in this set are always kept, even when the kiosk filter
+            // would otherwise exclude them. This is what preserves selections
+            // for other-campus areas on a shared saved kiosk template.
+            var additionalAreaIdKeySet = additionalAreaIdKeys != null
+                ? new HashSet<string>( additionalAreaIdKeys.Where( k => k.IsNotNullOrWhiteSpace() ) )
+                : new HashSet<string>();
 
             // If the caller specified a template, then we return areas for
             // only that primary template. Otherwise we include areas from
@@ -145,8 +179,16 @@ namespace Rock.CheckIn.v2
                     }
 
                     // If a kiosk was specified, limit the results to areas
-                    // that are valid for the kiosk.
-                    if ( kioskGroupTypeIds != null && !kioskGroupTypeIds.Contains( areaGroupType.Id ) )
+                    // that are valid for the kiosk. Areas explicitly requested
+                    // by the caller via additionalAreaIdKeys bypass this
+                    // filter so their existing selection state remains visible
+                    // to the admin. We track whether the area survived only
+                    // because of that bypass so the UI can flag it as being
+                    // outside the current kiosk's scope.
+                    var isOutOfScope = kioskGroupTypeIds != null
+                        && !kioskGroupTypeIds.Contains( areaGroupType.Id );
+
+                    if ( isOutOfScope && !additionalAreaIdKeySet.Contains( areaGroupType.IdKey ) )
                     {
                         continue;
                     }
@@ -161,7 +203,8 @@ namespace Rock.CheckIn.v2
                         {
                             Id = areaGroupType.IdKey,
                             Name = areaGroupType.Name,
-                            PrimaryTemplateIds = new List<string> { cfg.IdKey }
+                            PrimaryTemplateIds = new List<string> { cfg.IdKey },
+                            IsOutOfScope = isOutOfScope
                         } );
                     }
                 }

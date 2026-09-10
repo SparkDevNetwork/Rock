@@ -25,6 +25,7 @@ using Ical.Net.Serialization;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared.Constants;
@@ -87,7 +88,7 @@ namespace Rock.Tests.Integration.TestData
         {
             EventItem newEventItem = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.WrapTransaction( () =>
             {
@@ -140,7 +141,7 @@ namespace Rock.Tests.Integration.TestData
         /// <returns></returns>
         public void UpdateEventItem( UpdateEventItemActionArgs args )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.WrapTransaction( () =>
             {
@@ -244,7 +245,7 @@ namespace Rock.Tests.Integration.TestData
         /// </summary>
         public EventItemOccurrence AddEventItemOccurrence( CreateEventItemOccurrenceActionArgs args )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var occurrenceService = new EventItemOccurrenceService( rockContext );
 
             EventItemOccurrence occurrence = null;
@@ -317,7 +318,7 @@ namespace Rock.Tests.Integration.TestData
         /// </summary>
         public EventItemOccurrence UpdateEventItemOccurrence( UpdateEventItemOccurrenceActionArgs args )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var occurrenceService = new EventItemOccurrenceService( rockContext );
 
             var occurrence = occurrenceService.GetByIdentifierOrThrow( args.UpdateTargetIdentifier );
@@ -387,7 +388,7 @@ namespace Rock.Tests.Integration.TestData
 
         public Schedule AddScheduleWithDailyRecurrence( AddScheduleDailyRecurrenceActionArgs args )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var startDateTime = args.StartDateTime ?? new DateTime( RockDateTime.Today.Ticks, DateTimeKind.Unspecified );
             var calendarEvent = GetICalCalendarEvent( startDateTime, args.EventDuration );
@@ -401,7 +402,7 @@ namespace Rock.Tests.Integration.TestData
                 schedule.Guid = args.Guid.Value;
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var scheduleService = new ScheduleService( rockContext );
             scheduleService.Add( schedule );
@@ -442,7 +443,7 @@ namespace Rock.Tests.Integration.TestData
             var calendar = GetICalCalendar( calendarEvent );
             var schedule = CreateSchedule( calendar );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var scheduleService = new ScheduleService( rockContext );
             scheduleService.Add( schedule );
@@ -562,7 +563,7 @@ namespace Rock.Tests.Integration.TestData
 
         public string GetICalendarEventFeed( GetICalendarEventFeedActionArgs actionArgs )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             var args = new GetCalendarEventFeedArgs();
@@ -614,7 +615,7 @@ namespace Rock.Tests.Integration.TestData
         /// </summary>
         public void AddDataForRockSolidFinancesClass()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Create Campus "Stepping Stone".
             TestDataHelper.GetOrAddCampusSteppingStone( rockContext );
@@ -661,7 +662,7 @@ namespace Rock.Tests.Integration.TestData
         /// </summary>
         public void UpdateSampleDataEventDates()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var effectiveDate = GetDefaultEffectiveDate();
 
@@ -751,7 +752,7 @@ namespace Rock.Tests.Integration.TestData
         /// </summary>
         public void DeleteDataForRockSolidFinancesClass()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Delete event occurrences.
             var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );

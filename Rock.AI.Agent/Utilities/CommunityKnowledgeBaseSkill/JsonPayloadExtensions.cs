@@ -42,6 +42,119 @@ namespace Rock.AI.Agent.Utilities.CommunityKnowledgeBaseSkill;
 internal static class JsonPayloadExtensions
 {
     /// <summary>
+    /// Converts a payload into plain objects that can be serialized by the tool
+    /// result.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 8/19/26 - CLAUDE
+    ///
+    /// A tool result is serialized with System.Text.Json, and these payloads are
+    /// Newtonsoft tokens. Handing one over directly does not work: System.Text.Json
+    /// sees a JObject's own surface rather than its contents, so the result fills with
+    /// Type, HasValues and Path, and JToken.Parent points back at its container, which
+    /// is a reference cycle the serializer refuses outright.
+    ///
+    /// Reason: The two JSON libraries meet here, and this is where the payload has to
+    /// cross from one to the other.
+    /// </para>
+    /// <para>
+    /// Integers come back as <see cref="long"/> and fractional numbers as
+    /// <see cref="double"/>, which is what the underlying token already holds. Dates
+    /// are deliberately left as their original strings rather than parsed, because the
+    /// point of returning the payload unmapped is that nothing here decides what a
+    /// value means.
+    /// </para>
+    /// </remarks>
+    /// <param name="token">The token to convert, which may be null.</param>
+    /// <returns>A dictionary, a list, a primitive, or <c>null</c>.</returns>
+    public static object ToPlainObject( this JToken token )
+    {
+        if ( token == null )
+        {
+            return null;
+        }
+
+        switch ( token.Type )
+        {
+            case JTokenType.Object:
+                var members = new Dictionary<string, object>();
+
+                foreach ( var property in ( ( JObject ) token ).Properties() )
+                {
+                    members[property.Name] = property.Value.ToPlainObject();
+                }
+
+                return members;
+
+            case JTokenType.Array:
+                return ( ( JArray ) token ).Select( item => item.ToPlainObject() ).ToList();
+
+            case JTokenType.Null:
+            case JTokenType.Undefined:
+                return null;
+
+            case JTokenType.Integer:
+                return token.ToObject<long>();
+
+            case JTokenType.Float:
+                return token.ToObject<double>();
+
+            case JTokenType.Boolean:
+                return token.ToObject<bool>();
+
+            default:
+                return token.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Converts a payload's items into plain objects, keeping at most
+    /// <paramref name="maximumItems"/> of them.
+    /// </summary>
+    /// <remarks>
+    /// The array is found as the payload itself, or under a <c>results</c> or
+    /// <c>matches</c> member. The routes differ on which they return, and a caller
+    /// should not have to care which one it asked.
+    /// </remarks>
+    /// <param name="data">The <c>data</c> member of a response.</param>
+    /// <param name="maximumItems">The most items to keep.</param>
+    /// <returns>The items, empty when the payload carries none.</returns>
+    public static List<object> ToPlainItems( this JToken data, int maximumItems )
+    {
+        var items = data as JArray
+            ?? data?["results"] as JArray
+            ?? data?["matches"] as JArray;
+
+        if ( items == null )
+        {
+            return new List<object>();
+        }
+
+        return items
+            .Take( maximumItems )
+            .Select( item => item.ToPlainObject() )
+            .ToList();
+    }
+
+    /// <summary>
+    /// Converts a response's <c>meta</c> member into tool result metadata.
+    /// </summary>
+    /// <remarks>
+    /// Metadata rather than content, because these describe the response rather than
+    /// answer the question: paging positions, totals, and the flags saying whether
+    /// more exists. Keeping them out of the payload means the payload stays exactly
+    /// what the service returned.
+    /// </remarks>
+    /// <param name="meta">The <c>meta</c> member of a response.</param>
+    /// <returns>The metadata, empty when there is none.</returns>
+    public static Dictionary<string, object> ToPlainMetadata( this JToken meta )
+    {
+        return meta.ToPlainObject() as Dictionary<string, object>
+            ?? new Dictionary<string, object>();
+    }
+
+    /// <summary>
     /// Reads a named string, or <c>null</c> when it is absent.
     /// </summary>
     /// <param name="token">The object to read from, which may be null.</param>

@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -29,22 +30,9 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void BenevolenceRequestDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                BenevolenceRequest benevolenceRequest = new BenevolenceRequest();
-                benevolenceRequest.RequestDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, benevolenceRequest.RequestDateKey );
-            }
-        }
-
-        [TestMethod]
         public void BenevolenceRequestDateKeySavesCorrectly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var benevolenceRequestService = new BenevolenceRequestService( rockContext );
 
             var benevolenceRequest = BuildBenevolenceRequest( rockContext, Convert.ToDateTime( "2010-3-15" ) );
@@ -66,7 +54,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var benevolenceRequestService = new BenevolenceRequestService( rockContext );
 
@@ -85,7 +73,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var benevolenceRequestService = new BenevolenceRequestService( rockContext );
                 var benevolenceRequests = benevolenceRequestService.
@@ -119,7 +107,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private void CleanUpData( string benevolenceRequestForeignKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.ExecuteSqlCommand( $"DELETE [BenevolenceRequest] WHERE [ForeignKey] = '{benevolenceRequestForeignKey}'" );
         }
     }

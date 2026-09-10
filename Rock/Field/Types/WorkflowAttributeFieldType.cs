@@ -168,6 +168,38 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            /*
+                8/19/26 - CLAUDE
+
+                No Values, and this is a limitation rather than a choice. The list of
+                attributes this can point at is the containing workflow type's, and
+                that is handed in through HttpContext.Current.Items by the screen doing
+                the editing. A consumer that is not that screen has no such context,
+                and nothing in the configuration says which workflow type this setting
+                belongs to, so the field type genuinely cannot enumerate its own
+                values here.
+
+                What it can do is say what the value looks like and where to get one,
+                which is the whole reason Instructions exists.
+
+                Reason: The values are contextual, so describe the shape and the source
+                instead of guessing at the set.
+            */
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of an attribute belonging to the workflow type this setting is part of, or to the activity containing it. Not the attribute's id or idKey.",
+                Instructions = "To find the correct value, read the workflow type this setting belongs to and take the guid of the attribute you want from its attributes or from those of the containing activity."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

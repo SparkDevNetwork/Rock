@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -51,7 +52,7 @@ namespace Rock.Field.Types
             Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var interactionChannel = new InteractionChannelService( rockContext ).GetNoTracking( guid.Value );
                     if ( interactionChannel != null )
@@ -130,7 +131,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new InteractionChannelService( rockContext ).Get( guid.Value );
             }
 
@@ -151,7 +152,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannelId = new InteractionChannelService( rockContext ).GetId( guid.Value );
 
@@ -175,6 +176,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<InteractionChannel>().Value, nameof( InteractionChannel.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the InteractionChannel table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is the channel, not one of its components.",
+                Instructions = "To find the correct value, read the interaction channels and take the guid of the one you want."
             };
         }
 
@@ -211,7 +227,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var interactionChannels = new InteractionChannelService( new RockContext() ).Queryable().OrderBy( d => d.Name );
+            var interactionChannels = new InteractionChannelService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( d => d.Name );
             if ( interactionChannels.Any() )
             {
                 foreach ( var interactionChannel in interactionChannels )
@@ -267,7 +283,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new InteractionChannelService( new RockContext() ).Get( guid );
+            var item = new InteractionChannelService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -279,7 +295,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new InteractionChannelService( new RockContext() ).Get( id ?? 0 );
+            var item = new InteractionChannelService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

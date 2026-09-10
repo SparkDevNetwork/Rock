@@ -146,9 +146,9 @@
     const legendPosition = ref<LegendPosition | undefined>();
     const sectionStyle = ref<LinearGaugeSectionStyle>(LinearGaugeSectionStyle.Segmented);
     const series: LinearGaugeSeries[] = [
-        { label: "Completed", data: [70], color: "var(--color-success-strong)" },
-        { label: "In Progress", data: [20], color: "#F59E0B" },
-        { label: "Not Started", data: [10], color: "#EF4444" }
+        { label: "Completed", data: [70], color: "var(--color-positive-primary)" },
+        { label: "In Progress", data: [20], color: "var(--color-caution-primary)" },
+        { label: "Not Started", data: [10], color: "var(--color-negative-primary)" }
     ];
     const title = ref<string>("Connection Requests");
     const titleAlign = ref<TitleAlign | undefined>();

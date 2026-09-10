@@ -337,7 +337,49 @@ namespace Rock.Rest.v2
                     actionParameters.AddOrReplace( q.Key, JToken.FromObject( q.Value.ToString() ) );
                 }
 
-                requestContext.PrepareRequestForPage( pageCache );
+                /*
+                    8/24/2026 - NA
+
+                    Block-action requests don't go through RockPage, so the RockRequestContext
+                    has no idea which named route (if any) was used to originally load the page
+                    that hosts this block. Use the HTTP Referrer header, when present, to
+                    reconstruct a PageReference for the page URL and carry its RouteId forward.
+                    We only trust the referring reference when it resolves to the same page as
+                    this block so a stale or unrelated referrer cannot poison the route lookup.
+
+                    Reason: Allow GetCurrentPageUrl() to preserve the page's friendly
+                    named route when rebuilding the current page URL from a block action.
+                    https://github.com/SparkDevNetwork/Rock/issues/6988
+                */
+                Rock.Web.PageReference pageReference = null;
+                var referringUri = controller.Request?.Headers?.Referrer;
+                if ( referringUri != null )
+                {
+                    try
+                    {
+#if WEBFORMS
+                        var applicationPath = System.Web.HttpContext.Current?.Request?.ApplicationPath;
+#else
+#error Not implemented yet.
+#endif
+                        var referringReference = new Rock.Web.PageReference( referringUri, applicationPath );
+
+                        if ( referringReference.PageId == pageCache.Id && referringReference.RouteId > 0 )
+                        {
+                            pageReference = new Rock.Web.PageReference(
+                                pageCache.Id,
+                                referringReference.RouteId,
+                                requestContext.GetPageParameters() as Dictionary<string, string> ?? new Dictionary<string, string>( requestContext.GetPageParameters() ) );
+                        }
+                    }
+                    catch
+                    {
+                        // A malformed or unresolvable referer should not fail the block
+                        // action; fall through and use the default page reference.
+                    }
+                }
+
+                requestContext.PrepareRequestForPage( pageCache, pageReference );
 
                 return await InvokeAction( controller, rockBlock, actionName, actionParameters, parameters );
             }

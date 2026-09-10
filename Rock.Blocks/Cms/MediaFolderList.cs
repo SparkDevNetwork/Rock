@@ -37,6 +37,7 @@ using Rock.Web.Cache;
 using static Rock.Blocks.Cms.MediaAccountList;
 using static Rock.Blocks.Cms.MediaFolderList;
 using static Rock.Blocks.Finance.FinancialBatchList;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Cms
 {
@@ -291,7 +292,7 @@ namespace Rock.Blocks.Cms
         {
             if ( SelectedMediaAccount == null )
             {
-                SelectedMediaAccount = new MediaAccountService( new RockContext() ).Get( RequestContext.GetPageParameter( PageParameterKey.MediaAccountId ) );
+                SelectedMediaAccount = new MediaAccountService( RockApp.Current.CreateRockContext() ).Get( RequestContext.GetPageParameter( PageParameterKey.MediaAccountId ) );
             }
 
             return SelectedMediaAccount;
@@ -309,7 +310,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new MediaFolderService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

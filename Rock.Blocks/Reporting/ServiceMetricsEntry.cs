@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -316,7 +317,7 @@ namespace Rock.Blocks.Reporting
                 var scheduleCategory = CategoryCache.Get( scheduleCategoryGuid );
                 if ( scheduleCategory != null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         foreach ( var schedule in new ScheduleService( rockContext )
                             .Queryable().AsNoTracking()
@@ -393,7 +394,7 @@ namespace Rock.Blocks.Reporting
 
             if ( campusGuid.HasValue && scheduleGuid.HasValue && weekendDate.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var campusId = CampusCache.GetId( campusGuid.Value );
                     var scheduleId = new ScheduleService( rockContext ).GetId( scheduleGuid.Value );
@@ -554,7 +555,7 @@ namespace Rock.Blocks.Reporting
 
             if ( campusGuid.HasValue && scheduleGuid.HasValue && weekendDate.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var campusId = CampusCache.GetId( campusGuid.Value );
                     var scheduleId = new ScheduleService( rockContext ).GetId( scheduleGuid.Value );
@@ -694,7 +695,7 @@ namespace Rock.Blocks.Reporting
             var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull() ?? this.PersonPreferences.GetValue( UserPreferenceKey.CampusId ).AsIntegerOrNull() ?? GetDefaultCampusId();
             var campusGuid = campusId.HasValue ? CampusCache.GetGuid( campusId.Value ) : null;
             var scheduleId = this.PersonPreferences.GetValue( UserPreferenceKey.ScheduleId ).AsIntegerOrNull();
-            var scheduleGuid = scheduleId.HasValue ? new ScheduleService( new RockContext() ).GetGuid( scheduleId.Value ) : null;
+            var scheduleGuid = scheduleId.HasValue ? new ScheduleService( RockApp.Current.CreateRockContext() ).GetGuid( scheduleId.Value ) : null;
             var defaultToCurrentWeek = GetAttributeValue( AttributeKey.DefaultToCurrentWeek ).AsBoolean();
 
             // If configured to default to current week or the Campus and Schedule both have initial values,
@@ -777,7 +778,7 @@ namespace Rock.Blocks.Reporting
             if ( limitCampusByCampusTeam )
             {
                 var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
-                var teamGroupIds = new GroupService( new RockContext() ).Queryable().AsNoTracking()
+                var teamGroupIds = new GroupService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking()
                     .Where( g => g.GroupTypeId == campusTeamGroupTypeId )
                     .Where( g => g.Members.Where( gm => gm.PersonId == currentPersonId ).Any() )
                     .Select( g => g.Id ).ToList();

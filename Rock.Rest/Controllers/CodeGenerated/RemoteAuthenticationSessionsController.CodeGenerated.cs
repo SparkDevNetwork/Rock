@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoteAuthenticationSessionsController"/> class.
         /// </summary>
-        public RemoteAuthenticationSessionsController() : base( new Rock.Model.RemoteAuthenticationSessionService( new Rock.Data.RockContext() ) ) { } 
+        public RemoteAuthenticationSessionsController() : base( new Rock.Model.RemoteAuthenticationSessionService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

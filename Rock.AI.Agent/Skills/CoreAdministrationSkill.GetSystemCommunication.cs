@@ -67,9 +67,7 @@ internal sealed partial class CoreAdministrationSkill
             To = systemCommunication.To,
             Cc = systemCommunication.Cc,
             Bcc = systemCommunication.Bcc,
-            Category = category != null
-                ? new KeyNameResult { Id = category.Id, Guid = category.Guid, Name = category.Name }
-                : null,
+            Category = KeyNameResult.FromCache( category ),
             IsActive = systemCommunication.IsActive ?? false,
             IsSystem = systemCommunication.IsSystem,
             HasSmsMessage = systemCommunication.SMSMessage.IsNotNullOrWhiteSpace(),

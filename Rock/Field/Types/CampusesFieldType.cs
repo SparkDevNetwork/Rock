@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -55,7 +56,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var configurationProperties = new Dictionary<string, string>();
 
@@ -257,20 +258,14 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
-            var campuses = GetListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
-                .Select( kvp => new ListItemBag
-                {
-                    Value = kvp.Key,
-                    Text = kvp.Value
-                } )
-                .OrderBy( c => c.Text )
-                .ToList();
-
+            // No Values. Campuses are rows a caller can look up, and listing them here
+            // would repeat that data on every attribute described rather than leaving
+            // it to one deliberate call.
             return new FieldTypeHints
             {
-                IsCompleteList = true,
-                Values = campuses,
-                ValueFormat = $"One or more comma delimited guids that represents entities from the Campus table.",
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the Campus table, separated by commas. Not their ids or idKeys and not their names.",
+                Instructions = "To find the correct values, read the campuses and take the guid of each one you want. The field's configuration may limit which campuses are allowed by type, status, or an explicit list."
             };
         }
 

@@ -94,6 +94,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A JSON document of structured content, of the shape the structured content editor produces. An empty value is stored as {}. Plain text or HTML is not valid here, so content written as HTML must be converted before it is stored."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

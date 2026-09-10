@@ -48,7 +48,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentUsage( "Use this when the exact text is known, such as a method name, class name, or constant. When only the concept is known, use SearchCode first." )]
     [AgentUsage( "This is the middle step of a sequence. Follow it with GetCodeLines to read the surrounding code." )]
     [AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first to confirm this Rock release has code indexed." )]
-    [AgentToolReturnDescription( "Each match with its file path, line number, matched line, and surrounding context lines. Reports whether a cap truncated the search." )]
+    [AgentToolReturnDescription( "Each match exactly as the code service returns it, carrying code_document_id, file_path, repo, rock_version, line_number, line, context_before, and context_after. Response metadata reports match_count and whether a cap truncated the search." )]
     [AgentToolGuid( "D0EA7BC3-3DAF-4481-A1B0-483FE1A4834E" )]
     [AgentToolPreamble( "Grepping Rock Source" )]
     public async Task<AgentToolResult> GrepCode(
@@ -80,7 +80,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             return DescribeFailure( response );
         }
 
-        var matches = ReadGrepMatches( response.Data );
+        var matches = response.Data.ToPlainItems( SearchPageSize );
 
         if ( !matches.Any() )
         {
@@ -100,14 +100,8 @@ internal sealed partial class CommunityKnowledgeBaseSkill
 
         var isTruncated = response.Meta.GetBool( "truncated" ) || response.Meta.GetBool( "is_truncated" );
 
-        var result = new CodeGrepResult
-        {
-            Matches = matches,
-            MatchCount = matches.Count,
-            IsTruncated = isTruncated
-        };
-
-        var toolResult = Success( result );
+        var toolResult = Success( matches )
+            .WithMetadata( response.Meta.ToPlainMetadata() );
 
         // Clipping is allowed here because it is flagged and recoverable, which is
         // what separates it from the silent truncation the conventions forbid. A
@@ -118,41 +112,6 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         }
 
         return toolResult;
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    /// <summary>
-    /// Reads the matching lines from a grep payload.
-    /// </summary>
-    /// <remarks>
-    /// The document id comes from <c>code_document_id</c> here, not from <c>id</c> as
-    /// on code search. Both names are read for the same reason as on that tool.
-    /// </remarks>
-    /// <param name="data">The <c>data</c> member of the grep response.</param>
-    /// <returns>The matches, empty when the payload carries none.</returns>
-    private static List<CodeGrepMatchResult> ReadGrepMatches( JToken data )
-    {
-        var matches = data as JArray ?? data?["matches"] as JArray;
-
-        if ( matches == null )
-        {
-            return new List<CodeGrepMatchResult>();
-        }
-
-        return matches
-            .Select( m => new CodeGrepMatchResult
-            {
-                FilePath = m.GetString( "file_path" ),
-                DocumentId = m.GetString( "code_document_id" ) ?? m.GetString( "id" ),
-                LineNumber = m.GetInt( "line_number" ),
-                Line = m.GetString( "line" ),
-                ContextBefore = m.GetStringList( "context_before" ),
-                ContextAfter = m.GetStringList( "context_after" )
-            } )
-            .ToList();
     }
 
     #endregion

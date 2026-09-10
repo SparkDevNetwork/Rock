@@ -29,6 +29,7 @@ using Rock.ClientService.Finance.FinancialPersonSavedAccount;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Common.Mobile.Blocks.Finance.Giving;
 using Rock.Common.Mobile.ViewModel;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -929,6 +930,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
             PaymentSchedule schedule = GetSchedule( bag.ProcessDate, bag.FrequencyValueId );
             var mergeFields = RequestContext.GetCommonMergeFields();
 
+            // Let the success template tell an immediate charge apart from a gift that
+            // was handed to the gateway as a schedule, and know whether a receipt email
+            // is actually going to be sent.
+            mergeFields.Add( "IsScheduled", schedule != null );
+            mergeFields.Add( "IsReceiptEmailConfigured", ReceiptEmailSystemCommunicationGuid.HasValue );
+
             if ( schedule != null )
             {
                 schedule.PersonId = person.Id;
@@ -1076,7 +1083,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// </summary>
         private PaymentSchedule GetSchedule( DateTime? startDate, string frequencyIdKey )
         {
-            startDate = startDate ?? RockDateTime.Today;
+            // ProcessDate arrives bound to the host server's clock, which is not
+            // necessarily the organization's time zone. Normalize it to a Rock date so
+            // the comparisons below are made against a single clock.
+            startDate = startDate.HasValue
+                ? RockDateTime.ConvertLocalDateTimeToRockDateTime( startDate.Value ).Date
+                : RockDateTime.Today;
 
             // Figure out if this is a one-time transaction or a future scheduled transaction
             if ( AllowScheduled )
@@ -1277,7 +1289,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <param name="savedAccountId">The saved account unique identifier.</param>
         private ReferencePaymentInfo GetSavedAccountReferenceInfo( string savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
+            var savedAccount = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
                 return savedAccount.GetReferencePayment();
@@ -1710,10 +1722,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 HorizontalOptions=""Center""
                 StyleClass=""text-interface-strong, body"" />
 
-            <Label Text=""We sent a confirmation email to {{ Transaction.AuthorizedPersonAlias.Person.Email }}.""
-                HorizontalTextAlignment=""Center""
-                HorizontalOptions=""Center""
-                StyleClass=""text-interface-medium, body"" />
+            {% if IsReceiptEmailConfigured == true and IsScheduled == false %}
+                <Label Text=""We sent a confirmation email to {{ Transaction.AuthorizedPersonAlias.Person.Email }}.""
+                    HorizontalTextAlignment=""Center""
+                    HorizontalOptions=""Center""
+                    StyleClass=""text-interface-medium, body"" />
+            {% endif %}
         </StackLayout>
     </StackLayout>
 </Grid>";

@@ -1,0 +1,101 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.CheckIn.Manager.RoomList
+{
+    /// <summary>
+    /// The initialization options for the Room List block. Everything the
+    /// frontend needs before it makes its first grid data request.
+    /// </summary>
+    public class RoomListOptionsBag
+    {
+        /// <summary>
+        /// Gets or sets a warning message that should be displayed in place of
+        /// the grid (for example, when no campus is in context or when the
+        /// campus has no locations configured). When populated the grid should
+        /// not be rendered.
+        /// </summary>
+        public string WarningMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a fully-qualified URL that the browser should be sent
+        /// to on load. When populated, this takes precedence over rendering the
+        /// grid and is used by the block to redirect the user to the configured
+        /// Area Select Page when a check-in area cannot be resolved.
+        /// </summary>
+        public string RedirectUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the panel title to display above the grid. Defaults to
+        /// "Room List" but changes based on the LocationId / ParentLocationId
+        /// page parameters.
+        /// </summary>
+        public string PanelTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedules that are currently selected in the
+        /// Schedules filter, as read from the shared CheckinManager cookie on
+        /// load. Each item's <see cref="ListItemBag.Value"/> is the schedule's
+        /// Guid; the picker on the client is Guid-native. The server resolves
+        /// the Guids back to integer identifiers when reading the block
+        /// action's response so the underlying cookie schema stays int-based
+        /// and shared with the WebForms block during A-B testing.
+        /// </summary>
+        public List<ListItemBag> SelectedSchedules { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Room column should be
+        /// shown. It is hidden when the block is scoped to a single Location by
+        /// the LocationId page parameter.
+        /// </summary>
+        public bool ShowRoomColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Checked-in column
+        /// should be shown. It is shown only when at least one of the resolved
+        /// check-in group types has Enable Presence turned on.
+        /// </summary>
+        public bool ShowCheckedInCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Checked-out column
+        /// should be shown. It is shown only when at least one of the resolved
+        /// check-in group types allows the check-in manager to check people
+        /// out.
+        /// </summary>
+        public bool ShowCheckedOutCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the header text for the Present column. When Enable
+        /// Presence is on for any resolved group type this is "Present";
+        /// otherwise it reads as "Checked-In" since a person is automatically
+        /// marked present when they check in.
+        /// </summary>
+        public string PresentColumnHeader { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the block should combine
+        /// child groups into their parent group and render one row per
+        /// location. Used by the grid to decide the row key strategy.
+        /// </summary>
+        public bool IsShowOnlyParentGroup { get; set; }
+    }
+}

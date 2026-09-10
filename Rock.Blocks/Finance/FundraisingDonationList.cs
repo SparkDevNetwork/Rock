@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -311,7 +312,7 @@ namespace Rock.Blocks.Finance
         /// <exception cref="NotImplementedException"></exception>
         private bool IsContextGroupFundraisingGroupType()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var group = GetContextEntityGroup();
             var groupTypeIdFundraising = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
             var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable()

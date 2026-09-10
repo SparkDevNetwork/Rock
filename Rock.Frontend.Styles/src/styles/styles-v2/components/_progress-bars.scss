@@ -121,6 +121,12 @@
     }
   }
 }
+
+// Used for progress bars that represent a value within a chart/analytics context (e.g. link performance bars),
+// rather than a semantic state like success/info/warning/danger.
+.progress-bar-chart {
+  background-color: var(--color-metric-primary);
+}
 // ======================== END ALTERNATIVE STYLE ========================
 
 

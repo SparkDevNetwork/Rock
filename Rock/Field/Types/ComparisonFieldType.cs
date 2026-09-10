@@ -96,6 +96,33 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The number, not the name, and the enum is flagged, so the values are powers
+        /// of two rather than a sequence. Listing them is the only practical way for a
+        /// caller to get this right.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = Enum.GetValues( typeof( ComparisonType ) )
+                    .Cast<ComparisonType>()
+                    .Select( c => new ListItemBag
+                    {
+                        Value = ( ( int ) c ).ToString(),
+                        Text = c.ConvertToString()
+                    } )
+                    .ToList(),
+                ValueFormat = "The number for the comparison, not its name. A name that cannot be read falls back to Equal To rather than reporting a problem, so send the number."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

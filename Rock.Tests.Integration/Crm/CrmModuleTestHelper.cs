@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -36,7 +37,7 @@ namespace Rock.Tests.Integration.Crm
         /// <returns></returns>
         public static Group AddOrReplacePerson( Person person, RockContext dataContext = null )
         {
-            dataContext = dataContext ?? new RockContext();
+            dataContext = dataContext ?? RockApp.Current.CreateRockContext();
             var personService = new PersonService( dataContext );
 
             Assert.AreNotEqual( Guid.Empty, person.Guid, "Person.Guid is a required value." );
@@ -85,7 +86,7 @@ namespace Rock.Tests.Integration.Crm
         /// <returns></returns>
         public int AddOrUpdatePhoneNumberCountryCode( string countryCode, string description, string matchRegEx, string formatRegEx )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var definedTypeService = new DefinedTypeService( rockContext );
             var definedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
 

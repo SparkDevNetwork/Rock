@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Collections.Generic;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Data;
 using Rock.ViewModels.Controls;
@@ -116,7 +117,11 @@ namespace Rock.Blocks.Engagement.Steps
 
         public List<ListItemBag> Campuses { get; set; }
         private int currentColorIndex = 0;
-        private string[] defaultColors = { "#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45", "#27aeef", "#b33dc6" };
+
+        // Fallback colors for step types that don't have their own configured HighlightColor. Each node in
+        // this flow diagram is only distinguishable by color, so this cycles through the categorical
+        // palette in sequence rather than a single flat color.
+        private string[] defaultColors = { "--color-categorical-1", "--color-categorical-2", "--color-categorical-3", "--color-categorical-4", "--color-categorical-5", "--color-categorical-6", "--color-categorical-7", "--color-categorical-8" };
 
         #region Base Overrides
 
@@ -128,7 +133,7 @@ namespace Rock.Blocks.Engagement.Steps
         /// </returns>
         public override object GetObsidianBlockInitialization()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var campusClientService = new Rock.ClientService.Core.Campus.CampusClientService( rockContext, RequestContext.CurrentPerson );
             Campuses = campusClientService.GetCampusesAsListItems();
 
@@ -198,7 +203,7 @@ namespace Rock.Blocks.Engagement.Steps
             }
 
             var parameters = GetParameters( maxLevels, dateRange, campus );
-            var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
+            var flowEdgeData = new DbService( RockApp.Current.CreateRockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
             var flowEdgeResults = new List<SankeyDiagramEdgeBag>();
 
             foreach ( DataRow flowEdgeRow in flowEdgeData.Rows )

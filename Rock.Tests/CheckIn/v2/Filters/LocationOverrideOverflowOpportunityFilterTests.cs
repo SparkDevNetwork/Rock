@@ -25,7 +25,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void OverrideOverflowFilter_WithNoOverflowLocation_IncludesOriginalLocations()
         {
-            using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            using var scope = TestHelper.CreateScopedRockApp();
 
             var filter = CreateOverflowFilter( scope.App.CreateRockContext() );
             var opportunities = new OpportunityCollection
@@ -60,7 +60,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void OverrideOverflowFilter_WithOverflowLocation_IncludesOriginalLocations()
         {
-            using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            using var scope = TestHelper.CreateScopedRockApp();
 
             var filter = CreateOverflowFilter( scope.App.CreateRockContext(), isOverride: true );
             var opportunities = new OpportunityCollection
@@ -100,7 +100,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void OverrideOverflowFilter_WithOverflowLocation_IncludesOverflowLocation()
         {
-            using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            using var scope = TestHelper.CreateScopedRockApp();
 
             var filter = CreateOverflowFilter( scope.App.CreateRockContext(), isOverride: true );
             var opportunities = new OpportunityCollection
@@ -141,7 +141,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void OverrideOverflowFilter_WithoutOverride_ExcludesOverflowLocation()
         {
-            using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            using var scope = TestHelper.CreateScopedRockApp();
 
             var filter = CreateOverflowFilter( scope.App.CreateRockContext(), isOverride: false );
             var opportunities = new OpportunityCollection
@@ -181,7 +181,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void OverrideOverflowFilter_IsSkippedDuringOverride_IsFalse()
         {
-            using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+            using var scope = TestHelper.CreateScopedRockApp();
 
             var filter = CreateOverflowFilter( scope.App.CreateRockContext(), isOverride: false );
 

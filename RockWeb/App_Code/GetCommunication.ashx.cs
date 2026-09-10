@@ -59,7 +59,7 @@ namespace RockWeb
             Guid? communicationGuid = context.Request.QueryString["c"].AsGuidOrNull();
             if ( communicationGuid.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var communication = new CommunicationService( rockContext ).Get( communicationGuid.Value );
 
                 if ( communication != null )
@@ -88,7 +88,7 @@ namespace RockWeb
                         var principal = context.User;
                         if ( principal != null && principal.Identity != null )
                         {
-                            var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
+                            var userLoginService = new Rock.Model.UserLoginService( RockApp.Current.CreateRockContext() );
                             var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
                             if ( userLogin != null )

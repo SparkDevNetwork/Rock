@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -195,7 +196,7 @@ namespace RockWeb.Blocks.Finance
             int? gatewayId = gpGateway.SelectedValueAsInt();
             if ( gatewayId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
                     if ( financialGateway != null )

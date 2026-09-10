@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonSearchKeysController"/> class.
         /// </summary>
-        public PersonSearchKeysController() : base( new Rock.Model.PersonSearchKeyService( new Rock.Data.RockContext() ) ) { } 
+        public PersonSearchKeysController() : base( new Rock.Model.PersonSearchKeyService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

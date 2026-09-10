@@ -2,19 +2,19 @@
 
 <style>
     .progress-bar-link {
-        background-color: #60BD68;
+        background-color: var(--color-metric-primary);
     }
 
     .label-clicked {
-        background-color: #60bd68;
+        background-color: var(--color-positive-primary);
     }
 
     .label-opened {
-        background-color: #5da5da;
+        background-color: var(--color-metric-primary);
     }
 
     .label-unopened {
-        background-color: #ffb70f;
+        background-color: var(--color-caution-primary);
     }
 </style>
 
@@ -165,6 +165,17 @@
                     return result;
                 };
 
+                // Resolves a CSS custom property to its computed value, since canvas-based
+                // charting can't accept a var(...) reference directly the way CSS can.
+                var getCssVariableValue = function (cssVariableName, fallbackValue) {
+                    var value = getComputedStyle(document.documentElement).getPropertyValue(cssVariableName).trim();
+                    return value || fallbackValue;
+                };
+
+                var openColor = getCssVariableValue('--color-metric-primary', '#5DA5DA');
+                var clickColor = getCssVariableValue('--color-positive-primary', '#60BD68');
+                var unopenedColor = getCssVariableValue('--color-caution-primary', '#FFBF2F');
+
                 // Main Linechart
                 var lineChartDataLabels = eval($('#<%=hfLineChartDataLabelsJSON.ClientID%>').val());
                 var lineChartDataOpens = JSON.parse($('#<%=hfLineChartDataOpensJSON.ClientID%>').val());
@@ -180,8 +191,8 @@
                         datasets: [{
                             type: 'line',
                             label: 'Opens',
-                            backgroundColor: '#5DA5DA',
-                            borderColor: '#5DA5DA',
+                            backgroundColor: openColor,
+                            borderColor: openColor,
                             data: lineChartDataOpens,
                             spanGaps: true,
                             fill: false
@@ -189,8 +200,8 @@
                         {
                             type: 'line',
                             label: 'Clicks',
-                            backgroundColor: '#60BD68',
-                            borderColor: '#60BD68',
+                            backgroundColor: clickColor,
+                            borderColor: clickColor,
                             data: lineChartDataClicks,
                             spanGaps: true,
                             fill: false
@@ -198,8 +209,8 @@
                         {
                             type: 'line',
                             label: 'Unopened',
-                            backgroundColor: '#FFBF2F',
-                            borderColor: '#FFBF2F',
+                            backgroundColor: unopenedColor,
+                            borderColor: unopenedColor,
                             data: lineChartDataUnopened,
                             hidden: lineChartDataUnopened == null,
                             spanGaps: true,
@@ -267,7 +278,7 @@
                         datasets: [{
                             type: 'pie',
                             data: pieChartDataOpenClicks,
-                            backgroundColor: ['#5DA5DA', '#60BD68', '#FFBF2F'],
+                            backgroundColor: [openColor, clickColor, unopenedColor],
                         }],
                     }
                 });

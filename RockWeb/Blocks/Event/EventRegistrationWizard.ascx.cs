@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Lava;
@@ -384,16 +385,24 @@ namespace RockWeb.Blocks.Event
             {
                 pnlCosts.Visible = true;
                 pnlDefaultPayment.Visible = true;
+                apAccount.Visible = true;
+                apAccount.Required = true;
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationTemplateService = new RegistrationTemplateService( rockContext );
                 var registrationTemplate = registrationTemplateService.Get( selectedTemplateId.Value );
                 SaveSelectedTemplate( registrationTemplate );
                 pnlCosts.Visible = registrationTemplate.SetCostOnInstance ?? false;
                 pnlDefaultPayment.Visible = registrationTemplate.SetCostOnInstance ?? false;
+
+                // Only show/require the Account when the template has a Financial Gateway,
+                // since without a gateway no payment can be collected.
+                var templateHasFinancialGateway = registrationTemplate.FinancialGatewayId.HasValue;
+                apAccount.Visible = templateHasFinancialGateway;
+                apAccount.Required = templateHasFinancialGateway;
                 if ( !registrationTemplate.GroupTypeId.HasValue )
                 {
                     tbGroupName.Text = string.Empty;
@@ -434,7 +443,7 @@ namespace RockWeb.Blocks.Event
             wpAttributes.Visible = false;
             phAttributes.Controls.Clear();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventCalendarService = new EventCalendarService( rockContext );
 
@@ -1039,7 +1048,7 @@ namespace RockWeb.Blocks.Event
             {
                 SetActiveWizardStep( ActiveWizardStep.InitiateWizard );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     Init_SetContact();
                     Init_SetRegistrationTemplateSelector( rockContext );
@@ -1274,7 +1283,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( step == ActiveWizardStep.Summary )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     DisplaySummary( rockContext );
                 }
@@ -1282,7 +1291,7 @@ namespace RockWeb.Blocks.Event
             else if ( step == ActiveWizardStep.Finished )
             {
                 CommitResult result = null;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.WrapTransaction( () =>
                     {
@@ -1594,7 +1603,7 @@ namespace RockWeb.Blocks.Event
         {
             bool groupSelectionIsValid = false;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 groupSelectionIsValid = ValidateParentGroupSelection( rockContext );
             }
@@ -1706,7 +1715,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
                 var contact = personService.Get( selectedPerson.Value );
 
@@ -1778,7 +1787,7 @@ namespace RockWeb.Blocks.Event
 
         protected void gpParentGroup_SelectItem( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ValidateParentGroupSelection( rockContext );
             }
@@ -1792,7 +1801,7 @@ namespace RockWeb.Blocks.Event
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventMapingService = new EventItemOccurrenceGroupMapService( rockContext );
 

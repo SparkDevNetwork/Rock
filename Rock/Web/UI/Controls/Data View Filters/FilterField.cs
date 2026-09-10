@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Reporting.DataFilter;
@@ -504,7 +505,7 @@ namespace Rock.Web.UI.Controls
                 {
                     var requestContext = this.RockBlock()?.RockPage?.RequestContext;
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var definition = component.GetComponentDefinition( FilteredEntityType, value, rockContext, requestContext );
 
@@ -546,7 +547,7 @@ namespace Rock.Web.UI.Controls
                 {
                     var requestContext = this.RockBlock()?.RockPage?.RequestContext;
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         return component.GetSelectionFromObsidianComponentData( FilteredEntityType, obsidianWrapper.ComponentData, rockContext, requestContext );
                     }
@@ -570,7 +571,7 @@ namespace Rock.Web.UI.Controls
 
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var relatedDataViewId = component.GetRelatedDataViewId( FilteredEntityType, GetSelection(), rockContext );
 
@@ -631,7 +632,7 @@ namespace Rock.Web.UI.Controls
                 {
                     var requestContext = this.RockBlock()?.RockPage?.RequestContext;
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var definition = component.GetComponentDefinition( FilteredEntityType, string.Empty, rockContext, requestContext );
 

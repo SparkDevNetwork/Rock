@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistrationTemplateFormFieldsController"/> class.
         /// </summary>
-        public RegistrationTemplateFormFieldsController() : base( new Rock.Model.RegistrationTemplateFormFieldService( new Rock.Data.RockContext() ) ) { } 
+        public RegistrationTemplateFormFieldsController() : base( new Rock.Model.RegistrationTemplateFormFieldService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

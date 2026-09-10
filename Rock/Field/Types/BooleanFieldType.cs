@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -340,6 +341,40 @@ namespace Rock.Field.Types
             }
 
             return false;
+        }
+
+        #endregion
+
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            /*
+                8/19/26 - CLAUDE
+
+                The labels come from configuration because an attribute can present
+                itself as Yes/No, On/Off, or anything else its author chose, but the
+                stored value is always the word True or the word False. Reporting the
+                configured label as the Text keeps the pair honest: it is what a person
+                sees, and the Value beside it is what has to be written.
+
+                Reason: The two sides of a boolean are only obvious until someone
+                renames them.
+            */
+            var trueText = privateConfigurationValues.GetValueOrNull( ConfigurationKey.TrueText );
+            var falseText = privateConfigurationValues.GetValueOrNull( ConfigurationKey.FalseText );
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = new List<ListItemBag>
+                {
+                    new ListItemBag { Value = "True", Text = trueText.IsNotNullOrWhiteSpace() ? trueText : "Yes" },
+                    new ListItemBag { Value = "False", Text = falseText.IsNotNullOrWhiteSpace() ? falseText : "No" }
+                },
+                ValueFormat = "The word True or the word False. Not 1 or 0, and not the label shown to a person."
+            };
         }
 
         #endregion

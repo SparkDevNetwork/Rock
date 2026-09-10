@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -153,7 +154,7 @@ namespace Rock.Model
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var discount = Queryable()
                     .FirstOrDefault( d =>

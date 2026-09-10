@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="LearningClassContentPagesController"/> class.
         /// </summary>
-        public LearningClassContentPagesController() : base( new Rock.Model.LearningClassContentPageService( new Rock.Data.RockContext() ) ) { } 
+        public LearningClassContentPagesController() : base( new Rock.Model.LearningClassContentPageService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

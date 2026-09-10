@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using SixLabors.ImageSharp.PixelFormats;
@@ -81,7 +82,7 @@ namespace Rock.Drawing
         /// </exception>
         public static Image GetPersonImageFromBinaryFileService( int photoId )
         {
-            var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
+            var binaryFile = new BinaryFileService( RockApp.Current.CreateRockContext() ).Get( photoId );
 
             if ( binaryFile == null )
             {
@@ -133,7 +134,7 @@ namespace Rock.Drawing
                 return true;
             }
 
-            var currentUser = new UserLoginService( new RockContext() ).GetByUserName( UserLogin.GetCurrentUserName() );
+            var currentUser = new UserLoginService( RockApp.Current.CreateRockContext() ).GetByUserName( UserLogin.GetCurrentUserName() );
             Person currentPerson = currentUser?.Person;
             var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 

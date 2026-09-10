@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -76,7 +77,7 @@ namespace Rock.Follow.Event
                 {
                     var person = personAlias.Person;
 
-                    DateTime? firstAttended = new AttendanceService( new RockContext() )
+                    DateTime? firstAttended = new AttendanceService( RockApp.Current.CreateRockContext() )
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.DidAttend.HasValue &&

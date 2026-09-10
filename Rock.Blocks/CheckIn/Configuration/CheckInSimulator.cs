@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInSimulator;
@@ -63,7 +64,7 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var kioskDeviceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), rockContext ).Id;
                 var director = new CheckInDirector( rockContext );
@@ -98,7 +99,7 @@ namespace Rock.Blocks.CheckIn.Configuration
         {
             var today = RockDateTime.Now.Date;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -168,7 +169,7 @@ namespace RockWeb.Blocks.Event
             if ( !Page.IsPostBack )
             {
                 int eventItemOccurrenceId;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     eventItemOccurrenceId = new EventItemOccurrenceService( rockContext ).GetQueryableByKey(
                         PageParameter( PageParameterKey.EventItemOccurrenceId ),
@@ -184,7 +185,7 @@ namespace RockWeb.Blocks.Event
             {
                 ShowDialog();
 
-                var eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
+                var eventItemOccurrence = new EventItemOccurrenceService( RockApp.Current.CreateRockContext() ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
                 eventItemOccurrence = eventItemOccurrence ?? new EventItemOccurrence();
                 ShowOccurrenceAttributes( eventItemOccurrence, false );
             }
@@ -265,7 +266,7 @@ namespace RockWeb.Blocks.Event
             EventItemOccurrence eventItemOccurrence = null;
             bool canEdit = UserCanEdit;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !eventItemOccurrenceId.Equals( 0 ) )
                 {
@@ -484,7 +485,7 @@ namespace RockWeb.Blocks.Event
 
             if ( eventItemOccurrence.EventItemId == 0 )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     eventItemOccurrence.EventItemId = new EventItemService( rockContext ).GetQueryableByKey(
                         PageParameter( PageParameterKey.EventItemId ),
@@ -566,7 +567,7 @@ namespace RockWeb.Blocks.Event
             }
 
             EventItemOccurrence oldOccurrence;
-            oldOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( copyFromOccurrenceKey, IsAllowingPredictableIds );
+            oldOccurrence = new EventItemOccurrenceService( RockApp.Current.CreateRockContext() ).Get( copyFromOccurrenceKey, IsAllowingPredictableIds );
 
             if ( oldOccurrence != null )
             {
@@ -586,17 +587,34 @@ namespace RockWeb.Blocks.Event
                 {
                     var eventItemOccurrenceGroupMap = linkage.CloneWithoutIdentity();
                     eventItemOccurrenceGroupMap.EventItemOccurrenceId = 0;
-                    eventItemOccurrenceGroupMap.RegistrationInstance = linkage.RegistrationInstance != null ? linkage.RegistrationInstance.Clone( false ) : new RegistrationInstance();
                     eventItemOccurrenceGroupMap.RegistrationInstanceId = null;
-                    eventItemOccurrenceGroupMap.RegistrationInstance.Id = 0;
-                    eventItemOccurrenceGroupMap.RegistrationInstance.Guid = Guid.NewGuid();
 
-                    eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate =
-                        linkage.RegistrationInstance != null && linkage.RegistrationInstance.RegistrationTemplate != null ?
-                        linkage.RegistrationInstance.RegistrationTemplate.Clone( false ) :
-                        new RegistrationTemplate();
+                    // A URL slug should be unique across all events, so it shouldn't be copied;
+                    // otherwise saving the copy without opening the linkage edit modal (which is where
+                    // slug uniqueness is validated) would silently persist a duplicate slug.
+                    eventItemOccurrenceGroupMap.UrlSlug = null;
 
-                    eventItemOccurrenceGroupMap.Group = linkage.Group != null ? linkage.Group.Clone( false ) : new Group();
+                    // Only clone a RegistrationInstance (and its RegistrationTemplate) when the source
+                    // linkage actually has one†. See https://github.com/SparkDevNetwork/Rock/issues/6980
+                    if ( linkage.RegistrationInstance != null )
+                    {
+                        eventItemOccurrenceGroupMap.RegistrationInstance = linkage.RegistrationInstance.Clone( false );
+                        eventItemOccurrenceGroupMap.RegistrationInstance.Id = 0;
+                        eventItemOccurrenceGroupMap.RegistrationInstance.Guid = Guid.NewGuid();
+
+                        eventItemOccurrenceGroupMap.RegistrationInstance.RegistrationTemplate =
+                            linkage.RegistrationInstance.RegistrationTemplate != null ?
+                            linkage.RegistrationInstance.RegistrationTemplate.Clone( false ) :
+                            null;
+                    }
+                    else
+                    {
+                        eventItemOccurrenceGroupMap.RegistrationInstance = null;
+                    }
+
+                    // † The same principle applies to Group: leave it null when the source had none rather
+                    // than attaching an empty Group.
+                    eventItemOccurrenceGroupMap.Group = linkage.Group != null ? linkage.Group.Clone( false ) : null;
 
                     eventItemOccurrence.Linkages.Add( eventItemOccurrenceGroupMap );
                 }
@@ -677,7 +695,7 @@ namespace RockWeb.Blocks.Event
         {
             if ( ppContact.PersonId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     Guid workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
                     var contactInfo = new PersonService( rockContext )
@@ -713,7 +731,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
             ShowEditDetails( eventItemOccurrence );
         }
@@ -725,7 +743,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 EventItemOccurrenceService eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
                 EventItemOccurrence eventItemOccurrence = eventItemOccurrenceService.Get( hfEventItemOccurrenceId.Value.AsInteger() );
@@ -746,7 +764,7 @@ namespace RockWeb.Blocks.Event
             }
 
             var qryParams = new Dictionary<string, string>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventCalendarService = new EventCalendarService( rockContext );
                 var eventItemService = new EventItemService( rockContext );
@@ -784,7 +802,7 @@ namespace RockWeb.Blocks.Event
         {
             EventItemOccurrence eventItemOccurrence = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 bool newItem = false;
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
@@ -1011,7 +1029,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItemOccurrenceId == 0 )
             {
                 var qryParams = new Dictionary<string, string>();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var eventCalendarService = new EventCalendarService( rockContext );
                     var eventItemService = new EventItemService( rockContext );
@@ -1043,7 +1061,7 @@ namespace RockWeb.Blocks.Event
             {
                 LinkedRegistrationsState.Clear();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( eventItemOccurrenceId );
                     if ( eventItemOccurrence != null )
@@ -1070,7 +1088,7 @@ namespace RockWeb.Blocks.Event
             int? registrationTemplateId = ddlNewLinkageTemplate.SelectedValueAsInt();
             if ( registrationTemplateId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap();
                 eventItemOccurrenceGroupMap.RegistrationInstance = new RegistrationInstance();
                 eventItemOccurrenceGroupMap.RegistrationInstance.IsActive = true;
@@ -1096,7 +1114,7 @@ namespace RockWeb.Blocks.Event
         {
             ddlNewLinkageTemplate.Items.Clear();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap();
 
@@ -1200,7 +1218,7 @@ namespace RockWeb.Blocks.Event
             int? registrationTemplateId = ddlNewLinkageTemplate.SelectedValueAsInt();
             if ( registrationTemplateId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap();
 
                 eventItemOccurrenceGroupMap.RegistrationInstance = new RegistrationInstance();
@@ -1331,7 +1349,7 @@ namespace RockWeb.Blocks.Event
             int? templateId = ddlExistingLinkageTemplate.SelectedValueAsInt();
             if ( templateId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     foreach ( var instance in new RegistrationInstanceService( rockContext )
                         .Queryable().AsNoTracking()
@@ -1357,7 +1375,7 @@ namespace RockWeb.Blocks.Event
             ddlExistingLinkageTemplate.Items.Clear();
             tbExistingLinkagePublicName.Text = string.Empty;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var template in new RegistrationTemplateService( rockContext )
                     .Queryable().AsNoTracking()
@@ -1393,7 +1411,7 @@ namespace RockWeb.Blocks.Event
             Group group = null;
             RegistrationInstance registrationInstance = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 group = GetGroup( groupId, rockContext );
                 registrationInstance = GetRegistrationInstance( registrationInstanceId, rockContext );
@@ -1560,7 +1578,7 @@ namespace RockWeb.Blocks.Event
 
         private T GetEntityInOwnContext<T>( Func<RockContext, T> action )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return action( rockContext );
             }
@@ -1626,7 +1644,7 @@ namespace RockWeb.Blocks.Event
             }
 
             var groupMapId = hfEditLinkageGroupMapId.Value.AsGuid();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventMapingService = new EventItemOccurrenceGroupMapService( rockContext );
                 var existsInCurrentList = LinkedRegistrationsState.Any( m => m.UrlSlug == urlSlug && m.Guid != groupMapId );

@@ -28,9 +28,6 @@ describe("Issue 5425", () => {
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
 
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
-
         const config = getConfigurationValues();
 
         config.hideProgressBar = true;
@@ -53,9 +50,6 @@ describe("Issue 5425", () => {
         const blockActions = mockBlockActions({
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
-
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
 
         const config = getConfigurationValues();
 

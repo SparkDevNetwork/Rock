@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -200,7 +201,7 @@ namespace Rock.Web.UI.Controls
             }
 
             var currentPerson = ( ( RockPage ) Page ).CurrentPerson;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             GroupRequirementService groupRequirementService = new GroupRequirementService( rockContext );
             var groupRequirement = groupRequirementService.Get( GroupRequirementId.Value );
 
@@ -325,7 +326,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer"></param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            _groupMemberRequirement = new GroupMemberRequirementService( new RockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
+            _groupMemberRequirement = new GroupMemberRequirementService( RockApp.Current.CreateRockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
             var meetsGroupRequirement = _groupMemberRequirement?.WasOverridden == true ?
                 MeetsGroupRequirement.Meets :
                 MeetsGroupRequirement;
@@ -550,7 +551,7 @@ namespace Rock.Web.UI.Controls
         {
             // Save the Requirement change.
             // Get the requirement ID, the group member ID, and mark it as completed.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
             if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
@@ -587,7 +588,7 @@ namespace Rock.Web.UI.Controls
         {
             // Save the Requirement change.
             // Get the requirement ID, the group member ID, and mark it as completed.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
             if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
@@ -638,7 +639,7 @@ namespace Rock.Web.UI.Controls
 
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
 
@@ -646,7 +647,7 @@ namespace Rock.Web.UI.Controls
                 Rock.Model.Workflow workflow;
                 if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
                 {
-                    workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
+                    workflow = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
                     var qryParams = new Dictionary<string, string>
                             {
                                 { "WorkflowTypeGuid", workflowType.Guid.ToString() },
@@ -674,7 +675,7 @@ namespace Rock.Web.UI.Controls
 
                     workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
                     workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
-                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+                    var processed = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                     if ( processed )
                     {
@@ -730,7 +731,7 @@ namespace Rock.Web.UI.Controls
 
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
 
@@ -738,7 +739,7 @@ namespace Rock.Web.UI.Controls
                 Rock.Model.Workflow workflow;
                 if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
                 {
-                    workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
+                    workflow = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
                     var qryParams = new Dictionary<string, string>
                             {
                                 { "WorkflowTypeGuid", workflowType.Guid.ToString() },
@@ -766,7 +767,7 @@ namespace Rock.Web.UI.Controls
 
                     workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
                     workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
-                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+                    var processed = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                     if ( processed )
                     {

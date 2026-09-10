@@ -44,7 +44,7 @@ internal sealed partial class GroupSkill
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;
-        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
+        var groupTypeIds = GetAvailableGroupTypes().Select( gt => gt.Id ).ToList();
 
         GroupMember groupMember;
 
@@ -87,7 +87,10 @@ internal sealed partial class GroupSkill
 
         if ( !groupTypeIds.Contains( groupMember.Group.GroupTypeId ) )
         {
-            helper.AddError( $"The specified group is not of a supported group type." );
+            if ( !CanGroupTypeBeConfiguredForRequest( groupMember.Group.GroupTypeId, helper ) )
+            {
+                helper.AddError( "The specified group is not of a supported group type." );
+            }
         }
 
         if ( groupMember.Group != null )
@@ -97,7 +100,7 @@ internal sealed partial class GroupSkill
 
             if ( !isAuthorized )
             {
-                helper.AddError( $"You do not have permission to manage the specified group's members." );
+                helper.AddError( "You do not have permission to manage the specified group's members." );
             }
         }
 

@@ -56,6 +56,13 @@ export type GroupMemberUpdatedMessageBag = {
     /** The encrypted identifier key for the group type. */
     groupTypeIdKey?: string | null;
 
+    /**
+     * Determines whether the group member is archived. An archived group
+     * member is no longer considered part of the group, so clients should
+     * treat an update with this set to true the same as a removal.
+     */
+    isArchived: boolean;
+
     /** The person associated with the group member. */
     person?: PersonBag | null;
 };

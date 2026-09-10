@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication;
 using Rock.Model;
@@ -307,7 +308,7 @@ namespace RockWeb.Blocks.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 
@@ -369,7 +370,7 @@ namespace RockWeb.Blocks.Communication
 
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
                 var communicationResponseService = new CommunicationResponseService( rockContext );
                 List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversationForPerson( recipientPersonId, smsSystemPhoneNumber );
@@ -447,7 +448,7 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 // Merge the person and lava
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personAliasService = new PersonAliasService( rockContext );
                     var recipientPerson = personAliasService.GetPerson( recipientPersonAliasId.Value );
@@ -491,7 +492,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="newMessage">if set to <c>true</c> [new message].</param>
         private void SendMessageToPerson( int toPersonId, string message, bool newMessage )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // The sender is the logged in user.
                 int fromPersonAliasId = CurrentUser.Person.PrimaryAliasId.Value;
@@ -655,7 +656,7 @@ namespace RockWeb.Blocks.Communication
 
             int toPersonAliasId = hfSelectedRecipientPersonAliasId.ValueAsInt();
 
-            int? toPersonId = new PersonAliasService( new RockContext() ).GetPersonId( toPersonAliasId );
+            int? toPersonId = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetPersonId( toPersonAliasId );
             if ( !toPersonId.HasValue )
             {
                 return;
@@ -683,7 +684,7 @@ namespace RockWeb.Blocks.Communication
             nbNoSms.Visible = false;
 
             int toPersonId = ppRecipient.PersonId.Value;
-            var personService = new PersonService( new RockContext() );
+            var personService = new PersonService( RockApp.Current.CreateRockContext() );
             var personHasSMSNumbers = personService.GetSelect( toPersonId, s => s.PhoneNumbers.Where( a => a.IsMessagingEnabled ).Any() );
             if ( !personHasSMSNumbers )
             {
@@ -715,7 +716,7 @@ namespace RockWeb.Blocks.Communication
             if ( ppRecipient.PersonAliasId.HasValue )
             {
                 int toPersonAliasId = ppRecipient.PersonAliasId.Value;
-                var personAliasService = new PersonAliasService( new RockContext() );
+                var personAliasService = new PersonAliasService( RockApp.Current.CreateRockContext() );
                 var toPerson = personAliasService.GetPerson( toPersonAliasId );
                 if ( !toPerson.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
                 {
@@ -749,7 +750,7 @@ namespace RockWeb.Blocks.Communication
             hfSelectedConversationKey.Value = hfConversationKey.Value;
             hfSelectedPhoneNumber.Value = hfPhoneNumber.Value;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             Person recipientPerson = null;
             if ( recipientPersonAliasId.HasValue )
@@ -851,7 +852,7 @@ namespace RockWeb.Blocks.Communication
             litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
             litMessagePart.Text = responseListItem.SMSMessage;
 
-            if ( responseListItem.SMSMessage.IsNullOrWhiteSpace() && responseListItem.HasAttachments( new RockContext() ) )
+            if ( responseListItem.SMSMessage.IsNullOrWhiteSpace() && responseListItem.HasAttachments( RockApp.Current.CreateRockContext() ) )
             {
                 litMessagePart.Text = "Image";
                 e.Row.AddCssClass( "latest-message-is-image" );
@@ -891,7 +892,7 @@ namespace RockWeb.Blocks.Communication
                     lSMSMessage.Text = communicationRecipientResponse.SMSMessage;
                 }
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( communicationRecipientResponse.HasAttachments( rockContext ) )
                 {
@@ -947,7 +948,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdLinkToPerson_SaveClick( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var personService = new PersonService( rockContext );
@@ -1028,7 +1029,7 @@ namespace RockWeb.Blocks.Communication
         {
             var namelessPersonAliasId = hfSelectedRecipientPersonAliasId.Value.AsInteger();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var namelessPerson = personAliasService.GetPerson( namelessPersonAliasId );
@@ -1096,7 +1097,7 @@ namespace RockWeb.Blocks.Communication
             noteEditor.Visible = true;
             noteEditor.ShowEditMode = true;
 
-            var selectedPersonId = new PersonAliasService( new RockContext() ).GetPersonId( hfSelectedRecipientPersonAliasId.Value.AsInteger() );
+            var selectedPersonId = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetPersonId( hfSelectedRecipientPersonAliasId.Value.AsInteger() );
             var note = new Note
             {
                 EntityId = selectedPersonId,

@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -186,7 +187,7 @@ function ()
                 return result;
             }
 
-            using ( var context = new RockContext() )
+            using ( var context = RockApp.Current.CreateRockContext() )
             {
                 var dataView = new DataViewService( context ).Get( settings.DataViewGuid.GetValueOrDefault() );
 
@@ -382,7 +383,7 @@ function ()
 
             if ( settings.DataViewGuid.HasValue )
             {
-                var dsService = new DataViewService( new RockContext() );
+                var dsService = new DataViewService( RockApp.Current.CreateRockContext() );
 
                 var dataView = dsService.Get( settings.DataViewGuid.Value );
 

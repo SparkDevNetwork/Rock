@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
 using Rock.Communication.Chat.Sync;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
 using Rock.Logging;
@@ -198,7 +199,7 @@ namespace Rock.Jobs
 
             var syncTask = Task.Run( async () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
                     var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;

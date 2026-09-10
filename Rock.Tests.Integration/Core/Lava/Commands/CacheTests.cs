@@ -23,6 +23,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -479,7 +480,7 @@ An Entity Set (Id=*) was created and 4 people have been added.
 
         private List<Person> GetTestPersonEntityList()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var personTedDecker = personService.GetByIdentifierOrThrow( TestGuids.TestPeople.TedDecker );
@@ -537,7 +538,7 @@ An Entity Set (Id=*) was created and 4 people have been added.
             var entitySetId = output.ConvertToIntegerOrThrow();
 
             // Get the entity set, including the items. 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var entitySetService = new EntitySetService( rockContext );
 
             var entitySet = entitySetService.Queryable()

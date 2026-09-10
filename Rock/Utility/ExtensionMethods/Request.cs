@@ -178,37 +178,12 @@ namespace Rock
         /// <returns></returns>
         public static string UrlReferrerNormalize( this HttpRequest request )
         {
-            // Consider making this a defined value someday
-
             if ( request.UrlReferrer == null )
             {
                 return null;
             }
 
-            switch ( request.UrlReferrer.Host )
-            {
-                case string s when s.Contains( "google.com" ):
-                    return "Google";
-                case string s when s.Contains( "bing.com" ):
-                    return "Bing";
-                case string s when s.Contains( "facebook.com" ):
-                    return "Facebook";
-                case string s when s.Contains( "twitter.com" ):
-                    return "Twitter";
-                case string s when s.Contains( "linkedin.com" ):
-                    return "LinkedIn";
-                case string s when s.Contains( "instagram.com" ):
-                    return "Instagram";
-                case string s when s.Contains( "pinterest.com" ):
-                    return "Pinterest";
-                case string s when s.Contains( "duckduckgo.com" ):
-                    return "DuckDuckGo";
-                case string s when s.Contains( "reddit.com" ):
-                    return "Reddit";
-            }
-
-            // If it wasn't a common site then return the URL host
-            return request.UrlReferrer.Host;
+            return Rock.Utility.ReferrerHelper.GetFriendlyReferrerNameFromHost( request.UrlReferrer.Host );
         }
 
         /// <summary>

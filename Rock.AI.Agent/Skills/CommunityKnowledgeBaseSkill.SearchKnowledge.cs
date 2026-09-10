@@ -37,16 +37,16 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     /// Searches documentation, guides, and community content.
     /// </summary>
     /// <remarks>
-    /// The right default for almost every question. Results are chunk level, so one
-    /// document can return several passages, and every one carries the citation it
-    /// came from.
+    /// The default for general documentation and community questions. Results are
+    /// chunk level, so one document can return several passages, and every one
+    /// carries the citation it came from.
     /// </remarks>
-    [Description( "Searches Rock documentation, guides, and community content using combined keyword and meaning-based matching. This is the right first move for almost every question about Rock." )]
+    [Description( "Searches Rock documentation, guides, and community content using combined keyword and meaning-based matching. Use a versioned data-model topic instead when exact entity fields, nullability, enums, or relationships are required." )]
     [AgentPurpose( "Answers questions about how Rock works, with a citation for every result." )]
-    [AgentUsage( "Prefer this over the code tools. Use the code tools only when the question is about implementation detail, or when this tool has already failed to answer it." )]
+    [AgentUsage( "Prefer this over the code tools for general documentation and community guidance. Do not treat search results as authoritative evidence for exact entity property names. Use the version-matching data-model topic and target entity article for schema questions." )]
     [AgentUsage( "Carry the citation from each result into any answer built from it. Present it as a reference rather than as a link, because for uploaded documents it is not always a resolvable URL." )]
     [AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first. It reports the exact values the category, domain, and source filters accept, with document counts. A value that is not in that list returns no results rather than an error." )]
-    [AgentToolReturnDescription( "Matching passages, each with its title, snippet, source, and the citation it came from. One document may return several passages." )]
+    [AgentToolReturnDescription( "Matching passages exactly as the knowledge service returns them. Each carries name, summary, chunk_text, categories, tags, rock_domain, source_name, published_at, original_location, and score. Use original_location as the citation and chunk_text as the passage. One document may return several passages, distinguished by chunk_sequence." )]
     [AgentToolGuid( "2A6D26DA-F889-4AD7-B9F2-B26B80902229" )]
     [AgentToolPreamble( "Searching Knowledge Base" )]
     public async Task<AgentToolResult> SearchKnowledge(
@@ -88,70 +88,20 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             return DescribeFailure( response );
         }
 
-        var hits = ReadKnowledgeHits( response.Data );
+        var hits = response.Data.ToPlainItems( SearchPageSize );
 
         if ( !hits.Any() )
         {
             return DescribeEmptySearch( query, categoryFilter, domain, source );
         }
 
-        var metadata = new Dictionary<string, object>
-        {
-            ["pageNumber"] = page,
-            ["returnedItemCount"] = hits.Count,
-            ["hasMoreItems"] = hits.Count == SearchPageSize
-        };
-
-        // estimated_total is approximate on large result sets, so it is labelled
-        // rather than presented as a count.
-        var estimatedTotal = response.Meta.GetNullableInt( "estimated_total" );
-
-        if ( estimatedTotal.HasValue )
-        {
-            metadata["approximateTotalMatches"] = estimatedTotal.Value;
-        }
-
         return Success( hits )
-            .WithMetadata( metadata );
+            .WithMetadata( BuildPagedMetadata( response, page, hits.Count ) );
     }
 
     #endregion
 
     #region Helper Methods
-
-    /// <summary>
-    /// Reads the matching passages from a knowledge search payload.
-    /// </summary>
-    /// <param name="data">The <c>data</c> member of the search response.</param>
-    /// <returns>The hits, empty when the payload carries none.</returns>
-    private static List<KnowledgeSearchHitResult> ReadKnowledgeHits( JToken data )
-    {
-        var results = data as JArray ?? data?["results"] as JArray;
-
-        if ( results == null )
-        {
-            return new List<KnowledgeSearchHitResult>();
-        }
-
-        return results
-            .Select( r => new KnowledgeSearchHitResult
-            {
-                Title = r.GetString( "title" ),
-                Snippet = r.GetString( "snippet" ) ?? r.GetString( "content" ),
-                SourceName = r.GetString( "source" ) ?? r.GetString( "source_name" ),
-                Category = r.GetString( "category" ),
-                Domain = r.GetString( "rock_domain" ) ?? r.GetString( "domain" ),
-                Citation = r.GetString( "original_location" ),
-
-                // Nullable on purpose. Plenty of documents carry no publish date and
-                // the service treats an absent one as unaffected rather than as old,
-                // so inventing a default here would present undated content as
-                // ancient.
-                PublishDate = r.GetDateTime( "published_at" ),
-                Score = r.GetDouble( "score" )
-            } )
-            .ToList();
-    }
 
     /// <summary>
     /// Builds the result for a search that matched nothing.

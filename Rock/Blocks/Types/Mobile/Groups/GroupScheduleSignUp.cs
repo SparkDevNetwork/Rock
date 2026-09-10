@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Groups.GroupScheduleSignup;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Group;
@@ -154,7 +155,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>A <see cref="LandingPageContentBag"/> to be used when we display the landing page.</returns>
         private LandingPageContentBag GetLandingTemplateContent()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupService = new GroupService( rockContext );
 
@@ -231,7 +232,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             List<GroupScheduleSignUpBag> groupScheduleSignups = new List<GroupScheduleSignUpBag>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduleService = new ScheduleService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
@@ -370,7 +371,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             var startDate = RockDateTime.Now.AddDays( 1 ).Date;
             var endDate = RockDateTime.Now.AddDays( numOfWeeks * 7 );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduleService = new ScheduleService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
@@ -555,7 +556,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetScheduleSignUpData( Guid groupGuid, int startWeekIndex, int endWeekIndex )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var requestPersonId = RequestContext.CurrentPerson?.Id;
 
@@ -595,7 +596,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult SaveSignUpSchedule( ScheduleSignUpRequestBag schedule )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupId = new GroupService( rockContext ).GetNoTracking( schedule.GroupGuid ).Id;
 
@@ -637,7 +638,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult DeleteSignUpSchedule( ScheduleSignUpRequestBag schedule )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
 
@@ -676,7 +677,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [Obsolete]
         public BlockActionResult SaveSchedule( PersonScheduleSignupDataBag schedule )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupId = new GroupService( rockContext ).GetNoTracking( schedule.GroupGuid ).Id;
                 var locationId = new LocationService( rockContext ).GetNoTracking( schedule.LocationGuid ).Id;
@@ -712,7 +713,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [Obsolete]
         public BlockActionResult DeleteSchedule( PersonScheduleSignupDataBag schedule )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
 
@@ -744,7 +745,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [Obsolete]
         public BlockActionResult GetGroupScheduleAssignmentLocations( Guid groupGuid, Guid scheduleGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the group & schedule from the corresponding Guids.
                 var group = new GroupService( rockContext ).Get( groupGuid );

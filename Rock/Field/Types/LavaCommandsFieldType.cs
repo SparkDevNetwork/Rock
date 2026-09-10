@@ -76,6 +76,66 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <summary>
+        /// The registered Lava command names, resolved once.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// 8/19/26 - CLAUDE
+        ///
+        /// Cached because <see cref="Rock.Lava.LavaHelper.GetLavaCommands"/> reflects
+        /// over every Rock and plugin assembly and instantiates each match, with no
+        /// caching of its own. A picker rendering once can afford that; describing an
+        /// entity's attributes calls this per attribute, which cannot.
+        ///
+        /// Reason: The set cannot change without loading new assemblies, so paying for
+        /// it more than once buys nothing.
+        /// </para>
+        /// <para>
+        /// Static and read-only rather than instance state, because field types are
+        /// singletons. <see cref="Lazy{T}"/> is thread safe for publication by default,
+        /// and only the names are held so no shared mutable list escapes to a caller.
+        /// </para>
+        /// </remarks>
+        private static readonly Lazy<List<string>> _commandNames =
+            new Lazy<List<string>>( () => Rock.Lava.LavaHelper.GetLavaCommands() );
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            /*
+                8/19/26 - CLAUDE
+
+                Enumerated from the same source the picker uses, so the two cannot
+                disagree. The set is small, closed, and fixed for a given installation,
+                which makes it worth reporting as complete rather than describing.
+
+                'All' is included because the picker offers it and it is not a command:
+                it is a literal meaning every command. Nothing about the command names
+                themselves would lead a caller to guess it existed.
+
+                Reason: A short closed list is worth enumerating, and the one value
+                that is not a command is the one most worth naming.
+            */
+            var values = new List<ListItemBag>
+            {
+                new ListItemBag { Value = "All", Text = "All (every command)" }
+            };
+
+            values.AddRange( _commandNames.Value
+                .Select( c => new ListItemBag { Value = c, Text = c.SplitCase() } ) );
+
+            return new FieldTypeHints
+            {
+                Values = values,
+                IsCompleteList = true,
+                ValueFormat = "One or more Lava command names separated by commas, such as RockEntity,Execute. These are names rather than guids or ids."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 

@@ -94,6 +94,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The token a captcha challenge produced when a person completed it, stored as proof that the challenge was passed. It is not text a person types and not something to fill in when creating or editing a record, so leave it empty unless carrying an existing value through."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

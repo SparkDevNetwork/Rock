@@ -23,7 +23,7 @@
     import { useFormState } from "@Obsidian/Utility/form";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { normalizeRules, validateValue } from "@Obsidian/ValidationRules";
-    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, ref, watch } from "vue";
     import RockLabel from "./rockLabel.obs";
     import { useStore } from "@Obsidian/PageState";
 
@@ -33,7 +33,10 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<unknown>,
+            // Don't specify a type here because we want to allow any type of
+            // value to be passed in without Vue complaining about type
+            // mismatches.
+            type: null,
             required: true
         },
 

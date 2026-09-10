@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -202,7 +203,7 @@ namespace Rock.Communication.SmsActions
 
             if ( attachmentBinaryFileGuid.HasValue && attachmentBinaryFileGuid != Guid.Empty )
             {
-                binaryFile = new BinaryFileService( new RockContext() ).Get( attachmentBinaryFileGuid.Value );
+                binaryFile = new BinaryFileService( RockApp.Current.CreateRockContext() ).Get( attachmentBinaryFileGuid.Value );
             }
 
             // If there is no response message then return null.

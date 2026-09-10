@@ -17,8 +17,6 @@
 
 using System;
 
-using Rock.Data;
-
 namespace Rock.Model
 {
     /// <summary>
@@ -27,16 +25,6 @@ namespace Rock.Model
     [RockObsolete( "17.0" )]
     [Obsolete( "This model is no longer used and will be removed in the future." )]
     public partial class EntityCampusFilterService
-    {
-
-    }
-
-    /// <summary>
-    /// Generated Extension Methods
-    /// </summary>
-    [RockObsolete( "17.0" )]
-    [Obsolete( "This model is no longer used and will be removed in the future." )]
-    public static partial class EntityCampusFilterExtensionMethods
     {
 
     }

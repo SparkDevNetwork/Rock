@@ -227,7 +227,7 @@ namespace Rock.Transactions
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 LogInteractions( interactionTransactionInfos, rockContext );
             }
@@ -281,7 +281,7 @@ namespace Rock.Transactions
 
             // Cross checking to verify that Guids aren't present in the interaction table.
             var interactionGuidsToInsert = interactionsToInsert.Select( i => i.Guid ).ToList();
-            var duplicateInteractionGuidsFromDatabase = new InteractionService( new RockContext() ).Queryable()
+            var duplicateInteractionGuidsFromDatabase = new InteractionService( RockApp.Current.CreateRockContext() ).Queryable()
                                     .Where( i => interactionGuidsToInsert.Contains( i.Guid ) )
                                     .Select( i => i.Guid )
                                     .ToList();
@@ -300,7 +300,7 @@ namespace Rock.Transactions
                 // Ids do not exit for the interactions in the collection since they were bulk imported.
                 // Read their ids from their guids and append the id.
                 var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
-                var interactionIds = new InteractionService( new RockContext() ).Queryable()
+                var interactionIds = new InteractionService( RockApp.Current.CreateRockContext() ).Queryable()
                                         .Where( i => insertedGuids.Contains( i.Guid ) )
                                         .Select( i => new { i.Id, i.Guid } )
                                         .ToList();

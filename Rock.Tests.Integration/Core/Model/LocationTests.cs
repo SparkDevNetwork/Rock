@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Field.Types;
@@ -56,7 +57,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void CreateTestData()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var definedTypeService = new DefinedTypeService( dataContext );
 
@@ -97,7 +98,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void RemoveTestData()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Remove Defined Values for Countries
             var definedTypeService = new DefinedTypeService( dataContext );
@@ -117,7 +118,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithMissingRequiredFields_FailsValidationCheck()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var locationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_BUILDING ).Id;
 
@@ -141,7 +142,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithMissingOptionalFields_IsAdded()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var street2Guid = Guid.NewGuid().ToString();
 
@@ -162,7 +163,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithSuppliedRequiredFields_IsAdded()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var street2Guid = Guid.NewGuid().ToString();
 
@@ -194,7 +195,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithSuppliedRequiredFieldsAndEmptyOptionalFields_IsAdded()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var cityGuid = Guid.NewGuid().ToString();
 
@@ -222,7 +223,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithMissingRequiredFieldsAndPopulatedOptionalFields_ThrowsIncompleteException()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Country has mixed address requirements. Optional fields are supplied, one required field (State) is not.
             var location = new Location()
@@ -245,7 +246,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithAllEmptyFields_ThrowsEmptyAddressException()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var location = new Location()
             {

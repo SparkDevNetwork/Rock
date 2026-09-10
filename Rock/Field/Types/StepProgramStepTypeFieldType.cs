@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -150,7 +151,7 @@ namespace Rock.Field.Types
 
             if ( stepProgramGuid.HasValue || stepTypeGuid.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( stepProgramGuid.HasValue )
                 {
@@ -180,7 +181,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( stepTypeGuid.HasValue )
                 {
@@ -221,6 +222,21 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<StepType>().Value, nameof( StepType.Name ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<StepProgram>().Value, nameof( StepProgram.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two guids separated by a pipe, the StepProgram first and the StepType second, as in a1|b2. A single guid with no pipe is read as the step type alone with no program, which is the opposite of the order the two appear in when both are present.",
+                Instructions = "The program guid comes from the StepProgram table and the step type guid from the StepType rows belonging to that program."
             };
         }
 
@@ -333,7 +349,7 @@ namespace Rock.Field.Types
 
                 if ( stepProgramGuid.HasValue )
                 {
-                    var stepProgram = new StepProgramService( new RockContext() ).GetNoTracking( stepProgramGuid.Value );
+                    var stepProgram = new StepProgramService( RockApp.Current.CreateRockContext() ).GetNoTracking( stepProgramGuid.Value );
                     editControl.DefaultStepProgramId = stepProgram?.Id;
                 }
             }
@@ -353,7 +369,7 @@ namespace Rock.Field.Types
 
             if ( stepProgramStepTypePicker != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 Guid? stepProgramGuid = null;
                 Guid? stepTypeGuid = null;
 

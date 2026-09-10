@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -41,6 +42,19 @@ namespace Rock.Field.Types
         #region Edit Control
 
         #endregion
+
+        /*
+            8/19/26 - CLAUDE
+
+            No GetFieldHints override. This stores a BinaryFile guid and reads the same
+            binaryFileType configuration as the type it inherits from, so the inherited
+            hint already says everything true about the value. An override here said
+            the file must match the configured type, which is what the base already
+            reports when a type is configured, and an unsupported claim when one is not.
+
+            Reason: Nothing about the value differs from the base, so nothing should be
+            added to its description.
+        */
 
         #region WebForms
 #if WEBFORMS
@@ -80,7 +94,7 @@ namespace Rock.Field.Types
                 Guid? binaryFileGuid = null;
                 if ( binaryFileId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
@@ -107,7 +121,7 @@ namespace Rock.Field.Types
                 Guid? binaryFileGuid = value.AsGuidOrNull();
                 if ( binaryFileGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == binaryFileGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }

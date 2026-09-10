@@ -96,7 +96,7 @@
         </Grid>
 
         <GridSettingsModal v-model="gridSettings"
-                           v-model:visible="isGridSettingsVisible" g
+                           v-model:visible="isGridSettingsVisible"
                            :siteItems="siteItems"
                            :defaultSlidingDateRange="defaultSlidingDateRange" />
     </BreakpointObserver>
@@ -149,13 +149,13 @@
 
     onConfigurationValuesChanged(useReloadBlock());
 
-    // We'll enforce a default date range of the last 6 months - to be applied
+    // We'll enforce a default date range of the last month - to be applied
     // if the individual doesn't have a preference - as the [ExceptionLog] table
-    // can have a large number of rows.
+    // can have a large number of rows. This must match the server-side default.
     const defaultSlidingDateRange: SlidingDateRange = {
         rangeType: RangeType.Last,
         timeUnit: TimeUnit.Month,
-        timeValue: 6
+        timeValue: 1
     };
 
     // #region Values
@@ -255,12 +255,12 @@
     const visibleChartLabels = computed((): string[] => {
         const labels = exceptionCountsPerDay.value?.dateLabels ?? [];
         const totalExceptionCounts = exceptionCountsPerDay.value?.totalExceptionCounts ?? [];
-        const uniqueExceptionCounts = exceptionCountsPerDay.value?.uniqueExceptionCounts ?? [];
+        const uniqueExceptionTypeCounts = exceptionCountsPerDay.value?.uniqueExceptionTypeCounts ?? [];
 
         const isValid = !!(
             labels.length > 0
             && totalExceptionCounts.length === labels.length
-            && uniqueExceptionCounts.length === labels.length
+            && uniqueExceptionTypeCounts.length === labels.length
         );
 
         if (!isValid) {
@@ -276,9 +276,9 @@
         return counts.length === visibleChartLabels.value.length ? counts : [];
     });
 
-    /** The unique exception counts represented by the chart data set. */
-    const uniqueExceptionCounts = computed((): number[] => {
-        const counts = exceptionCountsPerDay.value?.uniqueExceptionCounts ?? [];
+    /** The distinct exception type counts represented by the chart data set. */
+    const uniqueExceptionTypeCounts = computed((): number[] => {
+        const counts = exceptionCountsPerDay.value?.uniqueExceptionTypeCounts ?? [];
         return counts.length === visibleChartLabels.value.length ? counts : [];
     });
 
@@ -313,7 +313,7 @@
     const barChartLabels = computed((): string[] => {
         return [
             "Total Exceptions",
-            "Unique Exceptions"
+            "Unique Exception Types"
         ];
     });
 
@@ -321,7 +321,7 @@
     const barChartValueSuggestedMax = computed((): number => {
         const maxValue = Math.max(
             totalExceptionCounts.value[0] ?? 0,
-            uniqueExceptionCounts.value[0] ?? 0
+            uniqueExceptionTypeCounts.value[0] ?? 0
         );
 
         return Math.max(Math.ceil(maxValue * 1.1), 1);
@@ -350,8 +350,8 @@
                 color: getCssVariableValue("--color-metric-primary", "#8B8BA7")
             },
             {
-                label: "Unique Exceptions",
-                data: uniqueExceptionCounts.value,
+                label: "Unique Exception Types",
+                data: uniqueExceptionTypeCounts.value,
                 color: getCssVariableValue("--color-positive-primary", "#8B8BA7")
             }
         ];
@@ -361,7 +361,7 @@
     const lineChartValueSuggestedMax = computed((): number => {
         const maxValue = Math.max(
             ...totalExceptionCounts.value,
-            ...uniqueExceptionCounts.value,
+            ...uniqueExceptionTypeCounts.value,
             0
         );
 
@@ -372,7 +372,7 @@
     const lineChartValueTickCount = computed((): number | undefined => {
         const maxValue = Math.max(
             ...totalExceptionCounts.value,
-            ...uniqueExceptionCounts.value,
+            ...uniqueExceptionTypeCounts.value,
             0
         );
 
@@ -401,8 +401,8 @@
                 color: getCssVariableValue("--color-metric-primary", "#8B8BA7")
             },
             {
-                label: "Unique Exceptions",
-                data: [null, uniqueExceptionCounts.value[0] ?? 0],
+                label: "Unique Exception Types",
+                data: [null, uniqueExceptionTypeCounts.value[0] ?? 0],
                 color: getCssVariableValue("--color-positive-primary", "#8B8BA7")
             }
         ];

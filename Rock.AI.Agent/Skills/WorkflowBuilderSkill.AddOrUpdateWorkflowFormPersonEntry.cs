@@ -67,11 +67,11 @@ internal sealed partial class WorkflowBuilderSkill
         [Description( "Whether the form collects a person at all. Everything else here does nothing while this is false." )]
         bool? allowPersonEntry = null,
 
-        [Description( "The workflow attribute the matched or created person is written to. Must be a Person attribute. Required when turning person entry on." )]
+        [Description( "The workflow attribute the matched or created person is written to. Must use the Person field type. Required when turning person entry on. Accepts the attribute's idKey or its guid." )]
         SetOrClear<string> personAttributeIdKey = null,
-        [Description( "The workflow attribute the spouse is written to. Only meaningful when spouseOption shows the spouse fields." )]
+        [Description( "The workflow attribute the spouse is written to. Must use the Person field type. Required whenever spouseOption is not Hidden. Accepts the attribute's idKey or its guid." )]
         SetOrClear<string> spouseAttributeIdKey = null,
-        [Description( "The workflow attribute the family group is written to." )]
+        [Description( "The workflow attribute the family group is written to. Must use the Group field type. Optional. Accepts the attribute's idKey or its guid." )]
         SetOrClear<string> familyAttributeIdKey = null,
 
         WorkflowActionFormPersonEntryOption? addressOption = null,
@@ -108,7 +108,7 @@ internal sealed partial class WorkflowBuilderSkill
         [Description( "Markup rendered below the person entry fields." )]
         SetOrClear<string> postHtml = null,
 
-        [Description( "The connection status given to a person this block creates. A Person Connection Status defined value." )]
+        [Description( "The connection status given to a person this block creates. A Person Connection Status defined value. Required when turning person entry on. There is no default, because the list is configured per organization, so ask which one to use." )]
         SetOrClear<string> connectionStatusDefinedValueIdKey = null,
         [Description( "The record status given to a person this block creates. A Person Record Status defined value. Defaults to Active when person entry is on and no value has been set." )]
         SetOrClear<string> recordStatusDefinedValueIdKey = null,
@@ -186,9 +186,12 @@ internal sealed partial class WorkflowBuilderSkill
 
         helper.UpdateProperty( form, f => f.AllowPersonEntry, allowPersonEntry );
 
-        SetPersonEntryAttribute( form, f => f.PersonEntryPersonAttributeGuid, personAttributeIdKey, activityType, helper, rockContext );
-        SetPersonEntryAttribute( form, f => f.PersonEntrySpouseAttributeGuid, spouseAttributeIdKey, activityType, helper, rockContext );
-        SetPersonEntryAttribute( form, f => f.PersonEntryFamilyAttributeGuid, familyAttributeIdKey, activityType, helper, rockContext );
+        SetPersonEntryAttribute( form, f => f.PersonEntryPersonAttributeGuid, personAttributeIdKey,
+            nameof( personAttributeIdKey ), Rock.SystemGuid.FieldType.PERSON, activityType, helper, rockContext );
+        SetPersonEntryAttribute( form, f => f.PersonEntrySpouseAttributeGuid, spouseAttributeIdKey,
+            nameof( spouseAttributeIdKey ), Rock.SystemGuid.FieldType.PERSON, activityType, helper, rockContext );
+        SetPersonEntryAttribute( form, f => f.PersonEntryFamilyAttributeGuid, familyAttributeIdKey,
+            nameof( familyAttributeIdKey ), Rock.SystemGuid.FieldType.GROUP, activityType, helper, rockContext );
 
         // Each falls back to our own first-time default rather than Rock's when the
         // caller said nothing and person entry is being turned on. See
@@ -248,13 +251,11 @@ internal sealed partial class WorkflowBuilderSkill
 
         ApplyPersonEntryDefaults( form, rockContext );
 
-        // Checked against the value the form will actually hold rather than against the
-        // parameter, so enabling person entry in one call and binding the attribute in
-        // an earlier one is accepted.
-        if ( form.AllowPersonEntry && !form.PersonEntryPersonAttributeGuid.HasValue )
+        var missingRequirements = GetMissingRequirementsResult( form );
+
+        if ( missingRequirements != null )
         {
-            return Error( "Person entry needs a person attribute to write its result to. Without one the form collects a person that nothing in the workflow can reach." )
-                .WithInstructions( $"Add a Person attribute with {nameof( AddOrUpdateWorkflowAttribute )}, then call this function again with its key as personAttributeIdKey." );
+            return missingRequirements;
         }
 
         helper.SaveChangesIfNoErrors();
@@ -432,6 +433,8 @@ internal sealed partial class WorkflowBuilderSkill
     /// <param name="form">The form being configured.</param>
     /// <param name="propertyExpression">The Guid property to set.</param>
     /// <param name="parameter">The supplied attribute key, or a clear instruction.</param>
+    /// <param name="parameterName">The parameter's name, used in error messages.</param>
+    /// <param name="expectedFieldTypeGuid">The field type the attribute must be.</param>
     /// <param name="activityType">The activity the form's action belongs to.</param>
     /// <param name="helper">The helper to record errors on.</param>
     /// <param name="rockContext">The context to read through.</param>
@@ -439,6 +442,8 @@ internal sealed partial class WorkflowBuilderSkill
         WorkflowActionForm form,
         System.Linq.Expressions.Expression<System.Func<WorkflowActionForm, System.Guid?>> propertyExpression,
         SetOrClear<string> parameter,
+        string parameterName,
+        string expectedFieldTypeGuid,
         WorkflowActivityType activityType,
         AgentToolHelper helper,
         RockContext rockContext )
@@ -462,19 +467,123 @@ internal sealed partial class WorkflowBuilderSkill
             return;
         }
 
-        var attributeId = IdHasher.Instance.GetId( parameter.Value );
-        var attribute = attributeId.HasValue
-            ? GetReferenceableAttributes( activityType, rockContext ).FirstOrDefault( a => a.Id == attributeId.Value )
-            : null;
+        var attribute = FindReferenceableAttribute( parameter.Value, activityType, rockContext );
 
         if ( attribute == null )
         {
-            helper.AddError( $"'{parameter.Value}' is not an attribute of this workflow type or of the activity this form belongs to." );
+            helper.AddError( $"'{parameter.Value}' does not name an attribute of this workflow type or of the activity this form belongs to. {parameterName} accepts either an attribute's idKey or its guid." );
+
+            return;
+        }
+
+        var expectedFieldType = FieldTypeCache.Get( expectedFieldTypeGuid.AsGuid(), rockContext );
+
+        if ( attribute.FieldType?.Id != expectedFieldType?.Id )
+        {
+            helper.AddError( $"'{attribute.Name}' is a {attribute.FieldType?.Name ?? "unknown"} attribute. {parameterName} needs a {expectedFieldType?.Name} attribute, because that is what Rock writes the result into and what its own form editor offers here." );
 
             return;
         }
 
         property.SetValue( form, attribute.Guid );
+    }
+
+    /// <summary>
+    /// Finds an attribute the form may bind to, by either of the identifiers a caller
+    /// is likely to be holding.
+    /// </summary>
+    /// <remarks>
+    /// 8/18/26 - CLAUDE
+    ///
+    /// Everywhere else in this skill an attribute referenced from a second place is
+    /// named by its guid, because that is what an action's settings actually store, so
+    /// a caller arriving here with a guid is following the pattern rather than misusing
+    /// the tool. Taking only the idKey produced an error saying the attribute did not
+    /// belong to the workflow, which was false and read as "create another one".
+    ///
+    /// Reason: Accept either identifier and stop reporting a format mismatch as a
+    /// missing attribute.
+    /// </remarks>
+    /// <param name="idKeyOrGuid">The attribute's idKey or guid.</param>
+    /// <param name="activityType">The activity the form's action belongs to.</param>
+    /// <param name="rockContext">The context to read through.</param>
+    /// <returns>The attribute, or <c>null</c> when it is not in scope.</returns>
+    private static AttributeCache FindReferenceableAttribute( string idKeyOrGuid, WorkflowActivityType activityType, RockContext rockContext )
+    {
+        var referenceableAttributes = GetReferenceableAttributes( activityType, rockContext );
+        var attributeGuid = idKeyOrGuid.AsGuidOrNull();
+
+        if ( attributeGuid.HasValue )
+        {
+            return referenceableAttributes.FirstOrDefault( a => a.Guid == attributeGuid.Value );
+        }
+
+        var attributeId = IdHasher.Instance.GetId( idKeyOrGuid );
+
+        return attributeId.HasValue
+            ? referenceableAttributes.FirstOrDefault( a => a.Id == attributeId.Value )
+            : null;
+    }
+
+    /// <summary>
+    /// Refuses a person entry block that is missing something it cannot work without.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Each is checked against the value the form will actually hold rather than
+    /// against the parameter, so enabling person entry in one call and supplying the
+    /// missing piece in an earlier one is accepted.
+    /// </para>
+    /// <para>
+    /// All three are gathered before returning rather than reported one at a time. A
+    /// caller that has to make three round trips to learn three things tends to fix the
+    /// first and stop, and the remaining two are exactly the failures that save cleanly
+    /// and only show up later.
+    /// </para>
+    /// <para>
+    /// Connection status is refused rather than defaulted because its list is
+    /// configured per organization, so any value this code picked would be wrong
+    /// somewhere, and wrong silently on every person the form creates.
+    /// </para>
+    /// </remarks>
+    /// <param name="form">The form being configured.</param>
+    /// <returns>An error describing everything missing, or <c>null</c> when the block is complete.</returns>
+    private AgentToolResult GetMissingRequirementsResult( WorkflowActionForm form )
+    {
+        if ( !form.AllowPersonEntry )
+        {
+            return null;
+        }
+
+        var problems = new System.Collections.Generic.List<string>();
+        var instructions = new System.Collections.Generic.List<string>();
+
+        if ( !form.PersonEntryPersonAttributeGuid.HasValue )
+        {
+            problems.Add( "Person entry has no person attribute to write its result to, so the form would collect a person that nothing in the workflow can reach." );
+            instructions.Add( $"Add a Person attribute with {nameof( AddOrUpdateWorkflowAttribute )}, then pass it as personAttributeIdKey." );
+        }
+
+        if ( !form.PersonEntryConnectionStatusValueId.HasValue )
+        {
+            problems.Add( "Person entry has no connection status, so every person this form creates would be saved without one." );
+            instructions.Add( $"Ask which connection status new people should be given. The list is configured per organization, so there is no value that is right everywhere and none is assumed. Call {nameof( CoreAdministrationSkill.ListDefinedValues )} for the Person Connection Status defined type and pass the choice as connectionStatusDefinedValueIdKey." );
+        }
+
+        if ( form.PersonEntrySpouseEntryOption != WorkflowActionFormPersonEntryOption.Hidden && !form.PersonEntrySpouseAttributeGuid.HasValue )
+        {
+            problems.Add( "The spouse fields are shown but no spouse attribute is bound, so the spouse would be collected and then unreachable." );
+            instructions.Add( "Add a second Person attribute and pass it as spouseAttributeIdKey, or set spouseOption to Hidden if the form does not need a spouse." );
+        }
+
+        if ( !problems.Any() )
+        {
+            return null;
+        }
+
+        problems.Add( "Nothing was saved." );
+
+        return Error( problems ).WithInstructions( string.Join( " ", instructions ) );
     }
 
     #endregion

@@ -518,10 +518,10 @@ namespace Rock.Blocks.Connection
             SetCampusInitialization( box, currentPerson );
             SetFieldVisibility( box );
             SetOptions( box );
-            SetOpportunities( box );
+            SetOpportunities( box, currentPerson );
             SetPersonAttributes( box, currentPerson );
 
-            box.IsFirstTimeGuestOpportunityConfigured = GetAttributeValue( AttributeKey.FirstTimeGuestOpportunity ).AsGuidOrNull().HasValue;
+            box.IsFirstTimeGuestOpportunityConfigured = IsFirstTimeGuestOpportunityAvailable( currentPerson );
 
             // Configured but offering nothing: warn editors that the chosen connection type(s)
             // have no active opportunities, so they recognize a data/config gap rather than a defect.
@@ -614,7 +614,7 @@ namespace Rock.Blocks.Connection
         /// <summary>
         /// Populates the offered opportunities, each with its public connection request attributes, on the box.
         /// </summary>
-        private void SetOpportunities( ConnectionRequestEntryInitializationBox box )
+        private void SetOpportunities( ConnectionRequestEntryInitializationBox box, Person currentPerson )
         {
             var connectionTypeGuids = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
 
@@ -624,6 +624,17 @@ namespace Rock.Blocks.Connection
                 return;
             }
 
+            /*
+                09/08/26 - JMH
+
+                Only offer opportunities the visitor is authorized to VIEW. An opportunity inherits its
+                security from its ConnectionType, so a type restricted to certain groups must not surface
+                its opportunities on this public form to a visitor outside those groups. VIEW is evaluated
+                in memory because IsAuthorized cannot translate to SQL. The save path re-applies the same
+                check so a crafted payload cannot submit against an opportunity the visitor could not see.
+
+                Reason: Gate offered opportunities by View security.
+            */
             var opportunities = new ConnectionOpportunityService( RockContext )
                 .Queryable()
                 .Include( o => o.ConnectionType )
@@ -633,7 +644,8 @@ namespace Rock.Blocks.Connection
                     connectionTypeGuids.Contains( o.ConnectionType.Guid ) )
                 .OrderBy( o => o.PublicName )
                 .ThenBy( o => o.Name )
-                .ToList();
+                .ToList()
+                .Where( o => o.IsAuthorized( Authorization.VIEW, currentPerson ) );
 
             box.Opportunities = opportunities
                 .Select( o => new ConnectionRequestEntryOpportunityBag
@@ -1185,22 +1197,37 @@ namespace Rock.Blocks.Connection
                 var currentPerson = GetCurrentPerson();
 
                 /*
-                    07/13/26 - JMH
+                    08/17/26 - JMH
 
-                    Only an authenticated visitor may update an existing Person. An anonymous submission is not
-                    matched against existing people at all: a crafted payload carrying a victim's name, email, and
-                    phone would otherwise let a stranger overwrite that person's contact info, an account-takeover
-                    vector. Anonymous visitors always get a new Person (a duplicate for staff to merge later),
-                    mirroring the "create a new record unless updates are explicitly allowed" posture of the
-                    Family Pre-Registration block.
+                    A submission is matched against existing people so a returning visitor's request lands on
+                    their own profile rather than accumulating a duplicate record for staff to merge. Rock's
+                    matcher only returns people whose Account Protection Profile is outside the configured
+                    duplicate-detection ignore list, the setting an administrator tunes to decide how much of
+                    the database a public form may reach.
 
-                    Reason: Never let an anonymous submission mutate a matched person; create a duplicate instead.
+                    An unauthenticated submission is untrusted input, so a person it matches is treated as
+                    read-only for their contact and identity fields. Those are written only for a person this
+                    submission created or for the authenticated visitor's own record. Everything else the form
+                    collects still saves against a matched person.
+
+                    An existing person, whether matched or authenticated, is only ever added to. Submitted
+                    values that arrive empty leave whatever the record already holds intact, so a visitor who
+                    skips an optional field cannot blank out information Rock already had.
+
+                    Reason: An untrusted submission may enrich a matched record but must not change its contact or identity fields.
                 */
                 var person = currentPerson;
+                var isExistingPerson = person != null && person.PrimaryAliasId.HasValue;
 
-                if ( person == null || !person.PrimaryAliasId.HasValue )
+                if ( !isExistingPerson )
                 {
-                    person = CreateNewPerson( bag, campusId );
+                    person = FindMatchingPerson( bag );
+                    isExistingPerson = person != null;
+
+                    if ( person == null )
+                    {
+                        person = CreateNewPerson( bag, campusId );
+                    }
                 }
                 else
                 {
@@ -1209,36 +1236,9 @@ namespace Rock.Blocks.Connection
                     UpdatePersonDemographics( person, bag );
                 }
 
-                if ( IsFieldShown( AttributeKey.MobilePhone ) && bag.MobilePhone != null && bag.MobilePhone.Number.IsNotNullOrWhiteSpace() )
-                {
-                    SavePhone( bag.MobilePhone.Number, bag.MobilePhone.CountryCode, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), bag.MobilePhone.IsMessagingEnabled );
-                }
+                var isAnonymousMatch = isExistingPerson && currentPerson == null;
 
-                if ( IsFieldShown( AttributeKey.ProfilePhoto ) && bag.PhotoGuid.IsNotNullOrWhiteSpace() && Guid.TryParse( bag.PhotoGuid, out var photoGuid ) )
-                {
-                    var photoBinaryFile = new BinaryFileService( RockContext ).Get( photoGuid );
-
-                    if ( photoBinaryFile != null )
-                    {
-                        person.PhotoId = photoBinaryFile.Id;
-
-                        // A newly uploaded photo starts out temporary; keep it now that it is in use so RockCleanup does not purge it.
-                        photoBinaryFile.IsTemporary = false;
-                    }
-                }
-
-                // Persist the preferred service time (a Schedule) only when the field is offered
-                // (a Preferred Service Time schedule category is configured).
-                if ( GetAttributeValue( AttributeKey.PreferredServiceTime ).AsGuidOrNull().HasValue )
-                {
-                    person.PreferredServiceTimeScheduleId = GetScheduleId( bag.PreferredServiceTime );
-                }
-
-                RockContext.SaveChanges();
-
-                SaveAddress( bag.Address, person );
-                SavePersonAttributeValues( bag, person, currentPerson );
-                SaveSpouse( bag, person, currentPerson );
+                SavePersonDetails( bag, person, currentPerson, isExistingPerson, isAnonymousMatch );
 
                 var ( created, redirectUrl ) = CreateConnectionRequests( bag, person, campusId, firstTimeGuestOpportunityGuid );
 
@@ -1258,6 +1258,105 @@ namespace Rock.Blocks.Connection
         #endregion Block Actions
 
         #region Save Helpers
+
+        /// <summary>
+        /// Finds the existing person the submitted name and contact information identifies.
+        /// </summary>
+        /// <param name="bag">The submitted form values.</param>
+        /// <returns>The matched <see cref="Person"/>, or <c>null</c> when the submission does not confidently identify one.</returns>
+        /// <remarks>
+        /// The lookup itself writes nothing to the record it finds. Only values whose fields the form actually
+        /// offered contribute to the match, and a match requires an email, since an email or phone hit is what
+        /// earns the confidence to return a person at all. A match is reported only when it can carry a
+        /// connection request, meaning it has a primary alias.
+        /// </remarks>
+        private Person FindMatchingPerson( ConnectionRequestEntryRequestBag bag )
+        {
+            if ( !IsFieldShown( AttributeKey.Email ) || bag.Email.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var gender = IsFieldShown( AttributeKey.Gender ) ? bag.Gender.ConvertToEnumOrNull<Gender>() : null;
+
+            var matchQuery = new PersonService.PersonMatchQuery(
+                bag.FirstName,
+                bag.LastName,
+                bag.Email,
+                IsFieldShown( AttributeKey.MobilePhone ) ? bag.MobilePhone?.Number : null,
+                gender == Gender.Unknown ? null : gender,
+                IsFieldShown( AttributeKey.Birthdate ) ? bag.BirthDate.AsDateTime() : null,
+                IsFieldShown( AttributeKey.Suffix ) ? GetDefinedValueId( bag.Suffix ) : null );
+
+            /*
+                08/17/26 - JMH
+
+                updatePrimaryEmail stays false. When true it writes the submitted address onto the matched
+                record immediately, and this block treats a matched person's stored contact fields as
+                read-only for an untrusted submission. The duplicate-detection ignore list is not relied on as
+                a backstop here, since its contents vary by install and by how current the profile data is.
+
+                Reason: An untrusted submission must not change a matched person's stored email.
+            */
+            var match = new PersonService( RockContext ).FindPerson( matchQuery, updatePrimaryEmail: false );
+
+            return match?.PrimaryAliasId.HasValue == true ? match : null;
+        }
+
+        /// <summary>
+        /// Saves the submitted contact information, photo, preferred service time, address, person attribute values, and spouse.
+        /// </summary>
+        /// <param name="bag">The submitted form values.</param>
+        /// <param name="person">The person to save the submitted values against.</param>
+        /// <param name="currentPerson">The authenticated visitor, or <c>null</c> for an anonymous submission.</param>
+        /// <param name="isExistingPerson">
+        /// <c>true</c> when <paramref name="person"/> was already in the database, whether matched or authenticated;
+        /// <c>false</c> when this submission just created them.
+        /// </param>
+        /// <param name="isAnonymousMatch">
+        /// <c>true</c> when <paramref name="person"/> is an existing record an unauthenticated submission matched,
+        /// which leaves the matched person's contact fields and family untouched.
+        /// </param>
+        private void SavePersonDetails( ConnectionRequestEntryRequestBag bag, Person person, Person currentPerson, bool isExistingPerson, bool isAnonymousMatch )
+        {
+            // A matched person's contact fields are read-only for an untrusted submission, so a phone is saved only for a new or authenticated person.
+            if ( !isAnonymousMatch && IsFieldShown( AttributeKey.MobilePhone ) && bag.MobilePhone != null && bag.MobilePhone.Number.IsNotNullOrWhiteSpace() )
+            {
+                SavePhone( bag.MobilePhone.Number, bag.MobilePhone.CountryCode, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), bag.MobilePhone.IsMessagingEnabled );
+            }
+
+            if ( IsFieldShown( AttributeKey.ProfilePhoto ) && bag.PhotoGuid.IsNotNullOrWhiteSpace() && Guid.TryParse( bag.PhotoGuid, out var photoGuid ) )
+            {
+                var photoBinaryFile = new BinaryFileService( RockContext ).Get( photoGuid );
+
+                if ( photoBinaryFile != null )
+                {
+                    person.PhotoId = photoBinaryFile.Id;
+
+                    // A newly uploaded photo starts out temporary; keep it now that it is in use so RockCleanup does not purge it.
+                    photoBinaryFile.IsTemporary = false;
+                }
+            }
+
+            // Persist the preferred service time (a Schedule) only when the field is offered
+            // (a Preferred Service Time schedule category is configured).
+            if ( GetAttributeValue( AttributeKey.PreferredServiceTime ).AsGuidOrNull().HasValue )
+            {
+                var preferredServiceTimeScheduleId = GetScheduleId( bag.PreferredServiceTime );
+
+                // A blank submission means "no answer given", so an existing choice stands.
+                if ( preferredServiceTimeScheduleId.HasValue || !isExistingPerson )
+                {
+                    person.PreferredServiceTimeScheduleId = preferredServiceTimeScheduleId;
+                }
+            }
+
+            RockContext.SaveChanges();
+
+            SaveAddress( bag.Address, person );
+            SavePersonAttributeValues( bag, person, currentPerson, isExistingPerson );
+            SaveSpouse( bag, person, isAnonymousMatch );
+        }
 
         /// <summary>
         /// Creates and persists a new Person (with their family) from the submitted values.
@@ -1298,12 +1397,12 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
-        /// Updates a matched or logged-in person's demographic fields from the submitted values, for shown fields only.
+        /// Updates the authenticated visitor's own demographic and email fields from the submitted values, for shown fields only.
         /// </summary>
         /// <remarks>
-        /// A brand-new person receives these in <see cref="CreateNewPerson"/>; this keeps an existing person's record
-        /// in sync with the form. Only values that were actually provided are applied, so a blank submission never
-        /// clears a value already on the record.
+        /// Only the authenticated visitor reaches this, so the record being updated is their own. A brand-new person
+        /// receives these in <see cref="CreateNewPerson"/>. Only values that were actually provided are applied, so a
+        /// blank submission never clears a value already on the record.
         /// </remarks>
         private void UpdatePersonDemographics( Person person, ConnectionRequestEntryRequestBag bag )
         {
@@ -1351,12 +1450,18 @@ namespace Rock.Blocks.Connection
                     person.SetBirthDate( birthDate );
                 }
             }
+
+            // The authenticated visitor is editing their own record, so a changed email is applied to it.
+            if ( IsFieldShown( AttributeKey.Email ) && bag.Email.IsNotNullOrWhiteSpace() )
+            {
+                person.Email = bag.Email;
+            }
         }
 
         /// <summary>
         /// Saves the Additional Information person attribute values from the submitted form.
         /// </summary>
-        private void SavePersonAttributeValues( ConnectionRequestEntryRequestBag bag, Person person, Person currentPerson )
+        private void SavePersonAttributeValues( ConnectionRequestEntryRequestBag bag, Person person, Person currentPerson, bool isExistingPerson )
         {
             if ( bag.PersonAttributeValues == null || !bag.PersonAttributeValues.Any() )
             {
@@ -1386,8 +1491,11 @@ namespace Rock.Blocks.Connection
                 .Select( a => a.Key )
                 .ToHashSet();
 
+            // An editor that reports a value for an untouched field would otherwise blank out whatever the
+            // record already holds, so an existing person only receives the values actually filled in.
             var allowedValues = bag.PersonAttributeValues
                 .Where( kvp => allowedKeys.Contains( kvp.Key ) )
+                .Where( kvp => !isExistingPerson || kvp.Value.IsNotNullOrWhiteSpace() )
                 .ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
 
             if ( !allowedValues.Any() )
@@ -1400,10 +1508,30 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
-        /// Matches or creates the spouse and persists their information when the visitor is married and spouse details were supplied.
+        /// Creates or updates the spouse and persists their information when the visitor is married and spouse details were supplied.
         /// </summary>
-        private void SaveSpouse( ConnectionRequestEntryRequestBag bag, Person person, Person currentPerson )
+        /// <param name="bag">The submitted form values.</param>
+        /// <param name="person">The person whose spouse the submitted details describe.</param>
+        /// <param name="isAnonymousMatch">
+        /// <c>true</c> when <paramref name="person"/> is an existing record an unauthenticated submission matched,
+        /// which leaves their family untouched.
+        /// </param>
+        private void SaveSpouse( ConnectionRequestEntryRequestBag bag, Person person, bool isAnonymousMatch )
         {
+            /*
+                08/17/26 - JMH
+
+                An unauthenticated submission that matched an existing person is untrusted and does not
+                reliably describe that person's family, so it may neither add a spouse nor edit the spouse
+                already in it. The matched person's family is left as it was.
+
+                Reason: Only a trusted submission may change a matched person's family.
+            */
+            if ( isAnonymousMatch )
+            {
+                return;
+            }
+
             // A spouse is only created when the form actually offered marital status and the spouse name fields,
             // the submitted status is Married, and both names were provided. The name fields gate the whole block.
             var areSpouseNamesShown = IsFieldShown( AttributeKey.SpouseFirstName ) && IsFieldShown( AttributeKey.SpouseLastName );
@@ -1421,8 +1549,9 @@ namespace Rock.Blocks.Connection
                 return;
             }
 
-            // For a logged-in visitor whose family already has a spouse, update that spouse in place rather than duplicating.
-            var spouse = currentPerson != null ? person.GetSpouse( RockContext ) : null;
+            // The family may already have a spouse to update in place rather than duplicate. A person this
+            // submission just created has none, so the lookup simply comes back empty for them.
+            var spouse = person.GetSpouse( RockContext );
 
             if ( spouse == null )
             {
@@ -1522,7 +1651,7 @@ namespace Rock.Blocks.Connection
                     .Include( o => o.ConnectionType )
                     .FirstOrDefault( o => o.Id == opportunityId.Value );
 
-                if ( !IsOpportunitySelectable( opportunity, allowedConnectionTypeGuids ) )
+                if ( !IsOpportunitySelectable( opportunity, allowedConnectionTypeGuids, currentPerson ) )
                 {
                     continue;
                 }
@@ -1545,15 +1674,17 @@ namespace Rock.Blocks.Connection
                 requestsToSave.Add( request );
             }
 
-            // The first-time-guest opportunity is admin-configured and therefore trusted; it is exempt from the
-            // allowed-Connection-Types membership check but must still be active before a request is added.
+            // The first-time-guest opportunity is admin-configured, so it is exempt from the allowed-Connection-Types
+            // membership check, but it must still be active and the visitor must be authorized to view it before a
+            // request is added, matching how the listed opportunities are gated.
             if ( bag.IsFirstTimeGuest && firstTimeGuestOpportunityGuid.HasValue )
             {
                 var firstTimeGuestOpportunity = opportunityService.Queryable()
                     .Include( o => o.ConnectionType )
                     .FirstOrDefault( o => o.Guid == firstTimeGuestOpportunityGuid.Value );
 
-                if ( IsOpportunityActive( firstTimeGuestOpportunity ) )
+                if ( IsOpportunityActive( firstTimeGuestOpportunity )
+                    && firstTimeGuestOpportunity.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     var request = BuildConnectionRequest( firstTimeGuestOpportunity, person, campusId, bag.AdditionalComments );
                     request.LoadAttributes( RockContext );
@@ -1587,6 +1718,33 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
+        /// Indicates whether the configured first-time-guest opportunity is available to the visitor: it must be set,
+        /// active under an active connection type, and authorized for the visitor to view.
+        /// </summary>
+        /// <param name="currentPerson">The authenticated visitor, or <c>null</c> for an anonymous visitor.</param>
+        /// <remarks>
+        /// This gates the first-time-guest option on the form so it is not offered when the visitor could not use it.
+        /// The save path re-applies the same active and view checks before creating the request.
+        /// </remarks>
+        private bool IsFirstTimeGuestOpportunityAvailable( Person currentPerson )
+        {
+            var opportunityGuid = GetAttributeValue( AttributeKey.FirstTimeGuestOpportunity ).AsGuidOrNull();
+
+            if ( !opportunityGuid.HasValue )
+            {
+                return false;
+            }
+
+            var opportunity = new ConnectionOpportunityService( RockContext )
+                .Queryable()
+                .Include( o => o.ConnectionType )
+                .FirstOrDefault( o => o.Guid == opportunityGuid.Value );
+
+            return IsOpportunityActive( opportunity )
+                && opportunity.IsAuthorized( Authorization.VIEW, currentPerson );
+        }
+
+        /// <summary>
         /// Indicates whether an opportunity is active and belongs to an active connection type.
         /// </summary>
         private bool IsOpportunityActive( ConnectionOpportunity opportunity )
@@ -1599,12 +1757,17 @@ namespace Rock.Blocks.Connection
 
         /// <summary>
         /// Indicates whether an opportunity may be selected through this block: it must be active, under an active
-        /// connection type, and that connection type must be one the block's Connection Types setting allows.
+        /// connection type, that connection type must be one the block's Connection Types setting allows, and the
+        /// visitor must be authorized to view the opportunity.
         /// </summary>
-        private bool IsOpportunitySelectable( ConnectionOpportunity opportunity, HashSet<Guid> allowedConnectionTypeGuids )
+        /// <param name="opportunity">The submitted opportunity to validate.</param>
+        /// <param name="allowedConnectionTypeGuids">The connection type Guids the block's setting exposes.</param>
+        /// <param name="currentPerson">The authenticated visitor, or <c>null</c> for an anonymous submission.</param>
+        private bool IsOpportunitySelectable( ConnectionOpportunity opportunity, HashSet<Guid> allowedConnectionTypeGuids, Person currentPerson )
         {
             return IsOpportunityActive( opportunity )
-                && allowedConnectionTypeGuids.Contains( opportunity.ConnectionType.Guid );
+                && allowedConnectionTypeGuids.Contains( opportunity.ConnectionType.Guid )
+                && opportunity.IsAuthorized( Authorization.VIEW, currentPerson );
         }
 
         /// <summary>

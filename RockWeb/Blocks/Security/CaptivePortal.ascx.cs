@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Security
                 hfMacAddress.Value = macAddress;
 
                 // create or get device
-                PersonalDeviceService personalDeviceService = new PersonalDeviceService( new RockContext() );
+                PersonalDeviceService personalDeviceService = new PersonalDeviceService( RockApp.Current.CreateRockContext() );
                 PersonalDevice personalDevice = null;
 
                 if ( DoesPersonalDeviceExist( macAddress ) )
@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Security
         /// <returns></returns>
         private bool DoesPersonalDeviceExist( string macAddress )
         {
-            PersonalDeviceService personalDeviceService = new PersonalDeviceService( new RockContext() );
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( RockApp.Current.CreateRockContext() );
             return personalDeviceService.GetByMACAddress( macAddress ) == null ? false : true;
         }
 
@@ -288,7 +288,7 @@ namespace RockWeb.Blocks.Security
         {
             var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( Request.UserAgent );
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
 
             PersonalDevice personalDevice = new PersonalDevice();
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Security
         {
             var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( Request.UserAgent );
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
 
             PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );
@@ -433,7 +433,7 @@ namespace RockWeb.Blocks.Security
 
             if ( tbMobilePhone.Visible )
             {
-                PhoneNumberService phoneNumberService = new PhoneNumberService( new RockContext() );
+                PhoneNumberService phoneNumberService = new PhoneNumberService( RockApp.Current.CreateRockContext() );
                 PhoneNumber phoneNumber = phoneNumberService.GetNumberByPersonIdAndType( person.Id, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                 tbMobilePhone.Text = phoneNumber == null? string.Empty : phoneNumber.Number;
             }
@@ -485,7 +485,7 @@ namespace RockWeb.Blocks.Security
         {
             // At this point the user is not logged in and not found by looking up the device
             // So lets try to find the user using entered info and then link them to the device.
-            PersonService personService = new PersonService( new RockContext() );
+            PersonService personService = new PersonService( RockApp.Current.CreateRockContext() );
             int mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
             Person person = null;
             string mobilePhoneNumber = string.Empty;
@@ -555,7 +555,7 @@ namespace RockWeb.Blocks.Security
                 person.PhoneNumbers = new List<PhoneNumber>() { new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } };
             }
 
-            PersonService.SaveNewPerson( person, new RockContext() );
+            PersonService.SaveNewPerson( person, RockApp.Current.CreateRockContext() );
             return person;
         }
 
@@ -638,7 +638,7 @@ namespace RockWeb.Blocks.Security
                 return;
             }
 
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 Person person = new PersonService( rockContext ).Get( ( int ) CurrentPersonId );
                 person.Email = tbEmail.Text;

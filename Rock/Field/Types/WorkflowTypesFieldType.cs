@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -62,7 +63,7 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var workflowTypes = new WorkflowTypeService( rockContext )
                             .Queryable()
@@ -167,7 +168,7 @@ namespace Rock.Field.Types
 
             if ( guids.Any() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var workflowTypeIds = new WorkflowTypeService( rockContext )
                         .Queryable()
@@ -194,6 +195,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<WorkflowType>().Value, nameof( WorkflowType.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the WorkflowType table, separated by commas. Not their ids or idKeys.",
+                Instructions = "To find the correct values, read the workflow types and take the guid of each one you want."
             };
         }
 
@@ -244,7 +260,7 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 var ids = picker.SelectedValuesAsInt().ToList();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var items = new WorkflowTypeService( rockContext ).GetByIds( ids ).ToList();
 
@@ -277,7 +293,7 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     workflowTypes = new WorkflowTypeService( rockContext ).GetByGuids( guids ).AsNoTracking().ToList();
                 }
 

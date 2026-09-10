@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -49,7 +50,7 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemEmails = new DefinedTypeService( rockContext ).Queryable()
                     .AsNoTracking()
@@ -126,7 +127,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new DefinedTypeService( rockContext ).Get( guid.Value );
             }
 
@@ -166,6 +167,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<DefinedType>().Value, nameof( DefinedType.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the DefinedType table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is the type itself, not one of its defined values.",
+                Instructions = "To find the correct value, read the defined types and take the guid of the one you want."
             };
         }
 
@@ -227,7 +243,7 @@ namespace Rock.Field.Types
             editControl.EnhanceForLongLists = true;
             editControl.Items.Add( new ListItem() );
 
-            var definedTypes = new DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Name );
+            var definedTypes = new DefinedTypeService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( d => d.Name );
             if ( definedTypes.Any() )
             {
                 foreach ( var definedType in definedTypes )

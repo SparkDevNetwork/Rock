@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -538,7 +539,7 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return Reflection.GetIEntityForEntityType( entityType.Id, entityId.Value, rockContext );
             }
@@ -575,7 +576,7 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new AdaptiveMessageCategoryService( rockContext )
                     .Queryable()
@@ -594,7 +595,7 @@ namespace Rock.Blocks.Core
         {
             var parentCategoryId = parentGuid != Guid.Empty ? CategoryCache.Get( parentGuid )?.Id : null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var query = new AdaptiveMessageCategoryService( rockContext ).Queryable()
                     .Where( a => a.AdaptiveMessageId == adaptiveMessageId );

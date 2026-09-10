@@ -18,29 +18,36 @@
             </div>
         </div>
 
-        <div class="row" v-if="templateId">
-            <div class="col-md-6">
-                <CheckBoxList label="Primary Areas"
-                              v-model="primaryAreaIds"
-                              :items="primaryAreaItems"
-                              horizontal
-                              :repeatColumns="2" />
-            </div>
+        <Loading v-if="templateId" :isLoading="isLoading">
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBoxList label="Primary Areas"
+                                  v-model="primaryAreaIds"
+                                  :items="primaryAreaItems"
+                                  :itemsClass="outOfScopeItemClasses"
+                                  :itemsHelpText="outOfScopeItemHelpText"
+                                  horizontal
+                                  :repeatColumns="2" />
+                </div>
 
-            <div class="col-md-6">
-                <CheckBoxList label="Secondary Areas"
-                              v-model="secondaryAreaIds"
-                              :items="secondaryAreaItems"
-                              horizontal
-                              :repeatColumns="2" />
+                <div class="col-md-6">
+                    <CheckBoxList label="Secondary Areas"
+                                  v-model="secondaryAreaIds"
+                                  :items="secondaryAreaItems"
+                                  :itemsClass="outOfScopeItemClasses"
+                                  :itemsHelpText="outOfScopeItemHelpText"
+                                  horizontal
+                                  :repeatColumns="2" />
+                </div>
             </div>
-        </div>
+        </Loading>
     </div>
 </template>
 
 <script setup lang="ts">
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -69,6 +76,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: SavedKioskConfigurationBag | undefined): void;
+        (e: "update:isLoading", value: boolean): void;
     }>();
 
     const theme = ref(props.modelValue?.themeName ?? blockConfiguration.currentTheme ?? "");
@@ -76,6 +84,12 @@
     const areaItems = ref<ConfigurationAreaBag[]>([]);
     const primaryAreaIds = ref<string[]>([]);
     const secondaryAreaIds = ref<string[]>([]);
+
+    // Tracks whether the area list is currently being fetched from the server.
+    // The parent can bind to this via update:isLoading to disable Save/Delete
+    // while the request is in flight, so the admin cannot commit an empty
+    // selection before the areas have finished loading.
+    const isLoading = ref(false);
 
     /** The primary area items that match the current selections. */
     const primaryAreaItems = computed((): ListItemBag[] => {
@@ -89,6 +103,43 @@
         return areaItems.value
             .filter(a => !(a.primaryTemplateIds ?? []).includes(templateId.value ?? ""))
             .map(a => ({ value: a.id, text: a.name }));
+    });
+
+    /**
+     * Per-item CSS class map used to visually indicate that a check-box
+     * represents an area which lives outside the current kiosk's scope. The
+     * area is still listed (and remains checkable) so the admin can see and
+     * intentionally manage cross-campus selections on a shared saved kiosk
+     * template, but the muted label makes clear it does not fully apply to
+     * the kiosk they are editing from.
+     */
+    const outOfScopeItemClasses = computed((): Record<string, string> => {
+        const map: Record<string, string> = {};
+
+        for (const area of areaItems.value) {
+            if (area.isOutOfScope && area.id) {
+                map[area.id] = "text-muted";
+            }
+        }
+
+        return map;
+    });
+
+    /**
+     * Per-item help-tooltip map that pairs with outOfScopeItemClasses. The
+     * tooltip explains to the admin why the muted area is showing up here
+     * even though it does not apply to the current kiosk.
+     */
+    const outOfScopeItemHelpText = computed((): Record<string, string> => {
+        const map: Record<string, string> = {};
+
+        for (const area of areaItems.value) {
+            if (area.isOutOfScope && area.id) {
+                map[area.id] = "This area is not available at the current kiosk. It's shown because the saved template selects it for another campus.";
+            }
+        }
+
+        return map;
     });
 
     /** The list of configuration templates to show in the template picker. */
@@ -118,34 +169,56 @@
             return;
         }
 
-        const request = {
-            kioskId: props.kiosk.id
-        };
+        // When we are restoring an existing saved configuration, ask the
+        // server to include the previously selected areas even if they are
+        // not part of the current kiosk's scope. This is what lets a shared
+        // saved kiosk template show (and keep) area selections that belong
+        // to other campuses instead of silently dropping them on save.
+        // Reason: See https://github.com/SparkDevNetwork/Rock/issues/6981
+        const hasRestoreAreas = !!restore?.areaIds && restore.areaIds.length > 0;
+        const actionName = hasRestoreAreas ? "GetEditConfiguration" : "GetConfiguration";
+        const request = hasRestoreAreas
+            ? { kioskId: props.kiosk.id, additionalAreaIds: restore?.areaIds }
+            : { kioskId: props.kiosk.id };
 
-        const response = await invokeBlockAction<ConfigurationResponseBag>("GetConfiguration", request);
+        // Flip on the busy flag before we start the fetch so the parent can
+        // disable Save/Delete and we can show a spinner in place of the empty
+        // check-box lists. Guaranteed cleared in the finally below.
+        isLoading.value = true;
 
-        if (!response.isSuccess || !response.data || !response.data.areas) {
-            primaryAreaIds.value = [];
-            secondaryAreaIds.value = [];
-            areaItems.value = [];
+        try {
+            const response = await invokeBlockAction<ConfigurationResponseBag>(actionName, request);
 
-            return;
+            if (!response.isSuccess || !response.data || !response.data.areas) {
+                primaryAreaIds.value = [];
+                secondaryAreaIds.value = [];
+                areaItems.value = [];
+
+                return;
+            }
+
+            areaItems.value = response.data.areas;
+
+            if (restore?.areaIds) {
+                primaryAreaIds.value = areaItems.value
+                    .filter(a => a.id && restore.areaIds?.includes(a.id))
+                    .filter(a => a.primaryTemplateIds?.includes(templateId.value) === true)
+                    .map(a => a.id ?? "");
+
+                secondaryAreaIds.value = areaItems.value
+                    .filter(a => a.id && restore.areaIds?.includes(a.id))
+                    .filter(a => !a.primaryTemplateIds?.includes(templateId.value))
+                    .map(a => a.id ?? "");
+            }
         }
-
-        areaItems.value = response.data.areas;
-
-        if (restore?.areaIds) {
-            primaryAreaIds.value = areaItems.value
-                .filter(a => a.id && restore.areaIds?.includes(a.id))
-                .filter(a => a.primaryTemplateIds?.includes(templateId.value) === true)
-                .map(a => a.id ?? "");
-
-            secondaryAreaIds.value = areaItems.value
-                .filter(a => a.id && restore.areaIds?.includes(a.id))
-                .filter(a => !a.primaryTemplateIds?.includes(templateId.value))
-                .map(a => a.id ?? "");
+        finally {
+            isLoading.value = false;
         }
     }
+
+    // Bubble the busy flag up to the parent so the enclosing modal can
+    // disable its Save/Delete buttons while the area list is loading.
+    watch(isLoading, value => emit("update:isLoading", value));
 
     watch([theme, templateId, primaryAreaIds, secondaryAreaIds], () => {
         const newValue: SavedCheckInConfigurationSettingsBag = {

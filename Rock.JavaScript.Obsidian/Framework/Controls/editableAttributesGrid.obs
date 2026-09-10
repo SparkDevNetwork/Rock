@@ -6,7 +6,7 @@
           :entityTypeGuid="EntityType.Attribute"
           liveUpdates
           light
-          @addItem="onAddClick">
+          :onAddItem="isAddHidden ? undefined : onAddClick">
         <ReorderColumn v-if="!isReorderHidden" @orderChanged="onOrderChanged" />
         <TextColumn name="name" field="name" title="Attribute" />
         <TextColumn name="description" field="description" title="Description" />
@@ -111,6 +111,15 @@
 
         /** True if the reorder column should not be shown. */
         isReorderHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * True if the Add button should not be shown. Existing attributes
+         * remain editable and deletable; only adding is prevented.
+         */
+        isAddHidden: {
             type: Boolean as PropType<boolean>,
             default: false
         }

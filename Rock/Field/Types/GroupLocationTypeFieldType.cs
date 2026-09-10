@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -186,7 +187,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedValueId = new DefinedValueService( rockContext ).GetId( guid.Value );
 
@@ -212,6 +213,24 @@ namespace Rock.Field.Types
                 new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
             };
         }
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Stores a DefinedValue guid rather than a row from any GroupLocationType table, which the name does not suggest.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the DefinedValue table holding a group location type, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = "To find the correct value, look up the values of the Group Location Type defined type and take the guid of the one you want."
+            };
+        }
+
         #endregion
 
         #region WebForms
@@ -246,7 +265,7 @@ namespace Rock.Field.Types
             ddlGroupType.Label = "Group Type";
             ddlGroupType.Help = "The Group Type to select location types from.";
 
-            Rock.Model.GroupTypeService groupTypeService = new Model.GroupTypeService( new RockContext() );
+            Rock.Model.GroupTypeService groupTypeService = new Model.GroupTypeService( RockApp.Current.CreateRockContext() );
             foreach ( var groupType in groupTypeService.Queryable().AsNoTracking().OrderBy( g => g.Name ).Select( a => new { a.Name, a.Guid } ) )
             {
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString() ) );

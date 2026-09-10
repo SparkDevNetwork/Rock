@@ -89,7 +89,8 @@
 
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
-                       :siteItems="siteItems" />
+                       :siteItems="siteItems"
+                       :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
 <style scoped>
@@ -118,7 +119,7 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
     import { safeParseJson, truncate } from "@Obsidian/Utility/stringUtils";
-    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
     import { ExceptionOccurrenceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionOccurrenceList/exceptionOccurrenceListOptionsBag";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -133,6 +134,15 @@
 
     onConfigurationValuesChanged(useReloadBlock());
 
+    // We'll enforce a default date range of the last month - to be applied
+    // if the individual doesn't have a preference - as a single exception group
+    // can have a large number of occurrences. This must match the server-side default.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 1
+    };
+
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
@@ -145,7 +155,7 @@
         site: preferences.getValue(PreferenceKey.FilterSite),
         page: safeParseJson(preferences.getValue(PreferenceKey.FilterPage)) ?? null,
         user: safeParseJson(preferences.getValue(PreferenceKey.FilterUser)) ?? null,
-        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange))
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? defaultSlidingDateRange
     });
 
     // #endregion Values
@@ -245,11 +255,14 @@
 
     watch(gridSettings, async () => {
         const s = gridSettings.value;
+        const dateRangeString = s.dateRange
+            ? slidingDateRangeToString(s.dateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange);
 
         preferences.setValue(PreferenceKey.FilterSite, s.site ?? "");
         preferences.setValue(PreferenceKey.FilterPage, s.page ? JSON.stringify(s.page) : "");
         preferences.setValue(PreferenceKey.FilterUser, s.user ? JSON.stringify(s.user) : "");
-        preferences.setValue(PreferenceKey.FilterDateRange, s.dateRange ? slidingDateRangeToString(s.dateRange) : "");
+        preferences.setValue(PreferenceKey.FilterDateRange, dateRangeString);
 
         await preferences.save();
 

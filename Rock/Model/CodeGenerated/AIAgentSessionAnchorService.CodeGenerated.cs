@@ -36,6 +36,8 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="AIAgentSessionAnchorService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public AIAgentSessionAnchorService(RockContext context) : base(context)
         {
         }
@@ -48,6 +50,8 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( AIAgentSessionAnchor item, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -66,6 +70,8 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static AIAgentSessionAnchor Clone( this AIAgentSessionAnchor source, bool deepCopy )
         {
             if (deepCopy)
@@ -85,6 +91,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static AIAgentSessionAnchor CloneWithoutIdentity( this AIAgentSessionAnchor source )
         {
             var target = new AIAgentSessionAnchor();
@@ -104,6 +112,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this AIAgentSessionAnchor target, AIAgentSessionAnchor source )
         {
             target.Id = source.Id;

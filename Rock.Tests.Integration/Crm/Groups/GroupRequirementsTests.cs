@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -197,7 +198,7 @@ namespace Rock.Tests.Integration.Crm.Groups
         /// <param name="expectedRequirementStatus"></param>
         private void GroupRequirement_AssertPersonGroupRequirementStatus( string personIdentifier, string groupIdentifier, string groupRoleIdentifier, string groupRequirementTypeIdentifier, MeetsGroupRequirement expectedRequirementStatus )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var group = TestDataHelper.Crm.GetEntityByIdentifierOrThrow<Group>( groupIdentifier, rockContext );
 
             int? roleId = null;

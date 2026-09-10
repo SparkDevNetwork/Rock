@@ -29,6 +29,7 @@ using HtmlAgilityPack;
 
 using Rock;
 using Rock.Blocks;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Model;
@@ -155,7 +156,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( blockId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
                 var page = PageCache.Get(hfPageId.Value, true);
@@ -275,7 +276,7 @@ namespace RockWeb.Blocks.Cms
                         try
                         {
                             int blockTypeId = blockType.Id;
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 var blockCompiledType = blockType.GetCompiledType();
                                 int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
@@ -360,7 +361,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var commonBlockTypes = new BlockTypeService( rockContext ).Queryable().Where( a => a.IsCommon ).OrderBy( a => a.Name ).AsNoTracking().ToList();
 
             rptCommonBlockTypes.DataSource = commonBlockTypes;
@@ -617,7 +618,7 @@ namespace RockWeb.Blocks.Cms
             int? blockId = btnDelete.CommandArgument.AsIntegerOrNull();
             if ( blockId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
 
@@ -644,7 +645,7 @@ namespace RockWeb.Blocks.Cms
             int? blockId = btnDelete.CommandArgument.AsIntegerOrNull();
             if ( blockId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
 
@@ -746,7 +747,7 @@ namespace RockWeb.Blocks.Cms
             var siteType = PageCache.Get( hfPageId.Value, true ).Layout.Site.SiteType;
 
             // Load the block types
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Show all the Web blocks and even ones with SiteTypeFlags set to None.
                 var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType, true )
@@ -827,7 +828,7 @@ namespace RockWeb.Blocks.Cms
         protected void mdBlockMove_SaveClick( object sender, EventArgs e )
         {
             int blockId = hfBlockMoveBlockId.Value.AsInteger();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var blockService = new BlockService( rockContext );
             var block = blockService.Get( blockId );
 
@@ -867,7 +868,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAddBlock_SaveClick( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 BlockService blockService = new BlockService( rockContext );
 

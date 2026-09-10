@@ -71,6 +71,14 @@ namespace Rock.Blocks.Event
         IsRequired = true,
         Order = 3 )]
 
+    [LinkedPage(
+        "Person Profile Page",
+        Description = "Page used for viewing a person's profile. If set, a view profile button will show for each participant.",
+        Key = AttributeKey.PersonProfilePage,
+        DefaultValue = Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES,
+        IsRequired = false,
+        Order = 4 )]
+
     #endregion Block Attributes
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
@@ -88,6 +96,7 @@ namespace Rock.Blocks.Event
             public const string RegistrationPage = "RegistrationPage";
             public const string GroupPlacementPage = "GroupPlacementPage";
             public const string GroupDetailPage = "GroupDetailPage";
+            public const string PersonProfilePage = "PersonProfilePage";
         }
 
         private static class NavigationUrlKey
@@ -95,6 +104,7 @@ namespace Rock.Blocks.Event
             public const string RegistrationPage = "RegistrationPage";
             public const string GroupPlacementPage = "GroupPlacementPage";
             public const string GroupDetailPage = "GroupDetailPage";
+            public const string PersonProfilePage = "PersonProfilePage";
         }
 
         private static class PageParameterKey
@@ -105,6 +115,7 @@ namespace Rock.Blocks.Event
             public const string SourcePerson = "SourcePerson";
             public const string GroupId = "GroupId";
             public const string CommunicationId = "CommunicationId";
+            public const string PersonId = "PersonId";
         }
 
         private static class PreferenceKey
@@ -317,11 +328,17 @@ namespace Rock.Blocks.Event
                 { PageParameterKey.GroupId, "((GroupId))" }
             };
 
+            var personProfilePageParams = new Dictionary<string, string>
+            {
+                { PageParameterKey.PersonId, "((Key))" }
+            };
+
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.RegistrationPage] = this.GetLinkedPageUrl( AttributeKey.RegistrationPage, registrationPageParams ),
                 [NavigationUrlKey.GroupPlacementPage] = this.GetLinkedPageUrl( AttributeKey.GroupPlacementPage, groupPlacementPageParams ),
-                [NavigationUrlKey.GroupDetailPage] = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage, groupDetailPageParams )
+                [NavigationUrlKey.GroupDetailPage] = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage, groupDetailPageParams ),
+                [NavigationUrlKey.PersonProfilePage] = this.GetLinkedPageUrl( AttributeKey.PersonProfilePage, personProfilePageParams )
             };
         }
 
@@ -492,6 +509,7 @@ namespace Rock.Blocks.Event
             var builder = new GridBuilder<RegistrationRegistrant>()
                 .WithBlock( this )
                 .AddTextField( "idKey", r => r.IdKey )
+                .AddPersonField( "person", r => r.PersonAlias?.Person )
                 .AddTextField( "registrantName", r => r.PersonAlias?.Person?.FullNameReversed )
                 .AddTextField( "legalFirstName", r => GetSearchableLegalFirstName( r.PersonAlias?.Person ) )
                 .AddTextField( "firstName", r => r.PersonAlias?.Person?.NickName )

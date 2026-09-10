@@ -34,6 +34,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
+using Rock.Configuration;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.ViewModels.Utility;
 
@@ -215,7 +216,7 @@ namespace Rock.Utility
         [RockInternal( "1.16.7", true )]
         public static List<ListItemBag> GetReprintNextGenLabelTypes( List<int> attendanceIds )
         {
-            var director = new CheckIn.v2.CheckInDirector( new RockContext() );
+            var director = new CheckIn.v2.CheckInDirector( RockApp.Current.CreateRockContext() );
             var labels = director.LabelProvider.RenderLabels( attendanceIds, null, null, false );
 
             return labels
@@ -245,7 +246,7 @@ namespace Rock.Utility
         [RockInternal( "1.16.7", true )]
         public static bool TryReprintNextGenLabels( List<int> attendanceIds, DeviceCache kiosk, DeviceCache printerOverride, PrintFrom? printFromOverride, List<string> onlyPrintLabelTypes, out List<string> errorMessages, out List<ClientLabelBag> clientLabels )
         {
-            var director = new CheckIn.v2.CheckInDirector( new RockContext() );
+            var director = new CheckIn.v2.CheckInDirector( RockApp.Current.CreateRockContext() );
             var labels = director.LabelProvider.RenderLabels( attendanceIds, kiosk, printerOverride, false );
 
             errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
@@ -363,7 +364,7 @@ namespace Rock.Utility
         internal static (List<string>, List<CheckInLabel>) ReprintZebraLabels( List<Guid> fileGuids, int personId, List<int> selectedAttendanceIds, ReprintLabelOptions reprintLabelOptions )
         {
             // Fetch the actual labels and print them
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new Rock.Model.AttendanceService( rockContext );
 
             reprintLabelOptions = reprintLabelOptions ?? new ReprintLabelOptions();
@@ -592,7 +593,7 @@ namespace Rock.Utility
         {
             List<ReprintLabelCheckInLabelType> labelTypes = new List<ReprintLabelCheckInLabelType>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             var binaryFileService = new BinaryFileService( rockContext );
 

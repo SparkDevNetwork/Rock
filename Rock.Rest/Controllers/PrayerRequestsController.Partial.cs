@@ -21,6 +21,7 @@ using System.Net;
 using System.Web.Http;
 using System.Web.Http.OData;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -68,7 +69,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "1EA8EFAA-1481-4FC0-9681-CA940AB25309" )]
         public IQueryable<PrayerRequest> GetByCategory( int categoryId )
         {
-            var rockContext = ( this.Service.Context as RockContext ) ?? new RockContext();
+            var rockContext = ( this.Service.Context as RockContext ) ?? RockApp.Current.CreateRockContext();
             var decendentsCategoriesQry = new CategoryService( rockContext ).GetAllDescendents( categoryId ).Select( a => a.Id );
             return this.Get().Where( a => a.CategoryId.HasValue ).Where( a => decendentsCategoriesQry.Contains( a.CategoryId.Value ) || ( a.CategoryId.Value == categoryId ) );
         }
@@ -221,7 +222,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.ArgumentNullException">prayerRequest</exception>
         private static bool PrayForRequest( Guid prayerRequestGuid, Person currentPerson, Guid? launchWorkflowGuid, bool recordInteraction, string interactionSummary, string userAgent, string clientIpAddress, Guid? sessionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var prayerRequestService = new PrayerRequestService( rockContext );
                 var prayerRequest = prayerRequestService.Get( prayerRequestGuid );

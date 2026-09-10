@@ -892,8 +892,9 @@ namespace Rock.Blocks.Engagement
             var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true ).ToList();
 
             // Delete any of those attributes that were removed in the UI
+            // except System attributes (IsSystem = true).
             var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
-            var attributesToDelete = attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) );
+            var attributesToDelete = attributes.Where( a => !a.IsSystem && !selectedAttributeGuids.Contains( a.Guid ) );
 
             foreach ( var attr in attributesToDelete )
             {
@@ -1036,7 +1037,10 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "idKey", a => a.Attribute.Guid.ToString() )
                 .AddTextField( "attributeName", a => a.Attribute.Name )
                 .AddTextField( "fieldType", a => a.FieldType )
-                .AddField( "allowSearch", a => a.Attribute.IsAllowSearch );
+                .AddField( "allowSearch", a => a.Attribute.IsAllowSearch )
+                // Include IsSystem so the framework DeleteColumn disables the
+                // delete button as needed.
+                .AddField( "isSystem", a => a.Attribute.IsSystem );
         }
 
         /// <summary>

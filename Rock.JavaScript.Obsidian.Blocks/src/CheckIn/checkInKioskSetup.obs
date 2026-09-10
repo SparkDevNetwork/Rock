@@ -106,6 +106,7 @@
                 <Modal v-model="isEditConfigurationVisible"
                        :title="editConfigurationTitle"
                        saveText="Save"
+                       :isSaveButtonDisabled="isEditConfigurationLoading"
                        @save="onEditConfigurationSaveClick">
                     <TextBox v-model="editConfigurationName"
                              label="Name"
@@ -124,11 +125,13 @@
 
                     <ManualSetup v-if="editConfigurationOptions"
                                  v-model="editConfigurationOptions"
-                                 :kiosk="selectedKiosk" />
+                                 :kiosk="selectedKiosk"
+                                 @update:isLoading="isEditConfigurationLoading = $event" />
 
                     <template #customButtons>
                         <RockButton v-if="editConfigurationId"
                                     btnType="danger"
+                                    :disabled="isEditConfigurationLoading"
                                     @click="onEditConfigurationDeleteClick">
                             Delete
                         </RockButton>
@@ -208,6 +211,12 @@
     const editConfigurationDescription = ref("");
     const editConfigurationCampuses = ref<string[]>([]);
     const editConfigurationOptions = ref<SavedCheckInConfigurationSettingsBag>();
+
+    // True while the ManualSetup partial is fetching the list of areas from
+    // the server. Used to disable the modal's Save/Delete buttons so the
+    // admin cannot commit a change before the current area selections have
+    // finished loading.
+    const isEditConfigurationLoading = ref(false);
 
     // #region Computed Values
 

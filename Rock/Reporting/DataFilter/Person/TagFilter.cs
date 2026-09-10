@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -250,7 +251,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 Guid selectedTagGuid = selectionValues[1].AsGuid();
-                var selectedTag = new TagService( new RockContext() ).Get( selectedTagGuid );
+                var selectedTag = new TagService( RockApp.Current.CreateRockContext() ).Get( selectedTagGuid );
                 if ( selectedTag != null )
                 {
                     result = string.Format( "Tagged as {0}", selectedTag.Name );
@@ -308,7 +309,7 @@ function() {
         private void PopulateTagList( FilterField filterField )
         {
             int entityTypePersonId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ) ?? 0;
-            var tagQry = new TagService( new RockContext() ).Queryable( "OwnerPersonAlias" ).Where( a => a.EntityTypeId == entityTypePersonId );
+            var tagQry = new TagService( RockApp.Current.CreateRockContext() ).Queryable( "OwnerPersonAlias" ).Where( a => a.EntityTypeId == entityTypePersonId );
 
             var rblTagType = filterField.ControlsOfTypeRecursive<RockRadioButtonList>().FirstOrDefault( a => a.HasCssClass( "js-tag-type" ) );
             var ddlTagList = filterField.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.HasCssClass( "js-tag-filter-list" ) );
@@ -387,7 +388,7 @@ function() {
                 else
                 {
                     // if the selectedTag is a personal tag, but for a different Owner than the current logged in person, include it in the list
-                    var selectedTag = new TagService( new RockContext() ).Get( selectedTagGuid );
+                    var selectedTag = new TagService( RockApp.Current.CreateRockContext() ).Get( selectedTagGuid );
                     if ( selectedTag != null )
                     {
                         if ( selectedTag.OwnerPersonAliasId.HasValue )

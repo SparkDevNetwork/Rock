@@ -6,81 +6,91 @@
                               :isDisconnected="isDisconnected" />
         </template>
 
-        <div class="d-flex flex-column outer-container">
-            <div ref="scrollContainer"
-                 class="flex-grow-1 messages-container">
-                <div v-for="msg in messages"
-                     :class="getMessageClass(msg)">
-                    <div class="message-bubble">
-                        <span class="message-numbers"
-                              @click="onMessageClick(msg)">
-                            From: {{ msg.fromNumber }}<br />
-                            To: {{ msg.toNumber }}<br />
-                        </span>
-                        <br />
-                        <div class="message-text">
-                            {{ msg.body }}
+        <div class="outer-container">
+            <div class="inner-container d-flex flex-column">
+                <div ref="scrollContainer"
+                     class="flex-grow-1 messages-container">
+                    <div v-for="msg in messages"
+                         :class="getMessageClass(msg)">
+                        <div class="message-bubble">
+                            <span class="message-numbers"
+                                  @click="onMessageClick(msg)">
+                                From: {{ msg.fromNumber }}<br />
+                                To: {{ msg.toNumber }}<br />
+                            </span>
+                            <br />
+                            <div class="message-text">
+                                {{ msg.body }}
+                            </div>
+                            <Attachment v-for="attachment in msg.attachments"
+                                        :attachment="attachment" />
                         </div>
-                        <Attachment v-for="attachment in msg.attachments"
-                                    :attachment="attachment" />
                     </div>
                 </div>
             </div>
-
-            <div class="footer">
-                <RockForm @submit="onSubmitMessage"
-                          :formResetKey="formResetKey">
-                    <div class="d-flex">
-                        <div class="mr-2">
-                            <TextBox v-model="fromNumber"
-                                     label="From (Outside Number)"
-                                     rules="required"
-                                     :disabled="isFormDisabled" />
-                        </div>
-                        <div class="mr-2 flex-grow-1 to-phone-number">
-                            <DropDownList v-model="toNumber"
-                                          label="To (Rock Number)"
-                                          :items="config.phoneNumbers"
-                                          rules="required"
-                                          :showBlankItem="false"
-                                          :disabled="isFormDisabled" />
-                        </div>
-                        <div class="mr-2 flex-grow-1 to-pipeline">
-                            <DropDownList v-model="toPipeline"
-                                          label="Pipeline"
-                                          :items="config.pipelines"
-                                          :disabled="isFormDisabled" />
-                        </div>
-                        <div class="flex-grow-1 mr-2">
-                            <TextBox v-model="body"
-                                     label="Body"
-                                     rules="required"
-                                     :disabled="isFormDisabled" />
-                        </div>
-                        <div style="margin-top: 26px;">
-                            <RockButton :btnType="BtnType.Primary"
-                                        type="submit"
-                                        :disabled="isFormDisabled">Submit</RockButton>
-                        </div>
-                    </div>
-                </RockForm>
-            </div>
         </div>
+
+        <template #footerActions>
+            <RockForm @submit="onSubmitMessage"
+                      :formResetKey="formResetKey"
+                      class="w-100">
+                <div class="d-flex align-items-start">
+                    <div class="mr-2">
+                        <TextBox v-model="fromNumber"
+                                 label="From (Outside Number)"
+                                 rules="required"
+                                 :disabled="isFormDisabled" />
+                    </div>
+                    <div class="mr-2 flex-grow-1 to-phone-number">
+                        <DropDownList v-model="toNumber"
+                                      label="To (Rock Number)"
+                                      :items="config.phoneNumbers"
+                                      rules="required"
+                                      :showBlankItem="false"
+                                      :disabled="isFormDisabled" />
+                    </div>
+                    <div class="mr-2 flex-grow-1 to-pipeline">
+                        <DropDownList v-model="toPipeline"
+                                      label="Pipeline"
+                                      :items="config.pipelines"
+                                      :disabled="isFormDisabled" />
+                    </div>
+                    <div class="flex-grow-1 mr-2">
+                        <TextBox v-model="body"
+                                 label="Body"
+                                 rules="required"
+                                 :disabled="isFormDisabled" />
+                    </div>
+                    <div>
+                        <label class="control-label d-block">&nbsp;</label>
+                        <RockButton :btnType="BtnType.Primary"
+                                    type="submit"
+                                    :disabled="isFormDisabled">Submit</RockButton>
+                    </div>
+                </div>
+            </RockForm>
+        </template>
     </Block>
 </template>
 
 <style scoped>
+:deep(.footer-actions) {
+    flex: 1;
+    align-items: center;
+}
+
 .outer-container {
+    position: relative;
+    height: 100%;
+    min-height: var(--block-min-height, calc(100vh - 320px));
+}
+
+.inner-container {
     position: absolute;
-    left: 0;
     top: 0;
     right: 0;
     bottom: 0;
-}
-
-.footer {
-    border-top: 1px solid #eee;
-    padding: 12px;
+    left: 0;
 }
 
 .to-phone-number {
@@ -113,6 +123,7 @@
     border-radius: 8px;
     background-color: rgb(16, 153, 244);
     color: white;
+    overflow-wrap: anywhere;
 }
 
 .message-incoming .message-bubble {

@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Login;
 using Rock.Common.Mobile.Enums;
 using Rock.Common.Mobile.Security.Authentication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Mobile;
@@ -637,7 +638,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [RockInternal( "1.15.1" )]
         internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag personInfo, ExternalAuthUserLoginBag userLoginInfo, RockContext rockContext = null, int? connectionStatusValueId = null, int? recordStatusValueId = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             UserLogin user = null;
             Person person = null;
 
@@ -846,7 +847,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionBadRequest( "Username and password are required." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 var (state, userLogin) = userLoginService.GetAuthenticatedUserLogin( username, password );
@@ -1040,7 +1041,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionBadRequest( "You have enhanced authentication security enabled, but are still utilizing the legacy external authentication endpoint." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // For the authentication providers that are supported,
                 // we need to structure the UserLogin accordingly.

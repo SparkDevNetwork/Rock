@@ -384,9 +384,26 @@ namespace Rock.Lava.Fluid
         /// </summary>
         private void RegisterLavaCommentTag()
         {
+            /*
+                08/24/2026 - NA
+
+                The "endcomment" terminator is built here from the context-aware TagStart/TagEnd
+                parsers rather than the class-level CreateTag() shadow. The shadow (added when we
+                upgraded to Fluid v2.20+ and enabled AllowLiquidTag) uses NoInlineTagStart /
+                NoInlineTagEnd, which require a literal "{% endcomment %}". Inside a {% lava %} /
+                {% liquid %} block each tag is line-delimited, so a bare "endcomment" on its own
+                line never matches the strict form and the whole block fails to parse. Using
+                TagStart/TagEnd here accepts both the explicit "{% endcomment %}" outside a lava
+                tag and the bare "endcomment" line inside one, restoring the pre-v19 behavior.
+
+                Reason: Fix regression where {% comment %}...{% endcomment %} nested inside a
+                        {% lava %} block throws "'{% endcomment %}' was expected". (Fixes #6993)
+            */
+            var endCommentTag = TagStart.SkipAnd( Terms.Text( "endcomment" ) ).AndSkip( TagEnd );
+
             var commentTag = LavaTagParsers.LiquidTagEnd
-                .SkipAnd( AnyCharBefore( CreateTag( "endcomment" ), canBeEmpty: true ) )
-                .AndSkip( CreateTag( "endcomment" ).ElseError( $"'{{% endcomment %}}' was expected" ) )
+                .SkipAnd( AnyCharBefore( endCommentTag, canBeEmpty: true ) )
+                .AndSkip( endCommentTag.ElseError( $"'{{% endcomment %}}' was expected" ) )
                 .Then<Statement>( x => new CommentStatement( x ) )
                 .ElseError( "Invalid 'comment' tag" );
 
@@ -398,10 +415,16 @@ namespace Rock.Lava.Fluid
         /// </summary>
         private void RegisterLavaCaptureTag()
         {
+            // Use context-aware TagStart/TagEnd for the "endcapture" terminator so that a
+            // bare "endcapture" line is accepted inside a {% lava %}/{% liquid %} body,
+            // in addition to the explicit "{% endcapture %}" form used outside those tags.
+            // See the engineering note in RegisterLavaCommentTag for the full rationale.
+            var endCaptureTag = TagStart.SkipAnd( Terms.Text( "endcapture" ) ).AndSkip( TagEnd );
+
             var captureTag = Identifier
                 .AndSkip( TagEnd )
                 .And( AnyTagsList )
-                .AndSkip( CreateTag( "endcapture" ).ElseError( $"'{{% endcapture %}}' was expected" ) )
+                .AndSkip( endCaptureTag.ElseError( $"'{{% endcapture %}}' was expected" ) )
                 .Then<Statement>( x => new CaptureStatement( x.Item1, x.Item2 ) )
                 .ElseError( "Invalid 'capture' tag" );
 

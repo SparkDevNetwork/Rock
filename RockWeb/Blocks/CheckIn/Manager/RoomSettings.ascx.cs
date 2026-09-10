@@ -21,6 +21,7 @@ using System.ComponentModel;
 
 using Rock;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -158,7 +159,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglRoom_CheckedChanged( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationService = new LocationService( rockContext );
                 locationService.SetActiveStatus( CurrentLocationId, tglRoom.Checked );
@@ -284,7 +285,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private void LoadSettings()
         {
             Location location = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 location = new LocationService( rockContext ).Get( CurrentLocationId );
             }

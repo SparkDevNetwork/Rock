@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -328,7 +329,7 @@ namespace Rock
                     var objWithAttrs = (IHasAttributes)liquidObject;
                     if ( objWithAttrs.Attributes == null )
                     {
-                        rockContext = rockContext ?? new RockContext();
+                        rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                         objWithAttrs.LoadAttributes( rockContext );
                     }
 

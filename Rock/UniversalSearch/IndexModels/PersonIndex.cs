@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
@@ -256,7 +257,7 @@ namespace Rock.UniversalSearch.IndexModels
 
                 personIndex.CampusId = person.PrimaryCampusId;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 personIndex.ConnectionStatusValueId = person.ConnectionStatusValueId;
                 personIndex.RecordStatusValueId = person.RecordStatusValueId;

@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -64,7 +65,7 @@ namespace Rock.Search.Person
                 return Enumerable.Empty<Model.Person>().AsQueryable();
             }
 
-            return new PersonService( new RockContext() ).Queryable()
+            return new PersonService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( q => q.RecordTypeValueId == recordTypeValueId && q.LastName.Contains( searchTerm ) );
         }
 

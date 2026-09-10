@@ -24,6 +24,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Event.InteractiveExperiences;
@@ -105,7 +106,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
                 var box = new ExperienceManagerInitializationBox();
@@ -243,7 +244,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult GetExperienceAnswers( string occurrenceKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceIntegerId = IdHasher.Instance.GetId( occurrenceKey );
 

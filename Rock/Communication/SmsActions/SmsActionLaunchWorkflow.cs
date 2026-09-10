@@ -70,6 +70,7 @@ namespace Rock.Communication.SmsActions
         IsRequired = false,
         DefaultValue = "",
         AllowHtml = true,
+        AllowLava = true,
         KeyPrompt = "Attribute Key",
         ValuePrompt = "Merge Template",
         Order = 5 )]

@@ -72,8 +72,8 @@ internal sealed partial class CoreAdministrationSkill
         if ( partialName.IsNotNullOrWhiteSpace() )
         {
             attributes = attributes.Where( a =>
-                ( a.Name != null && a.Name.Contains( partialName ) )
-                || ( a.Key != null && a.Key.Contains( partialName ) ) );
+                a.Name.ContainsIgnoreCase( partialName )
+                || a.Key.ContainsIgnoreCase( partialName ) );
         }
 
         var orderedAttributes = attributes

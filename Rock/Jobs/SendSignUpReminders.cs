@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -56,7 +57,7 @@ namespace Rock.Jobs
         {
             var now = RockDateTime.Now;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var recipientsByOpportunity = GetRecipientsByOpportunity( rockContext, now );
 
@@ -233,7 +234,7 @@ namespace Rock.Jobs
 
             // Load Groups' Attributes in bulk for the final comparison.
             var groups = recipientsByOpportunity.Select( o => o.Group ).Distinct().ToList();
-            groups.LoadAttributes( new RockContext() );
+            groups.LoadAttributes( RockApp.Current.CreateRockContext() );
 
             var inPersonProjectTypeGuid = Rock.SystemGuid.DefinedValue.PROJECT_TYPE_IN_PERSON.AsGuid();
 

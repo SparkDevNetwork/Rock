@@ -23,6 +23,7 @@ using System.Reflection;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Follow;
 using Rock.Lava;
@@ -70,7 +71,7 @@ namespace Rock.Jobs
 
             if ( groupGuid.HasValue && systemEmailGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var followingService = new FollowingService( rockContext );
 
@@ -312,7 +313,7 @@ namespace Rock.Jobs
         /// <param name="timestamp">The timestamp.</param>
         private void ProcessFollowerPersonId( int followerPersonId, SuggestionTypeComponent suggestionTypeComponent, Dictionary<int, int> primaryAliasIds, List<int> entityIds, int entityTypeId, DateTime timestamp )
         {
-            using ( var suggestionContext = new RockContext() )
+            using ( var suggestionContext = RockApp.Current.CreateRockContext() )
             {
                 var followingSuggestedService = new FollowingSuggestedService( suggestionContext );
 
@@ -461,7 +462,7 @@ namespace Rock.Jobs
                 addSuggestion = false;
                 entityIdToBeSavedAsSuggestions.Remove( followedEntityId );
 
-                using ( var followingContext = new RockContext() )
+                using ( var followingContext = RockApp.Current.CreateRockContext() )
                 {
                     var following = new FollowingService( followingContext )
                         .GetByEntityAndPerson( personAliasEntityTypeId, existingFollowingPersonAliasId, followerPersonId )

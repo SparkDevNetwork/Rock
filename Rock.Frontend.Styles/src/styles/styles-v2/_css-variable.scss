@@ -133,106 +133,109 @@
     --color-gender-female-shade:  color-mix(in srgb, var(--base-gender-female) 100%, #000 var(--shade-black-percentage));
   }
 
+
   // COLORS FOR CHARTS / ANALYTICS
   // ===============================
+  // Categorical, Diverging, and Metric colors below are sourced from Tailwind's color palette.
 
   // CATEGORICAL COLORS
-  --color-categorical-1: #007aff;
-  --color-categorical-2: #5856D6;
-  --color-categorical-3: #4cd964;
-  --color-categorical-4: #ff2d55;
-  --color-categorical-5: #ff9500;
-  --color-categorical-6: #5ac8fa;
-  --color-categorical-7: #ffcc00;
-  --color-categorical-8: #8e8e93;
+  --color-categorical-1: var(--color-metric-primary); // Tailwind indigo-500
+  --color-categorical-2: #a855f7; // Tailwind purple-500
+  --color-categorical-3: #14b8a6; // Tailwind teal-500
+  --color-categorical-4: #f43f5e; // Tailwind rose-500
+  --color-categorical-5: #f97316; // Tailwind orange-500
+  --color-categorical-6: #06b6d4; // Tailwind cyan-500
+  --color-categorical-7: #f59e0b; // Tailwind yellow-500
+  --color-categorical-8: #6b7280; // Tailwind gray-500
 
   // DIVERGING COLORS
-  --color-diverging-1:  #2507b7;
-  --color-diverging-2:  #3109f5;
-  --color-diverging-3:  #6447f7;
-  --color-diverging-4:  #9884fa;
-  --color-diverging-5:  #CBC1FC;
-  --color-diverging-6:  #E5EEF9;
-  --color-diverging-7:  #C8F5F0;
-  --color-diverging-8:  #92ece2;
-  --color-diverging-9:  #5be2d4;
-  --color-diverging-10: #22c8b7;
-  --color-diverging-11: #1ca394;
+  --color-diverging-1:  #312e81; // Tailwind indigo-900
+  --color-diverging-2:  #4338ca; // Tailwind indigo-700
+  --color-diverging-3:  #6366f1; // Tailwind indigo-500
+  --color-diverging-4:  #a5b4fc; // Tailwind indigo-300
+  --color-diverging-5:  #e0e7ff; // Tailwind indigo-100
+  --color-diverging-6:  #eef2ff; // Tailwind indigo-50
+  --color-diverging-7:  #d1fae5; // Tailwind emerald-100
+  --color-diverging-8:  #6ee7b7; // Tailwind emerald-300
+  --color-diverging-9:  #10b981; // Tailwind emerald-500
+  --color-diverging-10: #047857; // Tailwind emerald-700
+  --color-diverging-11: #064e3b; // Tailwind emerald-900
 
   // POSITIVE COLORS
   --color-positive-primary: var(--color-positive-5);
 
-  --color-positive-1:  #ecfdf5;
-  --color-positive-2:  #d1fae5;
-  --color-positive-3:  #a7f3d0;
-  --color-positive-4:  #6ee7b7;
-  --color-positive-5:  #34d399;
-  --color-positive-6:  #10b981;
-  --color-positive-7:  #059669;
-  --color-positive-8:  #047857;
-  --color-positive-9:  #065f46;
-  --color-positive-10: #064e3b;
-  --color-positive-11: #022c22;
+  --color-positive-1:  #ecfdf5; // Tailwind green-50
+  --color-positive-2:  #d1fae5; // Tailwind green-100
+  --color-positive-3:  #a7f3d0; // Tailwind green-200
+  --color-positive-4:  #6ee7b7; // Tailwind green-300
+  --color-positive-5:  #34d399; // Tailwind green-400
+  --color-positive-6:  #10b981; // Tailwind green-500
+  --color-positive-7:  #059669; // Tailwind green-600
+  --color-positive-8:  #047857; // Tailwind green-700
+  --color-positive-9:  #065f46; // Tailwind green-800
+  --color-positive-10: #064e3b; // Tailwind green-900
+  --color-positive-11: #022c22; // Tailwind green-950
 
   // CAUTION COLORS
   --color-caution-primary: var(--color-caution-5);
 
-  --color-caution-1:  #fff7ed;
-  --color-caution-2:  #ffedd5;
-  --color-caution-3:  #fed7aa;
-  --color-caution-4:  #fdba74;
-  --color-caution-5:  #fb923c;
-  --color-caution-6:  #f97316;
-  --color-caution-7:  #ea580c;
-  --color-caution-8:  #c2410c;
-  --color-caution-9:  #9a3412;
-  --color-caution-10: #7c2d12;
-  --color-caution-11: #431407;
+  --color-caution-1:  #fff7ed; // Tailwind orange-50
+  --color-caution-2:  #ffedd5; // Tailwind orange-100
+  --color-caution-3:  #fed7aa; // Tailwind orange-200
+  --color-caution-4:  #fdba74; // Tailwind orange-300
+  --color-caution-5:  #fb923c; // Tailwind orange-400
+  --color-caution-6:  #f97316; // Tailwind orange-500
+  --color-caution-7:  #ea580c; // Tailwind orange-600
+  --color-caution-8:  #c2410c; // Tailwind orange-700
+  --color-caution-9:  #9a3412; // Tailwind orange-800
+  --color-caution-10: #7c2d12; // Tailwind orange-900
+  --color-caution-11: #431407; // Tailwind orange-950
 
   // NEGATIVE COLORS
   --color-negative-primary: var(--color-negative-6);
 
-  --color-negative-1:  #fef2f2;
-  --color-negative-2:  #fee2e2;
-  --color-negative-3:  #fecaca;
-  --color-negative-4:  #fca5a5;
-  --color-negative-5:  #f87171;
-  --color-negative-6:  #ef4444;
-  --color-negative-7:  #dc2626;
-  --color-negative-8:  #b91c1c;
-  --color-negative-9:  #991b1b;
-  --color-negative-10: #7f1d1d;
-  --color-negative-11: #450a0a;
+  --color-negative-1:  #fef2f2; // Tailwind red-50
+  --color-negative-2:  #fee2e2; // Tailwind red-100
+  --color-negative-3:  #fecaca; // Tailwind red-200
+  --color-negative-4:  #fca5a5; // Tailwind red-300
+  --color-negative-5:  #f87171; // Tailwind red-400
+  --color-negative-6:  #ef4444; // Tailwind red-500
+  --color-negative-7:  #dc2626; // Tailwind red-600
+  --color-negative-8:  #b91c1c; // Tailwind red-700
+  --color-negative-9:  #991b1b; // Tailwind red-800
+  --color-negative-10: #7f1d1d; // Tailwind red-900
+  --color-negative-11: #450a0a; // Tailwind red-950
 
   // NEUTRAL COLORS
   --color-neutral-primary: var(--color-neutral-4);
 
-  --color-neutral-1:  #f9fafb;
-  --color-neutral-2:  #f3f4f6;
-  --color-neutral-3:  #e5e7eb;
-  --color-neutral-4:  #d1d5db;
-  --color-neutral-5:  #9ca3af;
-  --color-neutral-6:  #6b7280;
-  --color-neutral-7:  #4b5563;
-  --color-neutral-8:  #374151;
-  --color-neutral-9:  #1f2937;
-  --color-neutral-10: #111827;
-  --color-neutral-11: #030712;
+  --color-neutral-1:  #f9fafb; // Tailwind gray-50
+  --color-neutral-2:  #f3f4f6; // Tailwind gray-100
+  --color-neutral-3:  #e5e7eb; // Tailwind gray-200
+  --color-neutral-4:  #d1d5db; // Tailwind gray-300
+  --color-neutral-5:  #9ca3af; // Tailwind gray-400
+  --color-neutral-6:  #6b7280; // Tailwind gray-500
+  --color-neutral-7:  #4b5563; // Tailwind gray-600
+  --color-neutral-8:  #374151; // Tailwind gray-700
+  --color-neutral-9:  #1f2937; // Tailwind gray-800
+  --color-neutral-10: #111827; // Tailwind gray-900
+  --color-neutral-11: #030712; // Tailwind gray-950
 
   // METRIC COLORS
-  --color-metric-primary: var(--color-metric-5);
+  --color-metric-primary: var(--color-metric-6);
 
-  --color-metric-1:  #f0f9ff;
-  --color-metric-2:  #e0f2fe;
-  --color-metric-3:  #bae6fd;
-  --color-metric-4:  #7dd3fc;
-  --color-metric-5:  #38bdf8;
-  --color-metric-6:  #0ea5e9;
-  --color-metric-7:  #0284c7;
-  --color-metric-8:  #0369a1;
-  --color-metric-9:  #075985;
-  --color-metric-10: #0c4a6e;
-  --color-metric-11: #082f49;
+  --color-metric-1:  #eef2ff; // Tailwind indigo-50
+  --color-metric-2:  #e0e7ff; // Tailwind indigo-100
+  --color-metric-3:  #c7d2fe; // Tailwind indigo-200
+  --color-metric-4:  #a5b4fc; // Tailwind indigo-300
+  --color-metric-5:  #818cf8; // Tailwind indigo-400
+  --color-metric-6:  #6366f1; // Tailwind indigo-500
+  --color-metric-7:  #4f46e5; // Tailwind indigo-600
+  --color-metric-8:  #4338ca; // Tailwind indigo-700
+  --color-metric-9:  #3730a3; // Tailwind indigo-800
+  --color-metric-10: #312e81; // Tailwind indigo-900
+  --color-metric-11: #1e1b4b; // Tailwind indigo-950
+
 
 
   // ========================= END COLOR ==========================
@@ -314,6 +317,7 @@
   --rounded-large:     12px;
   --rounded-xlarge:    16px;
   --rounded-huge:      24px;
+  --rounded-full:    9999px;
 
   // ========================== END VISUAL APPEARANCES ===========================
 

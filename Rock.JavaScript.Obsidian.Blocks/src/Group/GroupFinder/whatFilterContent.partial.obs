@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="filter-what-content">
+    <div class="groupfinder-what-filter">
         <TextBox v-if="config.isLiveSearchEnabled"
                  v-model="searchTerm"
                  label="Group Name"

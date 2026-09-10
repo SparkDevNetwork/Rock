@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -155,7 +156,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var rockBlock = parentControl.RockBlock();
 
-            foreach ( var entityField in GetGroupMemberAttributeEntityFields( new RockContext() ) )
+            foreach ( var entityField in GetGroupMemberAttributeEntityFields( RockApp.Current.CreateRockContext() ) )
             {
                 bool includeField = true;
                 bool isAuthorized = true;
@@ -247,7 +248,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         {
             var settings = new SelectSettings( selection );
 
-            var entityFields = GetGroupMemberAttributeEntityFields( new RockContext() );
+            var entityFields = GetGroupMemberAttributeEntityFields( RockApp.Current.CreateRockContext() );
 
             var entityField = entityFields.FirstOrDefault( f => f.UniqueName == settings.AttributeKey );
 
@@ -292,7 +293,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var settings = new SelectSettings( selection );
 
-            var entityFields = GetGroupMemberAttributeEntityFields( new RockContext() );
+            var entityFields = GetGroupMemberAttributeEntityFields( RockApp.Current.CreateRockContext() );
 
             var entityField = entityFields.FirstOrDefault( f => f.UniqueName == settings.AttributeKey );
 

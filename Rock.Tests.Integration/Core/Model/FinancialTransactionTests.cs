@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -29,51 +30,9 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void FinancialTransactionDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                FinancialTransaction financialTransaction = new FinancialTransaction();
-                financialTransaction.TransactionDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, financialTransaction.TransactionDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void FinancialTransactionDateKeyWorksWithNullValue()
-        {
-            var financialTransaction = new Rock.Model.FinancialTransaction();
-            financialTransaction.TransactionDateTime = null;
-            Assert.IsNull( financialTransaction.TransactionDateKey );
-        }
-
-        [TestMethod]
-        public void SettledDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                FinancialTransaction financialTransaction = new FinancialTransaction();
-                financialTransaction.SettledDate = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, financialTransaction.SettledDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void SettledDateKeyWorksWithNullValue()
-        {
-            var financialTransaction = new Rock.Model.FinancialTransaction();
-            financialTransaction.SettledDate = null;
-            Assert.IsNull( financialTransaction.SettledDateKey );
-        }
-
-        [TestMethod]
         public void FinancialTransactionDateKeySavesCorrectly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
 
             var financialTransaction = BuildFinancialTransaction( rockContext, Convert.ToDateTime( "2010-3-15" ), Convert.ToDateTime( "2010-3-16" ) );
@@ -102,7 +61,7 @@ namespace Rock.Tests.Integration.Core.Model
             var expectedRecordCount = 15;
             var transactionYear = 2015;
             var settledYear = 2016;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialTransactionService = new FinancialTransactionService( rockContext );
 
@@ -127,7 +86,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialTransactionService = new FinancialTransactionService( rockContext );
 
@@ -164,7 +123,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private void CleanUpData( string financialTransactionForeignKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.ExecuteSqlCommand( $"DELETE [FinancialTransaction] WHERE [ForeignKey] = '{financialTransactionForeignKey}'" );
         }
     }

@@ -44,7 +44,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentUsage( "Use for implementation questions, not general ones. A question about how to use a feature belongs in SearchKnowledge." )]
     [AgentUsage( "This is the first step of a sequence. Use GrepCode to find the exact line, then GetCodeLines to read around it. Do not ask for a whole file straight from here." )]
     [AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first to confirm this Rock release has code indexed." )]
-    [AgentToolReturnDescription( "Matching files with their path, repository, and document id. No code content; read it with GrepCode or GetCodeLines." )]
+    [AgentToolReturnDescription( "Matching files exactly as the code service returns them. Each carries code_document_id, repo, file_path, description, source_type, role, rock_domain, rock_version, file_url, and score. The id member duplicates code_document_id and is deprecated; use code_document_id. No file content is included; read it with GrepCode or GetCodeLines." )]
     [AgentToolGuid( "A60CA1BC-5E68-481B-8561-27F6AE57D500" )]
     [AgentToolPreamble( "Searching Rock Source" )]
     public async Task<AgentToolResult> SearchCode( string query, string sourceType = null, int pageNumber = 1 )
@@ -72,7 +72,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             return DescribeFailure( response );
         }
 
-        var hits = ReadCodeHits( response.Data );
+        var hits = response.Data.ToPlainItems( SearchPageSize );
 
         if ( !hits.Any() )
         {
@@ -88,51 +88,12 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         }
 
         return Success( hits )
-            .WithMetadata( new Dictionary<string, object>
-            {
-                ["pageNumber"] = page,
-                ["returnedItemCount"] = hits.Count,
-                ["hasMoreItems"] = hits.Count == SearchPageSize
-            } );
+            .WithMetadata( BuildPagedMetadata( response, page, hits.Count ) );
     }
 
     #endregion
 
     #region Helper Methods
-
-    /// <summary>
-    /// Reads the matching files from a code search payload.
-    /// </summary>
-    /// <remarks>
-    /// The document id is read from <c>id</c> first and <c>code_document_id</c>
-    /// second, and both are needed. This route returns <c>id</c> today while the
-    /// published OpenAPI documents <c>code_document_id</c>, so the document and the
-    /// service disagree. Reading both is correct now and stays correct once the
-    /// service adds the second name, so it never needs revisiting.
-    /// </remarks>
-    /// <param name="data">The <c>data</c> member of the search response.</param>
-    /// <returns>The hits, empty when the payload carries none.</returns>
-    private static List<CodeSearchHitResult> ReadCodeHits( JToken data )
-    {
-        var results = data as JArray ?? data?["results"] as JArray;
-
-        if ( results == null )
-        {
-            return new List<CodeSearchHitResult>();
-        }
-
-        return results
-            .Select( r => new CodeSearchHitResult
-            {
-                DocumentId = r.GetString( "id" ) ?? r.GetString( "code_document_id" ),
-                FilePath = r.GetString( "file_path" ),
-                FileUrl = r.GetString( "file_url" ),
-                Repository = r.GetString( "repository" ),
-                SourceType = r.GetString( "source_type" ),
-                Score = r.GetDouble( "score" )
-            } )
-            .ToList();
-    }
 
     /// <summary>
     /// Builds the result for a release that has no code indexed at all.

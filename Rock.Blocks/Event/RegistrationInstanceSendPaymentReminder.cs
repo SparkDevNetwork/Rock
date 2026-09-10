@@ -25,6 +25,7 @@ using Humanizer;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -430,7 +431,7 @@ namespace Rock.Blocks.Event
             {
                 // A separate RockContext per iteration keeps the ChangeTracker from growing
                 // when sending to large batches.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     try
                     {

@@ -499,6 +499,26 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Two unrelated shapes share this one column, and the second is invisible
+        /// from the outside. A value beginning with CURRENT is an offset evaluated
+        /// when the field is read rather than a stored date, which is the only way to
+        /// express "relative to today" here.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Either a date, or the word CURRENT followed by a colon and a number of days, as in CURRENT:30 for thirty days from now or CURRENT:-30 for thirty days ago. CURRENT:0 means today. Anything else is read as a plain date, so use ISO 8601 such as 2026-01-31 rather than a culture specific format."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

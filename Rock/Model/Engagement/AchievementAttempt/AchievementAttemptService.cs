@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.RealTime;
@@ -202,7 +203,7 @@ namespace Rock.Model
         {
             var guids = achievementAttemptGuids.ToList();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var achievementAttemptService = new AchievementAttemptService( rockContext );
 

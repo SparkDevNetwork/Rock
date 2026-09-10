@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -171,7 +172,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             var groupsList = string.Empty;
             var selectedSchedules = string.Empty;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 groupsList = new GroupService( rockContext )
                     .GetByGuids( groupFirstAttendanceFilterSelection.GroupGuids )
@@ -338,7 +339,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             // convert the date range from pipe-delimited to comma since we use pipe delimited for the selection values
             var dateRangeCommaDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace( '|', ',' );
-            var groupGuids = new GroupService( new RockContext() ).GetByIds( pGroupPicker.ItemIds.AsIntegerList() ).Select( a => a.Guid ).ToList();
+            var groupGuids = new GroupService( RockApp.Current.CreateRockContext() ).GetByIds( pGroupPicker.ItemIds.AsIntegerList() ).Select( a => a.Guid ).ToList();
 
             var groupFirstAttendanceFilterSelection = new GroupFirstAttendanceFilterSelection
             {
@@ -367,7 +368,7 @@ namespace Rock.Reporting.DataFilter.Person
             var slidingDateRangePicker = controls[4] as SlidingDateRangePicker;
             var schedulePicker = controls[5] as SchedulePicker;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groups = new GroupService( rockContext ).GetByGuids( groupFirstAttendanceFilterSelection.GroupGuids );
                 pGroupPicker.SetValues( groups );
@@ -485,7 +486,7 @@ namespace Rock.Reporting.DataFilter.Person
 
         private List<int> GetGroupIds( List<Guid> groupGuids, bool includeChildGroups )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupService = new GroupService( rockContext );
 

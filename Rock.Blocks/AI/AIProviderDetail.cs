@@ -47,6 +47,9 @@ namespace Rock.Blocks.AI
 
     #endregion
 
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
+
     [SystemGuid.EntityTypeGuid( "c2d6ec62-4076-43bc-a458-6daa2c246b48" )]
     [SystemGuid.BlockTypeGuid( "13f49f94-d9bc-434a-bb20-a6ba87bbe81f" )]
     public class AIProviderDetail : RockEntityDetailBlockType<AIProvider, AIProviderBag>

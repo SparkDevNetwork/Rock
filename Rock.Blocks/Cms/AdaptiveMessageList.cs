@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks.Cms.AdaptiveMessageList;
 using Rock.Web.Cache;
 
 using static Rock.Blocks.Cms.AdaptiveMessageList;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Cms
 {
@@ -277,7 +278,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new AdaptiveMessageService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
@@ -313,7 +314,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ReorderItem( string idKey, string beforeIdKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var adaptiveMessageCategoryService = new AdaptiveMessageCategoryService( rockContext );
                 var categoryGuid = GetCategoryGuid();

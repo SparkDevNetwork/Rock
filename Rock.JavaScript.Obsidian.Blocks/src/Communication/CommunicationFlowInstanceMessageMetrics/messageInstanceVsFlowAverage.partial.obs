@@ -25,6 +25,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import { BarLabelsConfig, BarSeries } from "@Obsidian/Core/Controls/chart";
     import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceBag";
     import { CommunicationFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceCommunicationBag";
     import { RecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/recipientMetricsBag";
@@ -230,52 +231,43 @@
             labels.push("Unsubscribe Rate");
         }
 
-        const instanceColors: string[] = [];
+        // The Average series reuses the same categorical color as the Instance
+        // series for each metric, distinguished only by a lower opacity, so the
+        // two stay visually paired when the categorical palette changes.
+        const AVERAGE_OPACITY = 0.4;
+
+        const categoryColors: string[] = [];
         const instanceSeries: BarSeries = {
             label: SeriesName.Instance,
             data: [],
-            color: instanceColors
+            color: categoryColors
+        };
+        const averageSeries: BarSeries = {
+            label: SeriesName.Average,
+            data: [],
+            color: categoryColors,
+            opacity: AVERAGE_OPACITY
         };
 
         if (props.isConversionGoalTrackingEnabled && hasConversionRates) {
             instanceSeries.data.push(selectedInstanceConversionRate.value);
-            instanceColors.push("#2F855A");
+            averageSeries.data.push(averageInstanceConversionRate.value);
+            categoryColors.push(getCssVariableValue("--color-categorical-1", "#2F855A"));
         }
         if (hasOpenRates) {
             instanceSeries.data.push(selectedInstanceOpenRate.value);
-            instanceColors.push("#3182CE");
+            averageSeries.data.push(averageInstanceOpenRate.value);
+            categoryColors.push(getCssVariableValue("--color-categorical-2", "#3182CE"));
         }
         if (hasClickRates) {
             instanceSeries.data.push(selectedInstanceClickRate.value);
-            instanceColors.push("#DD6B20");
+            averageSeries.data.push(averageInstanceClickRate.value);
+            categoryColors.push(getCssVariableValue("--color-categorical-3", "#DD6B20"));
         }
         if (hasUnsubscribeRates) {
             instanceSeries.data.push(selectedInstanceUnsubscribeRate.value);
-            instanceColors.push("#C53030");
-        }
-
-        const averageColors: string[] = [];
-        const averageSeries: BarSeries = {
-            label: SeriesName.Average,
-            data: [],
-            color: averageColors
-        };
-
-        if (props.isConversionGoalTrackingEnabled && hasConversionRates) {
-            averageSeries.data.push(averageInstanceConversionRate.value);
-            averageColors.push("#9AE6B4");
-        }
-        if (hasOpenRates) {
-            averageSeries.data.push(averageInstanceOpenRate.value);
-            averageColors.push("#90CDF4");
-        }
-        if (hasClickRates) {
-            averageSeries.data.push(averageInstanceClickRate.value);
-            averageColors.push("#FBD38D");
-        }
-        if (hasUnsubscribeRates) {
             averageSeries.data.push(averageInstanceUnsubscribeRate.value);
-            averageColors.push("#FEB2B2");
+            categoryColors.push(getCssVariableValue("--color-categorical-4", "#C53030"));
         }
 
         return {

@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
@@ -25,7 +26,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void SendFollowingEventNotification()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupService = new GroupService( rockContext );
             var groupTypeService = new GroupTypeService( rockContext );

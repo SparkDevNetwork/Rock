@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 using Rock;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
 using Rock.SendGrid.Webhook;
@@ -153,7 +154,7 @@ internal class SendGridResponseAsync : IAsyncResult
 
     private void ProcessSendGridEventListAsync( List<SendGridEvent> sendGridEvents )
     {
-        var rockContext = new Rock.Data.RockContext();
+        var rockContext = RockApp.Current.CreateRockContext();
 
         foreach ( var sendGridEvent in sendGridEvents )
         {

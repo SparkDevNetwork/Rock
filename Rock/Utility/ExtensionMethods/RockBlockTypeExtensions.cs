@@ -165,7 +165,12 @@ namespace Rock
                 }
             }
 
-            var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );
+            // Preserve the page's friendly named route when a block rebuilds
+            // the current page URL. See https://github.com/SparkDevNetwork/Rock/issues/6988
+            var currentRouteId = block.RequestContext?.PageReference?.RouteId ?? 0;
+            var pageReference = currentRouteId > 0
+                ? new Rock.Web.PageReference( block.PageCache.Id, currentRouteId, parameters )
+                : new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );
 
             if ( pageReference.PageId > 0 )
             {

@@ -179,7 +179,7 @@ namespace Rock.Bus
             if ( _transportComponent == inMemoryTransport && !inMemoryTransport.IsActive )
             {
                 // Set the in memory transport as active for the UI since it is being used
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     inMemoryTransport.SetAttributeValue( InMemory.BaseAttributeKey.Active, true.ToString() );
                     inMemoryTransport.SaveAttributeValue( InMemory.BaseAttributeKey.Active, rockContext );
@@ -256,6 +256,15 @@ namespace Rock.Bus
         {
             message.SenderNodeName = NodeName;
 
+            // Under the unit test framework, capture the message synchronously on
+            // the calling thread (so the current test's scope is used, not
+            // whatever scope happens to be current when a background task runs)
+            // and skip the real bus.
+            if ( TryCaptureInTestSink( message ) )
+            {
+                return Task.CompletedTask;
+            }
+
             // NOTE: Use Task.Run to wrap an async instead of directly using async, otherwise async will get an exception if it isn't done before the HttpContext is disposed.
             return Task.Run( async () =>
             {
@@ -308,6 +317,12 @@ namespace Rock.Bus
         {
             _logger.LogDebug( "Send Message Async: {@message} Message Type: {1}", message, messageType );
 
+            // Under the unit test framework, capture the message and skip the real bus.
+            if ( TryCaptureInTestSink( message ) )
+            {
+                return Task.CompletedTask;
+            }
+
             if ( !IsReady() )
             {
                 ExceptionLogService.LogException( $"A message was sent before the message bus was ready: {RockMessage.GetLogString( message )}" );
@@ -346,6 +361,15 @@ namespace Rock.Bus
             where TResponse: class, new()
         {
             message.SenderNodeName = NodeName;
+
+            // Under the unit test framework, capture the message synchronously on
+            // the calling thread (so the current test's scope is used, not
+            // whatever scope happens to be current when a background task runs)
+            // and skip the real bus.
+            if ( TryCaptureInTestSink( message ) )
+            {
+                return Task.FromResult( new TResponse() );
+            }
 
             // NOTE: Use Task.Run to wrap an async instead of directly using
             // async, otherwise async will get an exception if it isn't done
@@ -578,6 +602,40 @@ namespace Rock.Bus
         public static bool IsReady()
         {
             return _isBusStarted && _transportComponent != null && _bus != null;
+        }
+
+        /// <summary>
+        /// Captures the message in the unit test bus sink, if one is registered
+        /// on the current <see cref="RockApp"/>.
+        /// </summary>
+        /// <param name="message">The message being published, sent, or requested.</param>
+        /// <returns><c>true</c> if a sink captured the message and the real bus should be skipped; otherwise <c>false</c>.</returns>
+        private static bool TryCaptureInTestSink( object message )
+        {
+            /*
+                9/9/26 - CLAUDE
+
+                The unit test framework registers an IBusMessageSink on its
+                scoped RockApp. When one is present we are running under a mocked
+                context with no real transport, so capture the message in the
+                sink and skip the real bus entirely. This avoids both the "bus
+                was not ready" exception logging (which would spin up a
+                background thread that writes to the shared mocked RockContext)
+                and any need to start a real in-memory bus for tests. In
+                production no sink is registered, so this returns false and the
+                message is published normally.
+
+                Reason: Let unit tests observe bus messages without starting a
+                bus or polluting the shared mocked RockContext.
+            */
+            var sink = RockApp.Current?.GetService( typeof( IBusMessageSink ) ) as IBusMessageSink;
+            if ( sink == null )
+            {
+                return false;
+            }
+
+            sink.AddMessage( message );
+            return true;
         }
 
         /// <summary>

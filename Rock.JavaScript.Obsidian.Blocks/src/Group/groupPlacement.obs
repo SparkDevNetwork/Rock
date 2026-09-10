@@ -1870,6 +1870,15 @@
      * @param groupMember The updated group member message.
      */
     function onGroupMemberUpdatedFromServer(groupMember: GroupMemberUpdatedMessageBag): void {
+        // An archived group member is no longer considered part of the group
+        // (this block only shows unarchived members), so treat the update the
+        // same as a removal. A restore (isArchived changing back to false)
+        // flows through the add logic below.
+        if (groupMember.isArchived) {
+            onGroupMemberDeletedFromServer(groupMember.groupMemberGuid, groupMember);
+            return;
+        }
+
         // Handle case where a group member is added to the source group
         if (groupMember.groupIdKey === box.groupPlacementKeys?.sourceGroupIdKey) {
             if (isNullOrWhiteSpace(groupMember.person?.personIdKey)) {
@@ -1925,6 +1934,13 @@
 
             // Skip if no valid placement group was found (safety check)
             if (!placementGroup) {
+                return;
+            }
+
+            // Skip if this member is already rendered in the group so a duplicate
+            // notification cannot add a second card.
+            const isMemberAlreadyInGroup = placementGroup.groupMembers?.some(gm => gm.groupMemberIdKey === groupMember.groupMemberIdKey) ?? false;
+            if (isMemberAlreadyInGroup) {
                 return;
             }
 
@@ -1989,21 +2005,42 @@
             }
         }
         else {
-            const { placementGroup, existingPerson } = getPlacementContext(groupMember);
-            if (!placementGroup) {
-                return;
-            }
-
-            groupMember.person = existingPerson || groupMember.person;
-
-            // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
-            // This matches with functionality from the old Webforms Block.
-            if (shouldPersonBeDisplayed(groupMember) && groupMember.person) {
-                peopleToPlace.value.push({ ...groupMember.person });
-            }
-
-            placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMember.groupMemberIdKey);
+            removeGroupMemberFromLocalState(groupMember);
         }
+    }
+
+    /**
+     * Removes a group member from their destination group in local state and
+     * returns the person to the People to Place panel when they still qualify
+     * to be shown there. Safe to call for a member that has already been
+     * removed, in which case it does nothing.
+     *
+     * @param groupMember The group member details.
+     */
+    function removeGroupMemberFromLocalState(groupMember: GroupMemberUpdatedMessageBag): void {
+        const { placementGroup, existingPerson } = getPlacementContext(groupMember);
+        if (!placementGroup) {
+            return;
+        }
+
+        // If the member is no longer in the group then this removal has already
+        // been processed (e.g. an archived member being hard deleted later sends
+        // a second notification), so processing it again would duplicate the
+        // person in the People to Place panel.
+        const isMemberStillInGroup = placementGroup.groupMembers?.some(gm => gm.groupMemberIdKey === groupMember.groupMemberIdKey) ?? false;
+        if (!isMemberStillInGroup) {
+            return;
+        }
+
+        groupMember.person = existingPerson || groupMember.person;
+
+        // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
+        // This matches with functionality from the old Webforms Block.
+        if (shouldPersonBeDisplayed(groupMember) && groupMember.person) {
+            peopleToPlace.value.push({ ...groupMember.person });
+        }
+
+        placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMember.groupMemberIdKey);
     }
 
     /**

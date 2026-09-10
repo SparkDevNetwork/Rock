@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -75,7 +76,7 @@ namespace Rock.Field.Types
         /// </value>
         private List<ReminderTypeFieldItem> GetListSource()
         {
-            return new ReminderTypeService( new RockContext() )
+            return new ReminderTypeService( RockApp.Current.CreateRockContext() )
                 .Queryable().AsNoTracking()
                 .OrderBy( o => o.Name )
                 .Select( o => new ReminderTypeFieldItem
@@ -97,7 +98,7 @@ namespace Rock.Field.Types
             Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var type = new ReminderTypeService( rockContext ).GetNoTracking( guid.Value );
                     if ( type != null )
@@ -135,7 +136,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ReminderTypeService( rockContext ).Get( guid.Value );
             }
 
@@ -156,7 +157,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var reminderTypeId = new ReminderTypeService( rockContext ).GetId( guid.Value );
 
@@ -183,6 +184,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the ReminderType table. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the reminder types for the entity type you are reminding against and take the guid of the one you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -272,7 +289,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ReminderTypeService( new RockContext() ).Get( guid );
+            var item = new ReminderTypeService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -284,7 +301,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ReminderTypeService( new RockContext() ).Get( id ?? 0 );
+            var item = new ReminderTypeService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

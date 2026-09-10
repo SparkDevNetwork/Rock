@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
@@ -64,6 +65,8 @@ namespace Rock.AI.OpenAI.Provider
         Key = AttributeKey.DefaultModel,
         Order = 3 )]
 
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     [Rock.SystemGuid.EntityTypeGuid( "F44CB16A-B85B-43DC-8289-AB7CB4941DCF" )]
     internal class OpenAICompatibleProvider : AIProviderComponent
     {

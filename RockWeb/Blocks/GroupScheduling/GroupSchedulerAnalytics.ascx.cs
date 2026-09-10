@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -416,7 +417,7 @@ var barChart = new Chart(barCtx, {{
             int? selectedPersonId = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedPersonId ).AsIntegerOrNull();
             if ( selectedPersonId.HasValue )
             {
-                selectedPerson = new PersonService( new RockContext() ).GetNoTracking( selectedPersonId.Value );
+                selectedPerson = new PersonService( RockApp.Current.CreateRockContext() ).GetNoTracking( selectedPersonId.Value );
             }
 
             ppPerson.SetValue( selectedPerson );
@@ -470,7 +471,7 @@ var barChart = new Chart(barCtx, {{
             btnCopyToClipboard.Disabled = false;
 
             // Source data for all tables and graphs
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
                 var groupAttendances = attendanceService
@@ -537,7 +538,7 @@ var barChart = new Chart(barCtx, {{
         /// </summary>
         protected void LoadLocations()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // keep any selected locations that exist for the currently selected group
                 var selectedLocationIds = cblLocations.SelectedValuesAsInt;
@@ -568,7 +569,7 @@ var barChart = new Chart(barCtx, {{
         /// </summary>
         protected void LoadSchedules()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // keep any selected schedules that exist for the currently selected locations
                 var selectedScheduleIds = cblSchedules.SelectedValuesAsInt;
@@ -827,7 +828,7 @@ var barChart = new Chart(barCtx, {{
                         if ( gpGroups.GroupId != null )
                         {
                             nbGroupWarning.Visible = false;
-                            var group = new GroupService( new RockContext() ).Get( gpGroups.GroupId.Value );
+                            var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( gpGroups.GroupId.Value );
                             if ( group != null && !group.DisableScheduling )
                             {
                                 nbSchedulingDisabled.Visible = false;
@@ -896,7 +897,7 @@ var barChart = new Chart(barCtx, {{
             gData.Visible = true;
             var schedulerSummaryDataList = new List<SchedulerSummaryData>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendancesPersonIds = attendances.Where( a => a.PersonAlias != null ).Select( a => a.PersonAlias.PersonId ).Distinct().ToList();
                 var personList = new PersonService( rockContext ).Queryable().Where( a => attendancesPersonIds.Contains( a.Id ) ).AsNoTracking()

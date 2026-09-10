@@ -23,6 +23,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -57,7 +58,8 @@ namespace Rock.Field.Types
 
             var metricGuids = guidPairs.Select( a => a.MetricGuid );
 
-            using ( var rockContext = new RockContext() )
+            // Resolve the context from the factory so tests can supply a mocked context.
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var metrics = new MetricService( rockContext ).Queryable().AsNoTracking().Where( a => metricGuids.Contains( a.Guid ) );
                 if ( metrics.Any() )
@@ -87,7 +89,7 @@ namespace Rock.Field.Types
             if ( jsonValue != null )
             {
                 var guids = jsonValue.ConvertAll( l => l.Value.AsGuid() );
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var guidPairList = new MetricCategoryService( rockContext ).GetByGuids( guids )
                         .Select( mc => new
@@ -113,9 +115,9 @@ namespace Rock.Field.Types
             var metricCategories = new List<ListItemBag>();
             var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( privateValue );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var metricCategoryService = new MetricCategoryService( new RockContext() );
+                var metricCategoryService = new MetricCategoryService( RockApp.Current.CreateRockContext() );
 
                 foreach ( var guidPair in guidPairs )
                 {
@@ -180,7 +182,7 @@ namespace Rock.Field.Types
             }
             var metricGuids = guidPairs.Select( a => a.MetricGuid );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var referencedEntities = new MetricService( rockContext )
                                     .Queryable()
@@ -205,6 +207,24 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<Metric>().Value, nameof( Metric.Title ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Two delimiters, and neither is guessable from the value: pairs split on a comma and the halves of a pair split on a pipe.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more pairs separated by commas, each pair being a Metric guid and an optional Category guid separated by a pipe, as in metricGuid|categoryGuid,metricGuid2|categoryGuid2. A pair without a category is written with the pipe and nothing after it. Both halves are guids, not ids or idKeys.",
+                Instructions = "To find the correct values, read the metrics and take the guid of each one you want, along with the guid of the category it should be reported under."
             };
         }
 
@@ -255,7 +275,7 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 var ids = picker.SelectedValuesAsInt();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var metricCategories = new MetricCategoryService( rockContext ).Queryable().AsNoTracking().Where( a => ids.Contains( a.Id ) );
 
@@ -286,7 +306,7 @@ namespace Rock.Field.Types
             {
                 List<MetricCategory> metricCategories = new List<MetricCategory>();
                 var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( value );
-                MetricCategoryService metricCategoryService = new MetricCategoryService( new RockContext() );
+                MetricCategoryService metricCategoryService = new MetricCategoryService( RockApp.Current.CreateRockContext() );
 
                 foreach ( var guidPair in guidPairs )
                 {

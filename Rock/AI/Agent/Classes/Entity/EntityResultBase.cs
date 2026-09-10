@@ -48,9 +48,9 @@ namespace Rock.AI.Agent.Classes.Entity
         internal int Id { get; set; }
 
         /// <summary>
-        /// Internal identifier of the phone number.
+        /// Internal identifier of the entity.
         /// </summary>
-        public string IdKey => Id.AsIdKey();
+        public string IdKey => Id != 0 ? Id.AsIdKey() : null;
 
         /// <summary>
         /// The unique identifier of the entity. This should be filled in whenever

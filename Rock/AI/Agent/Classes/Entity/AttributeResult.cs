@@ -79,6 +79,15 @@ namespace Rock.AI.Agent.Classes.Entity
         public bool? IsCompleteList { get; set; }
 
         /// <summary>
+        /// How to obtain the accepted values when they cannot be read from
+        /// <see cref="Values"/> alone, either because the list is too large to
+        /// enumerate or because it lives on another record. Names the record and
+        /// the identifier needed to reach it. Null when the values are already
+        /// fully described.
+        /// </summary>
+        public string Instructions { get; set; }
+
+        /// <summary>
         /// The order of the attribute relative to the other attributes on the
         /// same entity.
         /// </summary>

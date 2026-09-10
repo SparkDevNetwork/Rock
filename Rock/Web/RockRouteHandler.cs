@@ -180,7 +180,7 @@ namespace Rock.Web
 
                             if ( shortlink.IsNotNullOrWhiteSpace() )
                             {
-                                using ( var rockContext = new Rock.Data.RockContext() )
+                                using ( var rockContext = RockApp.Current.CreateRockContext() )
                                 {
                                     var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
                                     var pageShortLinkCache = pageShortLink != null ? PageShortLinkCache.Get( pageShortLink.Id ) : null;
@@ -501,7 +501,7 @@ namespace Rock.Web
         {
             RouteCollection routes = RouteTable.Routes;
 
-            PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
+            PageRouteService pageRouteService = new PageRouteService( RockApp.Current.CreateRockContext() );
 
             var routesToInsert = new RouteCollection();
 
@@ -543,7 +543,7 @@ namespace Rock.Web
         public static void RemoveRockPageRoutes()
         {
             RouteCollection routes = RouteTable.Routes;
-            PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
+            PageRouteService pageRouteService = new PageRouteService( RockApp.Current.CreateRockContext() );
             var pageRoutes = pageRouteService.Queryable().ToList();
 
             // First we have to remove the routes stored in the DB without removing the ODataService routes because we can't reload them.
@@ -619,7 +619,7 @@ namespace Rock.Web
                 string routeValue = routeRequestContext.RouteData.Values.Values.FirstOrDefault().ToStringSafe();
 
                 // See if the route value string matches a shortlink for this site.
-                var pageShortLink = new PageShortLinkService( new Rock.Data.RockContext() ).GetByToken( routeValue, site.Id );
+                var pageShortLink = new PageShortLinkService( RockApp.Current.CreateRockContext() ).GetByToken( routeValue, site.Id );
                 if ( pageShortLink != null && pageShortLink.SiteId == site.Id )
                 {
                     // The route entered matches a shortlink for the site, so lets NOT set the page ID for a catch-all route and let the shortlink logic take over.

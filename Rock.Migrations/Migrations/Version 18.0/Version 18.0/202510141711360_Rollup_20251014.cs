@@ -88,6 +88,7 @@ FROM [AttributeValue]
 WHERE [AttributeId] = @ObsidianAttributeId
       AND [EntityId] = @ObsidianCommunicationEntryWizardBlockId;" ).ToStringSafe();
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var webFormsBlockAttributeValue = SqlScalar( $@"DECLARE @WebFormsCommunicationPageId AS INT = (SELECT [Id] FROM [Page] WHERE [Guid] = '{SystemGuid.Page.NEW_COMMUNICATION}');
 DECLARE @WebFormsCommunicationEntryWizardBlockTypeId AS INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD}');
 DECLARE @WebFormsCommunicationEntryWizardBlockId AS INT = (SELECT TOP 1 [Id] FROM [Block] B WHERE B.[BlockTypeId] = @WebFormsCommunicationEntryWizardBlockTypeId AND B.[PageId] = @WebFormsCommunicationPageId);
@@ -97,6 +98,7 @@ SELECT TOP 1 [Value]
 FROM [AttributeValue]
 WHERE [AttributeId] = @WebFormsAttributeId
     AND [EntityId] = @WebFormsCommunicationEntryWizardBlockId;" ).ToStringSafe();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if ( obsidianCommunicationEntryBlockGuid.HasValue
                     && obsidianSimpleCommunicationPageAttributeGuid.HasValue

@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Group;
@@ -122,7 +123,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>A <see cref="LandingPageContentBag"/> to be used when the landing page is displayed.</returns>
         private LandingPageContentBag GetLandingTemplateContent()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupService = new GroupService( rockContext );
 
@@ -166,7 +167,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>A <see cref="PreferencePageContentBag"/> to be used when the preference page is displayed.</returns>
         private PreferencePageContentBag GetPreferenceTemplateContent( Guid groupGuid )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupService = new GroupService( rockContext );
 
@@ -234,7 +235,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>A list of <see cref="ListItemBag"/> to be passed into mobile.</returns>
         private List<ListItemBag> GetSpecificAssignmentScheduleList( Guid groupGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the group.
                 var group = new GroupService( rockContext ).Get( groupGuid );
@@ -300,7 +301,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>A list of <see cref="AssignmentScheduleAndLocationBag"/> used to display on the preference page.</returns>
         private List<AssignmentScheduleAndLocationBag> GetAssignmentScheduleList( int? groupId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMember = GetGroupMemberRecord( rockContext, groupId.Value, CurrentPersonId );
 
@@ -382,7 +383,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetGroupScheduleAssignmentLocations( Guid groupGuid, Guid scheduleGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the group
                 var group = new GroupService( rockContext ).Get( groupGuid );
@@ -420,7 +421,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         public BlockActionResult SaveGroupMemberSchedule( Guid groupGuid, int? reminderOffset, Guid? scheduleTemplateGuid, DateTimeOffset? startDate )
         {
             // Save the preference. For now this acts as a note to the scheduler and does not effect the list of assignments presented to the user.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupId = new GroupService( rockContext ).Get( groupGuid ).Id;
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -514,7 +515,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult DeleteSpecificAssignmentSchedule( Guid groupGuid, Guid scheduleGuid, Guid? locationGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
                 var group = new GroupService( rockContext ).GetNoTracking( groupGuid );
@@ -561,7 +562,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult SaveSpecificAssignmentSchedule( Guid? groupGuid, Guid scheduleGuid, Guid? locationGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the group.
                 var group = new GroupService( rockContext ).GetNoTracking( groupGuid.Value );

@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -125,7 +126,7 @@ namespace Rock.Follow.Event
             {
                 var person = personAlias.Person;
 
-                var newNotesForPersonSinceLastNotified = new NoteService( new RockContext() )
+                var newNotesForPersonSinceLastNotified = new NoteService( RockApp.Current.CreateRockContext() )
                     .Queryable().AsNoTracking()
                     .Where( n =>
                         n.EntityId == personAlias.PersonId

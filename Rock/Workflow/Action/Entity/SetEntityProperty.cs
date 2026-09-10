@@ -22,6 +22,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -114,7 +115,7 @@ namespace Rock.Workflow.Action
             }
 
             var mergeFields = GetMergeFields( action );
-            RockContext _rockContext = new RockContext();
+            RockContext _rockContext = RockApp.Current.CreateRockContext();
 
             // Get the entity
             EntityTypeService entityTypeService = new EntityTypeService( _rockContext );

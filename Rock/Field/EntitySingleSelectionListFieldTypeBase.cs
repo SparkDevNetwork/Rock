@@ -17,7 +17,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 using System;
 using System.Web.UI;
@@ -74,6 +76,43 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
         protected abstract Dictionary<Guid, string> OnGetItemList();
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Describes the shape of the value and says nothing about which values exist,
+        /// because finding that out costs a query. <see cref="OnGetItemList"/> returns
+        /// a materialized list rather than something countable, so there is no way to
+        /// judge whether a set is small enough to enumerate without loading all of it
+        /// first, and several descendants load theirs straight from the database.
+        /// </para>
+        /// <para>
+        /// Hints are produced for every attribute in a list, so a query here is paid
+        /// once per attribute described, while a caller wanting the actual values can
+        /// make one deliberate lookup instead. That trade is why this stays cheap.
+        /// </para>
+        /// <para>
+        /// A descendant whose list comes from an in-memory cache can override this,
+        /// call back to it, and fill in Values at no real cost. That decision belongs
+        /// to the descendant, which is the only thing that knows where its list comes
+        /// from.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var entityName = typeof( TEntity ).Name;
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = $"The guid of a single row in the {entityName} table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = $"To find the correct value, read the {entityName} records and take the guid of the one you want. Only active records can be chosen, so one that does not appear there cannot be used here."
+            };
+        }
 
         #endregion
 
@@ -156,7 +195,7 @@ namespace Rock.Field.Types
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
 
-            var item = this.GetEntityByGuid( guid, new RockContext() );
+            var item = this.GetEntityByGuid( guid, RockApp.Current.CreateRockContext() );
 
             return item != null ? item.Id : (int?)null;
         }
@@ -169,7 +208,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = this.GetEntityById( id, new RockContext() );
+            var item = this.GetEntityById( id, RockApp.Current.CreateRockContext() );
 
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
 
@@ -243,7 +282,7 @@ namespace Rock.Field.Types
 
         private IService GetEntityService( RockContext dataContext )
         {
-            dataContext = dataContext ?? new RockContext();
+            dataContext = dataContext ?? RockApp.Current.CreateRockContext();
 
             return Reflection.GetServiceForEntityType( typeof(TEntity), dataContext );
         }

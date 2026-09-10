@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthScopesController"/> class.
         /// </summary>
-        public AuthScopesController() : base( new Rock.Model.AuthScopeService( new Rock.Data.RockContext() ) ) { } 
+        public AuthScopesController() : base( new Rock.Model.AuthScopeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

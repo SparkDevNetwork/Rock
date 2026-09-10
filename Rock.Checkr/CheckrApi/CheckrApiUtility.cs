@@ -20,6 +20,7 @@ using System.Net;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Checkr.Constants;
 using Rock.Data;
@@ -79,7 +80,7 @@ namespace Rock.Checkr.CheckrApi
         {
             string token = null;
             var restClient = new RestClient( CheckrConstants.CHECKR_APISERVER );
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 var settings = GetSettings( rockContext );
                 if ( settings != null )

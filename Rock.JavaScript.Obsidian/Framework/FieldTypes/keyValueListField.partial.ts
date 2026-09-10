@@ -25,6 +25,7 @@ export const enum ConfigurationKey {
     ValuePrompt = "valueprompt",
     DisplayValueFirst = "displayvaluefirst",
     AllowHtml = "allowhtml",
+    AllowLava = "allowlava",
 
     // Only used during editing of the field type configuration.
     CustomValues = "customvalues",

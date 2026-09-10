@@ -205,6 +205,43 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The name invites the wrong guess. A slider with a range of travel stores
+        /// where it was left, which is one number, not the two a range field type
+        /// would store. Said plainly here because a caller reading only the name
+        /// would reasonably send a comma separated pair.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var minimumValue = privateConfigurationValues.GetValueOrNull( "min" ).AsIntegerOrNull();
+            var maximumValue = privateConfigurationValues.GetValueOrNull( "max" ).AsIntegerOrNull();
+
+            var valueFormat = "A single number. This is the position of a slider, not a range, so it is one value and never a comma separated pair.";
+
+            if ( minimumValue.HasValue && maximumValue.HasValue )
+            {
+                valueFormat += $" It must be between {minimumValue.Value} and {maximumValue.Value}.";
+            }
+            else if ( minimumValue.HasValue )
+            {
+                valueFormat += $" It must be {minimumValue.Value} or greater.";
+            }
+            else if ( maximumValue.HasValue )
+            {
+                valueFormat += $" It must be {maximumValue.Value} or less.";
+            }
+
+            return new FieldTypeHints
+            {
+                ValueFormat = valueFormat
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

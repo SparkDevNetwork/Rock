@@ -302,7 +302,14 @@
      * Sets the default value if it doesn't exist on fieldValues already.
      */
     function setDefaultValueIfNeeded(): void {
-        if (!(props.field.guid in props.fieldValues)) {
+        // A field value is considered missing if its key is absent or if the
+        // key exists but holds an undefined value. The latter case is what
+        // caused text controls to warn about an undefined modelValue when a
+        // required String prop expected an empty string instead.
+        const isValueMissing = !(props.field.guid in props.fieldValues)
+            || props.fieldValues[props.field.guid] === undefined;
+
+        if (isValueMissing) {
             let defaultValue: unknown = "";
 
             switch (props.field.personFieldType) {

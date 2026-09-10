@@ -31,6 +31,7 @@ using System.Web.Http;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 using Rock;
 using Rock.Common.Tv;
 using Rock.Data;
@@ -280,7 +281,7 @@ namespace Rock.Rest.v2.Controllers
             var person = GetPerson();
             var ipAddress = System.Web.HttpContext.Current?.Request?.UserHostAddress;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannelService = new InteractionChannelService( rockContext );
                 var interactionComponentService = new InteractionComponentService( rockContext );
@@ -487,7 +488,7 @@ namespace Rock.Rest.v2.Controllers
             var authGenerationCount = 0;
             var maxAuthGenerationAttempts = 50;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             // Get client IP
@@ -587,7 +588,7 @@ namespace Rock.Rest.v2.Controllers
                 var rokuToken = RockRequestContext.GetPageParameter( "RokuToken" )?.AsGuidOrNull();
                 if ( rokuToken.HasValue )
                 {
-                    currentPerson = new UserLoginService( new RockContext() ).Get( rokuToken.Value )?.Person;
+                    currentPerson = new UserLoginService( RockApp.Current.CreateRockContext() ).Get( rokuToken.Value )?.Person;
                 }
             }
 
@@ -737,7 +738,7 @@ namespace Rock.Rest.v2.Controllers
 
             var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.GetHeader( "X-Rock-DeviceData" ) );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             // Get client Ip address
@@ -844,7 +845,7 @@ namespace Rock.Rest.v2.Controllers
             // Return the launch packet
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var person = GetPerson( rockContext );
 
                 var launchPacket = new AppleLaunchPacket();

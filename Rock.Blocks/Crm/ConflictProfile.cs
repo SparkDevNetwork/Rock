@@ -220,14 +220,14 @@ namespace Rock.Blocks.Crm
 
         private const string WinningThemeDescription = "Winning is not a combination of modes, but a theme that is based entirely on the Winning model alone for solving conflict. This theme is important for times when quick decisions need to be made and is helpful for roles such as sole-proprietor.";
 
-        // Chart colors carried forward from the original results template (the bar chart for modes, the pie chart for themes).
-        private const string WinningColor = "#E15759";
-        private const string ResolvingColor = "#5585B7";
-        private const string CompromisingColor = "#6399D1";
-        private const string AvoidingColor = "#94DB84";
-        private const string YieldingColor = "#A1ED90";
-        private const string SolvingColor = "#4E79A7";
-        private const string AccommodatingColor = "#8CD17D";
+        // The themes pie chart's slices share one slot and are distinguishable only by color, so each theme
+        // gets its own categorical color, assigned in sequence starting from --color-categorical-1. Each
+        // mode bar is colored to match the theme it belongs to (Winning modes/themes coincide; Resolving
+        // and Compromising combine into Solving; Avoiding and Yielding combine into Accommodating), so the
+        // bar chart and pie chart read as one related result instead of the mode colors looking arbitrary.
+        private const string SolvingThemeColor = "--color-categorical-1";
+        private const string AccommodatingThemeColor = "--color-categorical-2";
+        private const string WinningThemeColor = "--color-categorical-3";
 
         #endregion Properties
 
@@ -502,17 +502,17 @@ namespace Rock.Blocks.Crm
                 Greeting = $"{targetPerson.NickName}, here are your conflict engagement results. You will rank high, medium or low in each of the following five modes.",
                 Modes = new List<ConflictProfileScoreBag>
                 {
-                    BuildScore( "Winning", WinningModeDescription, WinningColor, result.ModeWinningScore ),
-                    BuildScore( "Resolving", ResolvingModeDescription, ResolvingColor, result.ModeResolvingScore ),
-                    BuildScore( "Compromising", CompromisingModeDescription, CompromisingColor, result.ModeCompromisingScore ),
-                    BuildScore( "Avoiding", AvoidingModeDescription, AvoidingColor, result.ModeAvoidingScore ),
-                    BuildScore( "Yielding", YieldingModeDescription, YieldingColor, result.ModeYieldingScore )
+                    BuildScore( "Winning", WinningModeDescription, WinningThemeColor, result.ModeWinningScore ),
+                    BuildScore( "Resolving", ResolvingModeDescription, SolvingThemeColor, result.ModeResolvingScore ),
+                    BuildScore( "Compromising", CompromisingModeDescription, SolvingThemeColor, result.ModeCompromisingScore ),
+                    BuildScore( "Avoiding", AvoidingModeDescription, AccommodatingThemeColor, result.ModeAvoidingScore ),
+                    BuildScore( "Yielding", YieldingModeDescription, AccommodatingThemeColor, result.ModeYieldingScore )
                 },
                 Themes = new List<ConflictProfileScoreBag>
                 {
-                    BuildScore( "Solving", SolvingThemeDescription, SolvingColor, result.EngagementSolvingScore ),
-                    BuildScore( "Accommodating", AccommodatingThemeDescription, AccommodatingColor, result.EngagementAccommodatingScore ),
-                    BuildScore( "Winning", WinningThemeDescription, WinningColor, result.EngagementWinningScore )
+                    BuildScore( "Solving", SolvingThemeDescription, SolvingThemeColor, result.EngagementSolvingScore ),
+                    BuildScore( "Accommodating", AccommodatingThemeDescription, AccommodatingThemeColor, result.EngagementAccommodatingScore ),
+                    BuildScore( "Winning", WinningThemeDescription, WinningThemeColor, result.EngagementWinningScore )
                 }
             };
         }
@@ -522,7 +522,7 @@ namespace Rock.Blocks.Crm
         /// </summary>
         /// <param name="name">The mode or theme name.</param>
         /// <param name="description">The descriptive copy for the mode or theme.</param>
-        /// <param name="chartColor">The hex color used for this item in the results chart.</param>
+        /// <param name="chartColor">The CSS custom property (e.g. "--color-metric-primary") used for this item in the results chart.</param>
         /// <param name="score">The score for the mode or theme.</param>
         /// <returns>The populated score bag.</returns>
         private static ConflictProfileScoreBag BuildScore( string name, string description, string chartColor, decimal score )

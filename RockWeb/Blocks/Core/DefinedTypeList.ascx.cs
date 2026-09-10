@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -190,7 +191,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Delete( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var definedValueService = new DefinedValueService( rockContext );
             var definedTypeService = new DefinedTypeService( rockContext );
 
@@ -258,7 +259,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void gDefinedType_Bind()
         {
-            var queryable = new DefinedTypeService( new RockContext() ).Queryable();
+            var queryable = new DefinedTypeService( RockApp.Current.CreateRockContext() ).Queryable();
 
             if ( _categoryGuids.Any() )
             {

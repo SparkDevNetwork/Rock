@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -210,7 +211,7 @@ namespace Rock.Transactions
         /// <returns>The identifier of the communication or <c>null</c> if one was not created.</returns>
         internal int? ExecuteAndReturnCommunicationId()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 int? senderPersonAliasId = null;

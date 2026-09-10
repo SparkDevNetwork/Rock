@@ -133,22 +133,31 @@ namespace Rock.Blocks.Reporting
         private int _personRecordDefinedValueId;
         private int _activeStatusDefinedValueId;
 
+        /*
+            8/19/2026 - CLAUDE
+
+            Bar charts on this block have exactly one series, and each bar already has its own
+            x-axis label (e.g. "Visitor", "Member", "0-5", "Married"), so color isn't needed to
+            tell the bars apart. They now all render as a single color. Pie charts have no other
+            way to distinguish one slice from another, so they keep a distinct color per slice.
+
+            Reason: Every chart on this block previously cycled through the same 10-color
+            rainbow regardless of whether color was actually needed to read the chart, which
+            made single-series bar charts unnecessarily noisy.
+        */
         /// <summary>
-        /// The default colors for the charts
+        /// The default color for bar charts, which have only one series per chart and are
+        /// already distinguished by their x-axis labels.
         /// </summary>
-        private static List<string> _defaultColors = new List<string>()
-        {
-            "#38BDF8", // Blue
-            "#34D399", // Green
-            "#FB7185", // Pink
-            "#A3E635", // Lime
-            "#818CF8", // Indigo
-            "#FB923C", // Orange
-            "#C084FC", // Purple
-            "#FBBF24", // Yellow
-            "#A8A29E", // Stone
-            "#E7E5E4", // Gray
-        };
+        private static readonly List<string> _defaultBarColors = Enumerable.Repeat( "--color-metric-primary", 12 ).ToList();
+
+        /// <summary>
+        /// The default colors for pie charts, which have no x-axis and rely on color as the
+        /// only way to distinguish one slice from another.
+        /// </summary>
+        private static readonly List<string> _defaultPieColors = Enumerable.Range( 0, 16 )
+            .Select( i => $"--color-categorical-{( i % 8 ) + 1}" )
+            .ToList();
 
         #endregion Fields
 
@@ -313,12 +322,12 @@ namespace Rock.Blocks.Reporting
 
             if ( chartBag.SeriesBags[0] != null )
             {
-                ((PieSeriesBag)chartBag.SeriesBags[0]).Colors = new List<string>
-                {
-                    "#E7E5E4",
-                    "#B2D7FF",
-                    "#FFB2C1",
-                };
+                // Mapped by label rather than by position, since GroupBy's key order depends on
+                // which gender is encountered first in the data and isn't guaranteed to be
+                // Male, Female, Unknown in that order.
+                ((PieSeriesBag)chartBag.SeriesBags[0]).Colors = chartBag.Labels
+                    .Select( GetGenderColor )
+                    .ToList();
             }
 
             return new InsightsChartDataBag
@@ -327,6 +336,27 @@ namespace Rock.Blocks.Reporting
                 InsightSubcategory = "Gender",
                 ChartBag = chartBag,
             };
+        }
+
+        /// <summary>
+        /// Gets the semantic color variable for the given Gender name.
+        /// </summary>
+        /// <param name="genderName">The <see cref="Rock.Model.Gender"/> name (e.g. "Male").</param>
+        /// <returns>The CSS variable name to use for this gender in the Gender chart.</returns>
+        private static string GetGenderColor( string genderName )
+        {
+            if ( genderName.Equals( "Male", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return "--color-gender-male-strong";
+            }
+            else if ( genderName.Equals( "Female", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return "--color-gender-female-strong";
+            }
+            else
+            {
+                return "--color-neutral-primary";
+            }
         }
 
         /// <summary>
@@ -359,6 +389,7 @@ namespace Rock.Blocks.Reporting
             }
 
             PushChartDataIntoChartBag<BarSeriesBag>( chartBag, chartData, isPercentage: true );
+            SetUnknownColorToNeutral( chartBag );
 
             return new InsightsChartDataBag
             {
@@ -434,6 +465,7 @@ namespace Rock.Blocks.Reporting
                     .ToDictionary(g => g.Key, g => g.Count().ToString());
 
             PushChartDataIntoChartBag<TSeries>( chartBag, labelCounts, isPercentage );
+            SetUnknownColorToNeutral( chartBag );
 
             return new InsightsChartDataBag
             {
@@ -441,6 +473,27 @@ namespace Rock.Blocks.Reporting
                 InsightSubcategory = subcategory,
                 ChartBag = chartBag,
             };
+        }
+
+        /// <summary>
+        /// Overrides the color of the "Unknown" data point, if present, to the neutral color
+        /// used throughout this block for unknown/missing data.
+        /// </summary>
+        /// <param name="chartBag">The chart bag whose "Unknown" label's color should be overridden.</param>
+        private static void SetUnknownColorToNeutral( ChartBag chartBag )
+        {
+            var unknownIndex = chartBag.Labels.FindIndex( l => l.Equals( "Unknown", StringComparison.OrdinalIgnoreCase ) );
+            if ( unknownIndex < 0 || chartBag.SeriesBags.Count == 0 )
+            {
+                return;
+            }
+
+            var seriesBag = chartBag.SeriesBags[0];
+            var colorsProperty = seriesBag.GetType().GetProperty( "Color" ) ?? seriesBag.GetType().GetProperty( "Colors" );
+            if ( colorsProperty?.GetValue( seriesBag ) is List<string> colors && unknownIndex < colors.Count )
+            {
+                colors[unknownIndex] = "--color-neutral-primary";
+            }
         }
 
         #endregion Methods > Bag Generation Methods > Demographic Chart Data Bags
@@ -585,12 +638,45 @@ namespace Rock.Blocks.Reporting
 
             PushChartDataIntoChartBag<PieSeriesBag>( chartBag, chartData, isPercentage: true );
 
+            if ( chartBag.SeriesBags[0] != null )
+            {
+                ((PieSeriesBag)chartBag.SeriesBags[0]).Colors = chartBag.Labels
+                    .Select( GetRecordStatusColor )
+                    .ToList();
+            }
+
             return new InsightsChartDataBag
             {
                 InsightCategory = "InformationStatistics",
                 InsightSubcategory = "RecordStatuses",
                 ChartBag = chartBag,
             };
+        }
+
+        /// <summary>
+        /// Gets the semantic status color variable for the given Person Record Status name.
+        /// </summary>
+        /// <param name="statusName">The <see cref="Rock.Model.DefinedValue.Value"/> of the record status (e.g. "Active").</param>
+        /// <returns>The CSS variable name to use for this status in the Record Statuses chart.</returns>
+        private static string GetRecordStatusColor( string statusName )
+        {
+            if ( statusName.Equals( "Active", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return "--color-positive-primary";
+            }
+            else if ( statusName.Equals( "Inactive", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return "--color-negative-primary";
+            }
+            else if ( statusName.Equals( "Pending", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return "--color-caution-primary";
+            }
+            else
+            {
+                // Any custom record status beyond the 3 standard ones falls back to neutral.
+                return "--color-neutral-primary";
+            }
         }
 
         #endregion Methods > Bag Generation Methods > Information Statistics Data Bags
@@ -846,12 +932,15 @@ namespace Rock.Blocks.Reporting
                 if ( colorsProperty.PropertyType == typeof( string ) )
                 {
                     // Line Chart
-                    colorsProperty.SetValue( seriesBag, _defaultColors.First() );
+                    colorsProperty.SetValue( seriesBag, _defaultBarColors.First() );
                 }
                 else if ( colorsProperty.PropertyType == typeof( List<string> ) )
                 {
                     // Bar Chart
-                    colorsProperty.SetValue( seriesBag, _defaultColors );
+                    // A fresh copy per chart: this list may be mutated in place later
+                    // (e.g. SetUnknownColorToNeutral), and every chart must not share the
+                    // same underlying list instance.
+                    colorsProperty.SetValue( seriesBag, _defaultBarColors.ToList() );
                 }
             }
 
@@ -859,7 +948,8 @@ namespace Rock.Blocks.Reporting
             colorsProperty = typeof( TSeriesBag ).GetProperty( "Colors" );
             if ( colorsProperty != null && colorsProperty.CanWrite )
             {
-                colorsProperty.SetValue( seriesBag, _defaultColors );
+                // A fresh copy per chart; see note above.
+                colorsProperty.SetValue( seriesBag, _defaultPieColors.ToList() );
             }
 
             var chartBag = new ChartBag

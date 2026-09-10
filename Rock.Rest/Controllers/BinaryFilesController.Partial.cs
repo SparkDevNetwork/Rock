@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -47,7 +48,7 @@ namespace Rock.Rest.Controllers
         {
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeGuid );
 
                 if ( binaryFileType == null )
@@ -83,7 +84,7 @@ namespace Rock.Rest.Controllers
         {
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var context = HttpContext.Current;
                 var files = context.Request.Files;
                 var uploadedFile = files.AllKeys.Select( fk => files[fk] ).FirstOrDefault();

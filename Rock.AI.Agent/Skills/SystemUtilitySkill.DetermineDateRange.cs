@@ -36,12 +36,12 @@ internal sealed partial class SystemUtilitySkill
         [Description( "A natural language string, such as 'first quarter', 'yesterday' 'tomorrow', 'year to date'.")]
         string query )
     {
-        var dateRange = DateTimeRecognitionHelper.RecognizeDateRange( query, DateTime.Now );
+        var dateRange = DateTimeRecognitionHelper.RecognizeDateRange( query, RockDateTime.Now );
 
         if ( dateRange == null )
         {
             return Error( "A date range could not be determined from the query." )
-                .WithInstructions( $"Today is {DateTime.Now}. Using today as a reference date, infer the date range yourself." );
+                .WithInstructions( $"Today is {RockDateTime.Now:s}. Using today as a reference date, infer the date range yourself." );
         }
 
         return Success( dateRange );

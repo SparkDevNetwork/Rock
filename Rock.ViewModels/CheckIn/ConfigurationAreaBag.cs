@@ -42,5 +42,16 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value>The primary configuration template identifiers.</value>
         public List<string> PrimaryTemplateIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this area is outside the
+        /// current kiosk's scope. When <c>true</c>, the area is only present
+        /// in the result because the caller asked for it to be force-included
+        /// (typically an area from another campus on a shared saved kiosk
+        /// template). The UI uses this to visually indicate that the item is
+        /// not part of the current kiosk's normal selection set.
+        /// </summary>
+        /// <value><c>true</c> if the area is out of the kiosk's scope; otherwise, <c>false</c>.</value>
+        public bool IsOutOfScope { get; set; }
     }
 }

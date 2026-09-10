@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistrationRegistrantFeesController"/> class.
         /// </summary>
-        public RegistrationRegistrantFeesController() : base( new Rock.Model.RegistrationRegistrantFeeService( new Rock.Data.RockContext() ) ) { } 
+        public RegistrationRegistrantFeesController() : base( new Rock.Model.RegistrationRegistrantFeeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

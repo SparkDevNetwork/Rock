@@ -43,24 +43,23 @@
                     </ContentStack>
 
                     <ContentStack title="Where">
-                        <CheckBox v-model="isWhereFilterHidden" label="Hide Where Filter" />
                         <CheckBoxList v-model="supportedMeetingStyles"
                                       label="Supported Meeting Styles"
                                       help="The meeting styles offered by the Where filter. When none are selected the Meeting Style filter is hidden."
                                       :items="meetingStyleItems" />
-                        <CheckBox v-model="isProximityEnabled"
-                                  label="Enable Proximity Features"
-                                  help="Renders an address input and a Use Current Location action. Requires Google APIs to be configured." />
+                        <DropDownList v-model="distanceCalculation"
+                                      label="Distance Calculation"
+                                      :help="distanceCalculationHelp"
+                                      :items="distanceCalculationItems"
+                                      :showBlankItem="false" />
                     </ContentStack>
 
                     <ContentStack title="When">
-                        <CheckBox v-model="isWhenFilterHidden" label="Hide When Filter" />
                         <CheckBox v-model="isDayOfWeekFilterShown" label="Display Day of Week Filter" />
                         <CheckBox v-model="isTimeOfDayFilterShown" label="Display Time of Day Filter" />
                     </ContentStack>
 
                     <ContentStack title="What">
-                        <CheckBox v-model="isWhatFilterHidden" label="Hide What Filter" />
                         <CheckBox v-model="isLiveSearchEnabled"
                                   label="Live Text Search"
                                   help="Renders a text field that filters groups by name as the visitor types." />
@@ -132,6 +131,7 @@
     import { computed, ref, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
@@ -144,6 +144,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { DistanceCalculationMode, DistanceCalculationModeDescription } from "@Obsidian/Enums/Group/distanceCalculationMode";
     import { MeetingStyle, MeetingStyleDescription } from "@Obsidian/Enums/Group/meetingStyle";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -169,6 +170,38 @@
         text: MeetingStyleDescription[value]
     }));
 
+    // The distance calculations, derived from their enum the same way. The higher modes lean on Google
+    // services the panel probed when it opened; a mode whose service did not answer is disabled and labeled
+    // so, rather than offered and left to fail at search time.
+    const distanceCalculationItems = computed((): ListItemBag[] => {
+        return Object.entries(DistanceCalculationMode).map(([name, value]) => {
+            const isUnavailable = !isModeAvailable(value);
+
+            return {
+                value: name,
+                text: isUnavailable
+                    ? `${DistanceCalculationModeDescription[value]} · Google Maps API Not Configured Correctly`
+                    : DistanceCalculationModeDescription[value],
+                disabled: isUnavailable
+            };
+        });
+    });
+
+    // The dropdown shows labels alone, so the help carries what each option does and what it costs, which is
+    // what an administrator is actually choosing between.
+    const distanceCalculationHelp = computed((): string => {
+        return "<div style='text-align: left;'>"
+            + "How the finder handles the visitor's location and the distance shown on each card. Each option builds on the one above it."
+            + "<ul style='margin: 0.35em 0 0; padding-left: 1.1em;'>"
+            + "<li><strong>None</strong>: no location search, and no distance on the cards.</li>"
+            + "<li><strong>Straight-Line Distance (My Current Location)</strong>: the visitor shares their location through the browser, and the cards show the direct-line distance to each group. Works with no Google configuration.</li>"
+            + "<li><strong>Straight-Line Distance (Address or Zip Code)</strong>: also adds an address box, which resolves the entry through Google geocoding.</li>"
+            + "<li><strong>Driving Distance</strong>: also shows drive time and driving miles for the groups on screen, at the expense of more API credits. Paging still uses straight-line distance, but each page orders by drive time.</li>"
+            + "</ul>"
+            + "<div style='margin-top: 0.35em;'>Each option is checked against Google when this panel opens, and any that is not configured is disabled.</div>"
+            + "</div>";
+    });
+
     // #region Values
 
     const errorMessage = ref("");
@@ -186,12 +219,13 @@
 
     // Filters.
     const isCampusFilterHidden = ref(false);
-    const isWhereFilterHidden = ref(false);
-    const isWhenFilterHidden = ref(false);
-    const isWhatFilterHidden = ref(false);
     const campusTypes = ref<ListItemBag[]>([]);
     const campusStatuses = ref<ListItemBag[]>([]);
-    const isProximityEnabled = ref(false);
+    const distanceCalculation = ref("StraightLineCurrentLocation");
+    // Whether each higher mode's Google service answered its probe when the panel opened. These drive which
+    // options the dropdown disables, so they come from the options bag rather than being assumed.
+    const isAddressSearchAvailable = ref(false);
+    const isDrivingDistanceAvailable = ref(false);
     const supportedMeetingStyles = ref<string[]>([]);
     const isDayOfWeekFilterShown = ref(false);
     const isTimeOfDayFilterShown = ref(false);
@@ -259,6 +293,9 @@
         availableFeaturedAttributes.value = result.data.availableFeaturedAttributes ?? [];
         availableDisplayAttributes.value = result.data.availableDisplayAttributes ?? [];
         availableCardAttributes.value = result.data.availableCardAttributes ?? [];
+        isAddressSearchAvailable.value = result.data.isAddressSearchAvailable;
+        isDrivingDistanceAvailable.value = result.data.isDrivingDistanceAvailable;
+        applyAvailabilityFallback();
 
         featuredAttributes.value = featuredAttributes.value.filter(v => availableFeaturedAttributes.value.some(a => a.value === v));
         displayAttributeFilters.value = displayAttributeFilters.value.filter(v => availableDisplayAttributes.value.some(a => a.value === v));
@@ -279,12 +316,9 @@
         setCustomSettingsBoxValue(box, "showAttributeOnCard", showAttributeOnCard.value);
 
         setCustomSettingsBoxValue(box, "isCampusFilterHidden", isCampusFilterHidden.value);
-        setCustomSettingsBoxValue(box, "isWhereFilterHidden", isWhereFilterHidden.value);
-        setCustomSettingsBoxValue(box, "isWhenFilterHidden", isWhenFilterHidden.value);
-        setCustomSettingsBoxValue(box, "isWhatFilterHidden", isWhatFilterHidden.value);
         setCustomSettingsBoxValue(box, "campusTypes", campusTypes.value);
         setCustomSettingsBoxValue(box, "campusStatuses", campusStatuses.value);
-        setCustomSettingsBoxValue(box, "isProximityEnabled", isProximityEnabled.value);
+        setCustomSettingsBoxValue(box, "distanceCalculation", distanceCalculation.value);
         setCustomSettingsBoxValue(box, "supportedMeetingStyles", supportedMeetingStyles.value);
         setCustomSettingsBoxValue(box, "isDayOfWeekFilterShown", isDayOfWeekFilterShown.value);
         setCustomSettingsBoxValue(box, "isTimeOfDayFilterShown", isTimeOfDayFilterShown.value);
@@ -316,6 +350,41 @@
     // #region Functions
 
     /**
+     * Determines whether a distance-calculation mode can be chosen, given the services the panel probed.
+     * None and current-location need nothing; the address and driving modes each need their probe to have answered.
+     */
+    function isModeAvailable(mode: number): boolean {
+        if (mode === DistanceCalculationMode.StraightLineAddress) {
+            return isAddressSearchAvailable.value;
+        }
+
+        if (mode === DistanceCalculationMode.Driving) {
+            return isDrivingDistanceAvailable.value;
+        }
+
+        return true;
+    }
+
+    /**
+     * Drops the selection to the highest available mode at or below the saved one when the saved mode's
+     * service is no longer available, so the panel never opens on a disabled selection.
+     */
+    function applyAvailabilityFallback(): void {
+        const saved = DistanceCalculationMode[distanceCalculation.value as keyof typeof DistanceCalculationMode];
+        if (saved === undefined || isModeAvailable(saved)) {
+            return;
+        }
+
+        const fallback = Object.entries(DistanceCalculationMode)
+            .filter(([, value]) => value < saved && isModeAvailable(value))
+            .sort(([, a], [, b]) => b - a)[0];
+
+        if (fallback) {
+            distanceCalculation.value = fallback[0];
+        }
+    }
+
+    /**
      * Loads the current settings and available options so the panel can be displayed.
      */
     async function startLoading(): Promise<void> {
@@ -330,12 +399,9 @@
             showAttributeOnCard.value = settings.showAttributeOnCard ?? [];
 
             isCampusFilterHidden.value = settings.isCampusFilterHidden;
-            isWhereFilterHidden.value = settings.isWhereFilterHidden;
-            isWhenFilterHidden.value = settings.isWhenFilterHidden;
-            isWhatFilterHidden.value = settings.isWhatFilterHidden;
             campusTypes.value = settings.campusTypes ?? [];
             campusStatuses.value = settings.campusStatuses ?? [];
-            isProximityEnabled.value = settings.isProximityEnabled;
+            distanceCalculation.value = settings.distanceCalculation ?? "StraightLineCurrentLocation";
             supportedMeetingStyles.value = settings.supportedMeetingStyles ?? [];
             isDayOfWeekFilterShown.value = settings.isDayOfWeekFilterShown;
             isTimeOfDayFilterShown.value = settings.isTimeOfDayFilterShown;
@@ -355,6 +421,9 @@
             availableFeaturedAttributes.value = result.data.options.availableFeaturedAttributes ?? [];
             availableDisplayAttributes.value = result.data.options.availableDisplayAttributes ?? [];
             availableCardAttributes.value = result.data.options.availableCardAttributes ?? [];
+            isAddressSearchAvailable.value = result.data.options.isAddressSearchAvailable;
+            isDrivingDistanceAvailable.value = result.data.options.isDrivingDistanceAvailable;
+            applyAvailabilityFallback();
         }
         else {
             errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";

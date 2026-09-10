@@ -86,8 +86,8 @@ internal sealed partial class WorkflowBuilderSkill
         if ( partialName.IsNotNullOrWhiteSpace() )
         {
             components = components.Where( c =>
-                ( c.Name != null && c.Name.IndexOf( partialName, System.StringComparison.OrdinalIgnoreCase ) >= 0 )
-                || ( c.ClassName != null && c.ClassName.IndexOf( partialName, System.StringComparison.OrdinalIgnoreCase ) >= 0 ) );
+                c.Name.ContainsIgnoreCase( partialName )
+                || c.ClassName.ContainsIgnoreCase( partialName ) );
         }
 
         if ( category.IsNotNullOrWhiteSpace() )

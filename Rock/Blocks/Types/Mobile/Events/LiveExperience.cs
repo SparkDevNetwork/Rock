@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Mobile;
@@ -154,7 +155,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         [BlockAction]
         public BlockActionResult JoinExperience( string occurrenceKey, Guid? personalDeviceGuid, double? latitude, double? longitude )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new LiveExperienceInitializationBox();
                 var occurrence = GetInteractiveExperienceOccurrence( rockContext, occurrenceKey );

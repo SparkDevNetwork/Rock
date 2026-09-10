@@ -68,6 +68,15 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         public List<ListItemBag> Mediums { get; set; }
 
         /// <summary>
+        /// Gets or sets the standalone medium options the sender may directly choose in the picker.
+        /// </summary>
+        /// <value>
+        /// Unlike <see cref="Mediums"/>, this honors exactly the communication types enabled in the
+        /// "Communication Types" block setting and does not expand Recipient Preference into Email and SMS.
+        /// </value>
+        public List<ListItemBag> StandaloneMediums { get; set; }
+
+        /// <summary>
         /// Gets or sets whether the duplicate prevention option should be shown.
         /// </summary>
         public bool IsDuplicatePreventionOptionShown { get; set; }

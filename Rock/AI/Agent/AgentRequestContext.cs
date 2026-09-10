@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 
@@ -32,6 +34,12 @@ namespace Rock.AI.Agent
         /// is being processed by.
         /// </summary>
         public abstract int? AgentId { get; }
+
+        /// <summary>
+        /// The unique identifier of the <see cref="Model.AIAgent"/> that this
+        /// request is being processed by.
+        /// </summary>
+        public abstract Guid? AgentGuid { get; }
 
         /// <inheritdoc cref="Model.AIAgent.Name"/>
         public abstract string AgentName { get; }
@@ -70,7 +78,11 @@ namespace Rock.AI.Agent
 
         /// <summary>
         /// Create a new instance of <see cref="AgentRequestContext"/>. The
-        /// constructor is internal to prevent plugins from inheriting.
+        /// constructor is internal to prevent plugins from inheriting. Unit
+        /// tests construct a derived context through
+        /// <c>Rock.Tests.Shared.TestAccess.AI.Agent.TestAgentRequestContext</c>,
+        /// which has access to this constructor; keep that type in sync with
+        /// this class.
         /// </summary>
         internal AgentRequestContext()
         {

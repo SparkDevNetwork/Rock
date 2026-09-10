@@ -19,6 +19,7 @@ using System.ComponentModel;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -50,7 +51,7 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
             // If this somehow fails and throws an exeption, the DeleteJob() call below won't run and it will try again later.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
                 rockContext.Database.ExecuteSqlCommand( Plugin.HotFixes.HotFixMigrationResource._153_FixERAStartDate_RecoverERAStartDate_Update );

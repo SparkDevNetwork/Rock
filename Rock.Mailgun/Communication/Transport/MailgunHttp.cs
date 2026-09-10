@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using RestSharp;
 using RestSharp.Authenticators;
@@ -325,8 +324,25 @@ namespace Rock.Communication.Transport
             // Body (plain text)
             if ( rockEmailMessage.PlainTextMessage.IsNotNullOrWhiteSpace() )
             {
-                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( rockEmailMessage.PlainTextMessage, new ContentType( MediaTypeNames.Text.Plain ) );
-                restRequest.AddParameter( "text", plainTextView );
+                /*
+                    8/26/26 - NA
+
+                    Pass the plain text string directly to the "text" parameter. Previously this
+                    wrapped the value in a System.Net.Mail.AlternateView, but RestSharp serializes
+                    a form parameter by calling ToString() on its value. AlternateView does not
+                    override ToString(), so the literal type name "System.Net.Mail.AlternateView"
+                    was sent as the text/plain body (breaking iOS Mail inbox previews).
+
+                    AlternateView is purpose-built for System.Net.Mail.MailMessage, not for an HTTP
+                    form field. The SMTP-based transports (see SMTPComponent) use it correctly by
+                    adding it to mailMessage.AlternateViews, where SmtpClient serializes the view's
+                    content stream into a proper MIME part and ToString() is never called. Only the
+                    HTTP-form transports were exposed to this, and this Mailgun HTTP transport was
+                    the one misusing an AlternateView as a form value.
+
+                    Reason: RestSharp form params are string-serialized; the AlternateView wrapper leaked its type name. (Fixes #6996)
+                */
+                restRequest.AddParameter( "text", rockEmailMessage.PlainTextMessage );
             }
 
             // Body (html)

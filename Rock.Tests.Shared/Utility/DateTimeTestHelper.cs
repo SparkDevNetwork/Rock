@@ -20,8 +20,6 @@ using System.Diagnostics;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Lava;
-
 namespace Rock.Tests.Shared.Utility
 {
     /// <summary>
@@ -44,6 +42,24 @@ namespace Rock.Tests.Shared.Utility
         public static void SetRockDateTimeToLocalTimezone()
         {
             SetRockTimeZone( TimeZoneInfo.Local );
+        }
+
+        /// <summary>
+        /// Gets a set of DateTime values paired with the integer "date key"
+        /// (yyyyMMdd) they are expected to produce. Used to verify the computed
+        /// <c>*DateKey</c> properties on entities that participate in analytics joins.
+        /// </summary>
+        /// <returns>A dictionary keyed by the expected date key with the source date as the value.</returns>
+        public static Dictionary<int, DateTime> GetDateKeyTestData()
+        {
+            return new Dictionary<int, DateTime>
+            {
+                { 20100131, Convert.ToDateTime( "2010-1-31" ) },
+                { 20101231, Convert.ToDateTime( "2010-12-31" ) },
+                { 20101201, Convert.ToDateTime( "2010-12-1" ) },
+                { 20100101, Convert.ToDateTime( "2010-1-1" ) },
+                { 20160229, Convert.ToDateTime( "2016-02-29" ) },
+            };
         }
 
         /// <summary>
@@ -229,17 +245,6 @@ namespace Rock.Tests.Shared.Utility
             {
                 throw new Exception( "Expected DateTime must be expressed in UTC." );
             }
-        }
-
-        /// <summary>
-        /// Write the results of template rendering to the debug output, with some additional configuration details.
-        /// Useful to document the result of a test that would otherwise produce no output.
-        /// </summary>
-        /// <param name="outputString"></param>
-        public void DebugWriteRenderResult( ILavaEngine engine, string inputString, string outputString )
-        {
-            Debug.Print( $"\n** [{engine.EngineName}] Input:\n{inputString}" );
-            Debug.Print( $"\n** [{engine.EngineName}] Output:\n{outputString}" );
         }
 
         /// <summary>

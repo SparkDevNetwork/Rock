@@ -6,9 +6,7 @@ using System.Linq;
 
 using Moq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.Shared.TestFramework
 {
@@ -18,24 +16,6 @@ namespace Rock.Tests.Shared.TestFramework
     /// </summary>
     public static class MockTestExtensions
     {
-        /// <summary>
-        /// Sets up a mock DbSet for the model type <typeparamref name="TEntity"/> that
-        /// will provide access to the items in <paramref name="entities"/>.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
-        /// <param name="rockContextMock">The mocked <see cref="RockContext"/>.</param>
-        /// <param name="entities">The entities to be included in the set.</param>
-        /// <returns>A mocking instance for <see cref="DbSet{TEntity}"/>.</returns>
-        public static Mock<DbSet<TEntity>> SetupDbSet<TEntity>( this Mock<RockContext> rockContextMock, params TEntity[] entities )
-            where TEntity : class
-        {
-            var dbSetMock = entities.GetDbSetMock();
-
-            rockContextMock.Setup( m => m.Set<TEntity>() ).Returns( () => dbSetMock.Object );
-
-            return dbSetMock;
-        }
-
         /// <summary>
         /// Sets up a mock DbSet for the model type <typeparamref name="TEntity"/> that
         /// will provide access to the items in <paramref name="entities"/>. The DbSet
@@ -64,6 +44,33 @@ namespace Rock.Tests.Shared.TestFramework
         /// <param name="rockContextMock">The mock <see cref="RockContext"/> to setup.</param>
         public static void SetupAutoDbSets( this RockMock<RockContext> rockContextMock )
         {
+            /*
+                9/9/26 - CLAUDE
+
+                A single mocked RockContext is shared by everything in a test
+                scope (RockApp.Current.CreateRockContext() returns the same
+                instance every call). The main test thread is expected to be the
+                only caller, so this dictionary - and the backing List<T> in each
+                DbSet built by GetDbSetMock, and the enumeration in
+                ExecuteSaveChanges - are deliberately NOT thread-safe.
+
+                Background threads (exception logging, bus publishing) used to
+                reach this mock via RockApp.Current and mutate these collections
+                concurrently, which produced intermittent IndexOutOfRangeException
+                / "collection was modified" failures in CI. Those background
+                writers are now diverted to sinks (IExceptionLogSink,
+                IBusMessageSink) before they touch the mock, so single-threaded
+                access holds again.
+
+                If a future change reintroduces concurrent access to the mocked
+                context, make autoDbSets a ConcurrentDictionary, snapshot it in
+                ExecuteSaveChanges, and guard the per-set List<T> operations
+                (Add/Remove/AddRange and the queryable enumerations) in
+                GetDbSetMock - a single lock per mock is simplest.
+
+                Reason: Document why these collections are intentionally not
+                thread-safe and how to harden them if that ever changes.
+            */
             var autoDbSets = new Dictionary<Type, IEnumerable>();
 
             rockContextMock.Setup( m => m.Set<It.IsAnyType>() ).Returns( new InvocationFunc( invocation =>
@@ -127,15 +134,54 @@ namespace Rock.Tests.Shared.TestFramework
             var autoDbSets = ( Dictionary<Type, IEnumerable> ) rockContextMock.CustomData["AutoDbSets"];
             int modifiedCount = 0;
 
+            /*
+                8/23/26 - CLAUDE
+
+                This runs once per SaveChanges() call, and some tests (e.g. the
+                AttendanceCode generation tests) call SaveChanges() thousands of
+                times against a set that grows into the thousands. The previous
+                implementation scanned each set twice per call - once in the outer
+                loop to find new entities and again via Max() for every new entity -
+                which made those tests O(N^2) and dominated the entire unit-test run.
+
+                We now assign Ids in a single pass: track the highest existing Id
+                while collecting the new (Id == 0) entities, then hand out sequential
+                Ids from that maximum. The resulting Ids are identical to before.
+
+                Reason: Avoid O(N^2) Id assignment in high-volume SaveChanges loops.
+            */
             foreach ( var kvp in autoDbSets )
             {
+                int maxId = 0;
+                List<IEntity> newEntities = null;
+
                 foreach ( var obj in kvp.Value )
                 {
-                    if ( obj is IEntity entity && entity.Id == 0 )
+                    if ( !( obj is IEntity entity ) )
                     {
-                        entity.Id = kvp.Value.OfType<IEntity>().Max( a => a.Id ) + 1;
-                        modifiedCount++;
+                        continue;
                     }
+
+                    if ( entity.Id == 0 )
+                    {
+                        newEntities = newEntities ?? new List<IEntity>();
+                        newEntities.Add( entity );
+                    }
+                    else if ( entity.Id > maxId )
+                    {
+                        maxId = entity.Id;
+                    }
+                }
+
+                if ( newEntities == null )
+                {
+                    continue;
+                }
+
+                foreach ( var entity in newEntities )
+                {
+                    entity.Id = ++maxId;
+                    modifiedCount++;
                 }
             }
 
@@ -161,6 +207,14 @@ namespace Rock.Tests.Shared.TestFramework
             dbSetMock.As<IEnumerable>().Setup( m => m.GetEnumerator() ).Returns( () => queryable.GetEnumerator() );
             dbSetMock.Setup( m => m.AsNoTracking() ).Returns( () => dbSetMock.Object );
             dbSetMock.Setup( m => m.Include( It.IsAny<string>() ) ).Returns( () => dbSetMock.Object );
+
+            // Hand back a plain instance for Create(), which some implementation
+            // code calls to make a new entity. Real EF returns a change tracking
+            // proxy that resolves auto-navigation properties (setting CampusId, for
+            // example, makes the Campus navigation property load lazily). This plain
+            // instance does no such wiring, so a test relying on a navigation
+            // property resolving from its foreign key id must set it explicitly.
+            dbSetMock.Setup( m => m.Create() ).Returns( () => Activator.CreateInstance<T>() );
 
             return dbSetMock;
         }
@@ -204,19 +258,6 @@ namespace Rock.Tests.Shared.TestFramework
             } );
 
             return dbSetMock;
-        }
-
-        /// <summary>
-        /// Sets an attribute value for a mocked entity.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of entity that is being mocked.</typeparam>
-        /// <param name="entity">The entity that is being mocked.</param>
-        /// <param name="key">The attribute key.</param>
-        /// <param name="value">The raw attribute value.</param>
-        public static void SetMockAttributeValue<TEntity>( this Mock<TEntity> entity, string key, string value )
-            where TEntity : class, IHasAttributes
-        {
-            entity.Object.AttributeValues[key] = new AttributeValueCache( 0, 0, value );
         }
     }
 }

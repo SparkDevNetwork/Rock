@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -58,7 +59,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentChannelType = ContentChannelTypeCache.Get( guid.Value );
 
@@ -119,7 +120,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ContentChannelTypeService( rockContext ).Get( guid.Value );
             }
 
@@ -164,6 +165,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the ContentChannelType table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is the type a channel is built from, not a channel and not an item.",
+                Instructions = "To find the correct value, read the content channel types and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -195,7 +211,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var contentChannelTypeList = new ContentChannelTypeService( new RockContext() ).Queryable()
+            var contentChannelTypeList = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Queryable()
                 .OrderBy( d => d.Name )
                 .Select( a => new { a.Name, a.Guid } )
                 .ToList();
@@ -255,7 +271,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var entityId = new ContentChannelTypeService( new RockContext() ).GetId( guid );
+            var entityId = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).GetId( guid );
             return entityId;
         }
 
@@ -267,7 +283,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var itemGuid = new ContentChannelTypeService( new RockContext() ).GetGuid( id ?? 0 );
+            var itemGuid = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).GetGuid( id ?? 0 );
             SetEditValue( control, configurationValues, itemGuid?.ToString() );
         }
 

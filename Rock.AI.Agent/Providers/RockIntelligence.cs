@@ -15,18 +15,24 @@
 // </copyright>
 
 using System;
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+
+using OpenAI;
 
 using Rock.Configuration;
 using Rock.Configuration.ConnectedServices;
 using Rock.Configuration.ConnectedServices.RockIntelligence;
 using Rock.Enums.AI.Agent;
+using Rock.Net;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Providers;
@@ -58,17 +64,73 @@ internal class RockIntelligenceProvider : AgentProviderComponent
     /// <returns>The name of the model to use when processing the request.</returns>
     private string GetModelName( ModelServiceRole role, Settings settings )
     {
-        if ( role == ModelServiceRole.Default )
+        if ( role == ModelServiceRole.High )
         {
-            var model = settings?.Models?.FirstOrDefault( m => m.Type == AIModel.GeneralType );
-
-            if ( model != null )
-            {
-                return model.Id;
-            }
+            return GetModelName( AIModel.HighType, settings );
         }
 
-        return null;
+        return GetModelName( AIModel.GeneralType, settings );
+    }
+
+    /// <summary>
+    /// Gets the name of the language model to use for the specified role.
+    /// </summary>
+    /// <param name="modelType">The requested model type, this is a special string from <see cref="AIModel"/>.</param>
+    /// <param name="settings">The Rock Intelligence settings.</param>
+    /// <returns>The name of the model to use when processing the request.</returns>
+    internal string GetModelName( string modelType, Settings settings )
+    {
+        var model = settings?.Models?.FirstOrDefault( m => m.Type == modelType );
+
+        if ( model?.Id != null )
+        {
+            return model.Id;
+        }
+
+        // Medium/General is the default fallback role. If no medium/general
+        // model is configured, then just return the first model in the list.
+        return settings?.Models?.FirstOrDefault( m => m.Type == AIModel.GeneralType )?.Id
+            ?? settings?.Models?.FirstOrDefault()?.Id;
+    }
+
+    internal void AddChatCompletion( string serviceId, string modelId, IServiceCollection serviceCollection )
+    {
+        var connectedServicesProvider = RockApp.Current.GetService<ConnectedServicesProvider>();
+        var config = connectedServicesProvider?.GetConfiguration();
+        var bundle = config?.RockIntelligence?.Bundle;
+        var settings = bundle?.Settings;
+
+        var url = settings?.Url;
+        var apiKey = settings?.ApiKey;
+
+        /*
+            Resolved through DI rather than constructed here so the attribution
+            policy can read the agent details belonging to this kernel. Registered
+            with TryAdd because AddChatCompletion is called once per model role and
+            every role shares the same endpoint and key.
+        */
+        serviceCollection.TryAddSingleton( serviceProvider =>
+        {
+            var clientOptions = new OpenAIClientOptions
+            {
+                Endpoint = new Uri( url )
+            };
+
+            var agentContext = serviceProvider.GetService<AgentRequestContext>();
+
+            if ( agentContext?.AgentGuid != null )
+            {
+                clientOptions.AddPolicy( new AgentAttributionPolicy( agentContext.AgentGuid.Value ), PipelinePosition.PerCall );
+            }
+
+            return new OpenAIClient( new ApiKeyCredential( apiKey ), clientOptions );
+        } );
+
+        // A null client tells the connector to resolve one from the service provider.
+        serviceCollection.AddOpenAIChatCompletion(
+            serviceId: serviceId,
+            modelId: modelId,
+            openAIClient: null );
     }
 
     /// <inheritdoc/>
@@ -79,14 +141,7 @@ internal class RockIntelligenceProvider : AgentProviderComponent
         var bundle = config?.RockIntelligence?.Bundle;
         var settings = bundle?.Settings;
 
-        var url = settings?.Url;
-        var apiKey = settings?.ApiKey;
-
-        serviceCollection.AddOpenAIChatCompletion(
-            serviceId: GetServiceKeyForRole( role ),
-            modelId: GetModelName( role, settings ),
-            endpoint: new Uri( url ),
-            apiKey: apiKey );
+        AddChatCompletion( GetServiceKeyForRole( role ), GetModelName( role, settings ), serviceCollection );
     }
 
     /// <inheritdoc/>
@@ -152,10 +207,17 @@ internal class RockIntelligenceProvider : AgentProviderComponent
     }
 
     /// <inheritdoc/>
-    public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings()
+    public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings( AgentRequestContext agentRequestContext )
     {
         return new OpenAIPromptExecutionSettings()
         {
+            // From the agent's own context rather than the ambient request context.
+            // The latter is an AsyncLocal and is already gone by the time a completion
+            // runs, so it read as null for a signed in person. Still null conditional,
+            // because an anonymous request is legitimate here.
+            User = agentRequestContext?.CurrentPerson?.PrimaryAliasGuid is Guid personAliasGuid
+                ? personAliasGuid.ToString( "D" )
+                : null,
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             ReasoningEffort = "low"
         };

@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -75,7 +76,7 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<EventItemBag, EventItemDetailOptionsBag>();
 
@@ -550,7 +551,7 @@ namespace Rock.Blocks.Event
 
             string name = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 name = new EventItemService( rockContext )
                    .GetSelect( key, e => e.Name );
@@ -579,7 +580,7 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -992,7 +993,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -1018,7 +1019,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1103,7 +1104,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new EventItemService( rockContext );
 
@@ -1136,7 +1137,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1190,7 +1191,7 @@ namespace Rock.Blocks.Event
         public BlockActionResult GetAttribute( Guid? attributeGuid )
         {
             PublicEditableAttributeBag editableAttribute;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var entity = GetInitialEntity( rockContext );
             var eventIdQualifierValue = entity.Id.ToString();

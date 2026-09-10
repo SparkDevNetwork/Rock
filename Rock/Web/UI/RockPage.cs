@@ -882,7 +882,7 @@ namespace Rock.Web.UI
                 }
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // If the impersonated query key was included or is in session then set the current person
             Page.Trace.Warn( "Checking for person impersonation" );
@@ -1790,7 +1790,7 @@ namespace Rock.Web.UI
             var currentPerson = currentPersonAlias?.Person;
             var currentPersonId = currentPersonAlias?.PersonId;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var visitorKeyCookie = GetCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
             PersonAlias currentVisitorCookiePersonAlias = null;
@@ -1975,7 +1975,7 @@ namespace Rock.Web.UI
                 segmentFilterCookieData = new Personalization.SegmentFilterCookieData();
                 segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
-                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                var segmentIdKeys = new PersonalizationSegmentService( RockApp.Current.CreateRockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 
@@ -2366,6 +2366,21 @@ Sys.Application.add_load(function () {
                 return;
             }
 
+            /*
+                8/24/2026 - CLAUDE
+
+                Reject speculative navigations before anything is recorded.
+                Chrome Speculation Rules and link prefetchers request pages the
+                visitor never actually opens, and every one of those was being
+                written as a page view.
+
+                Reason: Prefetched pages were inflating page view counts.
+            */
+            if ( WebRequestHelper.IsPrefetchRequest( Request?.Headers ) )
+            {
+                return;
+            }
+
             // Attempt to retrieve geolocation data.
             var geolocation = this.RequestContext?.ClientInformation?.Geolocation;
 
@@ -2414,6 +2429,22 @@ Sys.Application.add_load(function () {
             // database records used to track interactions for visitors until we know that the page has been executed
             // on a valid client with Javascript and cookies enabled.
             if ( ClientScript.IsStartupScriptRegistered( "rock-js-register-interaction" ) )
+            {
+                return;
+            }
+
+            /*
+                8/24/2026 - CLAUDE
+
+                Skip the callback entirely for a user agent we already know is a
+                crawler. The API endpoint rejects these too, but there is no
+                reason to hand a bot the script and pay for the round trip when
+                the user agent is identifiable from this request.
+
+                Reason: Avoids a pointless request and an Anonymous Visitor
+                cookie for traffic that will be rejected anyway.
+            */
+            if ( CrawlerUserAgents.IsCrawler( Request.UserAgent ) )
             {
                 return;
             }
@@ -2470,6 +2501,10 @@ Sys.Application.add_load(function () {
             // that only unique interactions are tracked during the session. This additional change was needed to prevent the
             // scenario where a duplicate interaction would be sent whenever an individual used a browser's back arrow to navigate
             // back to a page that had already sent an interaction. 
+            // The sendInteraction wrapper exists so the callback can be deferred
+            // until a prerendered page is actually activated. Chrome prerenders
+            // pages the visitor may never open; recording those on load counted
+            // page views for pages nobody saw. This mirrors what gtag.js does.
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
@@ -2478,22 +2513,31 @@ Sys.Application.add_load(function () {
         return !match ? '' : match.pop();
     };
 
-    var interactionGuid = '<interactionGuid>';
-    var interactionGuids = JSON.parse(sessionStorage.getItem('interactionGuids')) || [];
+    var sendInteraction = function () {
+        var interactionGuid = '<interactionGuid>';
+        var interactionGuids = JSON.parse(sessionStorage.getItem('interactionGuids')) || [];
 
-    if (!interactionGuids.includes(interactionGuid)) {
-        interactionGuids.push(interactionGuid);
-        sessionStorage.setItem('interactionGuids', JSON.stringify(interactionGuids));
+        if (!interactionGuids.includes(interactionGuid)) {
+            interactionGuids.push(interactionGuid);
+            sessionStorage.setItem('interactionGuids', JSON.stringify(interactionGuids));
 
-        var interactionArgs = <jsonData>;
-        if (!interactionArgs.<userIdProperty>) {
-            interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+            var interactionArgs = <jsonData>;
+            if (!interactionArgs.<userIdProperty>) {
+                interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+            }
+            $.ajax({
+                url: '/api/Interactions/RegisterPageInteraction',
+                type: 'POST',
+                data: interactionArgs
+                });
         }
-        $.ajax({
-            url: '/api/Interactions/RegisterPageInteraction',
-            type: 'POST',
-            data: interactionArgs
-            });
+    };
+
+    if (document.prerendering) {
+        document.addEventListener('prerenderingchange', sendInteraction, { once: true });
+    }
+    else {
+        sendInteraction();
     }
 });
 ";
@@ -3016,7 +3060,7 @@ Sys.Application.add_load(function () {
                     {
                         if ( keyModel.Id.HasValue || keyModel.Guid.HasValue )
                         {
-                            var qry = new PersonService( new RockContext() )
+                            var qry = new PersonService( RockApp.Current.CreateRockContext() )
                                 .Queryable( true, true )
                                 .Include( p => p.MaritalStatusValue )
                                 .Include( p => p.ConnectionStatusValue )
@@ -3042,7 +3086,7 @@ Sys.Application.add_load(function () {
                         }
                         else if ( keyModel.Key.IsNotNullOrWhiteSpace() )
                         {
-                            keyModel.Entity = new PersonService( new RockContext() ).GetByPublicKey( keyModel.Key );
+                            keyModel.Entity = new PersonService( RockApp.Current.CreateRockContext() ).GetByPublicKey( keyModel.Key );
                         }
                     }
                     else
@@ -3512,7 +3556,7 @@ Sys.Application.add_load(function () {
         /// <param name="macAddress">The mac address.</param>
         public bool LinkPersonAliasToDevice( int personAliasId, string macAddress )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
                 PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );

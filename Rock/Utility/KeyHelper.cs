@@ -20,6 +20,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Utility
@@ -36,7 +37,7 @@ namespace Rock.Utility
         /// <returns></returns>
         public static string GenerateKey( Func<RockContext, string, bool> filter )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var key = string.Empty;
                 do

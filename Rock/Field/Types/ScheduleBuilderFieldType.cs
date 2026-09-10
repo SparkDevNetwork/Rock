@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -133,7 +134,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduleId = new ScheduleService( rockContext ).GetId( guid.Value );
                 if ( !scheduleId.HasValue )
@@ -177,7 +178,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             return new ScheduleService( rockContext ).Get( guid.Value );
         }
 
@@ -221,7 +222,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduleService = new ScheduleService( rockContext );
 
@@ -275,6 +276,24 @@ namespace Rock.Field.Types
             /// Gets or sets the iCalendar content being edited.
             /// </summary>
             public string ICalendarContent { get; set; }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The name suggests a schedule definition, but the value is a Schedule guid resolved through ScheduleService.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the Schedule table, not its id or idKey and not an iCalendar string. Only one value is stored, so a comma separated list is not valid here. Despite the name, this stores a reference to a saved schedule rather than the schedule definition it lets a person build.",
+                Instructions = "To find the correct value, read the schedules and take the guid of the one you want."
+            };
         }
 
         #endregion
@@ -366,7 +385,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            var schedule = new ScheduleService( new RockContext() ).Get( guid.Value );
+            var schedule = new ScheduleService( RockApp.Current.CreateRockContext() ).Get( guid.Value );
             return schedule?.Id;
         }
 
@@ -378,7 +397,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var schedule = new ScheduleService( new RockContext() ).Get( id ?? 0 );
+            var schedule = new ScheduleService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             SetEditValue( control, configurationValues, schedule?.Guid.ToString() ?? string.Empty );
         }
 #endif

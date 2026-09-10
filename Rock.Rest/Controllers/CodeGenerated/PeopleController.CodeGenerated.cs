@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PeopleController"/> class.
         /// </summary>
-        public PeopleController() : base( new Rock.Model.PersonService( new Rock.Data.RockContext() ) ) { } 
+        public PeopleController() : base( new Rock.Model.PersonService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -24,6 +24,7 @@ using System.Net.Sockets;
 using System.Net;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -200,7 +201,7 @@ namespace Rock.Jobs
             Rock.Field.IFieldType field;
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -282,7 +283,7 @@ namespace Rock.Jobs
 
             // Get a list of all the attribute value identifiers that we
             // need to update the references for.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -316,7 +317,7 @@ namespace Rock.Jobs
 
                     var referenceDictionary = valueIds.ToDictionary( valueId => valueId, valueId => referencedEntities );
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -354,7 +355,7 @@ namespace Rock.Jobs
             // Rebuild percentage must be between 1 and 100.
             rebuildPercentage = Math.Min( 100, rebuildPercentage );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -440,7 +441,7 @@ namespace Rock.Jobs
             errorMessages = new List<string>();
             statusMessage.Write( "Updating dirty attributes.", true );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -547,7 +548,7 @@ namespace Rock.Jobs
                                 persistedValues = placeholderValues;
                             }
 
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -610,7 +611,7 @@ namespace Rock.Jobs
         /// <returns>A dictionary whose key identifies the attribute identifier and whose value is a list of the attribute value identifiers.</returns>
         private Dictionary<int, List<(int Id, string Value)>> GetDirtyAttributeValues( int commandTimeout )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -637,7 +638,7 @@ namespace Rock.Jobs
         /// <returns>A list of attribute identifiers.</returns>
         private List<int> GetDirtyAttributeIds( int commandTimeout )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 

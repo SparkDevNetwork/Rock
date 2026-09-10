@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Crm.RecordSource;
 using Rock.Data;
@@ -2966,7 +2967,7 @@ namespace Rock.Blocks.Finance
             // navigations eager-loaded. The just-charged transaction is a new in-memory entity whose
             // reference navigations were never populated (only their foreign keys were set) and cannot
             // lazy-load, so the Success Lava's account names and payment method would otherwise be blank.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var transaction = new FinancialTransactionService( rockContext )
                     .Queryable( "TransactionDetails.Account,FinancialPaymentDetail.CurrencyTypeValue" )
@@ -3009,7 +3010,7 @@ namespace Rock.Blocks.Finance
             // Reload with the Account and CurrencyTypeValue navigations eager-loaded, for the same reason
             // as BuildSuccessResponse (a new in-memory entity's reference navigations are blank and cannot
             // lazy-load, which would leave the Success Lava's account names and payment method empty).
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduledTransaction = new FinancialScheduledTransactionService( rockContext )
                     .Queryable( "ScheduledTransactionDetails.Account,FinancialPaymentDetail.CurrencyTypeValue" )
@@ -3574,7 +3575,7 @@ namespace Rock.Blocks.Finance
         /// <param name="scheduledTransactionId">The id of the old scheduled transaction to cancel.</param>
         private void CancelTransferredScheduledTransaction( int scheduledTransactionId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var scheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var scheduledTransaction = scheduledTransactionService.Get( scheduledTransactionId );

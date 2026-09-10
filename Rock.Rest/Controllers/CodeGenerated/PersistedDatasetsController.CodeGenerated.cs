@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PersistedDatasetsController"/> class.
         /// </summary>
-        public PersistedDatasetsController() : base( new Rock.Model.PersistedDatasetService( new Rock.Data.RockContext() ) ) { } 
+        public PersistedDatasetsController() : base( new Rock.Model.PersistedDatasetService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

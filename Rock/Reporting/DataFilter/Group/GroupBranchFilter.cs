@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -206,7 +207,7 @@ function()
             string result;
 
             var settings = new GroupBranchFilterSettings( selection );
-            var group = new GroupService( new RockContext() ).Get( settings.ParentGroupId );
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( settings.ParentGroupId );
 
             var groupName = ( group != null ) ? group.Name : "(any)";
 
@@ -396,7 +397,7 @@ function()
                 // Group Identifier
                 var groupGuid = selectionValues[0].AsGuid();
 
-                var group = new GroupService( new RockContext() ).Get( groupGuid );
+                var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( groupGuid );
 
                 ParentGroupId = ( group != null ) ? group.Id : 0;
 
@@ -417,7 +418,7 @@ function()
             {
                 var groupGuid = string.Empty;
 
-                var group = new GroupService( new RockContext() ).Get( ParentGroupId );
+                var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( ParentGroupId );
 
                 if ( group != null )
                 {

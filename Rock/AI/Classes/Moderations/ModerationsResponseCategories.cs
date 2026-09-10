@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.Enums.AI;
 
 namespace Rock.AI.Classes.Moderations
@@ -22,6 +24,8 @@ namespace Rock.AI.Classes.Moderations
     /// <summary>
     /// The class for holding the response from a moderations completion.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public class ModerationsResponseCategories
     {
         /// <summary>

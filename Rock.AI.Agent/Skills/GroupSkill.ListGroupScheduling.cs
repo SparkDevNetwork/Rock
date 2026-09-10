@@ -52,7 +52,7 @@ internal sealed partial class GroupSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;
-        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
+        var groupTypeIds = GetAvailableGroupTypes().Select( gt => gt.Id ).ToList();
 
         var group = helper.GetRequiredEntity<Model.Group>( groupIdKey, checkSecurity: false );
 

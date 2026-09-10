@@ -164,6 +164,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A url, stored exactly as supplied. Rock reads it as an absolute Uri, so include the scheme rather than starting at the host; a url without one is stored but will not resolve when used."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

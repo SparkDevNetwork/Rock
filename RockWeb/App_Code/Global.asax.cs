@@ -415,7 +415,7 @@ namespace RockWeb
                     Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
 
                     // get a list of all block types that are used by blocks
-                    var allUsedBlockTypeIds = new BlockTypeService( new RockContext() ).Queryable()
+                    var allUsedBlockTypeIds = new BlockTypeService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( a => a.Blocks.Any() )
                         .OrderBy( a => a.Category )
                         .Select( a => a.Id ).ToArray();
@@ -463,7 +463,7 @@ namespace RockWeb
 
                 if ( blockTypeWithCompiledType.BlockType.SiteTypeFlags != siteTypes || blockTypeWithCompiledType.BlockType.DefaultRole != defaultRole )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var blockTypeService = new BlockTypeService( rockContext );
                         var blockType = blockTypeService.Queryable()
@@ -560,7 +560,7 @@ namespace RockWeb
                 // mark user offline
                 if ( this.Session["RockUserId"] != null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var userLoginService = new UserLoginService( rockContext );
 
@@ -891,7 +891,7 @@ namespace RockWeb
         /// </summary>
         private void MarkOnlineUsersOffline()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
 
@@ -1102,6 +1102,17 @@ namespace RockWeb
         /// <param name="ex">The ex.</param>
         private void LogAndSendNotification( Exception ex )
         {
+            var isExpectedRedirectAbort = ex is ThreadAbortException
+                && HttpContext.Current?.Items["Rock:ExpectedRedirectAbort"] as bool? == true;
+
+            if ( isExpectedRedirectAbort )
+            {
+                // This is an expected exception that happens when Redirect()
+                // is called as it immediately ends the request which causes
+                // the thread to be aborted.
+                return;
+            }
+
             int? pageId = ( Context.Items["Rock:PageId"] ?? string.Empty ).ToString().AsIntegerOrNull();
             int? siteId = ( Context.Items["Rock:SiteId"] ?? string.Empty ).ToString().AsIntegerOrNull();
 

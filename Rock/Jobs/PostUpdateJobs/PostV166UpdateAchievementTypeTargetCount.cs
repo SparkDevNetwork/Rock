@@ -22,6 +22,7 @@ using Rock.Model;
 
 using System.ComponentModel;
 using System.Linq;
+using Rock.Configuration;
 
 namespace Rock.Jobs.PostUpdateJobs
 {
@@ -48,7 +49,7 @@ namespace Rock.Jobs.PostUpdateJobs
         /// <inheritdoc />
         public override void Execute()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsInteger() );
 
@@ -78,7 +79,7 @@ namespace Rock.Jobs.PostUpdateJobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

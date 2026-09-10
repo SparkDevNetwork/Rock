@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Core.AttributeValues;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -252,7 +253,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 return ActionNotFound( "There was no context entity type provided." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = RequestContext.GetContextEntity( entityType.GetEntityType() );
                 if ( entity == null || !( entity is IHasAttributes attributeEntity ) )
@@ -298,7 +299,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 return ActionNotFound( "There was no context entity type provided." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = RequestContext.GetContextEntity( entityType.GetEntityType() );
                 if ( entity == null || !( entity is IHasAttributes attributeEntity ) )

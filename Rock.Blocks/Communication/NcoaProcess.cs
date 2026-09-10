@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -29,7 +30,7 @@ namespace Rock.Blocks.Communication
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 sparkDataConfig = Ncoa.GetSettings();
                 var bag = new NcoaProcessSavedSettingsBag();
@@ -92,7 +93,7 @@ namespace Rock.Blocks.Communication
         public BlockActionResult ProcessNcoaImportFile( NcoaProcessBag bag )
         {
             var ncoaService = new Ncoa();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( bag.NcoaFileUploadReference.Value != null )
                 {

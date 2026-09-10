@@ -248,7 +248,7 @@ namespace Rock.Configuration
         /// </summary>
         /// <param name="app">The current Rock application instannce.</param>
         /// <returns>A new instance of <see cref="RockContext"/>.</returns>
-        internal static RockContext CreateRockContext( this RockApp app )
+        public static RockContext CreateRockContext( this RockApp app )
         {
             return app.GetRequiredService<IRockContextFactory>().CreateRockContext();
         }

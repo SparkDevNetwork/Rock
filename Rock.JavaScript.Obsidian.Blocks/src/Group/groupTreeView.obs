@@ -86,6 +86,7 @@
                           :initiallyExpanded="initiallyExpanded"
                           :selectFirstByDefault="false"
                           :showChildCount="showChildCount"
+                          :disableInitialScroll="isAutoEditRequested"
                           autoExpand
                           @update:modelValue="onSelect"
                           @treeitem-expanded="onExpand"
@@ -121,6 +122,8 @@
     import TreeList from "@Obsidian/Controls/treeList.obs";
     import { Guid } from "@Obsidian/Types";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { useStore } from "@Obsidian/PageState";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { emptyGuid } from "@Obsidian/Utility/guid";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { GroupTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
@@ -147,6 +150,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrantToken = useSecurityGrantToken();
     const reloadBlock = useReloadBlock();
+    const { getPageParameter } = useStore();
 
     const bag: GroupTreeViewBag = box.bag ?? {
         hideInactiveGroups: true,
@@ -211,6 +215,10 @@
     // Must stay true until after mount + nextTick so DropDownList binding cannot
     // overwrite Initial Count Setting by saving a blank preference too early.
     let suppressPreferenceWatch = true;
+
+    // On an auto-edit load the tree still expands to the group, but suppressing the
+    // scroll keeps a deep selection from pushing the edit panel off the top of the page.
+    const isAutoEditRequested = asBooleanOrNull(getPageParameter("autoEdit")) ?? false;
 
     const selectedKeys = ref<string[]>(bag.selectedGroupGuids ?? []);
     const initiallyExpanded = ref<string[]>(bag.expandedGroupGuids ?? []);

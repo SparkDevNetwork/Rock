@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -39,7 +40,7 @@ namespace Rock.Tasks
         {
             while ( message.PersonIds.Any() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personIdSet = message.PersonIds.Take( 100 );
                     message.PersonIds = message.PersonIds.Skip( 100 ).ToList();

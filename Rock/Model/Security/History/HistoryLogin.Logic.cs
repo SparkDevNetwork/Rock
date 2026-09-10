@@ -23,6 +23,7 @@ using System.Web;
 using Newtonsoft.Json;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Net;
 using Rock.Security;
@@ -237,7 +238,7 @@ namespace Rock.Model
                 {
                     await Task.Delay( 1000 );
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         // Attempt to supplement the record with the user login ID.
                         int? personId = null;

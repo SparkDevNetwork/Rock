@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using System;
@@ -47,7 +48,7 @@ namespace Rock.Jobs
         /// <inheritdoc />
         public override void Execute()
         {
-            var lastId = new WorkflowService( new RockContext() )
+            var lastId = new WorkflowService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .AsNoTracking()
                 .Select( i => ( int? ) i.Id )
@@ -74,7 +75,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

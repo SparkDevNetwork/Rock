@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionStatusAutomationsController"/> class.
         /// </summary>
-        public ConnectionStatusAutomationsController() : base( new Rock.Model.ConnectionStatusAutomationService( new Rock.Data.RockContext() ) ) { } 
+        public ConnectionStatusAutomationsController() : base( new Rock.Model.ConnectionStatusAutomationService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -22,6 +22,7 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -69,12 +70,23 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        #region Constants
+
+        /// <summary>
+        /// The content type used when an endpoint does not specify one. This matches the
+        /// default on <see cref="LavaEndpointAdditionalSettings"/> so an existing endpoint
+        /// keeps behaving the way it did before the setting existed.
+        /// </summary>
+        private const string DefaultContentType = "text/html";
+
+        #endregion Constants
+
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<LavaEndpointBag, LavaEndpointDetailOptionsBag>();
 
@@ -184,6 +196,8 @@ namespace Rock.Blocks.Cms
                 return null;
             }
 
+            var additionalSettings = entity.GetAdditionalSettings<LavaEndpointAdditionalSettings>();
+
             var bag = new LavaEndpointBag
             {
                 IdKey = entity.IdKey,
@@ -198,7 +212,8 @@ namespace Rock.Blocks.Cms
                 RateLimitPeriodDurationSeconds = entity.RateLimitPeriodDurationSeconds,
                 SecurityMode = entity.SecurityMode,
                 CacheControlHeaderSettings = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>()?.ToCacheabilityBag(),
-                EnableCrossSiteForgeryProtection = entity.GetAdditionalSettings<LavaEndpointAdditionalSettings>()?.EnableCrossSiteForgeryProtection ?? true
+                EnableCrossSiteForgeryProtection = additionalSettings?.EnableCrossSiteForgeryProtection ?? true,
+                ContentType = additionalSettings?.ContentType ?? DefaultContentType
             };
 
             return bag;
@@ -306,8 +321,20 @@ namespace Rock.Blocks.Cms
                     entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, true, IsAttributeIncluded );
                 } );
 
-            // Set additional settings
-            entity.SetAdditionalSettings( new LavaEndpointAdditionalSettings { EnableCrossSiteForgeryProtection = box.Entity.EnableCrossSiteForgeryProtection } );
+            /*
+                8/3/2026 - CLAUDE
+
+                Every setting in LavaEndpointAdditionalSettings has to be assigned here.
+                This constructs a fresh settings object rather than mutating the stored
+                one, so anything left out is silently discarded on save.
+
+                Reason: Prevent additional settings from being dropped on save.
+            */
+            entity.SetAdditionalSettings( new LavaEndpointAdditionalSettings
+            {
+                EnableCrossSiteForgeryProtection = box.Entity.EnableCrossSiteForgeryProtection,
+                ContentType = box.Entity.ContentType.IsNotNullOrWhiteSpace() ? box.Entity.ContentType : DefaultContentType
+            } );
 
             return true;
         }
@@ -343,7 +370,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -425,7 +452,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var key = pageReference.GetPageParameter( PageParameterKey.LavaApplicationId );
                 var pageParameters = new Dictionary<string, string>();
@@ -472,7 +499,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -518,7 +545,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<LavaEndpointBag, LavaEndpointDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new LavaEndpointService( rockContext );
 
@@ -576,7 +603,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new LavaEndpointService( rockContext );
 
@@ -610,7 +637,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<LavaEndpointBag, LavaEndpointDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

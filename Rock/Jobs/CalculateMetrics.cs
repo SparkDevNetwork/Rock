@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -80,7 +81,7 @@ namespace Rock.Jobs
                 metricSourceValueTypeLavaGuid
             };
 
-            var metricsQry = new MetricService( new RockContext() ).Queryable().AsNoTracking().Where(
+            var metricsQry = new MetricService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking().Where(
                 a => a.ScheduleId.HasValue
                 && a.SourceValueTypeId.HasValue
                 && calculatedSourceTypes.Contains( a.SourceValueType.Guid ) );
@@ -102,7 +103,7 @@ namespace Rock.Jobs
             var metricExceptions = new List<Exception>();
             int metricsCalculated = 0;
             int metricValuesCalculated = 0;
-            MetricService metricService = new MetricService( new RockContext() );
+            MetricService metricService = new MetricService( RockApp.Current.CreateRockContext() );
             foreach ( var metricId in metricIdList )
             {
                 var metricResult = metricService.CalculateMetric( metricId, commandTimeout, false );

@@ -27,7 +27,10 @@
  */
 export const ModelServiceRole = {
     /** Fast, low-cost, general-purpose model for chat and standard tasks. */
-    Default: 0
+    Medium: 0,
+
+    /** High-performance model for high reasoning and code generation tasks. */
+    High: 1
 } as const;
 
 /**
@@ -35,7 +38,9 @@ export const ModelServiceRole = {
  * to determine which AI model to use for different types of tasks.
  */
 export const ModelServiceRoleDescription: Record<number, string> = {
-    0: "Default"
+    0: "Medium",
+
+    1: "High"
 };
 
 /**

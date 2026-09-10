@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication;
 using Rock.Model;
@@ -67,7 +68,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var filterTriggerTypes = publicConfigurationValues.ContainsKey( FILTER_TRIGGER_TYPES )
                     ? publicConfigurationValues[FILTER_TRIGGER_TYPES].SplitDelimitedValues().AsIntegerList()
@@ -127,7 +128,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var communicationFlowInfo = new CommunicationFlowService( rockContext )
                         .Queryable()
@@ -183,7 +184,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new CommunicationFlowService( rockContext ).Get( guid.Value );
             }
 
@@ -204,7 +205,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationFlowId = new CommunicationFlowService( rockContext ).GetId( guid.Value );
 
@@ -226,6 +227,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<CommunicationFlow>().Value, nameof( CommunicationFlow.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the CommunicationFlow table. Not its id or idKey.",
+                Instructions = "To find the correct value, read the communication flows and take its guid."
             };
         }
 
@@ -330,7 +346,7 @@ namespace Rock.Field.Types
                 noTriggerTypeFilter = !filterTriggerTypes.Any();
             }
 
-            var communicationFlows = new CommunicationFlowService( new RockContext() )
+            var communicationFlows = new CommunicationFlowService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( v => v.IsActive && ( noTriggerTypeFilter || filterTriggerTypes.Contains( v.TriggerType ) ) )
                 .Select( a => new
@@ -397,7 +413,7 @@ namespace Rock.Field.Types
                     {
                         var valueGuid = value.AsGuid();
 
-                        var communicationFlow = new CommunicationFlowService( new RockContext() )
+                        var communicationFlow = new CommunicationFlowService( RockApp.Current.CreateRockContext() )
                             .Queryable()
                             .Where( v => v.Guid == valueGuid )
                             .Select( f => new
@@ -443,7 +459,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var itemId = new CommunicationFlowService( new RockContext() ).GetId( guid );
+            var itemId = new CommunicationFlowService( RockApp.Current.CreateRockContext() ).GetId( guid );
             return itemId;
         }
 
@@ -455,7 +471,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var itemGuid = new CommunicationFlowService( new RockContext() ).GetGuid( id ?? 0 );
+            var itemGuid = new CommunicationFlowService( RockApp.Current.CreateRockContext() ).GetGuid( id ?? 0 );
             var guidValue = itemGuid.HasValue ? itemGuid.Value.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

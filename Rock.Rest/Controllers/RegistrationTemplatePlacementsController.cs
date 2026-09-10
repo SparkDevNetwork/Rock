@@ -25,6 +25,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -145,7 +146,7 @@ namespace Rock.Rest.Controllers
         public virtual HttpResponseMessage DetachPlacementGroup( int groupId, int registrationTemplatePlacementId, int? registrationInstanceId = null )
         {
             // since we are doing a delete, create a new RockContext instead of this.Service.Context so that ProxyCreation, etc works
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var group = new GroupService( rockContext ).Get( groupId );
 
             if ( group == null )

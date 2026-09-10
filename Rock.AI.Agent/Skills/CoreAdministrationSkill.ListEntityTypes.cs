@@ -59,8 +59,8 @@ internal sealed partial class CoreAdministrationSkill
         if ( partialName.IsNotNullOrWhiteSpace() )
         {
             entityTypes = entityTypes.Where( et =>
-                ( et.Name != null && et.Name.Contains( partialName ) )
-                || ( et.FriendlyName != null && et.FriendlyName.Contains( partialName ) ) );
+                et.Name.ContainsIgnoreCase( partialName )
+                || et.FriendlyName.ContainsIgnoreCase( partialName ) );
         }
 
         var orderedEntityTypes = entityTypes

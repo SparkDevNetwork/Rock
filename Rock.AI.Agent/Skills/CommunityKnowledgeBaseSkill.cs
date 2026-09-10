@@ -64,8 +64,9 @@ namespace Rock.AI.Agent.Skills;
 [AgentSkillName( "Community Knowledge Base" )]
 [AgentPurpose( "Answers questions about how Rock RMS works, from documentation, community content, curated guides, and the Rock source." )]
 [AgentUsage( "Always call GetKnowledgeBaseOverview before the first search in a conversation. It reports what the knowledge base actually holds, which store answers which kind of question, and the exact values every filter accepts. Searching without it means guessing, and a guessed filter value returns nothing rather than an error." )]
-[AgentUsage( "Prefer SearchKnowledge for almost every question. Reach for the code tools only when the question is about implementation detail, or when SearchKnowledge has already failed to answer it." )]
+[AgentUsage( "Prefer SearchKnowledge for general documentation and community guidance. Do not use it as authoritative evidence for exact entity properties. For entity fields, nullability, enums, and relationships, open the version-matching data-model topic advertised by GetKnowledgeBaseOverview, locate the target entity with GetTopic, and read its article with GetArticle." )]
 [AgentUsage( "When you do not know enough about a subject to know what to search for, open a curated topic instead of guessing at search terms. The overview lists the topics with a hint for each; GetTopic opens one and GetArticle reads down through it, revealing a little at a time so you can choose where to go next. Curated topics are never returned by search, so this is the only route to them." )]
+[AgentUsage( "When asked to author Rock UI or Lava endpoints, open the coding guide topic advertised by GetKnowledgeBaseOverview: pass its topic key unchanged to GetTopic, open the root article it lists, and follow that article's routing for the requested outcome. Retrieve only what the route assigns. Never construct or guess a topic or article key." )]
 [AgentGuardrail( "Never construct, edit, or guess a topic key or an article key. Take them only from the overview's topic list, a topic's table of contents, or a parent article's child list." )]
 [AgentSkillGuid( "DFCBFDE8-6BF2-4DDF-81FE-FDD436E5FD90" )]
 [EntityTypeGuid( "959F0B92-A3BB-4AAA-9143-CF7D77895392" )]
@@ -102,9 +103,29 @@ internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
     private const string UnknownOrganizationId = "00000000-0000-0000-0000-000000000000";
 
     /// <summary>
-    /// The page size for the paged search tools. The service caps a page at 250.
+    /// The page size for the paged search tools, and the most items any tool returns.
     /// </summary>
-    private const int SearchPageSize = 50;
+    /// <remarks>
+    /// <para>
+    /// 8/19/26 - CLAUDE
+    ///
+    /// Lowered from 50 when these tools began returning the service's payload as it
+    /// comes rather than a narrowed projection of it. A knowledge hit carries its
+    /// chunk text, which the service caps at 1024 tokens, so the cost of a page is
+    /// roughly the page size multiplied by that cap. Fifty hits measured at about
+    /// 46,000 tokens, which is not a reasonable size for one tool result; twenty five
+    /// halves it, and the article and topic tools exist to fetch the whole of whatever
+    /// looks right.
+    ///
+    /// Reason: The page size is now the only thing bounding the response, so it has to
+    /// carry that weight on its own.
+    /// </para>
+    /// <para>
+    /// The service caps a page at 250, so this is Rock's limit rather than the
+    /// service's.
+    /// </para>
+    /// </remarks>
+    private const int SearchPageSize = 25;
 
     /// <summary>
     /// How long the configuration screen waits for the category list.
@@ -281,6 +302,57 @@ internal sealed partial class CommunityKnowledgeBaseSkill : AgentSkillComponent
     #endregion
 
     #region Shared Helpers
+
+    /// <summary>
+    /// Builds the metadata for a paged tool: everything the service reported about
+    /// the response, plus the paging facts it does not report.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 8/19/26 - CLAUDE
+    ///
+    /// Both halves are needed and neither replaces the other. The service's own meta
+    /// is passed through whole so a field it adds later arrives without a code change,
+    /// which is the same reason the payload is no longer mapped. But it describes the
+    /// request in the service's terms, offset and limit, and says nothing about which
+    /// page that is or whether another exists.
+    ///
+    /// Reason: The service knows what it returned; only this code knows what was
+    /// asked for.
+    /// </para>
+    /// <para>
+    /// <c>hasMoreItems</c> is derived from a full page rather than from
+    /// <c>estimated_total</c>, because that total is approximate on large result sets
+    /// by the service's own description and would give a confident wrong answer near
+    /// the end of a result set. A full page is a weaker signal but an honest one.
+    /// </para>
+    /// <para>
+    /// <c>estimated_total</c> is also restated as <c>approximateTotalMatches</c>. The
+    /// raw name reads like a count and will be quoted as one, and the caveat belongs
+    /// where the number is rather than in documentation nobody re-reads.
+    /// </para>
+    /// </remarks>
+    /// <param name="response">The response being described.</param>
+    /// <param name="pageNumber">The page that was requested.</param>
+    /// <param name="returnedItemCount">How many items are being returned.</param>
+    /// <returns>The metadata for the tool result.</returns>
+    private static Dictionary<string, object> BuildPagedMetadata( CommunityKnowledgeBaseResponse response, int pageNumber, int returnedItemCount )
+    {
+        var metadata = response.Meta.ToPlainMetadata();
+
+        metadata["pageNumber"] = pageNumber;
+        metadata["returnedItemCount"] = returnedItemCount;
+        metadata["hasMoreItems"] = returnedItemCount == SearchPageSize;
+
+        var estimatedTotal = response.Meta.GetNullableInt( "estimated_total" );
+
+        if ( estimatedTotal.HasValue )
+        {
+            metadata["approximateTotalMatches"] = estimatedTotal.Value;
+        }
+
+        return metadata;
+    }
 
     /// <summary>
     /// Gets the organization identifier for the request path.

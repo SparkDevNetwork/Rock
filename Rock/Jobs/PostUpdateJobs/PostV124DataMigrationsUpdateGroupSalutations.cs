@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -39,7 +40,7 @@ namespace Rock.Jobs
         {
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var personIdListWithFamilyId = new PersonService( new RockContext() ).Queryable( true, true ).Where( a => a.PrimaryFamilyId.HasValue ).Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
+            var personIdListWithFamilyId = new PersonService( RockApp.Current.CreateRockContext() ).Queryable( true, true ).Where( a => a.PrimaryFamilyId.HasValue ).Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
             var recordsUpdated = 0;
 
             // we only need one person from each family (and it doesn't matter who)
@@ -49,7 +50,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         // Ensure the person's primary family has a group name set set one if it doesn't.
                         CheckFamilyGroupName( personId, rockContext );

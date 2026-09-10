@@ -18,6 +18,7 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -41,7 +42,7 @@ namespace Rock.Tests.Integration.Core.Model
                 Guid = personGuid
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( person );
@@ -83,7 +84,7 @@ namespace Rock.Tests.Integration.Core.Model
                 AccountProtectionProfile = ( AccountProtectionProfile ) expectedAccountProtectionProfile
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 personService.Add( person );

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Rest.Controls;
@@ -235,6 +236,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Either a page guid on its own, or a page guid and a route guid separated by a comma, in the order Page.Guid,PageRoute.Guid.",
+                Instructions = "To find the correct value, look up the page and take its guid, adding the guid of a specific route after a comma only when the route matters."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -281,7 +298,7 @@ namespace Rock.Field.Types
                 //// Value is in format "Page.Guid,PageRoute.Guid"
                 //// If only a Page is specified, this is just a reference to a page without a special route
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
 
                     if ( ppPage.IsPageRoute )
@@ -329,7 +346,7 @@ namespace Rock.Field.Types
                 //// If only the Page.Guid is specified this is just a reference to a page without a special route
                 //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( valuePair.Length == 2 )
                 {

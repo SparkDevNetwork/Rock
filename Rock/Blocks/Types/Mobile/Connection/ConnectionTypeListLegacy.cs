@@ -23,6 +23,7 @@ using System.Reflection;
 
 using Rock.Attribute;
 using Rock.ClientService.Connection.ConnectionType;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Model.Connection.ConnectionType.Options;
@@ -142,7 +143,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>The <see cref="GetContentViewModel"/> that contains the information about the response.</returns>
         private GetContentViewModel GetConnectionTypes( GetConnectionTypesFilterViewModel filterViewModel )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionTypeService = new ConnectionTypeService( rockContext );
                 var clientTypeService = new ConnectionTypeClientService( rockContext, RequestContext.CurrentPerson );

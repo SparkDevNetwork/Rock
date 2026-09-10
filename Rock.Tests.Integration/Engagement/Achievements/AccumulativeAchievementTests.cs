@@ -21,6 +21,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Achievement;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
@@ -186,7 +187,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
-            _rockContext = new RockContext();
+            _rockContext = RockApp.Current.CreateRockContext();
             _streakTypeService = new StreakTypeService( _rockContext );
             _achievementTypeService = new AchievementTypeService( _rockContext );
 

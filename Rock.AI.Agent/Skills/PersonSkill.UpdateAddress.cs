@@ -63,7 +63,7 @@ internal sealed partial class PersonSkill
         {
             var locationTypes = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext )
                 .LocationTypeValues
-                .Select( dv => new KeyNameResult( dv.Id, dv.Value ) )
+                .Select( dv => KeyNameResult.FromCache( dv ) )
                 .ToList();
 
             helper.AddError( $"Lookup requested for {nameof( locationTypeValueIdKey )}. Metadata contains valid values." );

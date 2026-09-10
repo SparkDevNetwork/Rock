@@ -22,6 +22,7 @@ using System.Web.UI;
 using OpenXmlPowerTools;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -181,7 +182,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var referencedEntities = guids.Select( a => new ScheduleService( rockContext ).Get( a ) )
                 .Select( s => s.Id )
@@ -217,6 +218,21 @@ namespace Rock.Field.Types
         public ICollection<string> SplitMultipleValues( string privateValue )
         {
             return privateValue.Split( ',' );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the Schedule table, separated by commas. Only named schedules can be chosen here. Not their ids or idKeys.",
+                Instructions = "To find the correct values, read the named schedules and take the guid of each one you want."
+            };
         }
 
         #endregion

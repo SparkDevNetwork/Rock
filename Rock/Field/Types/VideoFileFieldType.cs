@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -56,7 +57,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFileName = binaryFileService.GetSelect( binaryFileGuid.Value, bf => bf.FileName );
@@ -74,7 +75,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return new BinaryFileService( new Data.RockContext() )
+            return new BinaryFileService( RockApp.Current.CreateRockContext() )
                 .Get( privateValue.AsGuid() )
                 .ToListItemBag()
                 .ToCamelCaseJson( false, true );
@@ -99,7 +100,7 @@ namespace Rock.Field.Types
             }
 
             // Configuration to help display the HTML value on the remote device.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFileInfo = binaryFileService.GetSelect( binaryFileGuid.Value, bf => new
@@ -140,7 +141,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFileInfo = binaryFileService
@@ -193,7 +194,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFileName = binaryFileService.GetSelect( binaryFileGuid.Value, bf => bf.FileName );
@@ -221,7 +222,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileId = new BinaryFileService( rockContext ).GetId( guid.Value );
 
@@ -246,6 +247,28 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<BinaryFile>().Value, nameof( BinaryFile.FileName ) )
             };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Adds what this field type expects to the shared description of a
+        /// binary file reference. The guid alone does not say which files make sense
+        /// here, and the wrong kind of file saves without complaint.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var hints = base.GetFieldHints( privateConfigurationValues );
+
+            if ( hints != null )
+            {
+                hints.ValueFormat += " Nothing validates the kind of file on write, but the value is rendered as a video player, so a file that is not video saves cleanly and then fails to play.";
+            }
+
+            return hints;
         }
 
         #endregion

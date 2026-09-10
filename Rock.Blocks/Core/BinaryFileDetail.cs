@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -397,7 +398,7 @@ namespace Rock.Blocks.Core
             if ( Guid.TryParse( GetAttributeValue( AttributeKey.Workflow ), out Guid workflowTypeGuid ) )
             {
                 // create a rockContext for the workflow so that it can save it's changes, without 
-                var workflowRockContext = new RockContext();
+                var workflowRockContext = RockApp.Current.CreateRockContext();
                 var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
@@ -621,7 +622,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult FileUploaded( BinaryFileBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 BinaryFile binaryFile = null;
@@ -672,7 +673,7 @@ namespace Rock.Blocks.Core
                 if ( binaryFileId.HasValue )
                 {
                     var orphanedBinaryFileIdList = bag.OrphanedBinaryFileIdList;
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var binaryFileService = new BinaryFileService( rockContext );
                         var binaryFile = binaryFileService.Get( binaryFileId.Value );
@@ -705,7 +706,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult RemoveOrphanedFiles( List<Guid> orphanedBinaryFileIdList )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 DeleteOrphanedFiles( orphanedBinaryFileIdList, rockContext );
                 rockContext.SaveChanges();

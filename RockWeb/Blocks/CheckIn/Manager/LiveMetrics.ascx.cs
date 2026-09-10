@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -369,7 +370,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 {
                     int? threshold = nb.Text.AsIntegerOrNull();
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var location = new LocationService( rockContext ).Get( id.Value );
                         if ( location != null && location.SoftRoomThreshold != threshold )
@@ -511,7 +512,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 int? id = tgl.Attributes["data-key"].AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var location = new LocationService( rockContext ).Get( id.Value );
                         if ( location != null && location.IsActive != tgl.Checked )
@@ -539,7 +540,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             int? id = lbUpdateThreshold.Attributes["data-key"].AsIntegerOrNull();
             if ( id.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     int? softThreshold = nbThreshold.Text.AsIntegerOrNull();
                     var location = new LocationService( rockContext ).Get( id.Value );
@@ -632,7 +633,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private NavigationData GetNavigationData( CampusCache campus, int? scheduleId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var validLocationids = new List<int>();
                 if ( campus.LocationId.HasValue )
@@ -847,7 +848,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     var checkinAreaGroupTypeId = GroupTypeCache.GetId( groupTypeTemplateGuid.Value );
                     if ( checkinAreaGroupTypeId != null )
                     {
-                        checkinAreaGroupTypeIds = new GroupTypeService( new RockContext() ).GetCheckinAreaDescendants( checkinAreaGroupTypeId.Value ).Select( a => a.Id ).ToList();
+                        checkinAreaGroupTypeIds = new GroupTypeService( RockApp.Current.CreateRockContext() ).GetCheckinAreaDescendants( checkinAreaGroupTypeId.Value ).Select( a => a.Id ).ToList();
                     }
                 }
 
@@ -1020,7 +1021,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 int? groupId = PageParameter( PageParameterKey.Group ).AsIntegerOrNull();
                 if ( groupId.HasValue )
                 {
-                    var groupTypeId = new GroupService( new RockContext() ).GetSelect( groupId.Value, s => s.GroupTypeId );
+                    var groupTypeId = new GroupService( RockApp.Current.CreateRockContext() ).GetSelect( groupId.Value, s => s.GroupTypeId );
                     var groupType = GroupTypeCache.Get( groupTypeId );
                     if ( groupType != null )
                     {
@@ -1438,7 +1439,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     nbThreshold.MaximumValue = locationItem.FirmThreshold.HasValue ? locationItem.FirmThreshold.Value.ToString() : string.Empty;
                     lbUpdateThreshold.Attributes["data-key"] = locationItem.Id.ToString();
 
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
 
                     List<int> checkinAreaGroupTypeIds = new List<int>();
 
@@ -1449,7 +1450,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         var checkinAreaGroupTypeId = GroupTypeCache.GetId( groupTypeTemplateGuid.Value );
                         if ( checkinAreaGroupTypeId != null )
                         {
-                            checkinAreaGroupTypeIds = new GroupTypeService( new RockContext() ).GetCheckinAreaDescendants( checkinAreaGroupTypeId.Value ).Select( a => a.Id ).ToList();
+                            checkinAreaGroupTypeIds = new GroupTypeService( RockApp.Current.CreateRockContext() ).GetCheckinAreaDescendants( checkinAreaGroupTypeId.Value ).Select( a => a.Id ).ToList();
                         }
                     }
 

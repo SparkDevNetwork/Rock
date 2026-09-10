@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -720,7 +721,7 @@ achieve our mission.  We are so grateful for your commitment.
             // Default target to the current person
             Person targetPerson = CurrentPerson;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransactionGuid = GetScheduledTransactionGuidFromUrl();
 
@@ -793,7 +794,7 @@ achieve our mission.  We are so grateful for your commitment.
             AvailableAccounts = new List<AccountItem>();
 
             // Enumerate through all active accounts that are public
-            foreach ( var account in new FinancialAccountService( new RockContext() ).Queryable()
+            foreach ( var account in new FinancialAccountService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( f =>
                     f.IsActive &&
                     f.IsPublic.HasValue &&
@@ -931,7 +932,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( canSeeSavedAccounts && Gateway.SupportsSavedAccount( true ) && Gateway.SupportsSavedAccount( currencyType ) )
             {
                 // Get the saved accounts for the target person
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new FinancialPersonSavedAccountService( rockContext );
 
                 savedAccountViewModels = service
@@ -1021,7 +1022,7 @@ achieve our mission.  We are so grateful for your commitment.
             txtCardName.Visible = !Gateway.SplitNameOnCard;
             txtCardName.Text = authorizedPerson.FullName;
 
-            var groupLocation = new PersonService( new RockContext() ).GetFirstLocation(
+            var groupLocation = new PersonService( RockApp.Current.CreateRockContext() ).GetFirstLocation(
                 authorizedPerson.Id, DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
             if ( groupLocation != null )
             {
@@ -1046,7 +1047,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// <returns></returns>
         private bool ProcessPaymentInfo( out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             errorMessage = string.Empty;
 
             var errorMessages = new List<string>();
@@ -1217,7 +1218,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// <returns></returns>
         private bool ProcessConfirmation( out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             errorMessage = string.Empty;
 
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
@@ -1490,7 +1491,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// <returns></returns>
         private ReferencePaymentInfo GetReferenceInfo( int savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
+            var savedAccount = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
                 return savedAccount.GetReferencePayment();
@@ -1771,7 +1772,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( workflowTypeGuids.Any() )
             {
                 // Make sure the workflow types are active and then trigger an instance of each
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new WorkflowTypeService( rockContext );
                 var workflowTypes = service.Queryable()
                     .AsNoTracking()

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Enums.Communication;
@@ -350,7 +351,7 @@ namespace Rock.Blocks.Communication
             if ( GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
             {
                 // Enable uploading communication attachments without the normal permission restrictions
-                BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
+                BinaryFileType binaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
                 securityGrant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.EDIT ) );
             }
 
@@ -403,7 +404,7 @@ namespace Rock.Blocks.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 
@@ -724,7 +725,7 @@ namespace Rock.Blocks.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
                     var communicationResponseService = new CommunicationResponseService( rockContext );
@@ -923,7 +924,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Request details are not valid." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var noteService = new NoteService( rockContext );
                 Note note = new Note()
@@ -1153,7 +1154,7 @@ namespace Rock.Blocks.Communication
             var snippetTypeGuid = Rock.SystemGuid.SnippetType.SMS.AsGuid();
             var currentPersonId = RequestContext.CurrentPerson?.Id;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var snippet = new SnippetService( rockContext )
                     .GetAuthorizedSnippets( RequestContext.CurrentPerson,

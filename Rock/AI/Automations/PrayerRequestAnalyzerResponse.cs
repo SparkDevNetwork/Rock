@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.AI.Automations
 {
     /// <summary>
     /// The expected response format for an AI Completion response to a request for analysis of text.
     /// </summary>
+    [Obsolete( "This class has been deprecated and moved to an internal feature." )]
+    [RockObsolete( "21.0" )]
     public class PrayerRequestAnalyzerResponse
     {
         /// <summary>

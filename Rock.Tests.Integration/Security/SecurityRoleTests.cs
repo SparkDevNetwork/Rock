@@ -16,6 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -36,7 +37,7 @@ namespace Rock.Tests.Integration.Security
         {
             const string securityRoleGuid = "9081988D-CFC6-4A6A-9E02-2F557E5FF72F";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add a new Security Group.
             var securityManager = SecurityDataManager.Instance;

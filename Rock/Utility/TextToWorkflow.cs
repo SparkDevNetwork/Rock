@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -113,7 +114,7 @@ namespace Rock.Utility
 
                 // Try to find a person associated with phone number received
                 Person fromPerson;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personService = new PersonService( rockContext );
                     fromPerson = personService.GetPersonFromMobilePhoneNumber( fromPhone, false );
@@ -157,7 +158,7 @@ namespace Rock.Utility
         /// <param name="response">The response to be sent back to the user.</param>
         private static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<string> matchGroups, List<BinaryFile> attachments, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Activate a new workflow
                 var workflow = Model.Workflow.Activate( workflowType, "Request from " + ( fromPhone ?? "??" ), rockContext );

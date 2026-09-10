@@ -626,10 +626,16 @@ namespace Rock.SystemGuid
         public const string CONNECTIONS_HUB = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
 
         /// <summary>
-        /// Gets the My Connections page guid.
+        /// Gets the My Connection Requests page guid.
         /// ParentPage: Connections
         /// </summary>
         public const string MY_CONNECTIONS = "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B";
+
+        /// <summary>
+        /// Gets the My Connection Opportunities page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string MY_CONNECTION_OPPORTUNITIES = "29C23E3B-13E3-4FF6-883C-0EFA1C7C40B9";
 
         /// <summary>
         /// Gets the Connections List page guid.
@@ -1435,6 +1441,8 @@ namespace Rock.SystemGuid
         /// Gets the New Communication page guid
         /// ParentPage: Communications
         /// </summary>
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use NEW_COMMUNICATION_OBSIDIAN instead." )]
         public const string NEW_COMMUNICATION = "2A22D08D-73A8-4AAF-AC7E-220E8B2E7857";
 
         /// <summary>
@@ -1453,6 +1461,13 @@ namespace Rock.SystemGuid
         /// ParentPage: Office Information
         /// </summary>
         public const string ORG_CHART = "C3909F1A-6908-4035-BB93-EC4FBFDCC536";
+
+        /// <summary>
+        /// Gets the Orphaned Pages page guid. This is a hidden system page that acts as a
+        /// holding place for child pages whose parent page has been deleted by a migration.
+        /// ParentPage: CMS Configuration
+        /// </summary>
+        public const string ORPHANED_PAGES = "51457268-8F59-4E2A-8E22-2B57F2E3607B";
 
         /// <summary>
         /// Gets the Package Detail page guid
@@ -1712,7 +1727,7 @@ namespace Rock.SystemGuid
         public const string REST_KEYS = "881AB1C2-4E00-4A73-80CC-9886B3717A20";
 
         /// <summary>
-        /// Gets the Rock Settings page guid
+        /// Gets the Rock Settings (Administration) page guid
         /// ParentPage: Admin Tools
         /// </summary>
         public const string ROCK_SETTINGS = "550A898C-EDEA-48B5-9C58-B20EC13AF13B";

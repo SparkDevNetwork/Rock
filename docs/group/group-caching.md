@@ -52,7 +52,7 @@ For authorization, **the cache must agree with the model**. If a cache class fai
 
 **`GroupLocationCache` is niche.** Most callers query `GroupLocation` directly via EF rather than through this cache. The cache exists primarily for check-in and scheduling paths that need `AllForLocationId(locationId)`. The alternate index backing that method can stale if `GroupLocation.LocationId` is mutated outside the save hook; call `ClearByLocationId` after non-standard mutations.
 
-**`new RockContext()` is forbidden in cache classes.** Use `RockApp.Current.CreateRockContext()`. Commits `b7f1eaa9e0` and `18c8ecbd47` switched all cache classes to this pattern for testability. New cache classes should follow it.
+**`new RockContext()` is forbidden in cache classes.** Use `RockApp.Current.CreateRockContext()`. Commits `b7f1eaa9e0` and `18c8ecbd47` switched all cache classes to this pattern for testability. New cache classes should follow it, and the factory is now the preferred construction in all code, not just caches (see [rock-context-lifecycle.md](../core/rock-context-lifecycle.md)).
 
 **Web farm deployments need a cross-node cache provider.** Process-wide singletons are per-process. In a web farm, a save on one node invalidates only that node's cache unless the configured cache provider (typically Redis) propagates the invalidation. Verify your cache configuration before assuming consistency across nodes.
 

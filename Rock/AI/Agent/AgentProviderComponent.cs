@@ -72,8 +72,24 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Gets the prompt execution settings for a chat completion.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Takes the request context rather than reading an ambient one, because by
+        /// the time this is called the completion is running on a different async
+        /// execution context and <c>RockRequestContextAccessor.Current</c> is an
+        /// AsyncLocal that no longer carries the request. Anything derived from the
+        /// current person has to come from the context the agent captured when the
+        /// request started.
+        /// </para>
+        /// <para>
+        /// Passed in rather than held on the component, because providers are
+        /// singletons resolved from a container and a field here would be shared
+        /// across concurrent requests.
+        /// </para>
+        /// </remarks>
+        /// <param name="agentRequestContext">The context that identifies the current request, including the person it is running as.</param>
         /// <returns>The execution settings for a general purpose chat request.</returns>
-        public abstract PromptExecutionSettings GetChatCompletionPromptExecutionSettings();
+        public abstract PromptExecutionSettings GetChatCompletionPromptExecutionSettings( AgentRequestContext agentRequestContext );
 
         /// <summary>
         /// Gets the dependency injection service key to use for the specified

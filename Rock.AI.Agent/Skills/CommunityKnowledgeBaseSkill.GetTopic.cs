@@ -44,7 +44,7 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     [AgentPurpose( "Opens a topic so its articles can be read in order." )]
     [AgentUsage( "Use when a question is broad or the vocabulary is unfamiliar and searching would mean guessing at terms." )]
     [AgentToolPrerequisite( "Take topicKey from the Topics list returned by GetKnowledgeBaseOverview. Never construct or edit a key." )]
-    [AgentToolReturnDescription( "The topic's guidance text and its top-level articles, each with a retrieval key and title." )]
+    [AgentToolReturnDescription( "The topic exactly as the knowledge service returns it, carrying its instructions text and its articles, each with a retrieval key and title. Pass a retrieval key to GetArticle unchanged." )]
     [AgentToolGuid( "F0179643-6979-416B-8D30-E45CBD96E49E" )]
     [AgentToolPreamble( "Reading Topic" )]
     public async Task<AgentToolResult> GetTopic( string topicKey )
@@ -70,9 +70,11 @@ internal sealed partial class CommunityKnowledgeBaseSkill
             return DescribeFailure( response );
         }
 
+        // Read only to tell an empty topic from a populated one. The payload itself
+        // is returned unmapped below.
         var articles = response.IsSuccess
-            ? ReadArticleSummaries( response.Data.GetArray( "articles" ) )
-            : new List<ArticleSummaryResult>();
+            ? response.Data.GetArray( "articles" )
+            : null;
 
         // An empty article list is a miss, not a success. The route returns a 404
         // only when a topic has neither guidance nor articles, so a topic that exists
@@ -80,50 +82,15 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         // in it. Which of the two happens depends on whether an operator wrote
         // guidance for that topic, which is a coin flip deciding whether a miss looks
         // like one. Both paths land here.
-        if ( !response.IsSuccess || !articles.Any() )
+        if ( !response.IsSuccess || articles == null || !articles.Any() )
         {
             return NoData()
                 .WithInstructions( $"No articles are available for topic '{topicKey}' on Rock {GetRockVersion()}. "
                     + $"Call {nameof( GetKnowledgeBaseOverview )} and take a key from its Topics list. Never edit a key." );
         }
 
-        var result = new TopicTableOfContentsResult
-        {
-            TopicKey = response.Data.GetString( "topic" ) ?? topicKey,
-            Guidance = response.Data.GetString( "instructions" ),
-            Articles = articles
-        };
-
-        return Success( result );
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    /// <summary>
-    /// Reads a list of article references from a payload.
-    /// </summary>
-    /// <remarks>
-    /// Shared with GetArticle, which returns the same shape for its children.
-    /// </remarks>
-    /// <param name="articles">The array of article references.</param>
-    /// <returns>The article references, empty when the array is absent.</returns>
-    private static List<ArticleSummaryResult> ReadArticleSummaries( JArray articles )
-    {
-        if ( articles == null )
-        {
-            return new List<ArticleSummaryResult>();
-        }
-
-        return articles
-            .Select( a => new ArticleSummaryResult
-            {
-                ArticleKey = a.GetString( "retrieval_key" ) ?? a.GetString( "key" ),
-                Title = a.GetString( "title" ),
-                Summary = a.GetString( "summary" )
-            } )
-            .ToList();
+        return Success( response.Data.ToPlainObject() )
+            .WithMetadata( response.Meta.ToPlainMetadata() );
     }
 
     #endregion

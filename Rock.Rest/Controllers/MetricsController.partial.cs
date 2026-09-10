@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -43,7 +44,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "B67ED75B-94AB-49B7-9E36-84B845FB20D3" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
-            RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
+            RockContext rockContext = this.Service.Context as RockContext ?? RockApp.Current.CreateRockContext();
             Block block = new BlockService( rockContext ).Get( blockId );
             if ( block != null )
             {

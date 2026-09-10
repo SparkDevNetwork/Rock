@@ -24,6 +24,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
@@ -90,7 +91,7 @@ namespace Rock.Jobs
         {
             Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var transactionService = new FinancialTransactionService( rockContext );
             var futureTransactions = transactionService.GetFutureTransactions()
                 .Where( ft => ft.FutureProcessingDateTime <= RockDateTime.Now
@@ -193,7 +194,7 @@ namespace Rock.Jobs
                 return; // Not configured to send SMS.
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var transactionService = new FinancialTransactionService( rockContext );
                 var transaction = transactionService.Get( transactionId );

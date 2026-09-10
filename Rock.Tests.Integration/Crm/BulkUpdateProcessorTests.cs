@@ -23,6 +23,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Crm.BulkUpdate;
 using Rock.Data;
 using Rock.Model;
@@ -96,7 +97,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void PersonFields_Gender_IsUpdated()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalGender = person.Gender;
             var targetGender = originalGender == Gender.Male ? Gender.Female : Gender.Male;
@@ -119,7 +120,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void PersonFields_Gender_BlankSelectionClearsToUnknown()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.BillMarble.AsGuid() );
             var originalGender = person.Gender;
 
@@ -143,7 +144,7 @@ namespace Rock.Tests.Integration.Crm
         {
             const string targetEmailNote = "Toggle-isolation test note.";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalGender = person.Gender;
             var originalEmailNote = person.EmailNote;
@@ -180,7 +181,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var titleValue = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).DefinedValues.First();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalTitleValueId = person.TitleValueId;
 
@@ -204,7 +205,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var suffixValue = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).DefinedValues.First();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalSuffixValueId = person.SuffixValueId;
 
@@ -228,7 +229,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var marriedId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.BenJones.AsGuid() );
             var originalMaritalStatusId = person.MaritalStatusValueId;
 
@@ -252,7 +253,7 @@ namespace Rock.Tests.Integration.Crm
         {
             const int targetGraduationYear = 2099;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.BenJones.AsGuid() );
             var originalGraduationYear = person.GraduationYear;
 
@@ -274,7 +275,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void PersonFields_CommunicationPreference_IsUpdated()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalPreference = person.CommunicationPreference;
             var targetPreference = originalPreference == CommunicationType.SMS ? CommunicationType.Email : CommunicationType.SMS;
@@ -299,7 +300,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void PersonFields_EmailPreference_IsUpdated()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalPreference = person.EmailPreference;
             var targetPreference = originalPreference == EmailPreference.DoNotEmail ? EmailPreference.EmailAllowed : EmailPreference.DoNotEmail;
@@ -322,7 +323,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void PersonFields_IsEmailActive_IsUpdated()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalIsEmailActive = person.IsEmailActive;
             var targetIsEmailActive = !originalIsEmailActive;
@@ -347,7 +348,7 @@ namespace Rock.Tests.Integration.Crm
         {
             const string targetEmailNote = "Bulk update test email note.";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalEmailNote = person.EmailNote;
 
@@ -371,7 +372,7 @@ namespace Rock.Tests.Integration.Crm
         {
             const string targetSystemNote = "Bulk update test system note.";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalSystemNote = person.SystemNote;
 
@@ -396,7 +397,7 @@ namespace Rock.Tests.Integration.Crm
             const string targetReviewReasonNote = "Bulk update test review note.";
             var reviewReasonId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED.AsGuid() ).Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalReviewReasonId = person.ReviewReasonValueId;
             var originalReviewReasonNote = person.ReviewReasonNote;
@@ -429,7 +430,7 @@ namespace Rock.Tests.Integration.Crm
             var connectionStatusGuid = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid();
             var connectionStatusId = DefinedValueCache.Get( connectionStatusGuid ).Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalConnectionStatusId = person.ConnectionStatusValueId;
 
@@ -456,7 +457,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var connectionStatusGuid = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalConnectionStatusId = person.ConnectionStatusValueId;
 
@@ -482,7 +483,7 @@ namespace Rock.Tests.Integration.Crm
             var recordSourceGuid = SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_GIVING.AsGuid();
             var recordSourceId = DefinedValueCache.Get( recordSourceGuid ).Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalRecordSourceId = person.RecordSourceValueId;
 
@@ -509,7 +510,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var recordSourceGuid = SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_GIVING.AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalRecordSourceId = person.RecordSourceValueId;
 
@@ -534,7 +535,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var pendingGuid = SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalRecordStatusId = person.RecordStatusValueId;
 
@@ -560,7 +561,7 @@ namespace Rock.Tests.Integration.Crm
             var pendingGuid = SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid();
             var pendingId = DefinedValueCache.Get( pendingGuid ).Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
             var originalRecordStatusId = person.RecordStatusValueId;
 
@@ -593,7 +594,7 @@ namespace Rock.Tests.Integration.Crm
             var inactiveId = DefinedValueCache.Get( inactiveGuid ).Id;
             var reasonValue = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).DefinedValues.First();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker.AsGuid() );
 
             // Setting Inactive also writes the reason value and (non-blank) note, and triggers
@@ -629,7 +630,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var southCampusId = CampusCache.Get( TestGuids.Crm.CampusSouth.AsGuid() ).Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
 
             var bag = new BulkUpdateBag
@@ -642,7 +643,7 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( NewSettings( bag ) ).Process();
 
             AssertAllSucceeded( result, 1 );
-            var family = GetPrimaryFamily( new RockContext(), personId );
+            var family = GetPrimaryFamily( RockApp.Current.CreateRockContext(), personId );
             Assert.AreEqual( southCampusId, family.CampusId );
         }
 
@@ -650,7 +651,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Campus_BlankSelectionClearsFamilyCampus()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
 
             var bag = new BulkUpdateBag
@@ -663,7 +664,7 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( NewSettings( bag ) ).Process();
 
             AssertAllSucceeded( result, 1 );
-            var family = GetPrimaryFamily( new RockContext(), personId );
+            var family = GetPrimaryFamily( RockApp.Current.CreateRockContext(), personId );
             Assert.IsNull( family.CampusId, "A blank campus selection should clear the family campus." );
         }
 
@@ -671,7 +672,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Campus_PersonInMultipleFamilies_RecordsIssue()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personId = GetPersonId( rockContext, TestGuids.TestPeople.BenJones );
 
             Assert.AreEqual( 1, CountFamilies( rockContext, personId ), "Precondition: Ben should belong to exactly one family before the test adds a second." );
@@ -705,7 +706,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var southCampusId = CampusCache.Get( TestGuids.Crm.CampusSouth.AsGuid() ).Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var tedId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
             var cindyId = GetPersonId( rockContext, TestGuids.TestPeople.CindyDecker );
 
@@ -726,8 +727,8 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( NewSettings( bag ) ).Process();
 
             AssertAllSucceeded( result, 2 );
-            Assert.AreEqual( southCampusId, GetPrimaryFamily( new RockContext(), tedId ).CampusId );
-            Assert.AreEqual( southCampusId, GetPrimaryFamily( new RockContext(), cindyId ).CampusId );
+            Assert.AreEqual( southCampusId, GetPrimaryFamily( RockApp.Current.CreateRockContext(), tedId ).CampusId );
+            Assert.AreEqual( southCampusId, GetPrimaryFamily( RockApp.Current.CreateRockContext(), cindyId ).CampusId );
         }
 
         #endregion Family Campus
@@ -738,7 +739,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Following_Add_CreatesFollow()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var targetId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
             var targetPrimaryAliasId = GetPrimaryAliasId( rockContext, targetId );
@@ -756,14 +757,14 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( NewSettings( bag, adminAliasId ) ).Process();
 
             AssertAllSucceeded( result, 1 );
-            Assert.AreEqual( 1, CountFollows( new RockContext(), adminAliasId, targetPrimaryAliasId ) );
+            Assert.AreEqual( 1, CountFollows( RockApp.Current.CreateRockContext(), adminAliasId, targetPrimaryAliasId ) );
         }
 
         [TestMethod]
         [IsolatedTestDatabase]
         public void Following_Add_IsIdempotent()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var targetId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
             var targetPrimaryAliasId = GetPrimaryAliasId( rockContext, targetId );
@@ -781,14 +782,14 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( NewSettings( bag, adminAliasId ) ).Process();
 
             AssertAllSucceeded( result, 1 );
-            Assert.AreEqual( 1, CountFollows( new RockContext(), adminAliasId, targetPrimaryAliasId ), "Adding a follow that already exists must not create a duplicate." );
+            Assert.AreEqual( 1, CountFollows( RockApp.Current.CreateRockContext(), adminAliasId, targetPrimaryAliasId ), "Adding a follow that already exists must not create a duplicate." );
         }
 
         [TestMethod]
         [IsolatedTestDatabase]
         public void Following_Remove_DeletesFollow()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var targetId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
             var targetPrimaryAliasId = GetPrimaryAliasId( rockContext, targetId );
@@ -806,7 +807,7 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( NewSettings( bag, adminAliasId ) ).Process();
 
             AssertAllSucceeded( result, 1 );
-            Assert.AreEqual( 0, CountFollows( new RockContext(), adminAliasId, targetPrimaryAliasId ) );
+            Assert.AreEqual( 0, CountFollows( RockApp.Current.CreateRockContext(), adminAliasId, targetPrimaryAliasId ) );
         }
 
         #endregion Following
@@ -820,7 +821,7 @@ namespace Rock.Tests.Integration.Crm
             const string allergyValue = "Bulk update test allergy.";
             var allergyAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
 
             var bag = new BulkUpdateBag
@@ -844,7 +845,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var allergyAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
             var originalValue = GetPersonAttributeValue( personId, allergyAttribute.Key );
 
@@ -874,7 +875,7 @@ namespace Rock.Tests.Integration.Crm
             var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
             var noteType = NoteTypeCache.GetByEntity( personEntityTypeId, string.Empty, string.Empty, true ).First();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var personId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
 
@@ -898,7 +899,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var note = new NoteService( verifyContext ).Queryable()
                     .FirstOrDefault( n => n.NoteTypeId == noteType.Id && n.EntityId == personId && n.Text == noteText );
@@ -915,7 +916,7 @@ namespace Rock.Tests.Integration.Crm
         {
             var noteText = $"Bulk update test note {Guid.NewGuid()}";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personId = GetPersonId( rockContext, TestGuids.TestPeople.TedDecker );
 
             var bag = new BulkUpdateBag
@@ -930,7 +931,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var exists = new NoteService( verifyContext ).Queryable().Any( n => n.Text == noteText );
                 Assert.IsFalse( exists, "No note should be created when no note type is authorized." );
@@ -945,7 +946,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Group_Add_AddsMembers()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var group = CreateGeneralGroup( rockContext, "Bulk Update Test Group", out var memberRoleGuid );
 
@@ -972,7 +973,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 2 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var members = new GroupMemberService( verifyContext ).Queryable()
                     .Where( m => m.GroupId == group.Id )
@@ -987,7 +988,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Group_Add_AlreadyInRole_IsSkipped()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var group = CreateGeneralGroup( rockContext, "Bulk Update Test Group", out var memberRoleGuid );
             var memberRoleId = GroupTypeCache.Get( group.GroupTypeId ).Roles.First( r => r.Guid == memberRoleGuid ).Id;
@@ -1018,7 +1019,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 2 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var members = new GroupMemberService( verifyContext ).Queryable()
                     .Where( m => m.GroupId == group.Id )
@@ -1032,7 +1033,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Group_Remove_RemovesMembers()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var group = CreateGeneralGroup( rockContext, "Bulk Update Test Group", out var memberRoleGuid );
             var memberRoleId = GroupTypeCache.Get( group.GroupTypeId ).Roles.First( r => r.Guid == memberRoleGuid ).Id;
@@ -1058,7 +1059,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var stillMember = new GroupMemberService( verifyContext ).Queryable()
                     .Any( m => m.GroupId == group.Id && m.PersonId == tedId );
@@ -1070,7 +1071,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Group_Update_ChangesMemberStatus()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var group = CreateGeneralGroup( rockContext, "Bulk Update Test Group", out var memberRoleGuid );
             var memberRoleId = GroupTypeCache.Get( group.GroupTypeId ).Roles.First( r => r.Guid == memberRoleGuid ).Id;
@@ -1098,7 +1099,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var member = new GroupMemberService( verifyContext ).Queryable()
                     .First( m => m.GroupId == group.Id && m.PersonId == tedId );
@@ -1110,7 +1111,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Group_Update_ChangesRole()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var groupType = CreateTwoRoleGroupType( rockContext, "Bulk Update Test Type", out var roleAGuid, out var roleBGuid );
             var group = CreateGroupOfType( rockContext, "Bulk Update Two-Role Group", groupType.Id );
@@ -1141,7 +1142,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var member = new GroupMemberService( verifyContext ).Queryable()
                     .First( m => m.GroupId == group.Id && m.PersonId == tedId );
@@ -1155,7 +1156,7 @@ namespace Rock.Tests.Integration.Crm
         {
             const string memberAttributeValue = "Bulk update test member attribute value.";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var group = CreateGeneralGroup( rockContext, "Bulk Update Member-Attr Group", out var memberRoleGuid );
 
@@ -1193,7 +1194,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var member = new GroupMemberService( verifyContext ).Queryable()
                     .First( m => m.GroupId == group.Id && m.PersonId == tedId );
@@ -1206,7 +1207,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Group_Remove_WithHistory_ArchivesInsteadOfDeleting()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var group = CreateHistoryEnabledGroup( rockContext, "Bulk Update History", out var memberRoleGuid );
             var memberRoleId = GroupTypeCache.Get( group.GroupTypeId ).Roles.First( r => r.Guid == memberRoleGuid ).Id;
@@ -1240,7 +1241,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( verifyContext );
 
@@ -1259,7 +1260,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Group_Update_InvalidMember_DetachesAndRecordsIssue()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
 
             // Role B (Leader) is capped at one active member.
@@ -1302,7 +1303,7 @@ namespace Rock.Tests.Integration.Crm
             Assert.AreEqual( 0, result.FailedCount );
             StringAssert.Contains( string.Join( " ", result.PersonResults.Single().Issues ), "maximum allowed limit" );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var member = new GroupMemberService( verifyContext ).Queryable()
                     .First( m => m.GroupId == group.Id && m.PersonId == tedId );
@@ -1318,7 +1319,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Step_Add_AddsStep()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var program = CreateStepProgram( rockContext, "Bulk Update Add Step Program" );
             var stepType = CreateStepType( rockContext, program.Id, "Bulk Update Add Step Type", allowMultiple: false );
@@ -1354,7 +1355,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Step_Add_AllowMultipleViolation_RecordsIssue()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var program = CreateStepProgram( rockContext, "Bulk Update Single Step Program" );
             var stepType = CreateStepType( rockContext, program.Id, "Bulk Update Single Step Type", allowMultiple: false );
@@ -1398,7 +1399,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Step_Remove_RemovesSteps()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var program = CreateStepProgram( rockContext, "Bulk Update Remove Step Program" );
             var stepType = CreateStepType( rockContext, program.Id, "Bulk Update Remove Step Type", allowMultiple: false );
@@ -1435,7 +1436,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Step_Update_ChangesStatusAndRecomputesCompletion()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var program = CreateStepProgram( rockContext, "Bulk Update Status Step Program" );
             var stepType = CreateStepType( rockContext, program.Id, "Bulk Update Status Step Type", allowMultiple: false );
@@ -1473,7 +1474,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var step = new StepService( verifyContext ).Queryable()
                     .First( s => s.StepTypeId == stepType.Id && s.PersonAlias.PersonId == personId );
@@ -1488,7 +1489,7 @@ namespace Rock.Tests.Integration.Crm
         {
             const string targetNote = "Bulk update test step note.";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var program = CreateStepProgram( rockContext, "Bulk Update Note Step Program" );
             var stepType = CreateStepType( rockContext, program.Id, "Bulk Update Note Step Type", allowMultiple: false );
@@ -1519,7 +1520,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var step = new StepService( verifyContext ).Queryable()
                     .First( s => s.StepTypeId == stepType.Id && s.PersonAlias.PersonId == personId );
@@ -1533,7 +1534,7 @@ namespace Rock.Tests.Integration.Crm
         {
             const string stepAttributeValue = "Bulk update test step attribute value.";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var program = CreateStepProgram( rockContext, "Bulk Update Step-Attr Program" );
             var stepType = CreateStepType( rockContext, program.Id, "Bulk Update Step-Attr Type", allowMultiple: false );
@@ -1575,7 +1576,7 @@ namespace Rock.Tests.Integration.Crm
 
             AssertAllSucceeded( result, 1 );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var step = new StepService( verifyContext ).Queryable()
                     .First( s => s.StepTypeId == stepType.Id && s.PersonAlias.PersonId == personId );
@@ -1592,7 +1593,7 @@ namespace Rock.Tests.Integration.Crm
             var seededEnd = new DateTime( 2020, 6, 1 );
             var invalidStart = new DateTime( 2021, 1, 1 ); // after the existing end date
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var program = CreateStepProgram( rockContext, "Bulk Update Date Step Program" );
             var stepType = CreateStepType( rockContext, program.Id, "Bulk Update Date Step Type", allowMultiple: false, hasEndDate: true );
@@ -1627,7 +1628,7 @@ namespace Rock.Tests.Integration.Crm
             Assert.AreEqual( 0, result.FailedCount );
             StringAssert.Contains( string.Join( " ", result.PersonResults.Single().Issues ), "StartDateTime" );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var step = new StepService( verifyContext ).Queryable()
                     .First( s => s.StepTypeId == stepType.Id && s.PersonAlias.PersonId == personId );
@@ -1643,7 +1644,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Tag_Add_TagsPersons()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var tag = CreatePersonTag( rockContext, "Bulk Update Test Tag" );
 
@@ -1667,14 +1668,14 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( settings ).Process();
 
             AssertAllSucceeded( result, 2 );
-            Assert.AreEqual( 2, CountTaggedItems( new RockContext(), tag.Id ) );
+            Assert.AreEqual( 2, CountTaggedItems( RockApp.Current.CreateRockContext(), tag.Id ) );
         }
 
         [TestMethod]
         [IsolatedTestDatabase]
         public void Tag_Add_IsIdempotent()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var tag = CreatePersonTag( rockContext, "Bulk Update Test Tag" );
 
@@ -1701,14 +1702,14 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( settings ).Process();
 
             AssertAllSucceeded( result, 2 );
-            Assert.AreEqual( 2, CountTaggedItems( new RockContext(), tag.Id ), "Tagging a person already tagged must not create a duplicate." );
+            Assert.AreEqual( 2, CountTaggedItems( RockApp.Current.CreateRockContext(), tag.Id ), "Tagging a person already tagged must not create a duplicate." );
         }
 
         [TestMethod]
         [IsolatedTestDatabase]
         public void Tag_Remove_UntagsPersons()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var tag = CreatePersonTag( rockContext, "Bulk Update Test Tag" );
 
@@ -1732,7 +1733,7 @@ namespace Rock.Tests.Integration.Crm
             var result = new BulkUpdateProcessor( settings ).Process();
 
             AssertAllSucceeded( result, 1 );
-            Assert.AreEqual( 0, CountTaggedItems( new RockContext(), tag.Id ) );
+            Assert.AreEqual( 0, CountTaggedItems( RockApp.Current.CreateRockContext(), tag.Id ) );
         }
 
         #endregion Tag
@@ -1743,7 +1744,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Workflow_Launch_DoesNotAffectCoreOutcome()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
 
             var workflowType = new WorkflowTypeService( rockContext ).Queryable()
@@ -1817,7 +1818,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void Process_UnresolvableAlias_IsDroppedFromTotal()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personBags = PersonBagsForGuids( rockContext, TestGuids.TestPeople.TedDecker );
 
             // Add an alias guid that does not resolve to any person; it should be silently
@@ -1840,7 +1841,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void Process_DuplicatePerson_IsDeduplicated()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personBags = PersonBagsForGuids( rockContext, TestGuids.TestPeople.TedDecker );
 
             // Submit the same person twice; ResolvePersonIds must collapse the duplicate.
@@ -1862,7 +1863,7 @@ namespace Rock.Tests.Integration.Crm
         [IsolatedTestDatabase]
         public void Process_MixedOutcomes_BucketsSumToTotal()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var adminAliasId = GetAdminPrimaryAliasId( rockContext );
             var program = CreateStepProgram( rockContext, "Bulk Update Mixed Step Program" );
             var stepType = CreateStepType( rockContext, program.Id, "Bulk Update Mixed Step Type", allowMultiple: false );
@@ -1906,7 +1907,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void Process_TaskCountZero_FallsBackToProcessorCount()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // A non-positive TaskCount must fall back to Environment.ProcessorCount rather than
             // producing a MaxDegreeOfParallelism of 0 (which would throw). Empty UpdatedFields
@@ -1926,7 +1927,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void Process_TaskCountAboveCap_DoesNotThrow()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // A TaskCount above the hard cap (64) must be clamped, not rejected. Empty
             // UpdatedFields keeps this a database no-op.
@@ -1952,7 +1953,7 @@ namespace Rock.Tests.Integration.Crm
         {
             const int personCount = 50;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
             var personIds = new PersonService( rockContext ).Queryable()
@@ -1981,7 +1982,7 @@ namespace Rock.Tests.Integration.Crm
             Assert.AreEqual( personIds.Count, result.SuccessCount );
             Assert.AreEqual( 0, result.FailedCount );
 
-            using ( var verifyContext = new RockContext() )
+            using ( var verifyContext = RockApp.Current.CreateRockContext() )
             {
                 var notFemaleCount = new PersonService( verifyContext ).Queryable()
                     .Count( p => personIds.Contains( p.Id ) && p.Gender != Gender.Female );
@@ -2099,7 +2100,7 @@ namespace Rock.Tests.Integration.Crm
         /// </summary>
         private static Person ReloadPerson( int personId )
         {
-            return new PersonService( new RockContext() ).Get( personId );
+            return new PersonService( RockApp.Current.CreateRockContext() ).Get( personId );
         }
 
         /// <summary>
@@ -2108,7 +2109,7 @@ namespace Rock.Tests.Integration.Crm
         /// </summary>
         private static void RestorePerson( int personId, Action<Person> restore )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext ).Get( personId );
                 restore( person );
@@ -2189,7 +2190,7 @@ namespace Rock.Tests.Integration.Crm
         /// </summary>
         private static string GetPersonAttributeValue( int personId, string attributeKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext ).Get( personId );
                 person.LoadAttributes( rockContext );
@@ -2202,7 +2203,7 @@ namespace Rock.Tests.Integration.Crm
         /// </summary>
         private static bool PersonHasStepOfType( int personId, int stepTypeId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new StepService( rockContext ).Queryable()
                     .Any( s => s.StepTypeId == stepTypeId && s.PersonAlias.PersonId == personId );

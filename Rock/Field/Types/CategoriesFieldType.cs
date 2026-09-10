@@ -23,6 +23,7 @@ using System.Web.UI;
 using Newtonsoft.Json.Linq;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -48,7 +49,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var guids = privateValue.SplitDelimitedValues();
                     var categories = new CategoryService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
@@ -216,6 +217,30 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Overridden so the inherited single category wording does not stand for a
+        /// field type that stores several. Everything else about the value is the
+        /// same, so this reuses the base and replaces only the format sentence.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var hints = base.GetFieldHints( privateConfigurationValues );
+
+            if ( hints == null )
+            {
+                return null;
+            }
+
+            hints.ValueFormat = "One or more guids identifying rows in the Category table, separated by commas. Not their ids or idKeys.";
+
+            return hints;
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -283,7 +308,7 @@ namespace Rock.Field.Types
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var categories = new CategoryService( rockContext ).Queryable().AsNoTracking().Where( c => ids.Contains( c.Id ) );
 
@@ -327,7 +352,7 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    var categories = new CategoryService( new RockContext() ).Queryable().Where( c => guids.Contains( c.Guid ) );
+                    var categories = new CategoryService( RockApp.Current.CreateRockContext() ).Queryable().Where( c => guids.Contains( c.Guid ) );
                     picker.SetValues( categories );
                 }
             }

@@ -332,7 +332,7 @@ namespace Rock.Lava.Blocks
                         // In the future we hope to use rockContext.Set( entity ).Create() to create the new entity
                         // (instead of ( IEntity ) Activator.CreateInstance( _entityType ) ) but in testing this new way is creating duplicate
                         // person aliases. A internal task has been created to look into that behavior.
-                        var addService = GetEntityService( new RockContext() );
+                        var addService = GetEntityService( RockApp.Current.CreateRockContext() );
                         return GetEntityFromIdAsInt( entity.Id, service );
                     }
                 }

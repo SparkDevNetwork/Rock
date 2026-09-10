@@ -22,6 +22,7 @@ using Http.TestLibrary;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
@@ -47,7 +48,7 @@ namespace Rock.Tests.Integration.Core.Storage
 
         protected static void InternalClassCleanup()
         {
-            var assetStorageProviderService = new AssetStorageProviderService( new RockContext() );
+            var assetStorageProviderService = new AssetStorageProviderService( RockApp.Current.CreateRockContext() );
             var assetStorageProvider = assetStorageProviderService.Get( _assetStorageProviderServiceGuid );
             var storageComponent = assetStorageProvider.GetAssetStorageComponent();
 
@@ -85,7 +86,7 @@ namespace Rock.Tests.Integration.Core.Storage
 
         protected AssetStorageProvider GetAssetStorageProvider()
         {
-            var assetStorageProviderService = new AssetStorageProviderService( new RockContext() );
+            var assetStorageProviderService = new AssetStorageProviderService( RockApp.Current.CreateRockContext() );
             AssetStorageProvider assetStorageProvider = assetStorageProviderService.Get( _assetStorageProviderServiceGuid );
             assetStorageProvider.LoadAttributes();
             return assetStorageProvider;
@@ -102,7 +103,7 @@ namespace Rock.Tests.Integration.Core.Storage
 
         private static void SeedIntialData()
         {
-            var assetStorageProviderService = new AssetStorageProviderService( new RockContext() );
+            var assetStorageProviderService = new AssetStorageProviderService( RockApp.Current.CreateRockContext() );
             var assetStorageProvider = assetStorageProviderService.Get( _assetStorageProviderServiceGuid );
             assetStorageProvider.LoadAttributes();
             var assetStorageComponent = assetStorageProvider.GetAssetStorageComponent();

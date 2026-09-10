@@ -50,7 +50,7 @@ public class LavaConditionalLogicTests
     /// </summary>
     private static void AssertConditionalOutput( string template, IDictionary<string, object> mergeValues, string expected, Action setup = null )
     {
-        using var rockApp = TestHelper.CreateScopedRockAppWithMockDatabase();
+        using var rockApp = TestHelper.CreateScopedRockApp();
 
         setup?.Invoke();
 

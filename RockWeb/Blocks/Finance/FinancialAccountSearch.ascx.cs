@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -122,7 +123,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( e.CommandName == LinkCommand.AccountClick )
             {
-                var accountService = new FinancialAccountService( new RockContext() );
+                var accountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
 
                 var queryParams = new Dictionary<string, string>();
 
@@ -169,7 +170,7 @@ namespace RockWeb.Blocks.Finance
         {
             string searchTerm = PageParameter( "SearchTerm" );
 
-            var accountService = new FinancialAccountService( new RockContext() );
+            var accountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             var accounts = new List<FinancialAccount>();
 
             if ( !searchTerm.IsSingleSpecialCharacter() )
@@ -188,7 +189,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( accounts?.Count == 1 )
             {
-                var pageService = new PageService( new RockContext() );
+                var pageService = new PageService( RockApp.Current.CreateRockContext() );
 
                 var queryParams = new Dictionary<string, string>();
 

@@ -192,7 +192,7 @@
                     </ContentSection>
 
                     <ContentSection v-if="hasMeetingLocations"
-                                    title="Meeting Locations"
+                                    title="Locations"
                                     icon="ti ti-map-pin"
                                     :disableCollapse="true">
                         <LocationCard v-for="location in meetingLocations"

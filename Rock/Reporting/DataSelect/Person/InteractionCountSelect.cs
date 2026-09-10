@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -318,7 +319,7 @@ namespace Rock.Reporting.DataSelect.Person
             ddlInteractionChannel.SelectedIndexChanged += ddlInteractionChannel_SelectedIndexChanged;
             parentControl.Controls.Add( ddlInteractionChannel );
 
-            var interactionChannelService = new InteractionChannelService( new RockContext() );
+            var interactionChannelService = new InteractionChannelService( RockApp.Current.CreateRockContext() );
             var noteTypes = interactionChannelService.Queryable().OrderBy( a => a.Name ).Select( a => new
             {
                 a.Id,
@@ -365,7 +366,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             if ( interactionChannelId.HasValue )
             {
-                var interactionComponentService = new InteractionComponentService( new RockContext() );
+                var interactionComponentService = new InteractionComponentService( RockApp.Current.CreateRockContext() );
                 var interactionComponents = interactionComponentService.Queryable()
                                     .Where( a => a.InteractionChannelId == ( interactionChannelId ?? 0 ) )
                                     .OrderBy( a => a.Name ).
@@ -429,7 +430,7 @@ namespace Rock.Reporting.DataSelect.Person
             var slidingDateRangePicker = ( controls[3] as SlidingDateRangePicker );
 
             int interactionChannelId = ddlInteractionChannel.SelectedValueAsId() ?? 0;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionChannel = new InteractionChannelService( rockContext ).Get( interactionChannelId );
             Guid? interactionChannelGuid = null;
             if ( interactionChannel != null )
@@ -462,7 +463,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( selectionValues.Length >= 1 )
             {
                 Guid interactionChannelGuid = selectionValues[0].AsGuid();
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( interactionChannelGuid );
                 var ddlInteractionChannel = ( controls[0] as RockDropDownList );
                 ddlInteractionChannel.SetValue( interactionChannel != null ? interactionChannel.Id : ( int? ) null );

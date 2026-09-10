@@ -28,6 +28,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Chart;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -202,7 +203,7 @@ FROM (
             var metricSourceValueTypeLavaGuid = SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid();
             try
             {
-                using ( var rockContextForMetricEntity = new RockContext() )
+                using ( var rockContextForMetricEntity = RockApp.Current.CreateRockContext() )
                 {
                     rockContextForMetricEntity.Database.SetCommandTimeout( commandTimeout );
 
@@ -232,7 +233,7 @@ FROM (
 
                     foreach ( var scheduleDateTime in scheduledDateTimesToProcess )
                     {
-                        using ( var rockContextForMetricValues = new RockContext() )
+                        using ( var rockContextForMetricValues = RockApp.Current.CreateRockContext() )
                         {
                             rockContextForMetricValues.Database.SetCommandTimeout( commandTimeout );
                             var metricPartitions = new MetricPartitionService( rockContextForMetricValues ).Queryable().Where( a => a.MetricId == metric.Id ).ToList();
@@ -717,7 +718,7 @@ FROM (
         /// <returns></returns>
         private List<string> GetSeriesPartitionNames( List<EntityIdentifierByTypeAndId> partitionValues = null )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             List<string> seriesPartitionValues = new List<string>();
 

@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.Attribute;
+using Rock.Enums.AI.Agent;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -37,8 +38,8 @@ namespace Rock.AI.Agent.Skills;
 [AgentPurpose( "Provides access to groups and group membership for people." )]
 
 [GroupTypesField( "Group Types",
-        Description = "The group types that will be managed by this skill.",
-        IsRequired = true,
+        Description = "The group types that will be managed by this skill. If none are selected then all group types will be available.",
+        IsRequired = false,
         EnhancedSelection = true,
         Key = ConfigurationKey.GroupTypes,
         Order = 0 )]
@@ -80,7 +81,7 @@ internal sealed partial class GroupSkill : AgentSkillComponent
 
     #region Methods
 
-    private IEnumerable<GroupTypeCache> GetConfiguredGroupTypes()
+    private IEnumerable<GroupTypeCache> GetAvailableGroupTypes()
     {
         var groupTypeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.GroupTypes, string.Empty )
             .SplitDelimitedValues()
@@ -88,11 +89,41 @@ internal sealed partial class GroupSkill : AgentSkillComponent
 
         if ( groupTypeGuids.Count == 0 )
         {
-            return [];
+            return GroupTypeCache.All( AgentRequestContext.RockContext )
+                .Where( gt => gt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) );
         }
 
         return GroupTypeCache.GetMany( groupTypeGuids, AgentRequestContext.RockContext )
             .Where( gt => gt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) );
+    }
+
+    /// <summary>
+    /// Determines whether the specified group type can be made available to
+    /// the agent for this request.
+    /// </summary>
+    /// <param name="groupTypeId">The ID of the group type.</param>
+    /// <param name="helper">The agent tool helper, an error message will be added if <c>true</c> is returned.</param>
+    /// <returns>True if the group type can be configured for the request; otherwise, false.</returns>
+    private bool CanGroupTypeBeConfiguredForRequest( int groupTypeId, AgentToolHelper helper )
+    {
+        // Only let people know about additional group types if this is an
+        // agent meant for internal use.
+        if ( AgentRequestContext.AudienceType != AudienceType.Internal )
+        {
+            return false;
+        }
+
+        var groupType = GroupTypeCache.Get( groupTypeId, AgentRequestContext.RockContext );
+
+        var canBeConfigured = groupType != null
+            && groupType.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson );
+
+        if ( canBeConfigured )
+        {
+            helper.AddError( $"The group type '{groupType.Name}' is not available, but it can be configured on this agent by your administrator." );
+        }
+
+        return canBeConfigured;
     }
 
     #endregion

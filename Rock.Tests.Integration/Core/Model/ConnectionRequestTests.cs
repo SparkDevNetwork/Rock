@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -28,30 +29,9 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void ConnectionRequestCreatedDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                ConnectionRequest connectionRequest = new ConnectionRequest();
-                connectionRequest.CreatedDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, connectionRequest.CreatedDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void ConnectionRequestCreatedDateKeyWorksWithNullValue()
-        {
-            ConnectionRequest connectionRequest = new ConnectionRequest();
-            connectionRequest.CreatedDateTime = null;
-            Assert.IsNull( connectionRequest.CreatedDateKey );
-        }
-
-        [TestMethod]
         public void ConnectionRequestDateKeySavesCorrectlyWhenNull()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionRequestService = new ConnectionRequestService( rockContext );
 
             var connectionRequest = BuildConnectionRequest( rockContext, null );
@@ -71,7 +51,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void ConnectionRequestDateKeySavesCorrectly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionRequestService = new ConnectionRequestService( rockContext );
 
             var connectionRequest = BuildConnectionRequest( rockContext, Convert.ToDateTime( "2010-3-15" ) );
@@ -93,7 +73,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
 
@@ -112,7 +92,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequests = connectionRequestService.
@@ -146,7 +126,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private void CleanUpData( string connectionRequestForeignKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.ExecuteSqlCommand( $"DELETE [ConnectionRequest] WHERE [ForeignKey] = '{connectionRequestForeignKey}'" );
         }
     }

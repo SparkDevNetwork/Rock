@@ -18,6 +18,7 @@
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -42,7 +43,7 @@ namespace Rock.Model
             // Sometimes, especially if the model is being deleted, some properties might not be
             // populated, but we can query to try to get their original value. We need to use a new
             // rock context to get the actual value from the DB
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new PersonSearchKeyService( rockContext );
             var originalModel = service.Queryable( "PersonAlias" )
                 .FirstOrDefault( fpsa => fpsa.Id == Id );

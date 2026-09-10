@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -73,7 +74,7 @@ namespace Rock.Chart
         /// <returns></returns>
         public List<ChartJsTimeSeriesDataset> GetTimeSeriesDatasets()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get all of the Metric Values that are associated with the specified partitions.
             // If a filter is not specified for a partition, select all values associated with that partition.
@@ -179,7 +180,7 @@ namespace Rock.Chart
         /// <returns></returns>
         public ChartJsCategorySeriesDataset GetCategorySeriesDataset()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get all of the Metric Values that are associated with the specified partitions.
             // If a filter is not specified for a partition, select all values associated with that partition.
@@ -268,7 +269,7 @@ namespace Rock.Chart
             _entityTypeEntityNameLookup = new Dictionary<int, Dictionary<int, string>>();
             _entityTypeEntityLookupQry = new Dictionary<int, IQueryable<IEntity>>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             foreach ( var metricId in metricIdList )
             {

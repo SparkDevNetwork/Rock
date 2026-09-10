@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="more-filters-content">
+    <div class="groupfinder-more-filters-content">
         <div v-for="filter in config.modalAttributeFilters ?? []"
              :key="filter.attributeKey ?? ''"
              class="form-group">

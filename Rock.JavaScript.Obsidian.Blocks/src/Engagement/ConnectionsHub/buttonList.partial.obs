@@ -12,7 +12,7 @@
                         type="button"
                         @click="handleClick(item)">
                 <span class="button-text"
-                      v-ellipsis-tooltip>
+                      v-tooltip.overflow="item.text">
                     {{ item.text }}
                 </span>
             </RockButton>
@@ -27,13 +27,21 @@
     grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
     gap: var(--gap);
 }
+
+/* The label clips to a single line; the overflow tooltip reveals the full text. */
+.button-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 </style>
 
 <script setup lang="ts">
     import { PropType } from "vue";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { vEllipsisTooltip } from "@Obsidian/Directives/ellipsisTooltip";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     defineProps({
         disabled: {

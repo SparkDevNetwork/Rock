@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -268,7 +269,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( scheduledTransactionKey.IsNotNullOrWhiteSpace() )
             {
-                return new FinancialScheduledTransactionService( new RockContext() )
+                return new FinancialScheduledTransactionService( RockApp.Current.CreateRockContext() )
                     .GetSelect( scheduledTransactionKey, t => ( Guid? ) t.Guid, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
@@ -288,7 +289,7 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var financialScheduledTransaction = financialScheduledTransactionService.Queryable()
@@ -340,7 +341,7 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var financialScheduledTransaction = financialScheduledTransactionService.Queryable()
@@ -386,7 +387,7 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
             
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var financialScheduledTransaction = financialScheduledTransactionService.Queryable()
@@ -632,7 +633,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnChangeAccounts_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Configuration.ProxyCreationEnabled = false;
                 var financialScheduledTransaction = GetTransaction( rockContext );
@@ -647,7 +648,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveAccounts_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransaction = GetTransaction( rockContext );
 
@@ -724,7 +725,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancelAccounts_Click( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransaction = GetTransaction( rockContext );
                 if ( financialScheduledTransaction != null )
@@ -1018,7 +1019,7 @@ namespace RockWeb.Blocks.Finance
             var financialScheduledTransactionGuid = GetScheduledTransactionGuidFromUrl();
             if ( financialScheduledTransactionGuid.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new FinancialScheduledTransactionService( rockContext );
 
                 return service

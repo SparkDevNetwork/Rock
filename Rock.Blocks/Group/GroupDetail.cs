@@ -238,6 +238,7 @@ namespace Rock.Blocks.Group
             public const string ParentGroupId = "ParentGroupId";
             public const string ExpandedIds = "ExpandedIds";
             public const string ReturnUrl = "returnUrl";
+            public const string AutoEdit = "autoEdit";
         }
 
         private static class NavigationUrlKey
@@ -306,6 +307,19 @@ namespace Rock.Blocks.Group
         /// Per-request memo for the GROUP_ADMINISTRATORS membership lookup.
         /// </summary>
         private bool? _isCurrentPersonGroupAdministrator;
+
+        /// <summary>
+        /// Per-request memo of the child group types the current person may
+        /// edit under the parent group identified by
+        /// <see cref="_authorizedChildGroupTypesParentGroupId"/>.
+        /// </summary>
+        private List<Model.GroupType> _authorizedChildGroupTypes;
+
+        /// <summary>
+        /// The parent group <see cref="_authorizedChildGroupTypes"/> was
+        /// computed for.
+        /// </summary>
+        private int? _authorizedChildGroupTypesParentGroupId;
 
         #endregion Fields
 
@@ -391,37 +405,17 @@ namespace Rock.Blocks.Group
 
             // When a parent group narrows the allowed child types, auto-pick
             // the single option the current person is authorized to edit.
-            // Otherwise leave the field blank so the user makes the choice.
+            // Otherwise leave the group type blank so the user makes the
+            // choice; IsAuthorizedToEdit still admits the person to the form
+            // when more than one of the allowed types is editable.
             if ( entity.ParentGroup != null )
             {
-                var allowedChildGroupTypes = GetAllowedGroupTypes( GroupTypeCache.Get( entity.ParentGroup.GroupTypeId ), RockContext ).ToList();
-
-                var authorizedGroupTypes = new List<Model.GroupType>();
-                foreach ( var allowedGroupType in allowedChildGroupTypes )
-                {
-                    // Probe authorization by temporarily assigning each
-                    // candidate group type to the entity.
-                    entity.GroupTypeId = allowedGroupType.Id;
-                    entity.GroupType = allowedGroupType;
-
-                    if ( entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        authorizedGroupTypes.Add( allowedGroupType );
-                    }
-                }
+                var authorizedGroupTypes = GetAuthorizedChildGroupTypes( entity );
 
                 if ( authorizedGroupTypes.Count == 1 )
                 {
                     entity.GroupType = authorizedGroupTypes[0];
                     entity.GroupTypeId = authorizedGroupTypes[0].Id;
-                }
-                else
-                {
-                    // Reset so the user makes the selection. When no group
-                    // types are authorized, the downstream IsAuthorized
-                    // check falls back to parent-group authorization.
-                    entity.GroupType = null;
-                    entity.GroupTypeId = 0;
                 }
             }
         }
@@ -439,8 +433,9 @@ namespace Rock.Blocks.Group
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = IsAuthorizedToEdit( entity );
 
             if ( entity.Id != 0 )
             {
@@ -504,7 +499,10 @@ namespace Rock.Blocks.Group
                 already satisfies the visibility condition or when the Map page URL isn't
                 configured.
             */
-            var hasGroupLocations = entity.GroupLocations?.Any() == true;
+            // An EXISTS query rather than entity.GroupLocations.Any(), which would
+            // lazy-load every GroupLocation row for the group just to test for one.
+            var hasGroupLocations = new GroupLocationService( RockContext ).Queryable()
+                .Any( gl => gl.GroupId == entity.Id );
 
             bool hasMemberWithAddress = false;
             if ( !hasGroupLocations
@@ -642,7 +640,8 @@ namespace Rock.Blocks.Group
             }
 
             var groupType = GetGroupTypeCache( entity );
-            var canEdit = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+            var canEdit = IsAuthorizedToEdit( entity );
             var canAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
             var hasChildGroups = entity.Id > 0 && new GroupService( RockContext ).Queryable().Any( g => g.ParentGroupId == entity.Id );
@@ -814,7 +813,7 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !IsAuthorizedToEdit( entity ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {Model.Group.FriendlyTypeName}." );
                 return false;
@@ -1883,15 +1882,16 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetGroupTypeOptions( int groupTypeId )
         {
-            // Re-check EDIT authorization on the entity. On the Add path
-            // the entity is fresh and inherits page-level authorization.
+            // Same gate as opening the editor. On the Add path the entity is
+            // fresh and may not have a group type yet, so the plain EDIT check
+            // would deny anyone whose rights come from the group type.
             var entity = GetInitialEntity();
             if ( entity == null )
             {
                 return ActionBadRequest( $"{Model.Group.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !IsAuthorizedToEdit( entity ) )
             {
                 return ActionBadRequest( $"Not authorized to edit {Model.Group.FriendlyTypeName}." );
             }
@@ -2033,6 +2033,86 @@ namespace Rock.Blocks.Group
 
             _cachedGroupType = GroupTypeCache.Get( entity.GroupTypeId );
             return _cachedGroupType;
+        }
+
+        /// <summary>
+        /// Whether the current person may enter edit mode: EDIT on the group,
+        /// or for a new group with no type yet, EDIT on any allowed child type.
+        /// </summary>
+        /// <param name="entity">The group to check.</param>
+        /// <returns><c>true</c> if edit mode is allowed; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToEdit( Model.Group entity )
+        {
+            /*
+                8/26/26 - MSE
+
+                A new group with no type yet has nothing to inherit from
+                (ParentAuthorityPre is only evaluated on the root entity), so the
+                plain check only sees the parent chain's explicit rules. Probe the
+                allowed child types instead, as legacy and the tree view do; Save
+                validates the type actually chosen (ValidateGroup).
+
+                Reason: Staff could not add child groups when the parent group type allowed multiple child group types.
+            */
+            if ( entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return true;
+            }
+
+            var isNewGroupAwaitingGroupType = entity.Id == 0
+                && entity.GroupTypeId <= 0
+                && entity.ParentGroup != null;
+
+            if ( !isNewGroupAwaitingGroupType )
+            {
+                return false;
+            }
+
+            return GetAuthorizedChildGroupTypes( entity ).Any();
+        }
+
+        /// <summary>
+        /// Gets the parent group's allowed child group types that the current
+        /// person may edit, probed by temporarily assigning each to the entity.
+        /// Empty when there is no parent group. Memoized per request.
+        /// </summary>
+        /// <param name="entity">The new group whose parent group is being checked.</param>
+        /// <returns>The allowed child group types the current person may edit.</returns>
+        private List<Model.GroupType> GetAuthorizedChildGroupTypes( Model.Group entity )
+        {
+            if ( entity?.ParentGroup == null )
+            {
+                return new List<Model.GroupType>();
+            }
+
+            if ( _authorizedChildGroupTypes != null && _authorizedChildGroupTypesParentGroupId == entity.ParentGroup.Id )
+            {
+                return _authorizedChildGroupTypes;
+            }
+
+            var authorizedGroupTypes = new List<Model.GroupType>();
+            var allowedChildGroupTypes = GetAllowedGroupTypes( GroupTypeCache.Get( entity.ParentGroup.GroupTypeId ), RockContext ).ToList();
+            var originalGroupTypeId = entity.GroupTypeId;
+            var originalGroupType = entity.GroupType;
+
+            foreach ( var allowedGroupType in allowedChildGroupTypes )
+            {
+                entity.GroupTypeId = allowedGroupType.Id;
+                entity.GroupType = allowedGroupType;
+
+                if ( entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    authorizedGroupTypes.Add( allowedGroupType );
+                }
+            }
+
+            entity.GroupTypeId = originalGroupTypeId;
+            entity.GroupType = originalGroupType;
+
+            _authorizedChildGroupTypes = authorizedGroupTypes;
+            _authorizedChildGroupTypesParentGroupId = entity.ParentGroup.Id;
+
+            return authorizedGroupTypes;
         }
 
         /// <summary>
@@ -2316,8 +2396,8 @@ namespace Rock.Blocks.Group
                     var separator = resolved.Contains( "?" ) ? "&" : "?";
                     var returnUrl = RequestContext?.RequestUri?.PathAndQuery;
                     url = returnUrl.IsNotNullOrWhiteSpace()
-                        ? $"{resolved}{separator}autoEdit=true&returnUrl={Uri.EscapeDataString( returnUrl )}"
-                        : $"{resolved}{separator}autoEdit=true";
+                        ? $"{resolved}{separator}{PageParameterKey.AutoEdit}=true&{PageParameterKey.ReturnUrl}={Uri.EscapeDataString( returnUrl )}"
+                        : $"{resolved}{separator}{PageParameterKey.AutoEdit}=true";
                 }
             }
 
@@ -2999,37 +3079,64 @@ namespace Rock.Blocks.Group
         private List<GroupMemberInheritedAttributeBag> BuildInheritedMemberAttributes( GroupTypeCache groupType )
         {
             var inheritedAttributes = new List<GroupMemberInheritedAttributeBag>();
-            var attributeService = new AttributeService( RockContext );
-            var groupMemberEntityTypeId = new GroupMember().TypeId;
+
+            // The group type itself first, then each ancestor in inheritance order.
+            var groupTypeChain = new List<GroupTypeCache>();
+            WalkGroupTypeInheritancePath( groupType, groupTypeChain.Add );
+
+            if ( !groupTypeChain.Any() )
+            {
+                return inheritedAttributes;
+            }
 
             // Resolve the URL template once per cascade.
             var urlTemplate = EntityTypeCache.Get( typeof( GroupType ) )?.LinkUrlLavaTemplate;
 
-            WalkGroupTypeInheritancePath( groupType, inheritedGroupType =>
+            /*
+                8/26/26 - MSE
+
+                One query for the whole inheritance chain instead of one per ancestor.
+                The rows come back ordered by Order then Name and are then grouped per
+                ancestor in chain order, which is the same output the per-ancestor
+                queries produced.
+
+                Reason: Fewer round trips while building the edit panel options.
+            */
+            var qualifierValues = groupTypeChain.Select( gt => gt.Id.ToString() ).ToList();
+            var attributes = new AttributeService( RockContext ).GetByEntityTypeId( new GroupMember().TypeId, false )
+                .AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    qualifierValues.Contains( a.EntityTypeQualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Name,
+                    a.Description,
+                    a.Key,
+                    a.Guid,
+                    a.EntityTypeQualifierValue
+                } )
+                .ToList();
+
+            foreach ( var inheritedGroupType in groupTypeChain )
             {
                 var inheritedFromUrl = ResolveGroupTypeInheritedFromUrl( urlTemplate, inheritedGroupType );
-
                 var qualifierValue = inheritedGroupType.Id.ToString();
 
-                inheritedAttributes.AddRange(
-                    attributeService.GetByEntityTypeId( groupMemberEntityTypeId, false )
-                        .AsNoTracking()
-                        .Where( a =>
-                            a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .Select( a => new GroupMemberInheritedAttributeBag
-                        {
-                            Name = a.Name,
-                            Description = a.Description,
-                            Key = a.Key,
-                            Guid = a.Guid,
-                            InheritedFromGroupTypeName = inheritedGroupType.Name,
-                            InheritedFromGroupTypeUrl = inheritedFromUrl
-                        } )
-                        .ToList() );
-            } );
+                inheritedAttributes.AddRange( attributes
+                    .Where( a => a.EntityTypeQualifierValue == qualifierValue )
+                    .Select( a => new GroupMemberInheritedAttributeBag
+                    {
+                        Name = a.Name,
+                        Description = a.Description,
+                        Key = a.Key,
+                        Guid = a.Guid,
+                        InheritedFromGroupTypeName = inheritedGroupType.Name,
+                        InheritedFromGroupTypeUrl = inheritedFromUrl
+                    } ) );
+            }
 
             return inheritedAttributes;
         }
@@ -3043,37 +3150,48 @@ namespace Rock.Blocks.Group
         private List<InheritedGroupRequirementBag> BuildInheritedGroupRequirements( GroupTypeCache groupType )
         {
             var inheritedRequirements = new List<InheritedGroupRequirementBag>();
-            var groupRequirementService = new GroupRequirementService( RockContext );
+
+            // The group type itself first, then each ancestor in inheritance order.
+            var groupTypeChain = new List<GroupTypeCache>();
+            WalkGroupTypeInheritancePath( groupType, groupTypeChain.Add );
+
+            if ( !groupTypeChain.Any() )
+            {
+                return inheritedRequirements;
+            }
 
             // Resolve the URL template once per cascade.
             var urlTemplate = EntityTypeCache.Get( typeof( Model.GroupType ) )?.LinkUrlLavaTemplate;
 
-            WalkGroupTypeInheritancePath( groupType, inheritedGroupType =>
+            // One query for the whole inheritance chain, grouped per ancestor below
+            // in chain order. See BuildInheritedMemberAttributes.
+            var ancestorIds = groupTypeChain.Select( gt => gt.Id ).ToList();
+            var requirements = new GroupRequirementService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Include( r => r.GroupRequirementType )
+                .Include( r => r.GroupRole )
+                .Where( r => r.GroupTypeId.HasValue && ancestorIds.Contains( r.GroupTypeId.Value ) )
+                .ToList();
+
+            foreach ( var inheritedGroupType in groupTypeChain )
             {
                 var inheritedFromUrl = ResolveGroupTypeInheritedFromUrl( urlTemplate, inheritedGroupType );
-
                 var ancestorId = inheritedGroupType.Id;
                 var ancestorName = inheritedGroupType.Name;
 
-                inheritedRequirements.AddRange(
-                    groupRequirementService.Queryable()
-                        .AsNoTracking()
-                        .Include( r => r.GroupRequirementType )
-                        .Include( r => r.GroupRole )
-                        .Where( r => r.GroupTypeId.HasValue && r.GroupTypeId.Value == ancestorId )
-                        .ToList()
-                        .Select( r => new InheritedGroupRequirementBag
-                        {
-                            Guid = r.Guid,
-                            Name = r.GroupRequirementType?.Name ?? string.Empty,
-                            GroupRoleName = r.GroupRole?.Name ?? string.Empty,
-                            AppliesToAgeClassification = r.AppliesToAgeClassification,
-                            InheritedFromGroupTypeName = ancestorName,
-                            InheritedFromGroupTypeUrl = inheritedFromUrl
-                        } )
-                        .OrderBy( r => r.Name )
-                        .ToList() );
-            } );
+                inheritedRequirements.AddRange( requirements
+                    .Where( r => r.GroupTypeId.Value == ancestorId )
+                    .Select( r => new InheritedGroupRequirementBag
+                    {
+                        Guid = r.Guid,
+                        Name = r.GroupRequirementType?.Name ?? string.Empty,
+                        GroupRoleName = r.GroupRole?.Name ?? string.Empty,
+                        AppliesToAgeClassification = r.AppliesToAgeClassification,
+                        InheritedFromGroupTypeName = ancestorName,
+                        InheritedFromGroupTypeUrl = inheritedFromUrl
+                    } )
+                    .OrderBy( r => r.Name ) );
+            }
 
             return inheritedRequirements;
         }
@@ -3115,28 +3233,39 @@ namespace Rock.Blocks.Group
             // attribute qualified by GroupTypeId on the Group entity type.
             // The Group entity itself does not own attributes here; every
             // Group attribute is inherited from an ancestor.
-            var attributeService = new AttributeService( RockContext );
-            var groupEntityTypeId = new Model.Group().TypeId;
+            var groupTypeChain = new List<GroupTypeCache>();
+            WalkGroupTypeInheritancePath( groupType, groupTypeChain.Add );
 
-            WalkGroupTypeInheritancePath( groupType, inheritedGroupType =>
+            // One query for the whole inheritance chain, grouped per ancestor below
+            // in chain order. See BuildInheritedMemberAttributes.
+            var qualifierValues = groupTypeChain.Select( gt => gt.Id.ToString() ).ToList();
+            var dateAttributes = new AttributeService( RockContext ).GetByEntityTypeId( new Model.Group().TypeId, false )
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    qualifierValues.Contains( a.EntityTypeQualifierValue ) &&
+                    dateFieldTypeIds.Contains( a.FieldTypeId ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Guid,
+                    a.Name,
+                    a.EntityTypeQualifierValue
+                } )
+                .ToList();
+
+            foreach ( var inheritedGroupType in groupTypeChain )
             {
                 var qualifierValue = inheritedGroupType.Id.ToString();
 
-                results.AddRange(
-                    attributeService.GetByEntityTypeId( groupEntityTypeId, false )
-                        .Where( a =>
-                            a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                            a.EntityTypeQualifierValue.Equals( qualifierValue ) &&
-                            dateFieldTypeIds.Contains( a.FieldTypeId ) )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .Select( a => new ListItemBag
-                        {
-                            Value = a.Guid.ToString(),
-                            Text = a.Name
-                        } )
-                        .ToList() );
-            } );
+                results.AddRange( dateAttributes
+                    .Where( a => a.EntityTypeQualifierValue == qualifierValue )
+                    .Select( a => new ListItemBag
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = a.Name
+                    } ) );
+            }
 
             return results;
         }
@@ -4453,7 +4582,7 @@ namespace Rock.Blocks.Group
                     Url = this.GetLinkedPageUrl( AttributeKey.ContentItemPage, new Dictionary<string, string>
                     {
                         { "ContentItemId", c.IdKey },
-                        { "autoEdit", "true" }
+                        { PageParameterKey.AutoEdit, "true" }
                     } )
                 } )
                 .Where( l => l.Url.IsNotNullOrWhiteSpace() )

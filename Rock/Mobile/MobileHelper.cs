@@ -38,6 +38,7 @@ using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
+using Rock.Configuration;
 
 namespace Rock.Mobile
 {
@@ -125,7 +126,7 @@ namespace Rock.Mobile
                 return null;
             }
 
-            rockContext = rockContext ?? new Data.RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             // Get user login for the app and verify that it matches the request's key
             var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
@@ -676,7 +677,7 @@ namespace Rock.Mobile
 
             // Load all the pages.
             var blockIds = new List<int>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 AddPagesToUpdatePackage( package, applicationRoot, rockContext, new[] { PageCache.Get( site.DefaultPageId.Value ) } );
 
@@ -707,7 +708,7 @@ namespace Rock.Mobile
                     // when we get the block configuration values.
                     if ( mobileBlockEntity is RockBlockType rockBlockType )
                     {
-                        rockBlockType.RockContext = new RockContext();
+                        rockBlockType.RockContext = RockApp.Current.CreateRockContext();
                     }
 
                     var mobileBlockTypeGuid = mobileBlockEntity.MobileBlockTypeGuid;

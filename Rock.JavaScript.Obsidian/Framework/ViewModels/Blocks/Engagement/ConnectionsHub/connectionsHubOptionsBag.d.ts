@@ -87,6 +87,12 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets the CSS class for the icon to display alongside the block title. */
     iconCssClass?: string | null;
 
+    /**
+     * Gets or sets a value indicating whether the block should open the Add Connection Request
+     * modal on load.
+     */
+    isAddConnectionRequestRequested: boolean;
+
     /** Gets whether board view is enabled for this connection type. */
     isBoardViewEnabled: boolean;
 

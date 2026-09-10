@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -46,7 +47,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var benevolenceRequest = new BenevolenceRequestService( rockContext ).GetNoTracking( guid.Value );
                     if ( benevolenceRequest != null )
@@ -88,7 +89,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new BenevolenceRequestService( rockContext ).Get( guid.Value );
             }
 
@@ -109,7 +110,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var benevolenceRequestId = new BenevolenceRequestService( rockContext ).GetId( guid.Value );
 
@@ -133,6 +134,21 @@ namespace Rock.Field.Types
                 new ReferencedProperty( EntityTypeCache.GetId<BenevolenceRequest>().Value, nameof( BenevolenceRequest.FirstName ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<BenevolenceRequest>().Value, nameof( BenevolenceRequest.LastName ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<BenevolenceRequest>().Value, nameof( BenevolenceRequest.RequestDateTime ) ),
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the BenevolenceRequest table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = "To find the correct value, read the benevolence requests and take the guid of the one you want."
             };
         }
 
@@ -212,7 +228,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new BenevolenceRequestService( new RockContext() ).Get( guid );
+            var item = new BenevolenceRequestService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -224,7 +240,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new BenevolenceRequestService( new RockContext() ).Get( id ?? 0 );
+            var item = new BenevolenceRequestService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

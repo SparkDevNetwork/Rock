@@ -25,9 +25,12 @@ using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Core.Geography.Classes;
 using Rock.Core.Geography.GeographyExtensions.GoogleMaps.Classes;
 using Rock.Enums.Geography;
+using Rock.Logging;
 using Rock.Web.Cache;
 
 using Twilio.Types;
@@ -40,6 +43,18 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
     internal class GoogleMapsLocationExtension
     {
         private string _apiKey;
+
+        /*
+            08/24/26 - JMH
+
+            Google call failures here are expected operating conditions: a quota ceiling, a network blip, or
+            an address the service cannot resolve. Each caller already degrades gracefully, so these are
+            logged rather than written to the exception log, which is reserved for faults someone needs to
+            act on. A busy Group Finder would otherwise fill that log with entries no one can fix.
+
+            Reason: Keep routine Google API failures out of the exception log.
+        */
+        private static readonly Lazy<ILogger> _logger = new Lazy<ILogger>( () => RockLogger.LoggerFactory.CreateLogger<GoogleMapsLocationExtension>() );
 
         #region Constructors
         public GoogleMapsLocationExtension()
@@ -175,9 +190,8 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                 catch ( Exception ex )
                 {
                     // A transient failure (network, quota, or an unexpected response shape) yields no
-                    // result; the caller treats the location as unresolved rather than erroring. Logged so
-                    // the failure is visible rather than silently swallowed.
-                    Rock.Model.ExceptionLogService.LogException( ex );
+                    // result; the caller treats the location as unresolved rather than erroring.
+                    _logger.Value.LogWarning( ex, "Google could not geocode '{Input}'.", input );
                     return null;
                 }
             }
@@ -264,9 +278,8 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                 catch ( Exception ex )
                 {
                     // A transient failure (network, quota) just yields no suggestions; the visitor can still
-                    // type a full address and search. Logged so the failure is visible rather than silently
-                    // swallowed.
-                    Rock.Model.ExceptionLogService.LogException( ex );
+                    // type a full address and search.
+                    _logger.Value.LogWarning( ex, "Google could not return address suggestions for '{Input}'.", input );
                     return suggestions;
                 }
             }

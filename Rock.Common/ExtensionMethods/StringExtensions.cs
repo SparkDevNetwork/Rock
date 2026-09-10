@@ -73,6 +73,40 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether this string contains the specified value, ignoring case.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Use this in place of <c>Contains</c> whenever the collection being filtered
+        /// is already in memory, such as a Rock cache or any other list. In that
+        /// situation <c>Contains</c> resolves to <see cref="string.Contains(string)"/>,
+        /// which is ordinal and therefore case sensitive. The identical expression
+        /// against an Entity Framework queryable becomes a SQL LIKE and is case
+        /// insensitive under Rock's default collation, so the two read the same in
+        /// source and behave differently at runtime.
+        /// </para>
+        /// <para>
+        /// Do not use this inside a LINQ to Entities query. Entity Framework cannot
+        /// translate it to SQL and will throw. Those queries are already case
+        /// insensitive by collation and need no helper.
+        /// </para>
+        /// </remarks>
+        /// <param name="str">The string to search within, which may be <c>null</c>.</param>
+        /// <param name="value">The string to search for, which may be <c>null</c>.</param>
+        /// <returns><c>true</c> if <paramref name="str"/> contains <paramref name="value"/> regardless of case; otherwise <c>false</c>.</returns>
+        public static bool ContainsIgnoreCase( this string str, string value )
+        {
+            if ( str == null || value == null )
+            {
+                return false;
+            }
+
+            // IndexOf rather than the Contains overload that takes a StringComparison,
+            // which does not exist on this target framework.
+            return str.IndexOf( value, StringComparison.OrdinalIgnoreCase ) >= 0;
+        }
+
+        /// <summary>
         /// Converts string to MD5 hash
         /// </summary>
         /// <param name="str">The string.</param>

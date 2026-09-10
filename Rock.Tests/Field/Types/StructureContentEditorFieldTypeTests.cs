@@ -43,7 +43,7 @@ namespace Rock.Tests.Field.Types
             var value = "{\"time\": 1652107072869, \"blocks\": [{\"id\": \"1\", \"type\": \"paragraph\", \"data\": {\"text\": \"hello world.\"}}], \"version\": \"2.24.3\"}";
             var expectedResult = "<p>hello world.</p>\r\n";
 
-            Assert.That.AreEqual( expectedResult, structureContentEditorField.FormatValue( null, value, new Dictionary<string, ConfigurationValue>(), false ) );
+            Assert.AreEqual( expectedResult, structureContentEditorField.FormatValue( null, value, new Dictionary<string, ConfigurationValue>(), false ) );
         }
     }
 }

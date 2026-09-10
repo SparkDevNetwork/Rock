@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Communication.CommunicationEntry;
 using Rock.Model;
@@ -536,7 +537,7 @@ namespace Rock.Blocks.Communication
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentPerson = GetCurrentPerson();
                 var communication = LoadCommunication( rockContext );
@@ -726,7 +727,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communication = UpdateCommunication( rockContext, bag );
 
@@ -798,14 +799,14 @@ namespace Rock.Blocks.Communication
 
             // Get existing or new communication record.
             // Use a separate context so that changes in UpdateCommunication() are not persisted.
-            var communication = UpdateCommunication( new RockContext(), bag );
+            var communication = UpdateCommunication( RockApp.Current.CreateRockContext(), bag );
 
             if ( communication == null )
             {
                 return ActionBadRequest( "Unable to send test communication." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var testCommunication = communication.CloneWithoutIdentity();
                 testCommunication.CreatedByPersonAliasId = primaryAliasId;
@@ -911,7 +912,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communication = UpdateCommunication( rockContext, bag );
 
@@ -1033,7 +1034,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var communication = communicationService.Get( bag.CommunicationGuid );
@@ -1069,7 +1070,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var communication = communicationService.Get( communicationGuid );
@@ -1230,7 +1231,7 @@ namespace Rock.Blocks.Communication
 
             if ( medium is Rock.Communication.Medium.Email emailMedium )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var communication = LoadCommunication( rockContext );
                     return new CommunicationEntryEmailMediumOptionsBag
@@ -1275,7 +1276,7 @@ namespace Rock.Blocks.Communication
             }
             else if ( medium is Rock.Communication.Medium.PushNotification pushMedium )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mobileApplications = new SiteService( rockContext )
                         .Queryable()

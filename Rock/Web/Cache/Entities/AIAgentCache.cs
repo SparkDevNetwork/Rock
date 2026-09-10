@@ -61,6 +61,10 @@ namespace Rock.Web.Cache.Entities
         [DataMember]
         public AudienceType AudienceType { get; private set; }
 
+        /// <inheritdoc cref="AIAgent.IsSystem"/>
+        [DataMember]
+        public bool IsSystem { get; private set; }
+
         /// <inheritdoc/>
         [DataMember]
         public string AdditionalSettingsJson { get; private set; }
@@ -89,6 +93,7 @@ namespace Rock.Web.Cache.Entities
             Instructions = agent.Instructions;
             AgentType = agent.AgentType;
             AudienceType = agent.AudienceType;
+            IsSystem = agent.IsSystem;
             AdditionalSettingsJson = agent.AdditionalSettingsJson;
         }
 
@@ -120,8 +125,9 @@ namespace Rock.Web.Cache.Entities
         /// <param name="currentPerson">The current person that will be interacting with the skill.</param>
         /// <param name="isSecurityEnabled"><c>true</c> if security should be checked when initializing the skill.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="areAllToolsEnabled"><c>true</c> if all authorized tools should be enabled regardless of <see cref="AgentSkillSettings.EnabledTools"/>. This is used by system skills which have no per-tool selection.</param>
         /// <returns>An instance of <see cref="SkillConfiguration"/> that represents the skill and tools, or <c>null</c> if the skill should not be used.</returns>
-        private static SkillConfiguration GetSkillConfiguration( AISkillCache skill, AgentSkillSettings agentSkillSettings, Person currentPerson, bool isSecurityEnabled, RockContext rockContext )
+        private static SkillConfiguration GetSkillConfiguration( AISkillCache skill, AgentSkillSettings agentSkillSettings, Person currentPerson, bool isSecurityEnabled, RockContext rockContext, bool areAllToolsEnabled = false )
         {
             var tools = AISkillToolCache.All( rockContext )
                 .Where( f => f.AISkillId == skill.Id )
@@ -132,7 +138,10 @@ namespace Rock.Web.Cache.Entities
 
             foreach ( var tool in tools )
             {
-                if ( !agentSkillSettings.EnabledTools.Contains( tool.Guid ) )
+                // System skills have no per-tool selection UI, so all authorized
+                // tools are enabled. Otherwise only tools explicitly enabled for
+                // this agent's skill are included.
+                if ( !areAllToolsEnabled && !agentSkillSettings.EnabledTools.Contains( tool.Guid ) )
                 {
                     continue;
                 }
@@ -148,7 +157,7 @@ namespace Rock.Web.Cache.Entities
                     Description = tool.Description,
                     Preamble = additionalSettings.Preamble,
                     Instructions = instructions,
-                    Role = ModelServiceRole.Default, // TODO: Fix this
+                    Role = ModelServiceRole.Medium, // TODO: Fix this
                     ToolType = tool.ToolType,
                     Prompt = prompt.Prompt ?? string.Empty,
                     EnableLavaPreRendering = prompt.PreRenderLava,
@@ -203,7 +212,7 @@ namespace Rock.Web.Cache.Entities
                     continue;
                 }
 
-                var config = GetSkillConfiguration( systemSkill, new AgentSkillSettings(), currentPerson, isSecurityEnabled, rockContext );
+                var config = GetSkillConfiguration( systemSkill, new AgentSkillSettings(), currentPerson, isSecurityEnabled, rockContext, areAllToolsEnabled: true );
 
                 if ( config != null )
                 {

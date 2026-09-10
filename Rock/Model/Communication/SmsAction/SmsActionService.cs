@@ -23,6 +23,7 @@ using System.Web;
 using Rock.Attribute;
 using Rock.Communication.Medium;
 using Rock.Communication.SmsActions;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -60,7 +61,7 @@ namespace Rock.Model
         /// </summary>
         private static readonly Lazy<Person> _systemSenderPerson = new Lazy<Person>( () =>
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemSenderGuid = Rock.SystemGuid.Person.SYSTEM_SENDER.AsGuid();
 
@@ -148,7 +149,7 @@ namespace Rock.Model
         {
             if ( smsPipelineId == null )
             {
-                var minSmsPipelineId = new SmsPipelineService( new RockContext() )
+                var minSmsPipelineId = new SmsPipelineService( RockApp.Current.CreateRockContext() )
                                         .Queryable()
                                         .Where( p => p.IsActive )
                                         .Select( p => ( int? ) p.Id )
@@ -184,7 +185,7 @@ namespace Rock.Model
 
             SmsPipeline smsPipeline;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 smsPipeline = new SmsPipelineService( rockContext ).GetNoTracking( smsPipelineId );
             }
@@ -508,7 +509,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<PhoneNumber> GetMatchingPhoneNumbers()
                 {

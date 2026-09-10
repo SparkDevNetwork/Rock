@@ -23,6 +23,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -100,7 +101,7 @@ namespace Rock.Field.Types
             // being changed after we are called.
             var config = new Dictionary<string, string>( privateConfigurationValues );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             int mediaId = config.GetValueOrDefault( CONFIG_MEDIA, string.Empty ).ToIntSafe( 0 );
             int mediaFolderId = 0;
@@ -174,7 +175,7 @@ namespace Rock.Field.Types
             // being changed after we are called.
             var config = new Dictionary<string, string>( publicConfigurationValues );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             ListItemBag mediaBag = config.GetValueOrDefault( CONFIG_MEDIA_ELEMENT, "{}" ).FromJsonOrNull<ListItemBag>();
 
@@ -290,6 +291,20 @@ namespace Rock.Field.Types
             {
                 return typeof( decimal? );
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A number from 0 to 100 giving the percentage of the media that was watched, not a reference to the media itself. Which media element this relates to comes from the field's configuration rather than from the value."
+            };
         }
 
         #endregion

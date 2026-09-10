@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -73,7 +74,7 @@ namespace Rock.Reporting.DataFilter
             int? dataviewId = selectionConfig.DataViewId;
             if ( dataviewId.HasValue && dataviewId > 0 )
             {
-                var dataView = new DataViewService( new RockContext() ).GetNoTracking( dataviewId.Value );
+                var dataView = new DataViewService( RockApp.Current.CreateRockContext() ).GetNoTracking( dataviewId.Value );
                 if ( dataView != null )
                 {
                     return $"Not Included in '{dataView.Name}' Data View";

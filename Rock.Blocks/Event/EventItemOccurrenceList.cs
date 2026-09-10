@@ -129,12 +129,15 @@ namespace Rock.Blocks.Event
         /// <returns>The options that provide additional details to the block.</returns>
         private EventItemOccurrenceListOptionsBag GetBoxOptions()
         {
+            // The group and registration instance URLs are built with a "((Key))" placeholder as the
+            // identifier value so the page's friendly route is used when one is configured. The client
+            // replaces the placeholder with each row's identifier key.
             var options = new EventItemOccurrenceListOptionsBag()
             {
                 CampusItems = CampusCache.All().ToListItemBagList(),
-                ContentItemDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.RegistrationInstancePage ),
-                GroupDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage ),
-                RegistrationInstancePageUrl = this.GetLinkedPageUrl( AttributeKey.RegistrationInstancePage ),
+                ContentItemDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.ContentItemDetailPage ),
+                GroupDetailPageUrl = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage, "GroupId", "((Key))" ),
+                RegistrationInstancePageUrl = this.GetLinkedPageUrl( AttributeKey.RegistrationInstancePage, "RegistrationInstanceId", "((Key))" ),
                 IsBlockVisible = GetEventItem() != null,
             };
 

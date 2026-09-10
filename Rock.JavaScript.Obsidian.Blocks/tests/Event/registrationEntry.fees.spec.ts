@@ -29,12 +29,6 @@ const blockActions = mockBlockActions({
 });
 
 describe("RegistrationEntry Fees", () => {
-    beforeAll(() => {
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
-        document.elementsFromPoint = jest.fn(() => []);
-    });
-
     describe("Checkbox Fee", () => {
         it("Auto-selects when required and available quantity", async () => {
             const configuration = getConfigurationValues();
@@ -322,10 +316,10 @@ describe("RegistrationEntry Fees", () => {
             expect(checkboxControl.find("input").element.disabled).toBe(true);
         });
 
-        it("Does not prevent moving forward when not checked but is required", async () => {
-            // Note: The WebForms block did not enforce the required property on
-            // checkbox fees. So the Obsidian version is doing the same. This may
-            // be considered a bug and if so the unit test should be updated.
+        it("Prevents moving forward when not checked but is required", async () => {
+            // A required checkbox fee must be checked before the registrant can
+            // advance. This enforcement was added by issue #6537 so required
+            // fees can no longer be bypassed.
             const configuration = getConfigurationValues();
 
             if (!configuration.fees) {
@@ -386,7 +380,13 @@ describe("RegistrationEntry Fees", () => {
                 .filter(node => node.text() === "Next" && node.isVisible())[0]
                 .trigger("click");
 
-            expect(firstRegistrant.isVisible()).toBe(false);
+            // Navigation should be blocked by the required (but unchecked) fee,
+            // so the first registrant remains visible with a validation error.
+            expect(firstRegistrant.isVisible()).toBe(true);
+
+            const alertElement = firstRegistrant.find("div.alert-validation");
+
+            expect(alertElement.find("li").text()).toBe("Test Fee is required");
         });
     });
 

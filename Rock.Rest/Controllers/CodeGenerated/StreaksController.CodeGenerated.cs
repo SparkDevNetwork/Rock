@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="StreaksController"/> class.
         /// </summary>
-        public StreaksController() : base( new Rock.Model.StreakService( new Rock.Data.RockContext() ) ) { } 
+        public StreaksController() : base( new Rock.Model.StreakService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

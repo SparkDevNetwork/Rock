@@ -37,7 +37,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldDeleteBinaryFile_WhenFileHasNoReferences()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();
@@ -72,7 +72,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldNotDeleteBinaryFile_WhenAttributeDefaultValueMatches()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();
@@ -126,7 +126,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldNotDeleteBinaryFile_WhenAttributeValueMatches()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();
@@ -191,7 +191,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldNotDeleteBinaryFile_WhenContainsSearchAttributeDefaultValueMatches()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();
@@ -243,7 +243,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldNotDeleteBinaryFile_WhenContainsSearchAttributeValueMatches()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();
@@ -311,7 +311,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldDeleteBinaryFile_WhenNonContainsSearchAndOnlyDelimitedDefaultValueMatches()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();
@@ -363,7 +363,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldNotDeleteAnything_WhenBinaryFileDoesNotExist()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var existingFileGuid = Guid.NewGuid();
@@ -402,7 +402,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldDeleteBinaryFile_WhenContainsSearchAndNoReferences()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();
@@ -438,7 +438,7 @@ namespace Rock.Tests.Tasks
         [TestMethod]
         public void Execute_ShouldDeleteBinaryFile_WhenAttributeValueFieldTypeIsNotBinaryFile()
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();
@@ -515,7 +515,7 @@ namespace Rock.Tests.Tasks
         [DataRow( SystemGuid.FieldType.VIDEO_FILE )]
         public void Execute_ShouldNotDeleteBinaryFile_WhenAttributeValueFieldTypeIsBinaryFile( string fieldTypeGuid )
         {
-            using ( var scope = TestHelper.CreateScopedRockAppWithMockDatabase() )
+            using ( var scope = TestHelper.CreateScopedRockApp() )
             {
                 var rockContext = scope.App.CreateRockContext();
                 var binaryFileGuid = Guid.NewGuid();

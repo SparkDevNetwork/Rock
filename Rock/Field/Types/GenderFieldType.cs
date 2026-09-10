@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -62,6 +63,32 @@ namespace Rock.Field.Types
 
         #endregion
 
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The number, not the name. A name parses to zero, so 'Male' stores what
+        /// reads back as Unknown without anything reporting a problem.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = Enum.GetValues( typeof( Gender ) )
+                    .Cast<Gender>()
+                    .Select( g => new ListItemBag
+                    {
+                        Value = ( ( int ) g ).ToString(),
+                        Text = g.ToString()
+                    } )
+                    .ToList(),
+                ValueFormat = "The number for the gender, not its name. Unknown is 0, Male is 1 and Female is 2."
+            };
+        }
+
+        #endregion
 
         #region WebForms
 #if WEBFORMS

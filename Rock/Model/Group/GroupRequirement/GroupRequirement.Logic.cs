@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -399,7 +400,7 @@ namespace Rock.Model
         {
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             if ( personId > 0 && groupId > 0 )

@@ -20,6 +20,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -442,7 +443,7 @@ namespace Rock.Web.UI.Controls.Communication
         #region Private Helper Methods
         private RockDropDownList CreateMobileApplicationDropDownList()
         {
-            var mobileSites = new SiteService( new Data.RockContext() ).Queryable().Where( s => s.SiteType == SiteType.Mobile ).Select( s => new { s.Id, s.Name } ).ToList();
+            var mobileSites = new SiteService( RockApp.Current.CreateRockContext() ).Queryable().Where( s => s.SiteType == SiteType.Mobile ).Select( s => new { s.Id, s.Name } ).ToList();
 
             ddlMobileApplications = new RockDropDownList
             {

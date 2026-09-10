@@ -20,6 +20,7 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -63,7 +64,7 @@ namespace Rock.Web.UI.Controls
                 picker.Items.Add( new ListItem() );
             }
 
-            var stepProgramService = new StepProgramService( new RockContext() );
+            var stepProgramService = new StepProgramService( RockApp.Current.CreateRockContext() );
             var stepPrograms = stepProgramService.Queryable().AsNoTracking()
                 .Where( sp => sp.IsActive )
                 .OrderBy( sp => sp.Order )

@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -280,7 +281,7 @@ namespace Rock.Crm.BulkUpdate
         {
             var batchResult = new BulkUpdateResultBag { TotalCount = personIds.Count };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<Person> persons;
                 var outcomes = new BatchOutcomeTracker();
@@ -1563,7 +1564,7 @@ namespace Rock.Crm.BulkUpdate
                 return new List<int>();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new PersonAliasService( rockContext ).Queryable()
                     .Where( pa => aliasGuids.Contains( pa.Guid ) )

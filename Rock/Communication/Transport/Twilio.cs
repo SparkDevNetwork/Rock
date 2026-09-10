@@ -36,6 +36,7 @@ using Twilio.Rest.Api.V2010.Account;
 
 using TwilioExceptions = Twilio.Exceptions;
 using TwilioTypes = Twilio.Types;
+using Rock.Configuration;
 
 namespace Rock.Communication.Transport
 {
@@ -118,7 +119,7 @@ namespace Rock.Communication.Transport
             var communicationCategoryId = 0;
             var communicationEntityTypeId = 0;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( rockContext ).Get( communication.Id );
@@ -403,7 +404,7 @@ namespace Rock.Communication.Transport
 
                 CommunicationRecipient communicationRecipient = null;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
                     int? recipientId = recipient.CommunicationRecipientId;
@@ -501,7 +502,7 @@ namespace Rock.Communication.Transport
 
         private async Task SendToCommunicationRecipient( Model.Communication communication, string fromPhone, Dictionary<string, object> mergeFields, Person currentPerson, List<Uri> attachmentMediaUrls, int personEntityTypeId, int communicationCategoryId, int communicationEntityTypeId, string publicAppRoot, string callbackUrl, CommunicationRecipient recipient )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -679,7 +680,7 @@ namespace Rock.Communication.Transport
 
         private Rock.Model.CommunicationRecipient GetNextPending( int communicationId, int mediumEntityId, bool isBulkCommunication )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var recipient = Model.Communication.GetNextPending( communicationId, mediumEntityId, rockContext );
                 if ( ValidRecipient( recipient, isBulkCommunication ) )

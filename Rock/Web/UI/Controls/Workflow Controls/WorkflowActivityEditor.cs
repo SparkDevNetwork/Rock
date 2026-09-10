@@ -20,6 +20,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -430,7 +431,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             _lState.ID = this.ID + "_lState";
 
             _ddlAssignedToRole.Items.Add( new ListItem( string.Empty, "0" ) );
-            var roles = new GroupService( new RockContext() ).Queryable().Where( g => g.IsSecurityRole ).OrderBy( t => t.Name );
+            var roles = new GroupService( RockApp.Current.CreateRockContext() ).Queryable().Where( g => g.IsSecurityRole ).OrderBy( t => t.Name );
             if ( roles.Any() )
             {
                 foreach ( var role in roles )

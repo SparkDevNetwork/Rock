@@ -28,6 +28,7 @@ using System.Data;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Media;
@@ -79,7 +80,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var breadCrumbs = new List<IBreadCrumb>();
                 var pageParameters = new Dictionary<string, string>();
@@ -228,7 +229,7 @@ namespace Rock.Blocks.Cms
                 TranscriptionText = entity.TranscriptionText,
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var mediaElementInteractions = GetInteractions( entity, null, rockContext );
             GetStandardKpiMetrics( entity, mediaElementInteractions, bag );
 
@@ -632,7 +633,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetPlayCount( int duration )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var mediaElement = new MediaElementService( rockContext ).Get( PageParameter( PageParameterKey.MediaElementId ), !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( mediaElement == null )
@@ -753,7 +754,7 @@ namespace Rock.Blocks.Cms
         public BlockActionResult LoadIndividualPlays( string mediaElementId, string pageContext )
         {
             var interactionChannelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS ).Id;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             PageContext context = null;
 
             if ( pageContext.IsNotNullOrWhiteSpace() )
@@ -866,7 +867,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetVideoEngagementData( string mediaElementId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Try to get the media element ID from the provided string ID
             int mediaElementIdValue;

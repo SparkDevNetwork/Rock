@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -70,7 +71,7 @@ namespace Rock.Badge.Component
             int? currentPersonId = currentUser != null ? currentUser.PersonId : null;
 
             // check for alert note
-            var alertNotesExist = new NoteService( new RockContext() ).Queryable().AsNoTracking()
+            var alertNotesExist = new NoteService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking()
                                 .Where( n => noteTypes.Contains( n.NoteType.Guid )
                                         && n.EntityId.Value == entity.Id
                                         && n.IsAlert == true

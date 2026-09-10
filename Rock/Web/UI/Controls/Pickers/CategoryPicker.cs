@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -173,7 +174,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var item = new CategoryService( new RockContext() ).Get( int.Parse( ItemId ) );
+            var item = new CategoryService( RockApp.Current.CreateRockContext() ).Get( int.Parse( ItemId ) );
             this.SetValue( item );
         }
 
@@ -183,7 +184,7 @@ namespace Rock.Web.UI.Controls
         protected override void SetValuesOnSelect()
         {
             var ids = this.SelectedValuesAsInt().ToList();
-            var items = new CategoryService( new RockContext() ).Queryable().Where( i => ids.Contains( i.Id ) );
+            var items = new CategoryService( RockApp.Current.CreateRockContext() ).Queryable().Where( i => ids.Contains( i.Id ) );
             this.SetValues( items );
         }
 

@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -61,7 +62,7 @@ namespace Rock.Search.Group
                 return Enumerable.Empty<Model.Group>().AsQueryable();
             }
 
-            return new GroupService( new RockContext() ).Queryable()
+            return new GroupService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( g => g.GroupType.ShowInNavigation
                     && g.Name.Contains( searchTerm ) );
         }

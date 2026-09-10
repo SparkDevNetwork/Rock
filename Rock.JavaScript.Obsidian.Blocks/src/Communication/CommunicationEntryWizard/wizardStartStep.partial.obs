@@ -19,7 +19,7 @@
             <template #default>
                 <div class="panel-body-contents">
                     <div ref="noMediumsContainerElement">
-                        <NotificationBox v-if="!allowedMediums.length" alertType="warning">
+                        <NotificationBox v-if="!standaloneMediums.length" alertType="warning">
                             There are no active Email, SMS, or Push communication transports configured.
                         </NotificationBox>
                     </div>
@@ -127,10 +127,10 @@
 
                                 <div class="row">
                                     <div class="col-sm-12">
-                                        <div v-if="allowedMediums.length" class="form-group">
+                                        <div v-if="standaloneMediums.length" class="form-group">
                                             <label class="text-md">Medium</label>
                                             <div class="mediums-section">
-                                                <Medium v-if="allowedMediums.includes(CommunicationType.Email)"
+                                                <Medium v-if="standaloneMediums.includes(CommunicationType.Email)"
                                                         :isSelected="internalCommunicationType === CommunicationType.Email"
                                                         iconCssClass="ti ti-mail ti-2x"
                                                         title="Email"
@@ -142,7 +142,7 @@
                                                     </HighlightLabel>
                                                 </Medium>
 
-                                                <Medium v-if="allowedMediums.includes(CommunicationType.SMS)"
+                                                <Medium v-if="standaloneMediums.includes(CommunicationType.SMS)"
                                                         :isSelected="internalCommunicationType === CommunicationType.SMS"
                                                         iconCssClass="ti ti-device-mobile-message ti-2x"
                                                         title="SMS"
@@ -154,7 +154,7 @@
                                                     </HighlightLabel>
                                                 </Medium>
 
-                                                <Medium v-if="allowedMediums.includes(CommunicationType.PushNotification)"
+                                                <Medium v-if="standaloneMediums.includes(CommunicationType.PushNotification)"
                                                         :isSelected="internalCommunicationType === CommunicationType.PushNotification"
                                                         iconCssClass="ti ti-bell ti-2x"
                                                         title="Push Notifications"
@@ -166,7 +166,7 @@
                                                     </HighlightLabel>
                                                 </Medium>
 
-                                                <Medium v-if="allowedMediums.includes(CommunicationType.RecipientPreference)"
+                                                <Medium v-if="standaloneMediums.includes(CommunicationType.RecipientPreference)"
                                                         :isSelected="internalCommunicationType === CommunicationType.RecipientPreference"
                                                         iconCssClass="ti ti-user ti-2x"
                                                         title="Personal Preference"
@@ -299,6 +299,12 @@
 
     const props = defineProps({
         allowedMediums: {
+            type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        /** The standalone medium options the sender may directly choose (honors the block setting exactly). */
+        standaloneMediums: {
             type: Object as PropType<CommunicationType[]>,
             required: true
         },
@@ -597,7 +603,7 @@
     });
 
     const isCommunicationTypeAllowed = computed<boolean>(() => {
-        return props.allowedMediums.includes(internalCommunicationType.value);
+        return props.standaloneMediums.includes(internalCommunicationType.value);
     });
 
     // #endregion Computed Values
@@ -608,8 +614,8 @@
      * Ensures the communication's type is within the allowed mediums.
      */
     function enforceAllowedCommunicationTypes(): void {
-        if (!isCommunicationTypeAllowed.value && props.allowedMediums.length > 0) {
-            internalCommunicationType.value = props.allowedMediums[0];
+        if (!isCommunicationTypeAllowed.value && props.standaloneMediums.length > 0) {
+            internalCommunicationType.value = props.standaloneMediums[0];
         }
     }
 
@@ -688,7 +694,7 @@
                 }
             });
         }
-        else if (!props.allowedMediums.length) {
+        else if (!props.standaloneMediums.length) {
             // Scroll to the notification.
             nextTick(() => {
                 if (noMediumsContainerElement.value) {

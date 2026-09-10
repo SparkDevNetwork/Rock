@@ -58,6 +58,20 @@ namespace Rock.Utility
         private int MaximumNumberOfTries { get; set; }
 
         /// <summary>
+        /// The action invoked to pause execution between synchronous retries.
+        /// Defaults to <see cref="Thread.Sleep(TimeSpan)"/>. This is used by
+        /// unit testing.
+        /// </summary>
+        internal Action<TimeSpan> WaitBetweenTries { get; set; } = duration => Thread.Sleep( duration );
+
+        /// <summary>
+        /// The function invoked to pause execution between asynchronous retries.
+        /// Defaults to <see cref="Task.Delay(TimeSpan)"/>. This is used by
+        /// unit testing.
+        /// </summary>
+        internal Func<TimeSpan, Task> WaitBetweenTriesAsync { get; set; } = duration => Task.Delay( duration );
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MethodRetry"/> class.
         /// Calling this constructor will give you a maximum of 10 retries with a maximum wait of 3 seconds between retries.
         /// The longest time this should run is 30 seconds.
@@ -131,7 +145,7 @@ namespace Rock.Utility
 
                 numberOfAttempts++;
                 var waitFor = this.GetNextWaitInterval( numberOfAttempts );
-                Thread.Sleep( waitFor );
+                WaitBetweenTries( waitFor );
             }
 
             return default;
@@ -159,7 +173,7 @@ namespace Rock.Utility
 
                 numberOfAttempts++;
                 var waitFor = this.GetNextWaitInterval( numberOfAttempts );
-                await Task.Delay( waitFor ).ConfigureAwait( false );
+                await WaitBetweenTriesAsync( waitFor ).ConfigureAwait( false );
             }
 
             return default;

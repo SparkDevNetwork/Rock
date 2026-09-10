@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Data;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
@@ -17,15 +16,15 @@ namespace Rock.Tests.Web.Cache
     /// </summary>
     /// <seealso cref="GroupTypeCache"/>
     [TestClass]
-    public class GroupTypeCacheTests : MockDatabaseTestsBase
+    public class GroupTypeCacheTests
     {
         #region GetRootGroupTypes
 
         [TestMethod]
         public void GetRootGroupTypes_WithSelfRecursiveGroupType_Succeeds()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var groupType = new GroupType
             {
                 Id = 1,
@@ -36,24 +35,21 @@ namespace Rock.Tests.Web.Cache
             groupType.ParentGroupTypes.Add( groupType );
             groupType.ChildGroupTypes.Add( groupType );
 
-            rockContextMock.Object.Set<GroupType>().Add( groupType );
+            rockContext.Set<GroupType>().Add( groupType );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var groupTypeCache = GroupTypeCache.Get( 1, rockContextMock.Object );
+            var groupTypeCache = GroupTypeCache.Get( 1, rockContext );
 
-                var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
+            var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContext ).ToList();
 
-                Assert.HasCount( 1, rootGroupTypes );
-                Assert.AreEqual( groupType.Id, rootGroupTypes[0].Id );
-            }
+            Assert.HasCount( 1, rootGroupTypes );
+            Assert.AreEqual( groupType.Id, rootGroupTypes[0].Id );
         }
 
         [TestMethod]
         public void GetRootGroupTypes_WithRecursiveGroupType_Succeeds()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var groupTypeA = new GroupType
             {
                 Id = 1,
@@ -72,25 +68,22 @@ namespace Rock.Tests.Web.Cache
             groupTypeB.ParentGroupTypes.Add( groupTypeA );
             groupTypeB.ChildGroupTypes.Add( groupTypeA );
 
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeA );
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeB );
+            rockContext.Set<GroupType>().Add( groupTypeA );
+            rockContext.Set<GroupType>().Add( groupTypeB );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var groupTypeCache = GroupTypeCache.Get( 1, rockContextMock.Object );
+            var groupTypeCache = GroupTypeCache.Get( 1, rockContext );
 
-                var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
+            var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContext ).ToList();
 
-                // It should succeed, but in this case there is no logical root to return.
-                Assert.IsEmpty( rootGroupTypes );
-            }
+            // It should succeed, but in this case there is no logical root to return.
+            Assert.IsEmpty( rootGroupTypes );
         }
 
         [TestMethod]
         public void GetRootGroupTypes_WithABCPattern_ReturnsA()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var groupTypeA = new GroupType
             {
                 Id = 1,
@@ -115,26 +108,23 @@ namespace Rock.Tests.Web.Cache
 
             groupTypeC.ParentGroupTypes.Add( groupTypeB );
 
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeA );
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeB );
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeC );
+            rockContext.Set<GroupType>().Add( groupTypeA );
+            rockContext.Set<GroupType>().Add( groupTypeB );
+            rockContext.Set<GroupType>().Add( groupTypeC );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var groupTypeCache = GroupTypeCache.Get( 3, rockContextMock.Object );
+            var groupTypeCache = GroupTypeCache.Get( 3, rockContext );
 
-                var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
+            var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContext ).ToList();
 
-                Assert.HasCount( 1, rootGroupTypes );
-                Assert.AreEqual( groupTypeA.Id, rootGroupTypes[0].Id );
-            }
+            Assert.HasCount( 1, rootGroupTypes );
+            Assert.AreEqual( groupTypeA.Id, rootGroupTypes[0].Id );
         }
 
         [TestMethod]
         public void GetRootGroupTypes_WithAABCPattern_ReturnsA()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var groupTypeA = new GroupType
             {
                 Id = 1,
@@ -161,26 +151,23 @@ namespace Rock.Tests.Web.Cache
 
             groupTypeC.ParentGroupTypes.Add( groupTypeB );
 
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeA );
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeB );
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeC );
+            rockContext.Set<GroupType>().Add( groupTypeA );
+            rockContext.Set<GroupType>().Add( groupTypeB );
+            rockContext.Set<GroupType>().Add( groupTypeC );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var groupTypeCache = GroupTypeCache.Get( 3, rockContextMock.Object );
+            var groupTypeCache = GroupTypeCache.Get( 3, rockContext );
 
-                var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
+            var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContext ).ToList();
 
-                Assert.HasCount( 1, rootGroupTypes );
-                Assert.AreEqual( groupTypeA.Id, rootGroupTypes[0].Id );
-            }
+            Assert.HasCount( 1, rootGroupTypes );
+            Assert.AreEqual( groupTypeA.Id, rootGroupTypes[0].Id );
         }
 
         [TestMethod]
         public void GetRootGroupTypes_WithCheckinPurpose_ReturnsAB()
         {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            using var app = TestHelper.CreateScopedRockApp();
+            var rockContext = app.App.CreateRockContext();
             var groupTypeA = new GroupType
             {
                 Id = 1,
@@ -215,25 +202,22 @@ namespace Rock.Tests.Web.Cache
 
             groupTypeC.ParentGroupTypes.Add( groupTypeB );
 
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeA );
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeB );
-            rockContextMock.Object.Set<GroupType>().Add( groupTypeC );
-            rockContextMock.Object.Set<DefinedValue>().Add( definedValue );
+            rockContext.Set<GroupType>().Add( groupTypeA );
+            rockContext.Set<GroupType>().Add( groupTypeB );
+            rockContext.Set<GroupType>().Add( groupTypeC );
+            rockContext.Set<DefinedValue>().Add( definedValue );
 
-            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-            {
-                var groupTypeCache = GroupTypeCache.Get( 3, rockContextMock.Object );
+            var groupTypeCache = GroupTypeCache.Get( 3, rockContext );
 
-                var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
+            var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContext ).ToList();
 
-                Assert.HasCount( 2, rootGroupTypes );
+            Assert.HasCount( 2, rootGroupTypes );
 
-                // It should return A since it is the logical root.
-                CollectionAssert.Contains( rootGroupTypes.Select( gt => gt.Id ).ToList(), groupTypeA.Id );
+            // It should return A since it is the logical root.
+            CollectionAssert.Contains( rootGroupTypes.Select( gt => gt.Id ).ToList(), groupTypeA.Id );
 
-                // It should return B since it is the one marked as a check-in template.
-                CollectionAssert.Contains( rootGroupTypes.Select( gt => gt.Id ).ToList(), groupTypeB.Id );
-            }
+            // It should return B since it is the one marked as a check-in template.
+            CollectionAssert.Contains( rootGroupTypes.Select( gt => gt.Id ).ToList(), groupTypeB.Id );
         }
 
         #endregion

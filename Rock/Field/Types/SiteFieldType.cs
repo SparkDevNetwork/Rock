@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -115,7 +116,7 @@ namespace Rock.Field.Types
 
             if ( int.TryParse( privateValue, out var id ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var site = new SiteService( rockContext ).GetNoTracking( id );
                     if ( site != null )
@@ -157,7 +158,7 @@ namespace Rock.Field.Types
             var id = value.AsIntegerOrNull();
             if ( id.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new SiteService( rockContext ).Get( id.Value );
             }
 
@@ -205,6 +206,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The integer Id of a row in the Site table. This field type is unusual in storing an id rather than a guid.",
+                Instructions = "To find the correct value, look up the sites and take the numeric Id of the one you want, not its guid."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -323,7 +340,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var siteService = new SiteService( new RockContext() );
+            var siteService = new SiteService( RockApp.Current.CreateRockContext() );
             var siteQry = siteService.Queryable();
 
             var shorteningSitesOnly = false;

@@ -12,10 +12,11 @@
           :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
 
-        <TextColumn name="person"
-                    title="Person"
-                    field="person"
-                    :filter="pickExistingValueFilter" />
+        <PersonColumn name="person"
+                      title="Person"
+                      field="person"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue" />
 
         <DateTimeColumn name="transactionDateTime"
                         title="Date / Time"
@@ -98,10 +99,11 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, dateValueFilter, pickExistingValueFilter, numberValueFilter, Column, DateTimeColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import Grid, { PersonColumn, TextColumn, textValueFilter, dateValueFilter, pickExistingValueFilter, numberValueFilter, Column, DateTimeColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RegistrationInstancePaymentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstancePaymentList/registrationInstancePaymentListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { NavigationUrlKey } from "./RegistrationInstancePaymentList/types.partial";
     import { reactive, ref } from "vue";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
@@ -117,6 +119,16 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the text used to filter and search the Person column. The person
+     * cell holds a bag, so a scalar name is returned for the filter.
+     */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag | null;
+
+        return person ? `${person.nickName} ${person.lastName}` : "";
+    }
 
     /**
      * Called when the grid is requesting the row data be loaded.

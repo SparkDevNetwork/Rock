@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -752,7 +753,7 @@ namespace Rock.Web.UI.Controls
                         _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
                     }
 
-                    _aFileName.InnerText = new BinaryFileService( new RockContext() ).Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
+                    _aFileName.InnerText = new BinaryFileService( RockApp.Current.CreateRockContext() ).Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
                 }
                 else
                 {

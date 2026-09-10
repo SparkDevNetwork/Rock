@@ -105,6 +105,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A number on its own, with no currency symbol, no thousands separators and no currency code. The symbol shown alongside it comes from Rock's organization currency setting rather than from the value."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

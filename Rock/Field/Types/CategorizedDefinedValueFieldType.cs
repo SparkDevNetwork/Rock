@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using TreeNode = Rock.Web.UI.Controls.TreeNode;
+using Rock.Configuration;
 
 namespace Rock.Field.Types
 {
@@ -438,6 +439,42 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Three things here are easy to get wrong and none of them raise an error:
+        /// the delimiter is a pipe rather than the usual comma, each entry is url
+        /// encoded, and the entries are defined value ids rather than the guids nearly
+        /// every other field type stores. The categories the picker groups by are
+        /// display only and never appear in the value.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var definedType = DefinedTypeCache.Get( privateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ).AsInteger() );
+
+            var valueFormat = definedType != null
+                ? $"One or more ids of DefinedValues from the '{definedType.Name}' defined type, separated by pipes rather than commas, as in 12|15|19."
+                : "One or more ids of DefinedValues, separated by pipes rather than commas, as in 12|15|19.";
+
+            valueFormat += " These are ids, not guids and not idKeys. Each entry is url encoded when read back, so an entry containing a pipe or a percent sign must be percent encoded. The category a value sits under is how the picker groups its options and is never part of the stored value.";
+
+            var hints = new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = valueFormat
+            };
+
+            if ( definedType != null )
+            {
+                hints.Instructions = $"To find the correct values look them up using the Defined Type IdKey of {definedType.IdKey} and take the id of each one you want. The field may be limited to an explicit subset of that defined type.";
+            }
+
+            return hints;
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -661,7 +698,7 @@ namespace Rock.Field.Types
         private TreeNode<CategorizedValuePickerItem> GetSelectionTreeForDefinedType( int? definedTypeId, List<string> selectableValueKeys )
         {
             var listItems = new List<DefinedValueTreeNode>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get the Defined Type and associated values.
             var definedType = DefinedTypeCache.Get( definedTypeId.GetValueOrDefault( 0 ) );
@@ -895,7 +932,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             return new DefinedValueService( rockContext ).Get( value );
         }
 

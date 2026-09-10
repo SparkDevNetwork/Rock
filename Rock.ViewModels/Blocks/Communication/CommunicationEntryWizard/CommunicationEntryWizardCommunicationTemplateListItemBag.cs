@@ -39,6 +39,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         public bool? IsSmsSupported { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this template supports Push communications.
+        /// </summary>
+        public bool? IsPushSupported { get; set; }
+
+        /// <summary>
         /// Gets or sets the category unique identifier for this template.
         /// </summary>
         public Guid? CategoryGuid { get; set; }

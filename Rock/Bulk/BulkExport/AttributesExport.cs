@@ -20,6 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -53,7 +54,7 @@ namespace Rock.BulkExport
 
             if ( attributeKeys.IsNotNullOrWhiteSpace() )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var entityTypeId = EntityTypeCache.Get<T>().Id;
                 var attributesQry = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeId );
                 if ( attributeKeys.Equals( "all", StringComparison.OrdinalIgnoreCase ) )

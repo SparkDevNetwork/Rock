@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialTransactionDetailsController"/> class.
         /// </summary>
-        public FinancialTransactionDetailsController() : base( new Rock.Model.FinancialTransactionDetailService( new Rock.Data.RockContext() ) ) { } 
+        public FinancialTransactionDetailsController() : base( new Rock.Model.FinancialTransactionDetailService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

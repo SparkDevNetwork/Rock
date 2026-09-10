@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -399,7 +400,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public virtual BlockActionResult GetBlockData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var bag = new CommunicationSaturationReportBlockDataBag
             {

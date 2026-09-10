@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -48,13 +49,30 @@ namespace Rock.Field.Types
             return entity?.Name ?? string.Empty;
         }
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. These are rows in a table that a caller can look up, and
+            // reading them here would cost a query for every attribute described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the StepProgram table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is the program, not one of its step types.",
+                Instructions = "To find the correct value, read the step programs and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         /// <summary>
         /// Returns a dictionary of the items available for selection.
         /// </summary>
         /// <returns></returns>
         protected override Dictionary<Guid, string> OnGetItemList()
         {
-            var service = new StepProgramService( new RockContext() );
+            var service = new StepProgramService( RockApp.Current.CreateRockContext() );
 
             var items = service
                 .Queryable()
@@ -101,7 +119,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepProgram = new StepProgramService( rockContext ).GetId( guid.Value );
 

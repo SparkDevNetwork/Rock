@@ -47,6 +47,7 @@ using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.Commu
 using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
 using CommunicationType = Rock.Model.CommunicationType;
 using PushOpenAction = Rock.Utility.PushOpenAction;
+using Rock.Configuration;
 
 namespace Rock.Blocks.Communication
 {
@@ -213,7 +214,8 @@ namespace Rock.Blocks.Communication
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "26917C58-C8A2-4BF5-98CB-378A02761CD7" )]
-    [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0" )]
     public class CommunicationEntryWizard : RockBlockType
     {
         #region Attribute Keys
@@ -423,6 +425,7 @@ namespace Rock.Blocks.Communication
                 box.IsUsingRockMobilePushTransport = GetIsUsingRockMobilePushTransport( mediumBags );
                 box.MaxSmsImageWidth = this.MaxSmsImageWidth;
                 box.Mediums = mediumBags;
+                box.StandaloneMediums = GetStandalonePickerMediumBags( currentPerson );
                 box.MergeFields = GetCommunicationMergeFields( communication );
                 box.MinimumShortLinkTokenLength = this.MinimumShortLinkTokenLength;
                 box.NavigationUrls = GetBoxNavigationUrls();
@@ -1208,7 +1211,7 @@ namespace Rock.Blocks.Communication
             if ( GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
             {
                 // Enable uploading communication attachments without the normal permission restrictions
-                BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
+                BinaryFileType binaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
                 securityGrant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.EDIT ) );
             }
 
@@ -1300,11 +1303,14 @@ namespace Rock.Blocks.Communication
                 hasTemplateToApply = communicationTemplateInfo != null;
             }
 
-            // NOTE: Only set the selected template if the user has auth for this template
-            // and the template supports the Email Wizard
+            // NOTE: Only set the selected template if the user has auth for this template and the template supports
+            // email, SMS, or push. If this preselected template does not support an authorized, selected medium, it
+            // will become deselected in the client, requiring the individual to make a new template selection.
             if ( communicationTemplateInfo?.CommunicationTemplate != null
                 && communicationTemplateInfo.CommunicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson )
-                && GetSupportsEmailWizard( communicationTemplateInfo.CommunicationTemplate ) )
+                && ( GetSupportsEmailWizard( communicationTemplateInfo.CommunicationTemplate )
+                    || GetSupportsSms( communicationTemplateInfo.CommunicationTemplate )
+                    || GetSupportsPush( communicationTemplateInfo.CommunicationTemplate ) ) )
             {
                 shouldApplyTemplateToCommunication = hasTemplateToApply;
                 return GetCommunicationTemplateDetailBag( communicationTemplateInfo );
@@ -1887,6 +1893,9 @@ namespace Rock.Blocks.Communication
                 IsSmsSupported = communicationTemplateInfo.CommunicationTemplate.HasSMSTemplate()
                     || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid()
                     || communicationTemplateInfo.CommunicationTemplate.Guid == "6280214C-404E-4F4E-BC33-7A5D4CDF8DBC".AsGuid(), // TODO Replace with SystemGuid once preview status is removed.
+                IsPushSupported = communicationTemplateInfo.CommunicationTemplate.HasPushTemplate()
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid()
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == "6280214C-404E-4F4E-BC33-7A5D4CDF8DBC".AsGuid(), // TODO Replace with SystemGuid once preview status is removed.
                 Name = communicationTemplateInfo.CommunicationTemplate.Name,
                 Description = communicationTemplateInfo.CommunicationTemplate.Description,
                 ImageUrl = communicationTemplateInfo.CommunicationTemplate.ImageFileId.HasValue
@@ -1919,6 +1928,26 @@ namespace Rock.Blocks.Communication
             var cacheKey = $"{nameof( CommunicationEntryWizard )}:SupportsEmailWizard:{GetCurrentPerson()?.Id ?? 0}:{communicationTemplate.Id}:{communicationTemplate.ModifiedDateTime?.Ticks ?? 0}";
 
             return ( bool ) RockCache.GetOrAddExisting( cacheKey, null, () => communicationTemplate.SupportsEmailWizard(), TimeSpan.FromMinutes( 10 ) );
+        }
+
+        /// <summary>
+        /// Determines whether a communication template can be used for SMS.
+        /// </summary>
+        /// <param name="communicationTemplate">The communication template to check.</param>
+        /// <returns><see langword="true"/> if the template can be used for SMS; otherwise, <see langword="false"/>.</returns>
+        private bool GetSupportsSms( CommunicationTemplate communicationTemplate )
+        {
+            return communicationTemplate.HasSMSTemplate();
+        }
+
+        /// <summary>
+        /// Determines whether a communication template can be used for push notifications.
+        /// </summary>
+        /// <param name="communicationTemplate">The communication template to check.</param>
+        /// <returns><see langword="true"/> if the template can be used for push notifications; otherwise, <see langword="false"/>.</returns>
+        private bool GetSupportsPush( CommunicationTemplate communicationTemplate )
+        {
+            return communicationTemplate.HasPushTemplate();
         }
 
         /// <summary>
@@ -2143,7 +2172,7 @@ namespace Rock.Blocks.Communication
 
             // Create the entity set using a distinct context to ensure the nothing pending in the main context is accidentally saved.
             int? entitySetId = null;
-            using ( var entitySetCreationContext = new RockContext() )
+            using ( var entitySetCreationContext = RockApp.Current.CreateRockContext() )
             {
                 entitySetId = communicationOperationsService
                     .CreatePersonAliasEntitySet( entitySetCreationContext, personAliasIds );
@@ -2390,8 +2419,14 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Retrieves the allowed communication types based on block configuration and preferences.
         /// </summary>
+        /// <param name="expandRecipientPreference">
+        /// When <c>true</c> (the default), selecting "Recipient Preference" also includes Email and SMS,
+        /// because recipient-preference delivery resolves to those mediums. When <c>false</c> (used to
+        /// build the standalone picker options), the result contains only the types explicitly enabled
+        /// in the block setting, so the picker reflects exactly what the admin chose.
+        /// </param>
         /// <returns>A list of <see cref="CommunicationType"/> values representing the allowed communication types.</returns>
-        private List<CommunicationType> GetAllowedCommunicationTypes()
+        private List<CommunicationType> GetAllowedCommunicationTypes( bool expandRecipientPreference = true )
         {
             /*
                 JME 8/20/2021
@@ -2412,7 +2447,7 @@ namespace Rock.Blocks.Communication
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
 
             var result = new List<CommunicationType>();
-            if ( communicationTypes.Contains( "Recipient Preference" ) )
+            if ( expandRecipientPreference && communicationTypes.Contains( "Recipient Preference" ) )
             {
                 result.Add( CommunicationType.RecipientPreference );
 
@@ -2441,6 +2476,11 @@ namespace Rock.Blocks.Communication
                 if ( communicationTypes.Contains( "Push" ) )
                 {
                     result.Add( CommunicationType.PushNotification );
+                }
+
+                if ( communicationTypes.Contains( "Recipient Preference" ) )
+                {
+                    result.Add( CommunicationType.RecipientPreference );
                 }
             }
             else
@@ -2590,18 +2630,81 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Retrieves the standalone medium options the sender may directly choose, honoring exactly the
+        /// communication types enabled in the block setting (without expanding Recipient Preference into
+        /// Email and SMS). This drives the medium picker, and differs from <see cref="GetCommunicationMediumBags"/>,
+        /// which returns the full set of mediums Recipient Preference composes and delivers.
+        /// </summary>
+        /// <param name="currentPerson">The currently logged-in person for authorization checks.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects representing the selectable standalone mediums.</returns>
+        private List<ListItemBag> GetStandalonePickerMediumBags( Person currentPerson )
+        {
+            var mediums = new List<ListItemBag>();
+
+            // Honor exactly what the admin enabled, so do not expand Recipient Preference into Email/SMS here.
+            var allowedCommunicationTypes = GetAllowedCommunicationTypes( expandRecipientPreference: false );
+
+            var hasEmailTransport = MediumContainer.HasActiveAndAuthorizedEmailTransport( currentPerson );
+            var hasSmsTransport = MediumContainer.HasActiveAndAuthorizedSmsTransport( currentPerson );
+            var hasPushTransport = MediumContainer.HasActiveAndAuthorizedPushTransport( currentPerson );
+
+            if ( hasEmailTransport && allowedCommunicationTypes.Contains( CommunicationType.Email ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL,
+                    Text = "Email"
+                } );
+            }
+
+            if ( hasSmsTransport && allowedCommunicationTypes.Contains( CommunicationType.SMS ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS,
+                    Text = "SMS"
+                } );
+            }
+
+            if ( hasPushTransport && allowedCommunicationTypes.Contains( CommunicationType.PushNotification ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    Value = SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION,
+                    Text = "Push"
+                } );
+            }
+
+            // Recipient Preference resolves to a recipient's Email or SMS, so offer it whenever it is
+            // enabled and at least one of those transports is active, regardless of whether Email or SMS
+            // are also enabled as standalone options. This lets a "Recipient Preference only" setting
+            // still present the Recipient Preference option.
+            if ( allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference ) && ( hasEmailTransport || hasSmsTransport ) )
+            {
+                mediums.Add( new ListItemBag
+                {
+                    // If this hard-coded value is changed, then the Obsidian client code should be updated too.
+                    Value = "Recipient Preference",
+                    Text = "Recipient Preference"
+                } );
+            }
+
+            return mediums;
+        }
+
+        /// <summary>
         /// Sends a test communication based on the given communication details, creating a temporary communication record and sending it to the current user.
         /// </summary>
         /// <param name="bag">The communication details used for the test communication.</param>
         private void SendTestCommunication( CommunicationEntryWizardCommunicationBag bag, out string errorMessage )
         {
             errorMessage = null;
-            var communication = SaveCommunication( new RockContext(), bag );
+            var communication = SaveCommunication( RockApp.Current.CreateRockContext(), bag );
 
             if ( communication != null )
             {
                 // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var currentPerson = GetCurrentPerson();
                     // store the CurrentPerson's current Email and SMS number so we can restore it after changing them to the Test Email/SMS Number
@@ -2748,7 +2851,7 @@ namespace Rock.Blocks.Communication
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
 
                                 // Delete any Person History that was created for the Test Communication
-                                using ( var historyContext = new RockContext() )
+                                using ( var historyContext = RockApp.Current.CreateRockContext() )
                                 {
                                     var categoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid() ).Id;
                                     var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
@@ -2772,7 +2875,7 @@ namespace Rock.Blocks.Communication
                         try
                         {
                             // make sure we restore the CurrentPerson's email/SMS number if it was changed for the test
-                            using ( var restorePersonContext = new RockContext() )
+                            using ( var restorePersonContext = RockApp.Current.CreateRockContext() )
                             {
                                 var restorePersonService = new PersonService( restorePersonContext );
                                 var personToUpdate = restorePersonService.Get( testPersonId );
@@ -2971,7 +3074,7 @@ namespace Rock.Blocks.Communication
                         };
                         result.WasRequestedPersonFound = true;
 
-                        return result;
+                        return ApplyAdditionalMergeValues( rockContext, communication, result );
                     }
                     else
                     {
@@ -3027,7 +3130,7 @@ namespace Rock.Blocks.Communication
                         };
                         result.WasRequestedPersonFound = true;
 
-                        return result;
+                        return ApplyAdditionalMergeValues( rockContext, communication, result );
                     }
                     else
                     {
@@ -3054,7 +3157,7 @@ namespace Rock.Blocks.Communication
                             };
                             result.WasRequestedPersonFound = true;
 
-                            return result;
+                            return ApplyAdditionalMergeValues( rockContext, communication, result );
                         }
                     }
                 }
@@ -3084,7 +3187,7 @@ namespace Rock.Blocks.Communication
                         };
                         result.WasRequestedPersonFound = true;
 
-                        return result;
+                        return ApplyAdditionalMergeValues( rockContext, communication, result );
                     }
                 }
                 else
@@ -3115,8 +3218,49 @@ namespace Rock.Blocks.Communication
                     PersonAlias = currentPerson.PrimaryAlias
                 };
 
+                return ApplyAdditionalMergeValues( rockContext, communication, result );
+            }
+        }
+
+        /// <summary>
+        /// Applies the additional merge values from the matching persisted communication recipient
+        /// to the sample recipient used to build the preview.
+        /// </summary>
+        /// <param name="rockContext">The database context used to look up the persisted recipient.</param>
+        /// <param name="communication">The communication whose additional merge fields drive the lookup.</param>
+        /// <param name="result">The sample recipient result to populate.</param>
+        /// <returns>The same <paramref name="result"/>, with additional merge values applied when a matching recipient row exists.</returns>
+        private SampleCommunicationRecipientResult ApplyAdditionalMergeValues( RockContext rockContext, Model.Communication communication, SampleCommunicationRecipientResult result )
+        {
+            var recipient = result?.CommunicationRecipient;
+
+            if ( recipient?.PersonAlias == null || communication.AdditionalMergeFields?.Any() != true )
+            {
                 return result;
             }
+
+            /*
+                09/09/26 - JMH
+
+                Additional merge field values are stored on each persisted CommunicationRecipient row.
+                Most preview paths build a fresh sample recipient that carries no additional merge
+                values, so those fields resolve to blank in the preview. Copy the values from the
+                matching persisted recipient row when one exists. The sample recipient may be someone
+                without a persisted row (a "preview as" person, an unsaved manual recipient, or the
+                logged-in fallback), so this is a best-effort lookup rather than a required match.
+
+                Reason: Preview did not resolve additional merge fields for the sample recipient.
+            */
+            var persistedRecipient = new CommunicationRecipientService( rockContext )
+                .GetByCommunicationId( communication.Id )
+                .FirstOrDefault( cr => cr.PersonAlias.Id == recipient.PersonAlias.Id );
+
+            if ( persistedRecipient != null )
+            {
+                recipient.AdditionalMergeValues = persistedRecipient.AdditionalMergeValues;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -3162,7 +3306,7 @@ namespace Rock.Blocks.Communication
                     Message = "Working...",
                 } );
 
-                var rockContext = new RockContext(); // Create new context within the task so it can remain open.
+                var rockContext = RockApp.Current.CreateRockContext(); // Create new context within the task so it can remain open.
 
                 Model.Communication communication = null;
                 using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Send Communication > Update Communication and Recipients" ) )
@@ -3534,7 +3678,7 @@ namespace Rock.Blocks.Communication
                 // which may include other updates to the communication or related entities.
                 // This allows the entity set to be used for efficiently loading just the recipient person aliases without affecting the state of the main context.
                 int? entitySetId = null;
-                using ( var entitySetCreationContext = new RockContext() )
+                using ( var entitySetCreationContext = RockApp.Current.CreateRockContext() )
                 {
                     entitySetId = new CommunicationOperationsService().CreatePersonAliasEntitySet( entitySetCreationContext, personAliasIds );
                 }

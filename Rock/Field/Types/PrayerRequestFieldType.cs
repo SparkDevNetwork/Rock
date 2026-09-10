@@ -25,6 +25,7 @@ using System.Linq;
 
 #if WEBFORMS
 using System.Web.UI;
+using Rock.Configuration;
 #endif
 
 namespace Rock.Field.Types
@@ -45,7 +46,7 @@ namespace Rock.Field.Types
         {
             var formattedValue = privateValue;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 PrayerRequest prayerRequest = null;
 
@@ -92,7 +93,7 @@ namespace Rock.Field.Types
         /// <returns>The entity.</returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var guid = value.AsGuidOrNull();
 
             if ( guid.HasValue )
@@ -117,7 +118,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var prayerRequestId = new PrayerRequestService( rockContext ).GetId( guid.Value );
 
@@ -139,6 +140,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<PrayerRequest>().Value, nameof( PrayerRequest.Text ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the PrayerRequest table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = "To find the correct value, read the prayer requests and take the guid of the one you want."
             };
         }
 
@@ -171,7 +187,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new PrayerRequestService( rockContext ).GetId( guid );
             }
@@ -185,7 +201,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var itemGuid = new PrayerRequestService( rockContext ).GetGuid( id ?? 0 );
                 var guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;

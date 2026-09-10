@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -75,7 +76,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var activityTypeName = new ConnectionActivityTypeService( rockContext ).GetSelect( guid.Value, cat => cat.Name );
 
@@ -112,7 +113,7 @@ namespace Rock.Field.Types
 
             if ( usage != ConfigurationValueUsage.View )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     if ( configurationValues.ContainsKey( CONNECTION_TYPE_FILTER ) )
                     {
@@ -194,7 +195,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ConnectionActivityTypeService( rockContext ).Get( guid.Value );
             }
 
@@ -225,7 +226,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var opportunityId = new ConnectionActivityTypeService( rockContext ).GetId( guid.Value );
 
@@ -247,6 +248,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<ConnectionActivityType>().Value, nameof( ConnectionActivityType.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the ConnectionActivityType table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. These belong to a connection type, so an activity type from a different connection type will not be valid.",
+                Instructions = "To find the correct value, read the connection activity types and take the guid of the one you want."
             };
         }
 
@@ -293,7 +309,7 @@ namespace Rock.Field.Types
             ddlConnectionTypeFilter.SelectedIndexChanged += OnQualifierUpdated;
             ddlConnectionTypeFilter.AutoPostBack = true;
 
-            var connectionTypeService = new ConnectionTypeService( new RockContext() );
+            var connectionTypeService = new ConnectionTypeService( RockApp.Current.CreateRockContext() );
             ddlConnectionTypeFilter.Items.Add( new ListItem() );
             ddlConnectionTypeFilter.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Id.ToString() } ).ToArray() );
 
@@ -383,7 +399,7 @@ namespace Rock.Field.Types
                 connectionTypeFilterId = configurationValues.ContainsKey( CONNECTION_TYPE_FILTER ) ? configurationValues[CONNECTION_TYPE_FILTER].Value.AsIntegerOrNull() : null;
             }
 
-            var activityTypes = new ConnectionActivityTypeService( new RockContext() )
+            var activityTypes = new ConnectionActivityTypeService( RockApp.Current.CreateRockContext() )
                 .Queryable().AsNoTracking()
                 .Where( o => o.IsActive || includeInactive )
                 .OrderBy( o => o.ConnectionType.Name )
@@ -460,7 +476,7 @@ namespace Rock.Field.Types
                         if ( listItem == null )
                         {
                             var valueGuid = value.AsGuid();
-                            var activityType = new ConnectionActivityTypeService( new RockContext() )
+                            var activityType = new ConnectionActivityTypeService( RockApp.Current.CreateRockContext() )
                                .Queryable().AsNoTracking()
                                .Where( o => o.Guid == valueGuid )
                                .FirstOrDefault();
@@ -485,7 +501,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ConnectionActivityTypeService( new RockContext() ).Get( guid );
+            var item = new ConnectionActivityTypeService( RockApp.Current.CreateRockContext() ).Get( guid );
 
             return item != null ? item.Id : ( int? ) null;
         }
@@ -498,7 +514,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ConnectionActivityTypeService( new RockContext() ).Get( id ?? 0 );
+            var item = new ConnectionActivityTypeService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
 
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
 

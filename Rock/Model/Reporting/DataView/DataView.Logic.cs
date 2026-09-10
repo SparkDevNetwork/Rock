@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Security;
@@ -139,7 +140,7 @@ namespace Rock.Model
         {
             if ( this.DisableUseOfReadOnlyContext )
             {
-                return new RockContext();
+                return RockApp.Current.CreateRockContext();
             }
             else
             {
@@ -256,7 +257,7 @@ namespace Rock.Model
                 var rockContext = serviceInstance.Context as RockContext;
                 if ( rockContext == null )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 var persistedValuesQuery = rockContext.Set<DataViewPersistedValue>().Where( a => a.DataViewId == this.Id );
@@ -305,7 +306,7 @@ namespace Rock.Model
                 This PersistResult database context needs to be writable (not read-only), so that the persisted values for the dataview will delete / insert.
                 
             */
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dataViewService = new DataViewService( rockContext );
                 var persistStopwatch = Stopwatch.StartNew();

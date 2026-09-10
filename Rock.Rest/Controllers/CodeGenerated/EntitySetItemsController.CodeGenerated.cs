@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="EntitySetItemsController"/> class.
         /// </summary>
-        public EntitySetItemsController() : base( new Rock.Model.EntitySetItemService( new Rock.Data.RockContext() ) ) { } 
+        public EntitySetItemsController() : base( new Rock.Model.EntitySetItemService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

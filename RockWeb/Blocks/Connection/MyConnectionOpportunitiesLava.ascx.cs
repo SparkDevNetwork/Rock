@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -41,7 +42,7 @@ namespace RockWeb.Blocks.Connection
         "Detail Page",
         Description = "Page used to view details of a request.",
         IsRequired = false,
-        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL,
+        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_HUB,
         Order = 1,
         Key = AttributeKey.DetailPage )]
 
@@ -142,7 +143,7 @@ namespace RockWeb.Blocks.Connection
 
             DateTime midnightToday = RockDateTime.Today.AddDays( 1 );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionRequests = new ConnectionRequestService( rockContext ).Queryable()
                 .Where( a => a.ConnectorPersonAlias != null && a.ConnectorPersonAlias.PersonId == CurrentPersonId )
                 .Where( r => r.ConnectionState == ConnectionState.Active ||

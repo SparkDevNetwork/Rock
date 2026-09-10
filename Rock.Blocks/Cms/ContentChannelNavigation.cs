@@ -486,14 +486,16 @@ namespace Rock.Blocks.Cms
                 RockAttributeFilter component in SimpleFilter mode.
 
                 Because Obsidian components emit values in a public format
-                (JSON objects, GUIDs, etc.), we convert each value to its
-                internal database representation via GetPrivateValue before
-                passing it to GetAttributeExpression. The standard filter
-                component may also omit a ComparisonType for certain field
-                types, so we fall back to the field type's own default.
+                (JSON objects, GUIDs, etc.), the value has to be converted to
+                its internal database representation before an expression can
+                be built from it. Both steps are done by
+                ExpressionHelper.GetAttributeFilterExpression so that every
+                block filtering on attributes converts values and handles blank
+                values identically. A null ComparisonType is passed through
+                rather than defaulted, which is how checkbox-style field types
+                ask for their natural "any of" filter.
 
-                Reason: Public-to-private value conversion for SQL-level
-                attribute filtering.
+                Reason: Shared public-to-private attribute filter conversion.
             */
             if ( gridAttributes.Any() )
             {
@@ -517,55 +519,10 @@ namespace Rock.Blocks.Cms
 
                         Reason: Preserve field-type-specific structural whitespace.
                     */
-                    var rawValue = filterEntry.Value;
-                    if ( rawValue == "null" )
-                    {
-                        rawValue = string.Empty;
-                    }
-
-                    var filterValue = rawValue.IsNotNullOrWhiteSpace()
-                        ? PublicAttributeHelper.GetPrivateValue( attribute, rawValue )
-                        : rawValue;
-
-                    // Skip entries with no value unless the comparison type is
-                    // IsBlank or IsNotBlank, which are valid without a value.
-                    var isBlankComparison = filterEntry.ComparisonType.HasValue
-                        && ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( filterEntry.ComparisonType.Value );
-
-                    if ( !isBlankComparison && filterValue.IsNullOrWhiteSpace() )
-                    {
-                        continue;
-                    }
-
-                    var entityField = EntityHelper.GetEntityFieldForAttribute( attribute, false );
-                    if ( entityField == null )
-                    {
-                        continue;
-                    }
-
-                    // Determine the comparison type. If the client did not
-                    // provide one, fall back to the field type's default.
-                    var comparisonType = filterEntry.ComparisonType;
-                    if ( !comparisonType.HasValue && filterValue.IsNotNullOrWhiteSpace() )
-                    {
-                        var supportedTypes = entityField.FieldType.Field.FilterComparisonType;
-                        comparisonType = supportedTypes.HasFlag( ComparisonType.Contains )
-                            ? ComparisonType.Contains
-                            : ComparisonType.EqualTo;
-                    }
-
-                    var filterArgs = new List<string>();
-                    if ( comparisonType.HasValue )
-                    {
-                        filterArgs.Add( comparisonType.ConvertToInt().ToString() );
-                    }
-
-                    filterArgs.Add( filterValue );
-
                     var parameterExpression = contentChannelItemService.ParameterExpression;
-                    var attributeExpression = ExpressionHelper.GetAttributeExpression( contentChannelItemService, parameterExpression, entityField, filterArgs );
+                    var attributeExpression = ExpressionHelper.GetAttributeFilterExpression( contentChannelItemService, parameterExpression, attribute, filterEntry );
 
-                    if ( attributeExpression is NoAttributeFilterExpression )
+                    if ( attributeExpression == null )
                     {
                         continue;
                     }

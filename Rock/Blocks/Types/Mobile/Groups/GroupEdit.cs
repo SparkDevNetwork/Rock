@@ -22,6 +22,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -443,7 +444,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             var parameters = new Dictionary<string, string>();
             string fieldsContent;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
@@ -589,7 +590,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 

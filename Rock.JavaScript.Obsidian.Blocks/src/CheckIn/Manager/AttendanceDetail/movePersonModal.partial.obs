@@ -1,0 +1,296 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Edit Attendance"
+           saveText="Save"
+           saveAutoDisable
+           saveAutoLoading
+           :onSave="onSave"
+           @closeModal="onClose">
+        <NotificationBox v-if="errorMessage"
+                         alertType="danger"
+                         :dismissible="true"
+                         @dismiss="errorMessage = ''">{{ errorMessage }}</NotificationBox>
+
+        <div v-if="allowEditingStartAndEndTimes" class="row">
+            <div class="col-md-6">
+                <DateTimePicker v-model="startDateTime" label="Check-in Date/Time" />
+            </div>
+            <div class="col-md-6">
+                <DateTimePicker v-model="endDateTime" label="Check-out Date/Time" />
+            </div>
+        </div>
+
+        <div class="well mb-spacing-none">
+            <h4>Move Individual</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList v-model="selectedScheduleValue"
+                                  label="Schedule"
+                                  :items="scheduleItems"
+                                  :showBlankItem="!hasSingleSchedule"
+                                  rules="required" />
+                </div>
+                <div class="col-md-4">
+                    <DropDownList v-model="selectedLocationValue"
+                                  label="Location"
+                                  :items="locationItems"
+                                  :showBlankItem="!hasSingleLocation"
+                                  rules="required" />
+                </div>
+                <div class="col-md-4">
+                    <DropDownList v-model="selectedGroupValue"
+                                  label="Group"
+                                  :items="groupItems"
+                                  :showBlankItem="!hasSingleGroup"
+                                  rules="required" />
+                </div>
+            </div>
+        </div>
+
+        <NotificationBox v-if="warningMessage"
+                         alertType="warning"
+                         class="mt-spacing-md mb-spacing-none">{{ warningMessage }}</NotificationBox>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AttendanceDetailMovePersonOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailMovePersonOptionsBag";
+    import { AttendanceDetailMovePersonRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailMovePersonRequestBag";
+    import { AttendanceDetailMovePersonResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailMovePersonResponseBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AttendanceDetailMovePersonOptionsBag | null>,
+            default: null
+        },
+
+        allowEditingStartAndEndTimes: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        onSave: {
+            type: Function as PropType<(request: AttendanceDetailMovePersonRequestBag) => Promise<AttendanceDetailMovePersonResponseBag | null>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    // #region Values
+
+    const scheduleItems = ref<ListItemBag[]>([]);
+    const locationItems = ref<ListItemBag[]>([]);
+    const groupItems = ref<ListItemBag[]>([]);
+
+    const selectedScheduleValue = ref<string>("");
+    const selectedLocationValue = ref<string>("");
+    const selectedGroupValue = ref<string>("");
+
+    const startDateTime = ref<string | null>(null);
+    const endDateTime = ref<string | null>(null);
+
+    const errorMessage = ref<string>("");
+    const warningMessage = ref<string>("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /*
+        The "hasSingle*" flags mirror the WebForms auto-select behavior: when
+        exactly one option is available it is auto-selected and the blank
+        placeholder is suppressed so the user is not asked to pick from a
+        list of one.
+    */
+    const hasSingleSchedule = computed((): boolean => scheduleItems.value.length === 1);
+    const hasSingleLocation = computed((): boolean => locationItems.value.length === 1);
+    const hasSingleGroup = computed((): boolean => groupItems.value.length === 1);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Populates the Schedule dropdown from the server-provided options and
+     * pre-selects the currently-occupied schedule when it still appears in
+     * the list. Falls back to auto-selecting a single option when that is
+     * all that is available.
+     */
+    function loadSchedule(): void {
+        const opts = props.options;
+        scheduleItems.value = opts?.schedules ?? [];
+
+        const currentValue = opts?.currentScheduleId != null ? String(opts.currentScheduleId) : "";
+        if (currentValue && scheduleItems.value.some(i => i.value === currentValue)) {
+            selectedScheduleValue.value = currentValue;
+        }
+        else if (scheduleItems.value.length === 1) {
+            selectedScheduleValue.value = scheduleItems.value[0].value ?? "";
+        }
+        else {
+            selectedScheduleValue.value = "";
+        }
+    }
+
+    /**
+     * Filters the Location dropdown by the selected Schedule. Uses the
+     * server-provided lookup map keyed by scheduleId (as a string).
+     */
+    function loadLocation(currentLocationId?: number | null): void {
+        const opts = props.options;
+        const scheduleKey = selectedScheduleValue.value;
+        locationItems.value = (opts?.locationsBySchedule?.[scheduleKey]) ?? [];
+
+        const currentValue = currentLocationId != null ? String(currentLocationId) : "";
+        if (currentValue && locationItems.value.some(i => i.value === currentValue)) {
+            selectedLocationValue.value = currentValue;
+        }
+        else if (locationItems.value.length === 1) {
+            selectedLocationValue.value = locationItems.value[0].value ?? "";
+        }
+        else {
+            selectedLocationValue.value = "";
+        }
+    }
+
+    /**
+     * Filters the Group dropdown by the selected Schedule + Location. Uses
+     * the composite "{scheduleId}{delimiter}{locationId}" key exactly the
+     * way the server encoded it.
+     */
+    function loadGroup(currentGroupId?: number | null): void {
+        const opts = props.options;
+        const delimiter = opts?.groupListItemKeyDelimiter ?? "|";
+        const key = `${selectedScheduleValue.value}${delimiter}${selectedLocationValue.value}`;
+        groupItems.value = (opts?.groupsByScheduleAndLocation?.[key]) ?? [];
+
+        const currentValue = currentGroupId != null ? String(currentGroupId) : "";
+        if (currentValue && groupItems.value.some(i => i.value === currentValue)) {
+            selectedGroupValue.value = currentValue;
+        }
+        else if (groupItems.value.length === 1) {
+            selectedGroupValue.value = groupItems.value[0].value ?? "";
+        }
+        else {
+            selectedGroupValue.value = "";
+        }
+    }
+
+    /**
+     * Applies the server payload to the local form state each time the
+     * modal opens.
+     */
+    function reset(): void {
+        errorMessage.value = "";
+        warningMessage.value = "";
+
+        startDateTime.value = props.options?.startDateTime ?? null;
+        endDateTime.value = props.options?.endDateTime ?? null;
+
+        loadSchedule();
+        loadLocation(props.options?.currentLocationId);
+        loadGroup(props.options?.currentGroupId);
+    }
+
+    function onClose(): void {
+        warningMessage.value = "";
+        errorMessage.value = "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+        warningMessage.value = "";
+
+        const scheduleId = parseInt(selectedScheduleValue.value, 10);
+        const locationId = parseInt(selectedLocationValue.value, 10);
+        const groupId = parseInt(selectedGroupValue.value, 10);
+
+        if (!scheduleId) {
+            errorMessage.value = "Please select a schedule.";
+            return;
+        }
+        if (!locationId) {
+            errorMessage.value = "Please select a location.";
+            return;
+        }
+        if (!groupId) {
+            errorMessage.value = "Please select a group.";
+            return;
+        }
+
+        const request: AttendanceDetailMovePersonRequestBag = {
+            scheduleId,
+            locationId,
+            groupId,
+            startDateTime: props.allowEditingStartAndEndTimes ? startDateTime.value : null,
+            endDateTime: props.allowEditingStartAndEndTimes ? endDateTime.value : null
+        };
+
+        const response = await props.onSave(request);
+
+        if (!response) {
+            return;
+        }
+
+        if (response.warningMessage) {
+            warningMessage.value = response.warningMessage;
+            return;
+        }
+
+        if (response.errorMessage) {
+            errorMessage.value = response.errorMessage;
+            return;
+        }
+
+        // Success: parent already closed the modal and rebound the view.
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isVisible, (open) => {
+        if (open) {
+            reset();
+        }
+    });
+
+    watch(selectedScheduleValue, () => {
+        warningMessage.value = "";
+        loadLocation(props.options?.currentLocationId);
+        loadGroup(props.options?.currentGroupId);
+    });
+
+    watch(selectedLocationValue, () => {
+        warningMessage.value = "";
+        loadGroup(props.options?.currentGroupId);
+    });
+
+    watch(selectedGroupValue, () => {
+        warningMessage.value = "";
+    });
+
+    // #endregion Watchers
+</script>

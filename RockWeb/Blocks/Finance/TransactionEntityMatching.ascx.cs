@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core.Grid;
 using Rock.Field;
@@ -261,7 +262,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadDropDowns()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financialBatchList = new FinancialBatchService( rockContext ).Queryable()
                 .Where( a => a.Status == BatchStatus.Open ).OrderBy( a => a.Name ).Select( a => new
                 {
@@ -289,7 +290,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             int? entityTypeQualifierValue = this.GetAttributeValue( "EntityTypeQualifierValue" ).AsIntegerOrNull();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             Dictionary<int, int?> entityLookup = _financialTransactionDetailList.Where( a => a.EntityId.HasValue ).ToDictionary( k => k.Id, v => v.EntityId );
 
@@ -298,11 +299,41 @@ namespace RockWeb.Blocks.Finance
                 if ( _transactionEntityType.Id == EntityTypeCache.GetId<GroupMember>() )
                 {
                     int? groupTypeId = entityTypeQualifierValue;
-                    var groupsWithMembersList = new GroupService( new RockContext() ).Queryable().Where( a => a.GroupTypeId == groupTypeId.Value && a.Members.Any() && a.IsActive ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking()
+
+                    /*
+                        8/21/2026 - NA
+
+                        Include any Groups that are currently referenced (via GroupMember) by a
+                        Transaction Detail on the rendered rows, even if the Group has since been
+                        made inactive (or archived). Otherwise the current selection cannot be
+                        shown in the dropdown, and a subsequent Save would treat the empty
+                        selection as an intentional un-match and clear the existing EntityId.
+                        New selections still only offer active, non-archived Groups.
+
+                        AsNoFilter() bypasses the Z.EntityFramework.Plus filter that hides
+                        archived Groups (and GroupMembers) so a referenced-but-archived row is
+                        still resolvable here.
+
+                        Reason: Preserve existing Fundraising Matching links when the linked
+                        Group becomes inactive.
+                        https://github.com/SparkDevNetwork/Rock/issues/6990
+                    */
+                    var referencedGroupMemberIds = entityLookup.Values.Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+                    var referencedGroupIds = new GroupMemberService( rockContext ).AsNoFilter()
+                        .Where( gm => referencedGroupMemberIds.Contains( gm.Id ) )
+                        .Select( gm => gm.GroupId )
+                        .Distinct()
+                        .ToList();
+
+                    var groupsWithMembersList = new GroupService( RockApp.Current.CreateRockContext() ).AsNoFilter()
+                        .Where( a => a.GroupTypeId == groupTypeId.Value
+                            && ( ( a.IsActive && !a.IsArchived && a.Members.Any() ) || referencedGroupIds.Contains( a.Id ) ) )
+                        .OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking()
                         .Select( a => new
                         {
                             a.Id,
-                            a.Name
+                            a.Name,
+                            a.IsActive
                         } )
                         .ToList();
 
@@ -312,7 +343,7 @@ namespace RockWeb.Blocks.Finance
                         ddlGroup.Items.Add( new ListItem() );
                         foreach ( var group in groupsWithMembersList )
                         {
-                            ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                            ddlGroup.Items.Add( BuildGroupListItem( group.Id, group.Name, group.IsActive ) );
                         }
 
                         var financialTransactionDetailId = ddlGroup.ID.Replace( "ddlGroup_", string.Empty ).AsInteger();
@@ -346,17 +377,31 @@ namespace RockWeb.Blocks.Finance
                 {
                     int? groupTypeId = entityTypeQualifierValue;
                     bool limitToActiveGroups = this.GetAttributeValue( "LimitToActiveGroups" ).AsBoolean();
-                    var groupQry = new GroupService( new RockContext() ).Queryable().Where( a => a.GroupTypeId == groupTypeId.Value && a.IsActive );
+
+                    // Also include any Groups currently referenced by a Transaction Detail on the
+                    // rendered rows so a Group that is now inactive (or archived) can still be
+                    // shown as the current selection. See the note in the GroupMember branch
+                    // above for the full rationale (#6990).
+                    //
+                    // The base list is every non-archived Group of the configured GroupType, so
+                    // unchecking "Limit to Active Groups" actually shows inactive Groups (the
+                    // previous implementation hard-coded IsActive into the base filter, which
+                    // made the setting a no-op). Archived Groups stay hidden unless referenced.
+                    var referencedGroupIds = entityLookup.Values.Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList();
+                    var groupQry = new GroupService( RockApp.Current.CreateRockContext() ).AsNoFilter()
+                        .Where( a => a.GroupTypeId == groupTypeId.Value
+                            && ( !a.IsArchived || referencedGroupIds.Contains( a.Id ) ) );
                     if ( limitToActiveGroups )
                     {
-                        groupQry = groupQry.Where( a => a.IsActive == true );
+                        groupQry = groupQry.Where( a => a.IsActive || referencedGroupIds.Contains( a.Id ) );
                     }
 
                     var groupList = groupQry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().Select( a =>
                         new
                         {
                             a.Id,
-                            a.Name
+                            a.Name,
+                            a.IsActive
                         } )
                         .ToList();
 
@@ -366,7 +411,7 @@ namespace RockWeb.Blocks.Finance
                         ddlGroup.Items.Add( new ListItem() );
                         foreach ( var group in groupList )
                         {
-                            ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                            ddlGroup.Items.Add( BuildGroupListItem( group.Id, group.Name, group.IsActive ) );
                         }
 
                         var financialTransactionDetailId = ddlGroup.ID.Replace( "ddlGroup_", string.Empty ).AsInteger();
@@ -466,7 +511,7 @@ namespace RockWeb.Blocks.Finance
         private void BindHtmlGrid( int? batchId, int? dataViewId )
         {
             _financialTransactionDetailList = null;
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             nbSaveSuccess.Visible = false;
             btnSave.Visible = false;
 
@@ -711,7 +756,7 @@ namespace RockWeb.Blocks.Finance
                     || financialTransactionDetailLookup.EntityId != entityId
                     || _blockTransactionTypeId.HasValue && _blockTransactionTypeId != financialTransactionDetailLookup.Transaction.TransactionTypeValueId )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var financialTransactionDetail = new FinancialTransactionDetailService( rockContext ).Get( financialTransactionDetailId.Value );
                     financialTransactionDetail.EntityTypeId = _transactionEntityType.Id;
                     financialTransactionDetail.EntityId = entityId;
@@ -749,6 +794,28 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Builds a <see cref="ListItem"/> for a Group entry in one of the entity dropdowns.
+        /// When the Group is inactive, the item's display text is suffixed with " (Inactive)"
+        /// (for the collapsed selected-value display) and the "text-muted" class is applied to
+        /// the underlying option element so the Chosen dropdown greys the row out in the open
+        /// list. Active Groups render with no special treatment.
+        /// </summary>
+        /// <param name="groupId">The Group identifier used as the item's value.</param>
+        /// <param name="groupName">The Group's name.</param>
+        /// <param name="isActive">Whether the Group is active.</param>
+        /// <returns>The configured <see cref="ListItem"/>.</returns>
+        private static ListItem BuildGroupListItem( int groupId, string groupName, bool isActive )
+        {
+            var listItem = new ListItem( isActive ? groupName : groupName + " (Inactive)", groupId.ToString() );
+            if ( !isActive )
+            {
+                listItem.Attributes["class"] = "text-muted";
+            }
+
+            return listItem;
+        }
+
+        /// <summary>
         /// Loads the group members drop down.
         /// </summary>
         /// <param name="ddlGroup">The DDL group.</param>
@@ -763,7 +830,7 @@ namespace RockWeb.Blocks.Finance
                 ddlGroupMember.Items.Add( new ListItem() );
                 if ( groupId.HasValue )
                 {
-                    var groupMemberListItems = new GroupMemberService( new RockContext() ).Queryable().Where( a => a.GroupId == groupId.Value )
+                    var groupMemberListItems = new GroupMemberService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.GroupId == groupId.Value )
                         .OrderBy( a => a.Person.FirstName ).ThenBy( a => a.Person.LastName )
                         .Select( a => new
                         {
@@ -791,7 +858,7 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( _transactionEntityType.Id == EntityTypeCache.GetId<GroupMember>() )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var configuredGroupTypeId = GetAttributeValue( "EntityTypeQualifierValue" ).AsInteger();
                     foreach ( var ddlGroupMember in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroupMember_" ) ) )
                     {
@@ -817,7 +884,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else if ( _transactionEntityType.Id == EntityTypeCache.GetId<Group>() )
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var configuredGroupTypeId = GetAttributeValue( "EntityTypeQualifierValue" ).AsInteger();
                     foreach ( var ddlGroup in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroup_" ) ) )
                     {
@@ -898,7 +965,7 @@ namespace RockWeb.Blocks.Finance
 
             ddlTransactionType.SetValue( blockTransactionType != null ? blockTransactionType.Id : ( int? ) null );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             gtpGroupType.GroupTypes = new GroupTypeService( rockContext ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().ToList();
             ddlDefinedTypePicker.Items.Clear();

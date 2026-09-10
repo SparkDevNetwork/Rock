@@ -1,10 +1,13 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Enums
 {
     /// <summary>
     /// The various roles for OpenAI chat messages
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public enum OpenAIChatMessageRole
     {
         /// <summary>

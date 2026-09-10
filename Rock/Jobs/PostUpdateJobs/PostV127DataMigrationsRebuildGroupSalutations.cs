@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -35,7 +36,7 @@ namespace Rock.Jobs
         {
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // just in case there are Groups that have a null or empty Name, update them.
             var familiesWithoutNames = new GroupService( rockContext )
@@ -56,7 +57,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    using ( var rockContextUpdate = new RockContext() )
+                    using ( var rockContextUpdate = RockApp.Current.CreateRockContext() )
                     {
                         GroupService.UpdateGroupSalutations( familyId, rockContextUpdate );
                     }

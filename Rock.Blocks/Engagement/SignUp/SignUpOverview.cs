@@ -727,11 +727,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 Only sign-up project group opportunities may be deleted.
             */
-            var signUpGroupTypeId = this.SignUpGroupTypeId;
-            var isSignUpProjectGroup = group.GroupTypeId == signUpGroupTypeId
-                || GroupTypeCache.Get( group.GroupTypeId )?.InheritedGroupTypeId == signUpGroupTypeId;
-
-            if ( !isSignUpProjectGroup )
+            if ( !SignUpOpportunityHelper.IsSignUpGroupType( group.GroupTypeId ) )
             {
                 return ActionBadRequest( "Unable to delete this Sign-Up Opportunity." );
             }
@@ -746,127 +742,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 return ActionForbidden( "You are not authorized to delete this Sign-Up Opportunity." );
             }
 
-            var groupMemberAssignmentService = new GroupMemberAssignmentService( RockContext );
-            var groupMemberAssignments = groupMemberAssignmentService
-                .Queryable()
-                .Include( gma => gma.GroupMember )
-                .Where( gma =>
-                    gma.GroupMember.GroupId == groupId
-                    && gma.LocationId == locationId
-                    && gma.ScheduleId == scheduleId )
-                .ToList();
-
-            if ( groupMemberAssignments.Any() )
-            {
-                // Set the group members aside so we can try to delete them next.
-                var groupMembers = groupMemberAssignments
-                    .Select( gma => gma.GroupMember )
-                    .ToList();
-
-                // A group member assignment is a pretty low-level entity with no child
-                // entities, so a bulk delete is safe. We'll need to check CanDelete() for
-                // each assignment (and abandon the bulk delete approach) if this changes in
-                // the future.
-                groupMemberAssignmentService.DeleteRange( groupMemberAssignments );
-
-                // Determine which of these group members have assignments for other
-                // opportunities; those group member records must remain.
-                var groupMemberIds = groupMembers.Select( gm => gm.Id ).ToList();
-                var deletedAssignmentIds = groupMemberAssignments.Select( gma => gma.Id ).ToList();
-                var groupMemberIdsWithRemainingAssignments = new HashSet<int>(
-                    groupMemberAssignmentService
-                        .Queryable()
-                        .AsNoTracking()
-                        .Where( gma =>
-                            groupMemberIds.Contains( gma.GroupMemberId )
-                            && !deletedAssignmentIds.Contains( gma.Id ) )
-                        .Select( gma => gma.GroupMemberId )
-                        .Distinct()
-                        .ToList()
-                );
-
-                var groupTypeCache = GroupTypeCache.Get( group.GroupTypeId );
-                var groupMemberService = new GroupMemberService( RockContext );
-
-                foreach ( var groupMember in groupMembers.Where( gm => !groupMemberIdsWithRemainingAssignments.Contains( gm.Id ) ) )
-                {
-                    if ( groupTypeCache?.EnableGroupHistory != true && !groupMemberService.CanDelete( groupMember, out _ ) )
-                    {
-                        // The attendee (group member assignment) record itself will be
-                        // deleted, but we cannot delete the underlying group member record.
-                        continue;
-                    }
-
-                    // Delete these one-by-one, as the individual delete call will
-                    // dynamically archive if necessary (whereas the bulk delete calls will
-                    // not).
-                    groupMemberService.Delete( groupMember );
-                }
-            }
-
-            // Now go get the group location, schedule and group location schedule config.
-            var groupLocationService = new GroupLocationService( RockContext );
-            var groupLocation = groupLocationService
-                .Queryable()
-                .Include( gl => gl.Schedules )
-                .Include( gl => gl.GroupLocationScheduleConfigs )
-                .FirstOrDefault( gl => gl.GroupId == groupId && gl.LocationId == locationId );
-
-            var schedulesToDelete = new List<Schedule>();
-
-            if ( groupLocation != null )
-            {
-                // These are deleted last, since the schedule's identifier is referenced in
-                // the group location schedule and group location schedule config tables.
-                schedulesToDelete = groupLocation.Schedules
-                    .Where( s => s.Id == scheduleId )
-                    .ToList();
-
-                foreach ( var schedule in schedulesToDelete )
-                {
-                    groupLocation.Schedules.Remove( schedule );
-                }
-
-                foreach ( var config in groupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == scheduleId ).ToList() )
-                {
-                    groupLocation.GroupLocationScheduleConfigs.Remove( config );
-                }
-
-                // If this group location has no more schedules, delete it. Any lingering
-                // group location schedule config records that somehow weren't deleted yet
-                // will be removed by a cascade delete here.
-                if ( !groupLocation.Schedules.Any() )
-                {
-                    groupLocationService.Delete( groupLocation );
-                }
-            }
-
-            RockContext.WrapTransaction( () =>
-            {
-                // Initial save to release FK constraints tied to referenced entities we'll
-                // be deleting.
-                RockContext.SaveChanges();
-
-                var scheduleService = new ScheduleService( RockContext );
-                foreach ( var schedule in schedulesToDelete )
-                {
-                    // Remove the schedule if custom (non-named) and nothing else is using it.
-                    if ( schedule.ScheduleType != ScheduleType.Named && scheduleService.CanDelete( schedule, out _ ) )
-                    {
-                        scheduleService.Delete( schedule );
-                    }
-                }
-
-                // We cannot safely remove referenced locations (even non-named ones):
-                //  1) because of the way locations are reused/shared across entities (the
-                //     location picker control auto-searches/matches and saves locations).
-                //  2) because of the cascade deletes many of the referencing entities have
-                //     on their LocationId FK constraints (we might accidentally delete a
-                //     lot of unintended stuff).
-
-                // Follow-up save for deleted referenced entities.
-                RockContext.SaveChanges();
-            } );
+            SignUpOpportunityHelper.DeleteOpportunity( RockContext, groupId, locationId, scheduleId );
 
             return ActionOk();
         }

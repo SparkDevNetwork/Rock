@@ -44,6 +44,7 @@ using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
+using Rock.Configuration;
 
 namespace Rock.Data
 {
@@ -793,7 +794,7 @@ namespace Rock.Data
 
                         try
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 var auditService = new AuditService( rockContext );
                                 auditService.AddRange( audits );
@@ -842,7 +843,7 @@ namespace Rock.Data
                             {
                                 ExecuteAfterCommit( () =>
                                 {
-                                    using ( var rockContext = new RockContext() )
+                                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                                     {
                                         Rock.Attribute.Helper.UpdateDependantAttributesAndValues( dependantAttributeIds, entity.TypeId, entity.Id, rockContext );
                                     }
@@ -858,7 +859,7 @@ namespace Rock.Data
                             // value that references this entity needs to be updated.
                             ExecuteAfterCommit( () =>
                             {
-                                using ( var rockContext = new RockContext() )
+                                using ( var rockContext = RockApp.Current.CreateRockContext() )
                                 {
                                     Rock.Attribute.Helper.UpdateDependantAttributesAndValues( null, entity.TypeId, entity.Id, rockContext );
                                 }
@@ -985,7 +986,7 @@ namespace Rock.Data
                         var commitedSuccessfully = task.Result;
                         if ( commitedSuccessfully )
                         {
-                            using ( var rockContextUpdateCache = new RockContext() )
+                            using ( var rockContextUpdateCache = RockApp.Current.CreateRockContext() )
                             {
                                 cacheable.UpdateCache( item.PreSaveStateLegacy, rockContextUpdateCache );
                             }
@@ -1415,7 +1416,7 @@ namespace Rock.Data
                         {
                             var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 var workflowService = new WorkflowService( rockContext );
                                 if ( !workflowService.Process( workflow, entity, out var workflowErrors ) )

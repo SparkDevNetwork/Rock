@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Web.Http;
 
 using Rock.Chart;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -42,7 +43,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "7611D15B-55CD-4D84-96B5-1A11340D8D8A" )]
         public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, string scheduleIds = null, int? dataViewId = null )
         {
-            return new AttendanceService( new RockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds, dataViewId, scheduleIds );
+            return new AttendanceService( RockApp.Current.CreateRockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds, dataViewId, scheduleIds );
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "68FF77EB-7A7C-4763-A090-0F917CC2E033" )]
         public Attendance AddAttendance( int groupId, int locationId, int scheduleId, DateTime occurrenceDate, int? personId = null, int? personAliasId = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // If personId is provided set the personAliasId to the primary alias of the person.
                 if ( personId != null )
@@ -99,7 +100,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "DDBDDBE0-7032-49B2-82E7-08DBA28F1FC1" )]
         public IEnumerable<SchedulerResource> GetSchedulerResources( [FromBody] SchedulerResourceParameters schedulerResourceParameters )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             return attendanceService.GetSchedulerResources( schedulerResourceParameters );
         }
@@ -116,7 +117,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "082BC954-89CA-4D73-A971-72446B84E92C" )]
         public SchedulerResource GetSchedulerResource( [FromBody] SchedulerResourceParameters schedulerResourceParameters, int personId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             schedulerResourceParameters.LimitToPersonId = personId;
             var result = attendanceService.GetSchedulerResources( schedulerResourceParameters ).FirstOrDefault();
@@ -134,7 +135,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "CDE17F35-DA0A-47D9-80EF-994DEF9FB946" )]
         public IEnumerable<SchedulerResourceAttend> GetAttendingSchedulerResources( int attendanceOccurrenceId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
 
             return attendanceService.GetAttendingSchedulerResources( attendanceOccurrenceId );
@@ -150,7 +151,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "5621A903-EF18-49D7-91DE-73E27E5D2B5A" )]
         public void ScheduledPersonRemove( int attendanceId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
 
             attendanceService.ScheduledPersonClear( attendanceId );
@@ -170,7 +171,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "3B23B14A-9D00-4D73-95BF-C6C22C1D07F8" )]
         public virtual HttpResponseMessage CanSchedulePerson( int personId, int attendanceOccurrenceId, int? fromAttendanceOccurrenceId = null )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
 
             var attendanceOccurrenceInfo = new AttendanceOccurrenceService( rockContext ).GetSelect( attendanceOccurrenceId, s => new
@@ -238,7 +239,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "12AB7295-CAEA-4308-A63C-934E7AFD8605" )]
         public Attendance ScheduledPersonAddPending( int personId, int attendanceOccurrenceId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
 
             var currentPersonAlias = this.GetPersonAlias();
@@ -261,7 +262,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "5517065D-0C65-4FD4-95CC-C676AABA64FE" )]
         public Attendance ScheduledPersonAddConfirmed( int personId, int attendanceOccurrenceId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
 
             var currentPersonAlias = this.GetPersonAlias();
@@ -287,7 +288,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "27304D4E-58F7-4B27-861D-E505FF010579" )]
         public void ScheduledPersonPending( int attendanceId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             attendanceService.ScheduledPersonPending( attendanceId );
 
@@ -304,7 +305,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "35E8D73C-5783-40AB-B874-CD4A63D14CAA" )]
         public void ScheduledPersonConfirm( int attendanceId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             attendanceService.ScheduledPersonConfirm( attendanceId );
 
@@ -321,7 +322,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "F9C2E4CB-A3B5-4CAF-A678-0C543774F736" )]
         public void ScheduledPersonDecline( int attendanceId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             attendanceService.ScheduledPersonDecline( attendanceId, null );
 
@@ -338,7 +339,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "B126E3E7-5B54-4A91-8214-2006BB4D3DEB" )]
         public void ScheduledPersonSendConfirmationCommunication( int attendanceId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceService = new AttendanceService( rockContext );
             var sendConfirmationAttendancesQuery = attendanceService.Queryable().Where( a => a.Id == attendanceId );
 
@@ -363,7 +364,7 @@ namespace Rock.Rest.Controllers
         public void RegisterRSVPRecipients( int occurrenceId, [FromBody] List<string> personIds )
         {
             var personIdList = personIds.Select( int.Parse ).ToList();
-            new AttendanceService( new RockContext() )
+            new AttendanceService( RockApp.Current.CreateRockContext() )
                 .RegisterRSVPRecipients( occurrenceId, personIdList );
         }
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 using Rock.AI.Provider;
@@ -28,6 +29,8 @@ namespace Rock.AI.Automations
     /// <remarks>
     /// Each "AI Automations" AttributeValue for the Category will be parsed into it's respective property.
     /// </remarks>
+    [Obsolete( "This class is deprecated and will be removed in the future." )]
+    [RockObsolete( "21.0" )]
     public class AIAutomation
     {
         /// <summary>
@@ -35,23 +38,10 @@ namespace Rock.AI.Automations
         /// </summary>
         public AIProvider AIProvider { get; set; }
 
-        private AIProviderComponent _aiComponent;
-
         /// <summary>
         /// The AI provider component for interacting with an LLM.
         /// </summary>
-        public AIProviderComponent AIProviderComponent
-        {
-            get
-            {
-                if (_aiComponent == null )
-                {
-                    _aiComponent = AIProvider.GetAIComponent();
-                }
-
-                return _aiComponent;
-            }
-        }
+        public AIProviderComponent AIProviderComponent => null;
 
         /// <summary>
         /// The Model to use with the AI provider for completions.

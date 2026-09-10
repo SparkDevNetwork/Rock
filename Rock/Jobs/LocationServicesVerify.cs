@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -64,7 +65,7 @@ namespace Rock.Jobs
 
             var retryDate = RockDateTime.Now.Subtract( new TimeSpan( retryPeriod, 0, 0, 0 ) );
 
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             LocationService locationService = new LocationService( rockContext );
             var addresses = locationService.Queryable()
                 .Where( l => 

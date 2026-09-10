@@ -4,6 +4,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -29,22 +30,9 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void AttendanceOccurrenceDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrence();
-                attendanceOccurrence.OccurrenceDate = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, attendanceOccurrence.OccurrenceDateKey );
-            }
-        }
-
-        [TestMethod]
         public void AttendanceOccurrenceDateKeySavesCorrectly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
             var attendanceOccurrence = BuildAttendanceOccurrence( rockContext, Convert.ToDateTime( "2010-3-15" ) );
             attendanceOccurrenceService.Add( attendanceOccurrence );
@@ -65,7 +53,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             var expectedRecordCount = 15;
             var year = 2016;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
                 var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
@@ -93,7 +81,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
 
@@ -111,7 +99,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private void CleanUpData( string foreignKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             rockContext.Database.ExecuteSqlCommand( $"DELETE [AttendanceOccurrence] WHERE [ForeignKey] = '{foreignKey}'" );
         }

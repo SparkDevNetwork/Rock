@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -139,7 +140,7 @@ namespace Rock.Jobs
         private SendMessageResult SendGroupScheduleConfirmationCommunications( System.Guid? rootGroupGuid, System.Guid? groupDataViewGuid, int commandTimeoutSeconds )
         {
             List<Person> personsScheduled = new List<Person>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                 List<int> groupIds = new List<int>();
@@ -194,7 +195,7 @@ namespace Rock.Jobs
         private SendMessageResult SendGroupScheduleReminderCommunications( System.Guid? rootGroupGuid, System.Guid? groupDataViewGuid, int commandTimeoutSeconds )
         {
             List<Person> personsScheduled = new List<Person>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                 List<int> groupIds = new List<int>();

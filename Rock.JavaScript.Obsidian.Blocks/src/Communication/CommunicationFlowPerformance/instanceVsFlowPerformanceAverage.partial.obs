@@ -30,6 +30,7 @@
     import { isNullish } from "@Obsidian/Utility/util";
     import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     /**
      * In terms of metrics, the percentage of PEOPLE who achieved the conversion goal is most important,
@@ -187,10 +188,20 @@
             .average(r => r);
     });
 
+    // The Average series reuses the same categorical color as the Instance(s)
+    // series for each metric, distinguished only by a lower opacity, so the
+    // two stay visually paired when the categorical palette changes.
+    const AVERAGE_OPACITY = 0.4;
+
     const data = computed<{ series: BarSeries[]; labels: string[]; }>(() => {
         if (props.messages.length === 0 || props.uniquePersonCount === 0) {
             return { series: [], labels: [] };
         }
+
+        const categoryColors = [
+            getCssVariableValue("--color-categorical-1", "#38A169"),
+            getCssVariableValue("--color-categorical-2", "#E53E3E")
+        ];
 
         return {
             labels: ["Conversion Rate", "Unsubscribe Rate"],
@@ -201,7 +212,7 @@
                         selectedInstanceConversionRate.value,
                         selectedInstanceUnsubscribeRate.value
                     ],
-                    color: ["#38A169", "#E53E3E"]
+                    color: categoryColors
                 },
                 {
                     label: SeriesName.Average,
@@ -209,7 +220,8 @@
                         averageConversionRate.value,
                         averageUnsubscribeRate.value
                     ],
-                    color: ["#CDEAE1", "#FAD8D8"]
+                    color: categoryColors,
+                    opacity: AVERAGE_OPACITY
                 }
             ]
         };

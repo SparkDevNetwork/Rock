@@ -101,6 +101,20 @@ namespace Rock.Field.Types
         }
 
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A phone number as digits, optionally with a country code. Rock parses the number and formats it for display, so punctuation is not required and the stored form is not the formatted version shown on screen."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

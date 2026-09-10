@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Web.UI.Controls
@@ -277,7 +278,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !RegistrationTemplateId.HasValue )
                     {
-                        var registrationInstance = new Rock.Model.RegistrationInstanceService( new RockContext() ).Get( registrationInstanceId );
+                        var registrationInstance = new Rock.Model.RegistrationInstanceService( RockApp.Current.CreateRockContext() ).Get( registrationInstanceId );
                         if ( registrationInstance != null &&
                             _registrationTemplatePicker.SelectedValue != registrationInstance.RegistrationTemplateId.ToString() )
                         {
@@ -412,7 +413,7 @@ namespace Rock.Web.UI.Controls
             {
                 _ddlRegistrationInstance.Items.Add( Rock.Constants.None.ListItem );
 
-                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( new RockContext() );
+                var registrationInstanceService = new Rock.Model.RegistrationInstanceService( RockApp.Current.CreateRockContext() );
                 var registrationInstances = registrationInstanceService.Queryable().Where( r => r.RegistrationTemplateId == registationTemplateId.Value && r.IsActive ).OrderBy( a => a.Name ).ToList();
 
                 foreach ( var r in registrationInstances )

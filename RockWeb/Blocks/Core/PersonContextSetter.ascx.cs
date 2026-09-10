@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -139,7 +140,7 @@ namespace RockWeb.Blocks.Core
                 SetPersonContext( personIdParam.Value, false );
             }
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             Group group = null;
             var groupGuid = this.GetAttributeValue( AttributeKey.Group ).AsGuidOrNull();
             if ( groupGuid.HasValue )
@@ -191,7 +192,7 @@ namespace RockWeb.Blocks.Core
         protected Person SetPersonContext( int personId, bool refreshPage = false )
         {
             bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
-            var person = new PersonService( new RockContext() ).Get( personId );
+            var person = new PersonService( RockApp.Current.CreateRockContext() ).Get( personId );
             if ( person == null )
             {
                 person = new Person { LastName = this.GetAttributeValue( AttributeKey.NoPersonText ), Guid = Guid.Empty };

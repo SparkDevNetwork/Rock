@@ -94,6 +94,7 @@ namespace Rock.Model
             var attributes = reportGetQueryableArgs.Attributes;
             var selectComponents = reportGetQueryableArgs.SelectComponents;
             var isCommunication = reportGetQueryableArgs.IsCommunication;
+            var useAttributePersistedTextValues = reportGetQueryableArgs.UseAttributePersistedTextValues;
 
             ParameterExpression paramExpression = serviceInstance.ParameterExpression;
             MemberExpression idExpression = Expression.Property( paramExpression, "Id" );
@@ -112,7 +113,10 @@ namespace Rock.Model
 
             foreach ( var a in attributes )
             {
-                dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), a.Value.FieldType.Field.AttributeValueFieldType );
+                // When returning persisted display text the column is always a string;
+                // otherwise it is the field type's native attribute value type.
+                var attributeColumnType = useAttributePersistedTextValues ? typeof( string ) : a.Value.FieldType.Field.AttributeValueFieldType;
+                dynamicFields.Add( string.Format( "Attribute_{0}_{1}", a.Value.Id, a.Key ), attributeColumnType );
             }
 
             foreach ( var reportField in selectComponents )
@@ -163,7 +167,7 @@ namespace Rock.Model
 
             foreach ( var a in attributes )
             {
-                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}_{1}", a.Value.Id, a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Value.Id ) ) );
+                bindings.Add( Expression.Bind( dynamicType.GetField( string.Format( "attribute_{0}_{1}", a.Value.Id, a.Key ) ), GetAttributeValueExpression( attributeValues, attributeValueParameter, idExpression, a.Value.Id, useAttributePersistedTextValues ) ) );
             }
 
             foreach ( var reportFieldKeyValue in selectComponents )

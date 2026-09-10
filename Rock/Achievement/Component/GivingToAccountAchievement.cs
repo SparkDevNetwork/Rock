@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -464,7 +465,7 @@ namespace Rock.Achievement.Component
                 return null;
             }
 
-            var personId = new PersonAliasService( new RockContext() ).Get( transaction.AuthorizedPersonAliasId.Value ).PersonId;
+            var personId = new PersonAliasService( RockApp.Current.CreateRockContext() ).Get( transaction.AuthorizedPersonAliasId.Value ).PersonId;
             var transactionDates = GetOrderedFinancialTransactionDatesByPerson( achievementTypeCache, personId, minDate, maxDate );
 
             foreach ( var transactionDate in transactionDates )
@@ -538,7 +539,7 @@ namespace Rock.Achievement.Component
         {
             if ( null == rockContext )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             var guid = GetFinancialAccountGuid( achievementTypeCache );
@@ -563,7 +564,7 @@ namespace Rock.Achievement.Component
         {
             if ( null == rockContext )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             var guid = GetFinancialAccountGuid( achievementTypeCache );
@@ -589,7 +590,7 @@ namespace Rock.Achievement.Component
         {
             if ( null == rockContext )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             var guid = GetFinancialAccountGuid( achievementTypeCache );
@@ -612,7 +613,7 @@ namespace Rock.Achievement.Component
         {
             if ( null == rockContext )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             var includeChildAccounts = GetAttributeValue( achievementTypeCache, AttributeKey.IncludeChildFinancialAccounts ).AsBoolean();
@@ -665,7 +666,7 @@ namespace Rock.Achievement.Component
         /// <returns></returns>
         private List<DateTime?> GetOrderedFinancialTransactionDatesByPerson( AchievementTypeCache achievementTypeCache, int personId, DateTime minDate, DateTime maxDate )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var query = GetSourceEntitiesQuery( achievementTypeCache, rockContext ) as IQueryable<FinancialTransaction>;
             var dayAfterMaxDate = maxDate.AddDays( 1 );
 

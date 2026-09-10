@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Tasks;
@@ -296,7 +297,7 @@ namespace Rock.Model
                             {
                                 try
                                 {
-                                    using ( var insertRockContext = new RockContext() )
+                                    using ( var insertRockContext = RockApp.Current.CreateRockContext() )
                                     {
                                         insertRockContext.BulkInsert( changes );
                                     }
@@ -325,7 +326,7 @@ namespace Rock.Model
                             {
                                 try
                                 {
-                                    using ( var insertRockContext = new RockContext() )
+                                    using ( var insertRockContext = RockApp.Current.CreateRockContext() )
                                     {
                                         insertRockContext.BulkInsert( groupMemberChanges );
                                     }
@@ -467,6 +468,16 @@ namespace Rock.Model
                 else if ( PreSaveState == EntityContextState.Deleted )
                 {
                     return true;
+                }
+                else if ( PreSaveState == EntityContextState.Modified )
+                {
+                    // Archiving or restoring a group member changes whether they are
+                    // considered part of the group, so clients monitoring group
+                    // membership need to know about it just like an add or a delete.
+                    // No other modifications send real-time messages.
+                    var previousIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
+
+                    return previousIsArchived != Entity.IsArchived;
                 }
 
                 return false;

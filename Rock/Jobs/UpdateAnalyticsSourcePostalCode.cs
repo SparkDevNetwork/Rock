@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -94,7 +95,7 @@ namespace Rock.Jobs
             else
             {
                 UpdateLastStatusMessage( "Reading Census data." );
-                var rockContext = new Rock.Data.RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var censusData = AnalyticsSourcePostalCode.GetZipCodeCensusData();
                 var query = rockContext.Set<AnalyticsSourcePostalCode>().AsQueryable();
                 List<AnalyticsSourcePostalCode.ZipCodeBoundary> boundaryData = null;
@@ -127,7 +128,7 @@ namespace Rock.Jobs
                         {
                             // Renew context to clear saved entries from memory, this is done to speed up the process since we are 
                             // dealing with a large dataset and the context noticeably slows down when tracking several records.
-                            rockContext = new RockContext();
+                            rockContext = RockApp.Current.CreateRockContext();
                             rockContext.Configuration.AutoDetectChangesEnabled = false;
                             rockContext.Configuration.ValidateOnSaveEnabled = false;
 
@@ -148,7 +149,7 @@ namespace Rock.Jobs
                         var updateBatches = ( int ) Math.Ceiling( ( double ) censusData.Count / batchSize );
                         for ( int i = 0; i < updateBatches; i++ )
                         {
-                            rockContext = new RockContext();
+                            rockContext = RockApp.Current.CreateRockContext();
                             rockContext.Configuration.ValidateOnSaveEnabled = false;
 
                             // Get and update the current batch
@@ -200,7 +201,7 @@ namespace Rock.Jobs
 
                 if ( zipCodeCensusData.Count == 0 )
                 {
-                    using ( var context = new RockContext() )
+                    using ( var context = RockApp.Current.CreateRockContext() )
                     {
                         var hasPostalCodes = context.Set<AnalyticsSourcePostalCode>().Any();
 
@@ -249,7 +250,7 @@ namespace Rock.Jobs
 
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

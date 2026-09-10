@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -346,7 +347,7 @@ $(document).ready(function () {
             if ( declineReason.HasValue )
             {
                 int occurrenceId = hfDeclineReason_OccurrenceId.Value.AsInteger();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var person = GetPerson();
                     var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
@@ -369,7 +370,7 @@ $(document).ready(function () {
         /// <param name="person"></param>
         private void WriteEmailAcceptResponse( int occurrenceId, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
                 person = new PersonService( rockContext ).Get( person.Guid );
@@ -408,7 +409,7 @@ $(document).ready(function () {
             if ( !string.IsNullOrWhiteSpace( personActionIdentifier ) )
             {
                 // Get Person record from PersonActionIdentifier.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personService = new PersonService( rockContext );
                     return personService.GetByPersonActionIdentifier( personActionIdentifier, "RSVP" );
@@ -506,7 +507,7 @@ $(document).ready(function () {
         /// <param name="person">The Person record of the respondent.</param>
         private void ShowSingleOccurrence_Choice( int occurrenceId, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = attendanceOccurrenceService.Get( occurrenceId );
@@ -565,7 +566,7 @@ $(document).ready(function () {
         /// </summary>
         private void BuildAttributeControls()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = GetPerson();
                 var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
@@ -592,7 +593,7 @@ $(document).ready(function () {
         /// <returns></returns>
         private bool GroupHasAttributes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = GetPerson();
                 var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
@@ -640,7 +641,7 @@ $(document).ready(function () {
         /// <param name="person">The Person record of the respondent.</param>
         private void ShowSingleOccurrence_Accept( int occurrenceId, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = attendanceOccurrenceService.Get( occurrenceId );
@@ -759,7 +760,7 @@ $(document).ready(function () {
         /// <param name="attributePlaceHolder">(Optional) PlaceHolder containing the GroupMember attribute editor. Passed when the user clicked Decline from the choice form so any values they entered are saved.</param>
         private void ShowSingleOccurrence_Decline( int occurrenceId, Person person, PlaceHolder attributePlaceHolder = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = attendanceOccurrenceService.Get( occurrenceId );
@@ -876,7 +877,7 @@ $(document).ready(function () {
             bool hasValidOccurrences = false;
             bool isExpired = false;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<OccurrenceDataItem> repeaterItems = new List<OccurrenceDataItem>();
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
@@ -934,7 +935,7 @@ $(document).ready(function () {
 
         private void RebuildMultipleOccurrenceDataItems( List<int> occurrenceIds, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<OccurrenceDataItem> repeaterItems = new List<OccurrenceDataItem>();
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
@@ -992,7 +993,7 @@ $(document).ready(function () {
         /// <param name="person">The Person record of the respondent.</param>
         private void ShowMultipleOccurrence_Accept( List<int> occurrenceIds, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 _processedOccurrences = new List<string>();
                 bool occurrenceProcessed = false;
@@ -1062,7 +1063,7 @@ $(document).ready(function () {
         /// </summary>
         private void UpdatePersonRecord()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 CurrentPerson.FirstName = rtbFirstName.Text;
                 CurrentPerson.LastName = rtbLastName.Text;
@@ -1091,7 +1092,7 @@ $(document).ready(function () {
                 return values;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var def = new DefinedValueService( rockContext );
                 values = def.Queryable()

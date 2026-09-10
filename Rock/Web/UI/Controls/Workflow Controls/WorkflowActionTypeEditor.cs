@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -320,7 +321,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             workflowActionForm.PersonEntryGroupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
 
             workflowActionForm.Actions = "Submit^^^Your information has been submitted successfully.";
-            var systemEmail = new SystemCommunicationService( new RockContext() ).Get( SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
+            var systemEmail = new SystemCommunicationService( RockApp.Current.CreateRockContext() ).Get( SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
             if ( systemEmail != null )
             {
                 workflowActionForm.NotificationSystemCommunicationId = systemEmail.Id;

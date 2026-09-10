@@ -44,9 +44,7 @@ namespace Rock.Model
             // not be the same within the context of the new thread.
             var exceptionLog = PopulateExceptionLog( ex, context, pageId, siteId, personAlias );
 
-            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
-            // recursively writing to the database.
-            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+            LogExceptionsInBackground( ex, exceptionLog );
         }
 
         /// <summary>

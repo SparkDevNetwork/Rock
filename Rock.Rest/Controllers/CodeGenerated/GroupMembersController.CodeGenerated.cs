@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupMembersController"/> class.
         /// </summary>
-        public GroupMembersController() : base( new Rock.Model.GroupMemberService( new Rock.Data.RockContext() ) ) { } 
+        public GroupMembersController() : base( new Rock.Model.GroupMemberService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

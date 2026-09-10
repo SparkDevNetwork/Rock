@@ -30,6 +30,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
+using Rock.Configuration;
 
 namespace Rock.Core.NotificationMessageTypes
 {
@@ -63,7 +64,7 @@ namespace Rock.Core.NotificationMessageTypes
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var messageType = GetOrCreateMessageType( rockContext );
                 var connectionOpportunity = request.ConnectionOpportunity ?? new ConnectionOpportunityService( rockContext ).GetNoTracking( request.ConnectionOpportunityId );

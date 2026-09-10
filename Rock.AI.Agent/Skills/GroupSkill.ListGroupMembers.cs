@@ -41,7 +41,7 @@ internal sealed partial class GroupSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;
-        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
+        var groupTypeIds = GetAvailableGroupTypes().Select( gt => gt.Id ).ToList();
 
         var group = helper.GetRequiredEntity<Model.Group>( groupIdKey, checkSecurity: true );
 
@@ -52,7 +52,10 @@ internal sealed partial class GroupSkill
 
         if ( group != null && !groupTypeIds.Contains( group.GroupTypeId ) )
         {
-            helper.AddError( "The specified group is not of a valid group type." );
+            if ( !CanGroupTypeBeConfiguredForRequest( group.GroupTypeId, helper ) )
+            {
+                helper.AddError( "The specified group is not of a valid group type." );
+            }
         }
 
         if ( helper.HasErrors )

@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError"
+                     alertType="danger">{{ blockError }}</NotificationBox>
+
+    <template v-else>
+        <ViewPanel v-if="hasContent"
+                   :compiledContent="compiledContent" />
+
+        <NotificationBox v-else-if="isEditable"
+                         alertType="info">
+            This block has no component yet. Enter Block Configuration mode and
+            click the <i class="ti ti-pencil"></i> icon on this block to author it.
+        </NotificationBox>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { ForgeContentDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/ForgeContentDetail/forgeContentDetailInitializationBox";
+    import ViewPanel from "./forgeContentDetail/viewPanel.partial.obs";
+
+    const config = useConfigurationValues<ForgeContentDetailInitializationBox>();
+
+    // #region Values
+
+    const blockError = ref(config.errorMessage ?? "");
+    const isEditable = ref(config.isEditable);
+    const compiledContent = ref(config.compiledContent ?? "");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasContent = computed((): boolean => !!compiledContent.value);
+
+    // #endregion Computed Values
+</script>

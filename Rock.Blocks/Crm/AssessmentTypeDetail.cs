@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -70,7 +71,7 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<AssessmentTypeBag, AssessmentTypeDetailOptionsBag>();
 
@@ -98,7 +99,7 @@ namespace Rock.Blocks.Crm
                 };
             }
 
-            var title = new AssessmentTypeService( new RockContext() ).Get( assessmentTypeId )?.Title ?? "New Assessment Type";
+            var title = new AssessmentTypeService( RockApp.Current.CreateRockContext() ).Get( assessmentTypeId )?.Title ?? "New Assessment Type";
             var breadCrumb = new BreadCrumbLink( title, breadCrumbPageRef );
 
             return new BreadCrumbResult
@@ -341,7 +342,7 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -422,7 +423,7 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -448,7 +449,7 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<AssessmentTypeBag, AssessmentTypeDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new AssessmentTypeService( rockContext );
 
@@ -501,7 +502,7 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new AssessmentTypeService( rockContext );
 
@@ -531,7 +532,7 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<AssessmentTypeBag, AssessmentTypeDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

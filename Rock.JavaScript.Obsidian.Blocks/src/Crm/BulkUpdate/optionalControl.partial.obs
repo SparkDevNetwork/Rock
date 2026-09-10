@@ -52,8 +52,9 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FormState, provideFormState, useFormState } from "@Obsidian/Utility/form";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
 
     const props = defineProps({
@@ -95,5 +96,54 @@
         (e: "update:modelValue", value: boolean): void;
     }>();
 
+    // #region Values
+
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const parentFormState = useFormState();
+
+    /** The latest error each field inside this control reported, keyed by its field id. */
+    const reportedFields = new Map<string, { name: string; error: string }>();
+
+    /*
+        9/8/26 - JPH
+
+        Fields inside this control stay mounted and keep their own rules while the item is
+        inactive, which means a required attribute or a matrix row minimum would block the
+        whole bulk update over an item nobody opted into. Passing their errors through only
+        while the item is active scopes validation to what was actually selected, which is
+        what the WebForms block achieved by disabling the controls of unselected items.
+
+        The errors are remembered rather than discarded because a field reports only when its
+        value or its rules change. Toggling the item is neither, so both directions have to be
+        replayed from here: switching off clears what the form is holding, and switching on
+        restores it.
+
+        Reason: An item nobody selected must not block the form, and selecting one must not
+        smuggle an invalid value past validation.
+    */
+    const gatedFormState: FormState = {
+        get submitCount(): number {
+            return parentFormState?.submitCount ?? 0;
+        },
+
+        setError(id: string, name: string, error: string): void {
+            reportedFields.set(id, { name, error });
+            parentFormState?.setError(id, name, internalValue.value ? error : "");
+        }
+    };
+
+    provideFormState(gatedFormState);
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(internalValue, (isActive) => {
+        for (const [id, field] of reportedFields) {
+            parentFormState?.setError(id, field.name, isActive ? field.error : "");
+        }
+    });
+
+    // #endregion Watchers
 </script>

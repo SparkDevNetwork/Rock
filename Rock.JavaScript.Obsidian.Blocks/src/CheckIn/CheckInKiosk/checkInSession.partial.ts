@@ -57,6 +57,7 @@ import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunit
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
 import { LocationSelectionStrategy } from "@Obsidian/Enums/CheckIn/locationSelectionStrategy";
+import { SkipScreenBehavior } from "@Obsidian/Enums/CheckIn/skipScreenBehavior";
 
 type FunctionPropertyNames<T> = {
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -736,15 +737,15 @@ export class CheckInSession {
                     familySession = familySession.withNextFamilySchedule();
                 }
             }
-
-            // Was this the last schedule for this attendee?
-            if (!familySession.currentFamilyScheduleId) {
-                // Save the stashed attendance as pending.
-                familySession = await familySession.withSaveAttendance(true);
-            }
         }
         else {
             familySession = this.withNextFamilySchedule();
+        }
+
+        // Was this the last schedule for this attendee?
+        if (!familySession.currentFamilyScheduleId) {
+            // Save the stashed attendance as pending.
+            familySession = await familySession.withSaveAttendance(true);
         }
 
         // Was this the last schedule for this attendee?
@@ -1848,15 +1849,38 @@ export class CheckInSession {
             }
         }
 
-        // If we have more than 1 area to pick from then show the area screen.
-        if (areas.length !== 1) {
-            // If the "Select All Schedules Automatically" option is enabled
-            // then we will not show the area select screen if there are no areas.
-            // Instead just skip the individual in that case.
-            if (areas.length === 0 && this.options.areAllSchedulesSelectedAutomatically) {
+        // When there are no areas available, the area screen becomes the "skip"
+        // screen. The kiosk's Skip Screen Behavior setting is the sole authority
+        // on whether that screen is shown or the attendee is quietly skipped.
+        if (areas.length === 0) {
+            const skipScreenBehavior = this.configuration.kiosk?.skipScreenBehavior ?? SkipScreenBehavior.ShowWhenNeeded;
+
+            if (skipScreenBehavior === SkipScreenBehavior.NeverShow) {
+                // Never show the skip screen; always skip the attendee/schedule.
                 return newSession.withNextScreenBySkippingAttendee();
             }
 
+            if (skipScreenBehavior === SkipScreenBehavior.ShowWhenNeeded) {
+                // Only show the skip screen when this schedule was genuinely a
+                // possibility for the attendee (e.g. a valid room exists but is
+                // currently unavailable). If it could never have applied, skip it.
+                if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+                    const currentAttendee = this.getCurrentAttendee();
+                    const isPotentialSchedule = currentAttendee?.potentialScheduleIds?.some(sid => sid === this.currentFamilyScheduleId) ?? false;
+
+                    if (!isPotentialSchedule) {
+                        return newSession.withNextScreenBySkippingAttendee();
+                    }
+                }
+            }
+
+            // AlwaysShow, and the "needed" case above, fall through to display
+            // the area select (skip) screen.
+            return Promise.resolve(newSession.withScreen(Screen.AreaSelect));
+        }
+
+        // If we have more than 1 area to pick from then show the area screen.
+        if (areas.length !== 1) {
             return Promise.resolve(newSession.withScreen(Screen.AreaSelect));
         }
 

@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Blocks.WorkFlow.FormBuilder;
 using Rock.ClientService.Core.DefinedValue;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -78,7 +79,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // The list block links here with an IdKey (and the Add button
                 // uses "0"), so resolve the key as an IdKey/Guid/Id rather than
@@ -229,7 +230,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         [BlockAction]
         public BlockActionResult StartEdit( Guid guid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var template = new WorkflowFormBuilderTemplateService( rockContext ).Get( guid );
 
@@ -254,7 +255,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         [BlockAction]
         public BlockActionResult SaveTemplate( Guid guid, TemplateEditDetailViewModel template )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var isNew = false;
                 var templateService = new WorkflowFormBuilderTemplateService( rockContext );

@@ -63,6 +63,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The identifier of a Windows time zone, as in 'Eastern Standard Time', not the display name shown in a picker and not an IANA identifier such as 'America/New_York'."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

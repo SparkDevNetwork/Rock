@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceLogsController"/> class.
         /// </summary>
-        public ServiceLogsController() : base( new Rock.Model.ServiceLogService( new Rock.Data.RockContext() ) ) { } 
+        public ServiceLogsController() : base( new Rock.Model.ServiceLogService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

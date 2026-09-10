@@ -43,7 +43,14 @@
         <template #secondaryButtonLabel v-if="$slots.secondaryButtonLabel">
             <slot name="secondaryButtonLabel" />
         </template>
-        <template #customPickerActions v-if="$slots.customPickerActions">
+        <template #customPickerActions v-if="isSelectAllShown || $slots.customPickerActions">
+            <RockButton v-if="isSelectAllShown"
+                        :btnSize="BtnSize.ExtraSmall"
+                        :btnType="BtnType.Link"
+                        class="js-select-all mr-2"
+                        @click.prevent.stop="onSelectAll">
+                Select All
+            </RockButton>
             <slot name="customPickerActions" />
         </template>
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
@@ -64,6 +71,9 @@
     import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
     import TreeList from "./treeList.obs";
+    import RockButton from "./rockButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
     import { forceToArray } from "@Obsidian/Utility/arrayUtils";
@@ -162,6 +172,18 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+
+        /**
+         * When true, and the picker is in multi-select mode, a "Select All"
+         * action is shown in the popup footer. Clicking it selects every
+         * currently-loaded tree item (a second click clears the selection).
+         * Only loaded items are affected, matching the legacy WebForms picker
+         * behavior; lazily-loaded, unexpanded descendants are not included.
+         */
+        showSelectAll: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     });
 
     const emit = defineEmits<{
@@ -237,6 +259,14 @@
         return "";
     });
 
+    /**
+     * Whether the "Select All" action should be shown. Only applies in
+     * multi-select mode when the consumer has opted in via showSelectAll.
+     */
+    const isSelectAllShown = computed((): boolean => {
+        return props.showSelectAll && props.multiple;
+    });
+
     /** Updates the model value from our internal value. */
     const updateModelValue = (): void => {
         // Create a new set of selected items to emit.
@@ -288,6 +318,25 @@
      */
     const onClear = (): void => {
         emit("update:modelValue", props.multiple ? [] : null);
+    };
+
+    /**
+     * Event handler for the "Select All" action. Selects every currently
+     * loaded, selectable tree item. If everything is already selected it
+     * clears the selection instead (toggle), matching the legacy WebForms
+     * picker. This does not force-load lazily-loaded descendants; only items
+     * already present in the tree are affected. The selection is applied to
+     * the in-popup state; the user still confirms with the Select button.
+     */
+    const onSelectAll = (): void => {
+        const selectableValues = flatItems.value
+            .filter(i => (i.value ?? "") !== "" && !(props.disableFolderSelection && i.isFolder))
+            .map(i => i.value as string);
+
+        const isEverythingSelected = selectableValues.length > 0
+            && selectableValues.every(v => internalValues.value.includes(v));
+
+        internalValues.value = isEverythingSelected ? [] : selectableValues;
     };
 
     /**

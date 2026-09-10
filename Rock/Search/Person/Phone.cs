@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums;
 using Rock.Enums.Core;
@@ -65,7 +66,7 @@ namespace Rock.Search.Person
                 return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var phoneNumberService = new PhoneNumberService( rockContext );
             var personService = new PersonService( rockContext );
 
@@ -84,7 +85,7 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return searchterm.IsSingleSpecialCharacter() ? Enumerable.Empty<string>().AsQueryable() : new PhoneNumberService( new RockContext() ).GetNumbersBySearchterm( searchterm );
+            return searchterm.IsSingleSpecialCharacter() ? Enumerable.Empty<string>().AsQueryable() : new PhoneNumberService( RockApp.Current.CreateRockContext() ).GetNumbersBySearchterm( searchterm );
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -28,73 +29,9 @@ namespace Rock.Tests.Integration.Core.Model
         }
 
         [TestMethod]
-        public void StepCompletedDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                var step = new Rock.Model.Step();
-                step.CompletedDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, step.CompletedDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void StepStartDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                var step = new Rock.Model.Step();
-                step.StartDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, step.StartDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void StepEndDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                var step = new Rock.Model.Step();
-                step.EndDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, step.EndDateKey );
-            }
-        }
-
-        [TestMethod]
-        public void StepCompletedDateKeyWorksWithNullValue()
-        {
-            var step = new Rock.Model.Step();
-            step.CompletedDateTime = null;
-            Assert.IsNull( step.CompletedDateKey );
-        }
-
-        [TestMethod]
-        public void StepStartDateKeyWorksWithNullValue()
-        {
-            var step = new Rock.Model.Step();
-            step.StartDateTime = null;
-            Assert.IsNull( step.StartDateKey );
-        }
-
-        [TestMethod]
-        public void StepEndDateKeyGetsWorksWithNullValue()
-        {
-            var step = new Rock.Model.Step();
-            step.EndDateTime = null;
-            Assert.IsNull( step.EndDateKey );
-        }
-
-
-        [TestMethod]
         public void StepDateKeySavesCorrectly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var stepService = new StepService( rockContext );
 
             var step = BuildStep( rockContext, Convert.ToDateTime( "2010-3-16" ),
@@ -131,7 +68,7 @@ namespace Rock.Tests.Integration.Core.Model
             var completedYear = 2016;
             var endYear = 2017;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepService = new StepService( rockContext );
 
@@ -168,7 +105,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepService = new StepService( rockContext );
 
@@ -217,7 +154,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private void CleanUpData( string stepForeignKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.ExecuteSqlCommand( $"DELETE Step WHERE [ForeignKey] = '{stepForeignKey}'" );
         }
     }

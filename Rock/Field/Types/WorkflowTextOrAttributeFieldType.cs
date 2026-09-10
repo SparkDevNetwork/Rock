@@ -130,6 +130,25 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values for the same reason as WorkflowAttributeFieldType: the
+            // attributes this can point at belong to the containing workflow type and
+            // arrive through HttpContext, which a consumer outside the editing screen
+            // does not have. See the note there.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Either a literal text value, or the guid of an attribute belonging to the workflow type this setting is part of. A guid is read as a reference to that attribute rather than as text, so text that happens to be a guid cannot be stored here literally.",
+                Instructions = "To reference an attribute rather than supply text, read the workflow type this setting belongs to and take the guid of the attribute you want from its attributes or from those of the containing activity."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

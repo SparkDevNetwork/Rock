@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaFoldersController"/> class.
         /// </summary>
-        public MediaFoldersController() : base( new Rock.Model.MediaFolderService( new Rock.Data.RockContext() ) ) { } 
+        public MediaFoldersController() : base( new Rock.Model.MediaFolderService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

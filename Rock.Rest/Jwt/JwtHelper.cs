@@ -26,6 +26,7 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -138,7 +139,7 @@ namespace Rock.Rest.Jwt
 
             // The configs are required to specify a person search key type. The subject of the JWT should match a search key value so that we know
             // which Person the sender of the token claims to be.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personSearchKeyService = new PersonSearchKeyService( rockContext );
             var query = personSearchKeyService.Queryable().AsNoTracking();
 

@@ -194,6 +194,37 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// A caret separated pair, and Rock only reads the value when both halves are
+        /// present, so a bare name or a bare url is ignored rather than rejected.
+        /// The first half is the item's name as typed into the field's configuration,
+        /// which is worth saying plainly because every neighbouring field type stores
+        /// an identifier there and a reader will assume this one does too.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var mediaItems = privateConfigurationValues.GetValueOrNull( MEDIA_ITEMS ).AsDictionaryOrNull();
+
+            var valueFormat = "Two parts separated by a caret, the name of the chosen item followed by its url, as in Fall Banner^https://example.com/fall.png. The first part is the item's name from this field's configured media items, not an id, an idKey, a guid, or a MediaElement reference. Both parts are required, because a value that is not exactly two parts is ignored, which also means a name containing a caret cannot be used.";
+
+            if ( mediaItems != null && mediaItems.Any() )
+            {
+                valueFormat += $" The names configured here are {mediaItems.Keys.Select( k => $"'{k}'" ).JoinStrings( ", " )}.";
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = valueFormat,
+                Instructions = "The names and urls are set on this field's own configuration rather than coming from any table, so take both halves of the pair from there."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

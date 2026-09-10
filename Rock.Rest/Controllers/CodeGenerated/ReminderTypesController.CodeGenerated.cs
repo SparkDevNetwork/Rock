@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ReminderTypesController"/> class.
         /// </summary>
-        public ReminderTypesController() : base( new Rock.Model.ReminderTypeService( new Rock.Data.RockContext() ) ) { } 
+        public ReminderTypesController() : base( new Rock.Model.ReminderTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

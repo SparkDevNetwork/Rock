@@ -1062,7 +1062,12 @@ export const Page = {
      */
     MyAccountSecurity: "290C53DC-0960-484C-B314-8301882A454C",
     /**
-     * Gets the My Connections page guid.
+     * Gets the My Connection Opportunities page guid.
+     * ParentPage: Connections
+     */
+    MyConnectionOpportunities: "29C23E3B-13E3-4FF6-883C-0EFA1C7C40B9",
+    /**
+     * Gets the My Connection Requests page guid.
      * ParentPage: Connections
      */
     MyConnections: "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B",
@@ -1132,6 +1137,12 @@ export const Page = {
      * ParentPage: Office Information
      */
     OrgChart: "C3909F1A-6908-4035-BB93-EC4FBFDCC536",
+    /**
+     * Gets the Orphaned Pages page guid. This is a hidden system page that acts as a
+     * holding place for child pages whose parent page has been deleted by a migration.
+     * ParentPage: CMS Configuration
+     */
+    OrphanedPages: "51457268-8F59-4E2A-8E22-2B57F2E3607B",
     /**
      * Gets the Package Detail page guid
      * ParentPage: Rock Shop
@@ -1389,7 +1400,7 @@ export const Page = {
      */
     RestKeys: "881AB1C2-4E00-4A73-80CC-9886B3717A20",
     /**
-     * Gets the Rock Settings page guid
+     * Gets the Rock Settings (Administration) page guid
      * ParentPage: Admin Tools
      */
     RockSettings: "550A898C-EDEA-48B5-9C58-B20EC13AF13B",

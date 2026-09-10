@@ -9,6 +9,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.RealTime;
@@ -35,7 +36,7 @@ namespace RockWeb.Blocks.Examples
 
                 etPicker.Visible = ddlMethod.SelectedValueAsInt() == 2;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     etPicker.EntityTypes = new EntityTypeService( rockContext ).GetEntities().ToList();
                 }
@@ -144,11 +145,11 @@ namespace RockWeb.Blocks.Examples
 
             count = 0;
 
-            using ( var rockContextA = new RockContext() )
+            using ( var rockContextA = RockApp.Current.CreateRockContext() )
             {
-                using ( var rockContextB = new RockContext() )
+                using ( var rockContextB = RockApp.Current.CreateRockContext() )
                 {
-                    using ( var rockContextC = new RockContext() )
+                    using ( var rockContextC = RockApp.Current.CreateRockContext() )
                     {
                         var totalCount = rockContextA.Set<TEntity>().Where( a => !entityId.HasValue || a.Id == entityId ).Count();
 

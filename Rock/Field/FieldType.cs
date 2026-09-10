@@ -1256,8 +1256,42 @@ namespace Rock.Field
         /// information on how to best utilize the field type's raw value and
         /// in some cases what values are available.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Every concrete field type should override this, so that a consumer never
+        /// has to work out whether a missing hint means the value needs no
+        /// explanation or that nobody got to it yet. Where the stored form really is
+        /// what the name says, the hint is short and says the one thing that is still
+        /// worth stating, such as an integer having to fit Int32 or a url needing its
+        /// scheme.
+        /// </para>
+        /// <para>
+        /// The hints that earn their length are the ones describing a stored form a
+        /// caller could not infer: a delimiter that is not a comma, an enum written as
+        /// a number, an id where every neighbour stores a guid, a JSON shape, or a
+        /// value that differs from the one the editor sends. The test is whether a
+        /// reasonable caller could write a wrong value that saves without complaint,
+        /// which is how nearly all of these fail.
+        /// </para>
+        /// <para>
+        /// A <c>null</c> return remains valid, and is the right answer when a hint
+        /// cannot be built for a particular configuration, such as a defined type that
+        /// no longer resolves.
+        /// </para>
+        /// <para>
+        /// Whatever it returns must be cheap. Hints are produced for every attribute
+        /// in a list, so a query here is paid once per attribute described. Read from
+        /// configuration, a cache or an enum, and describe where other values live
+        /// rather than fetching them.
+        /// </para>
+        /// <para>
+        /// Describe the value and nothing else. A field type has no knowledge of what
+        /// is calling it, so it cannot know what tools or endpoints a consumer has,
+        /// and a hint that assumes any is wrong for every other consumer.
+        /// </para>
+        /// </remarks>
         /// <param name="privateConfigurationValues">The private configuration values that describe the field type settings.</param>
-        /// <returns>An instance of <see cref="FieldTypeHints"/> or <c>null</c> if no hints are available.</returns>
+        /// <returns>An instance of <see cref="FieldTypeHints"/>, or <c>null</c> when no hint can be built for this configuration.</returns>
         internal virtual FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
         {
             return null;
