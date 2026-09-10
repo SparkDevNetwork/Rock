@@ -42,8 +42,8 @@ export type HtmlContentVersionBag = {
     isApproved: boolean;
 
     /**
-     * Gets or sets a value indicating whether this is the highest version
-     * number, which the grid marks as Current instead of offering Select.
+     * Gets or sets a value indicating whether this is the version loaded in
+     * the editor, which the grid marks as Current instead of offering Select.
      */
     isCurrent: boolean;
 

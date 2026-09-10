@@ -72,8 +72,8 @@ namespace Rock.ViewModels.Blocks.Cms.HtmlContentDetail
         public string ExpireDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this is the highest version
-        /// number, which the grid marks as Current instead of offering Select.
+        /// Gets or sets a value indicating whether this is the version loaded in
+        /// the editor, which the grid marks as Current instead of offering Select.
         /// </summary>
         public bool IsCurrent { get; set; }
     }

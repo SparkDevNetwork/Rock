@@ -475,6 +475,29 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Gets the row the editor opens by default: the one most recently
+        /// touched by a save or an approval, so it matches what the person just
+        /// did rather than the highest version number.
+        /// </summary>
+        /// <returns>The most recently modified row, or null when the block has no content.</returns>
+        private HtmlContent GetMostRecentlyModifiedVersion( string entityValue )
+        {
+            return GetScopedContentQuery( entityValue )
+                .OrderByDescending( c => c.ModifiedDateTime )
+                .ThenByDescending( c => c.Version )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the highest version number in this block's scope.
+        /// </summary>
+        /// <returns>The highest version, or null when the block has no content.</returns>
+        private int? GetMaxVersion( string entityValue )
+        {
+            return GetScopedContentQuery( entityValue ).Max( c => ( int? ) c.Version );
+        }
+
+        /// <summary>
         /// Gets the version number a newly created row should receive.
         /// </summary>
         /// <returns>One more than the highest existing version, or 1 when versioning is off or nothing exists.</returns>
@@ -485,7 +508,7 @@ namespace Rock.Blocks.Cms
                 return 1;
             }
 
-            var maxVersion = GetScopedContentQuery( entityValue ).Max( c => ( int? ) c.Version ) ?? 0;
+            var maxVersion = GetMaxVersion( entityValue ) ?? 0;
 
             return maxVersion + 1;
         }
@@ -706,9 +729,9 @@ namespace Rock.Blocks.Cms
         #region Block Actions
 
         /// <summary>
-        /// Gets everything the Edit HTML modal needs when it opens: the latest
-        /// version for the editor, the block-derived options, and the version
-        /// history when versioning is enabled.
+        /// Gets everything the Edit HTML modal needs when it opens: the most
+        /// recently modified version for the editor, the block-derived options, and
+        /// the version history when versioning is enabled.
         /// </summary>
         /// <returns>The edit box, or a forbidden result when the person cannot edit.</returns>
         [BlockAction]
@@ -720,14 +743,14 @@ namespace Rock.Blocks.Cms
             }
 
             var entityValue = GetEntityValue();
-            var latestVersion = new HtmlContentService( RockContext ).GetLatestVersion( BlockId, entityValue );
+            var editVersion = GetMostRecentlyModifiedVersion( entityValue );
 
             return ActionOk( new HtmlContentEditBox
             {
-                Content = GetEditBag( latestVersion, latestVersion?.Version ),
+                Content = GetEditBag( editVersion, GetMaxVersion( entityValue ) ),
                 Options = GetEditOptions(),
                 Versions = IsVersioningEnabled
-                    ? GetVersionBags( entityValue, latestVersion?.Version )
+                    ? GetVersionBags( entityValue, editVersion?.Version )
                     : null,
                 SecurityGrantToken = GetSecurityGrantToken()
             } );
@@ -756,7 +779,7 @@ namespace Rock.Blocks.Cms
                 return ActionNotFound( "The requested version could not be found." );
             }
 
-            var maxVersion = htmlContentService.GetLatestVersion( BlockId, entityValue )?.Version;
+            var maxVersion = GetMaxVersion( entityValue );
 
             return ActionOk( GetEditBag( htmlContent, maxVersion ) );
         }
