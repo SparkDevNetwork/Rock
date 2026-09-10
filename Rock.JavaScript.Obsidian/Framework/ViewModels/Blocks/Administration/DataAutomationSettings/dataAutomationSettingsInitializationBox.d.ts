@@ -22,7 +22,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { DataAutomationSettingsBag } from "./dataAutomationSettingsBag";
+import { DataAutomationSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/dataAutomationSettingsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The information required to render the Data Automation Settings block. */
@@ -34,7 +34,10 @@ export type DataAutomationSettingsInitializationBox = {
      */
     attendanceGroupTypes?: ListItemBag[] | null;
 
-    /** Gets or sets the options for the "based on" criteria on an ignore campus change rule. */
+    /**
+     * Gets or sets the options for the "based on" criteria on an ignore
+     * campus change rule.
+     */
     campusChangeBasedOnOptions?: ListItemBag[] | null;
 
     /**
@@ -55,7 +58,10 @@ export type DataAutomationSettingsInitializationBox = {
      */
     mostAttendanceOrGivingOptions?: ListItemBag[] | null;
 
-    /** Gets or sets the person attributes available for selection. Each value is an attribute unique identifier. */
+    /**
+     * Gets or sets the person attributes available for selection. Each value
+     * is an attribute unique identifier.
+     */
     personAttributes?: ListItemBag[] | null;
 
     /** Gets or sets the current data automation settings. */

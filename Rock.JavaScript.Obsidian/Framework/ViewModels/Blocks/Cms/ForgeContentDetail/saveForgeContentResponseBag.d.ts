@@ -21,8 +21,14 @@
 // </copyright>
 //
 
-/** The response returned by the SaveContent block action after a successful server-side compile and save. */
+/**
+ * The response returned by the SaveContent block action after a
+ * successful server-side compile and save.
+ */
 export type SaveForgeContentResponseBag = {
-    /** Gets or sets the compiled SystemJS module string the server produced. */
+    /**
+     * Gets or sets the compiled SystemJS module string the server produced,
+     * so the editor can render the saved component without a page reload.
+     */
     compiledContent?: string | null;
 };

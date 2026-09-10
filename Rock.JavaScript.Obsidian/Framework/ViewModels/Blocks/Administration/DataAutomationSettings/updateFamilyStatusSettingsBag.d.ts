@@ -21,9 +21,12 @@
 // </copyright>
 //
 
-import { StatusDataViewMappingBag } from "./statusDataViewMappingBag";
+import { StatusDataViewMappingBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/statusDataViewMappingBag";
 
-/** Settings that control automatically updating a family's status based on data view membership. */
+/**
+ * Settings that control automatically updating a family's status based on
+ * data view membership.
+ */
 export type UpdateFamilyStatusSettingsBag = {
     /** Gets or sets a value indicating whether automatic family status updating is enabled. */
     isEnabled: boolean;

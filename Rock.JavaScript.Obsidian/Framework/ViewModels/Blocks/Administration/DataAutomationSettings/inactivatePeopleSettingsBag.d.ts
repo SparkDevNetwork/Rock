@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { DataAutomationInteractionItemBag } from "./dataAutomationInteractionItemBag";
+import { DataAutomationInteractionItemBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/dataAutomationInteractionItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**

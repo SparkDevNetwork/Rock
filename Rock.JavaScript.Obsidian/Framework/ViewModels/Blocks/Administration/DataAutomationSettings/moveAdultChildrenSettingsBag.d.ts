@@ -23,7 +23,10 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** Settings that control when children who have become adults are moved to their own family. */
+/**
+ * Settings that control when children who have become adults are moved to
+ * their own family.
+ */
 export type MoveAdultChildrenSettingsBag = {
     /** Gets or sets the age at which a child is considered an adult. */
     adultAge?: number | null;

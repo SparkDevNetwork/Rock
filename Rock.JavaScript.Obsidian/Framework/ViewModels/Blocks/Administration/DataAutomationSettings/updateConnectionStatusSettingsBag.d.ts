@@ -21,9 +21,12 @@
 // </copyright>
 //
 
-import { StatusDataViewMappingBag } from "./statusDataViewMappingBag";
+import { StatusDataViewMappingBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/statusDataViewMappingBag";
 
-/** Settings that control automatically updating a person's connection status based on data view membership. */
+/**
+ * Settings that control automatically updating a person's connection status
+ * based on data view membership.
+ */
 export type UpdateConnectionStatusSettingsBag = {
     /** Gets or sets a value indicating whether automatic connection status updating is enabled. */
     isEnabled: boolean;

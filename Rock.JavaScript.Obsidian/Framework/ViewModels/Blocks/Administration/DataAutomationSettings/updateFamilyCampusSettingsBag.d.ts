@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { IgnoreCampusChangeBag } from "./ignoreCampusChangeBag";
+import { IgnoreCampusChangeBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/ignoreCampusChangeBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Settings that control when a family's campus is automatically updated. */

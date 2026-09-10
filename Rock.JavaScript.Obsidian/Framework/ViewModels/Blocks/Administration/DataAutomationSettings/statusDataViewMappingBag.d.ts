@@ -29,7 +29,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * people or families should receive that status.
  */
 export type StatusDataViewMappingBag = {
-    /** Gets or sets the data view selected for this status, or null when no data view has been chosen. */
+    /**
+     * Gets or sets the data view selected for this status, or null
+     * when no data view has been chosen.
+     */
     dataView?: ListItemBag | null;
 
     /**

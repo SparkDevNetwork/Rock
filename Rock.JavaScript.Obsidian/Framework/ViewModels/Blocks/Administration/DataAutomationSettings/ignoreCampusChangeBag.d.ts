@@ -36,9 +36,15 @@ export type IgnoreCampusChangeBag = {
      */
     basedOn?: string | null;
 
-    /** Gets or sets the campus the update would be changing from. The value is the campus unique identifier. */
+    /**
+     * Gets or sets the campus the update would be changing from. The value
+     * is the campus unique identifier.
+     */
     fromCampus?: ListItemBag | null;
 
-    /** Gets or sets the campus the update would be changing to. The value is the campus unique identifier. */
+    /**
+     * Gets or sets the campus the update would be changing to. The value is
+     * the campus unique identifier.
+     */
     toCampus?: ListItemBag | null;
 };

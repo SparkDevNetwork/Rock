@@ -21,12 +21,12 @@
 // </copyright>
 //
 
-import { InactivatePeopleSettingsBag } from "./inactivatePeopleSettingsBag";
-import { MoveAdultChildrenSettingsBag } from "./moveAdultChildrenSettingsBag";
-import { ReactivatePeopleSettingsBag } from "./reactivatePeopleSettingsBag";
-import { UpdateConnectionStatusSettingsBag } from "./updateConnectionStatusSettingsBag";
-import { UpdateFamilyCampusSettingsBag } from "./updateFamilyCampusSettingsBag";
-import { UpdateFamilyStatusSettingsBag } from "./updateFamilyStatusSettingsBag";
+import { InactivatePeopleSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/inactivatePeopleSettingsBag";
+import { MoveAdultChildrenSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/moveAdultChildrenSettingsBag";
+import { ReactivatePeopleSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/reactivatePeopleSettingsBag";
+import { UpdateConnectionStatusSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/updateConnectionStatusSettingsBag";
+import { UpdateFamilyCampusSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/updateFamilyCampusSettingsBag";
+import { UpdateFamilyStatusSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/updateFamilyStatusSettingsBag";
 
 /**
  * The complete set of editable data automation settings. This is the
