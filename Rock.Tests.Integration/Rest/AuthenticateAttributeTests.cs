@@ -17,8 +17,6 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Security.Principal;
-using System.Threading;
 using System.Web.Http.Controllers;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -99,19 +97,23 @@ namespace Rock.Tests.Integration.Rest
         /// Runs <see cref="AuthenticateAttribute.OnAuthorization"/> for a request
         /// whose already-resolved current user is <paramref name="currentUser"/>,
         /// mirroring the state the PersonSession pipeline establishes before the
-        /// filter runs. The resolved user is exposed through the same
+        /// filter runs: a resolved <see cref="PersonSession"/> plus current identity
+        /// on the <see cref="RockRequestContext"/>, exposed through the same
         /// IServiceProvider -&gt; IRockRequestContextAccessor lookup the filter uses
-        /// in production, and a matching principal is placed on the current thread
-        /// (which is where <c>TryAuthenticateFromCurrentPrincipal</c> reads it).
+        /// in production.
         /// </summary>
         /// <param name="currentUser">The user login resolved for the request.</param>
         /// <returns>The action context after authorization, for inspecting its Response.</returns>
         private static HttpActionContext AuthorizeWithCurrentUser( UserLogin currentUser )
         {
             // The person is irrelevant to the PIN guard, which reads only the
-            // current user's EntityType; pass null to keep the setup focused.
+            // current user's EntityType; pass null to keep the setup focused. A
+            // (non-null) PersonSession is what marks the request cookie-authenticated,
+            // which is the signal TryAuthenticateFromCurrentPrincipal now reads
+            // (it no longer consults Thread.CurrentPrincipal).
             var requestContext = new RockRequestContext();
             requestContext.SetCurrentIdentity( null, currentUser );
+            requestContext.SetPersonSession( new PersonSession { UserLogin = currentUser } );
 
             var accessor = new TestRockRequestContextAccessor { RockRequestContext = requestContext };
             var serviceProvider = new TestServiceProvider( accessor );
@@ -119,30 +121,16 @@ namespace Rock.Tests.Integration.Rest
             var request = new HttpRequestMessage();
             request.Properties["RockServiceProvider"] = serviceProvider;
 
-            var principal = new GenericPrincipal( new GenericIdentity( currentUser.UserName ), null );
-            var httpRequestContext = new HttpRequestContext { Principal = principal };
-
             var actionContext = new HttpActionContext
             {
                 ControllerContext = new HttpControllerContext
                 {
                     Request = request,
-                    RequestContext = httpRequestContext
+                    RequestContext = new HttpRequestContext()
                 }
             };
 
-            var originalPrincipal = Thread.CurrentPrincipal;
-            try
-            {
-                // TryAuthenticateFromCurrentPrincipal reads Thread.CurrentPrincipal,
-                // not the request-context principal, so set it here.
-                Thread.CurrentPrincipal = principal;
-                new AuthenticateAttribute().OnAuthorization( actionContext );
-            }
-            finally
-            {
-                Thread.CurrentPrincipal = originalPrincipal;
-            }
+            new AuthenticateAttribute().OnAuthorization( actionContext );
 
             return actionContext;
         }

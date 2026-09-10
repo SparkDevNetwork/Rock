@@ -98,35 +98,59 @@ namespace Rock.Rest.Filters
         }
 
         /// <summary>
-        /// Attempts to authenticate the request from the principal already set on
-        /// the current thread. This is the common case: the <c>.ROCK</c> cookie
-        /// session was resolved earlier in the pipeline and established the
-        /// current principal, so this state only validates and forwards it.
+        /// Attempts to authenticate the request from the <c>.ROCK</c> cookie session
+        /// resolved earlier in the pipeline and exposed on
+        /// <see cref="RockRequestContext"/>. This is the common case. A resolved
+        /// <see cref="Rock.Model.PersonSession"/> means the caller is
+        /// cookie-authenticated - including <c>Impersonation</c> / <c>UserToken</c>
+        /// sessions that carry a current person but no backing <see cref="UserLogin"/>
+        /// (and therefore no principal). The current identity is already set on the
+        /// request context by the pipeline; this state validates it and forwards a
+        /// Web API principal for <see cref="UserLogin"/>-backed sessions.
         /// </summary>
         /// <param name="actionContext">The context that describes the API action request.</param>
         /// <returns><c>true</c> when the request has been handled (authenticated or rejected) and no further authentication should be attempted; otherwise <c>false</c>.</returns>
         private bool TryAuthenticateFromCurrentPrincipal( HttpActionContext actionContext )
         {
-            // See if user is logged in
-            var principal = System.Threading.Thread.CurrentPrincipal;
-            if ( principal == null || principal.Identity == null || string.IsNullOrWhiteSpace( principal.Identity.Name ) )
+            var requestContext = TryGetRequestContext( actionContext );
+
+            // A resolved PersonSession means the .ROCK cookie authenticated the
+            // caller. Detect it here on the RockRequestContext rather than reading
+            // Thread.CurrentPrincipal, which the pipeline only sets for
+            // UserLogin-backed sessions - Impersonation / UserToken sessions have a
+            // current person but no principal, and were previously treated as
+            // anonymous by the REST pipeline.
+            if ( requestContext?.PersonSession == null )
             {
                 return false;
             }
+
+            var currentUser = requestContext.CurrentUser;
 
             // PIN authentications are not permitted to access the REST API.
             // A .ROCK session can never be backed by a PIN login (the login
             // paths reject them), so this is defense-in-depth against the
             // current user having been established as a PIN login upstream.
-            if ( IsPinAuthentication( TryGetRequestContext( actionContext )?.CurrentUser ) )
+            if ( IsPinAuthentication( currentUser ) )
             {
                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
                 return true;
             }
 
-            // Don't call SetCurrentPerson here because it is already been
-            // set when the request first started.
-            actionContext.Request.SetUserPrincipal( principal );
+            // Forward a Web API principal for UserLogin-backed sessions so the
+            // framework sees an authenticated request. Impersonation / UserToken
+            // sessions have no UserLogin (hence no username to build a principal
+            // from); they authenticate at the Rock layer via
+            // RockRequestContext.CurrentPerson (ApiControllerBase.GetPerson), which
+            // is what Rock's REST authorization reads. The current identity is
+            // already set on the request context by the pipeline, so nothing else
+            // needs to be set here.
+            if ( currentUser != null )
+            {
+                var principal = new GenericPrincipal( new GenericIdentity( currentUser.UserName ), null );
+                actionContext.Request.SetUserPrincipal( principal );
+            }
+
             return true;
         }
 
