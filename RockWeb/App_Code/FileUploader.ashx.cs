@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Principal;
 using System.ServiceModel.Web;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -83,29 +82,47 @@ namespace RockWeb
         /// <exception cref="WebFaultException">Must be logged in</exception>
         public virtual void ProcessRequest( HttpContext context )
         {
-            if ( !context.User.Identity.IsAuthenticated )
+            var requestContext = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext;
+
+            // The current person comes from the PersonSession on RockRequestContext,
+            // which is authoritative for every authenticated session, including
+            // Impersonation and UserToken sessions that have no backing UserLogin and
+            // therefore never populate Context.User. Gate on this rather than on the
+            // principal so those sessions are not incorrectly treated as anonymous.
+            var currentPerson = requestContext?.CurrentPerson;
+
+            if ( currentPerson == null )
             {
-                // If not, see if there's a valid token
+                // No authenticated session; fall back to this handler's own API-key
+                // authentication. Establish the resolved identity on RockRequestContext
+                // AND HttpContext.Items (mirroring the auth pipeline) so downstream
+                // authorization and audit-column stamping see it. The previous code set
+                // Context.User for this, which the save pipeline
+                // (DbContext.GetCurrentPersonAliasId) no longer reads.
                 string authToken = context.Request.Headers[Rock.Rest.HeaderTokens.AuthorizationToken];
                 if ( string.IsNullOrWhiteSpace( authToken ) )
                 {
                     authToken = context.Request.Params[ParameterKey.ApiKey];
                 }
 
-                if ( !string.IsNullOrWhiteSpace( authToken ) )
+                if ( !string.IsNullOrWhiteSpace( authToken ) && requestContext != null )
                 {
-                    var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
-                    var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
-                    if ( userLogin != null )
+                    // The RockContext is intentionally not disposed: the resolved Person
+                    // must remain usable (including navigation) for the rest of the
+                    // request, matching the auth pipeline's own pattern.
+                    var rockContext = RockApp.Current.CreateRockContext();
+                    var userLogin = new UserLoginService( rockContext ).Queryable( "Person" )
+                        .Where( u => u.ApiKey == authToken )
+                        .FirstOrDefault();
+                    if ( userLogin?.Person != null )
                     {
-                        var identity = new GenericIdentity( userLogin.UserName );
-                        var principal = new GenericPrincipal( identity, null );
-                        context.User = principal;
+                        requestContext.SetCurrentIdentity( userLogin.Person, userLogin );
+                        context.Items["CurrentPerson"] = userLogin.Person;
+                        context.Items["CurrentUser"] = userLogin;
+                        currentPerson = userLogin.Person;
                     }
                 }
             }
-
-            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
 
             try
             {
@@ -137,7 +154,7 @@ namespace RockWeb
                 }
                 else
                 {
-                    if ( !context.User.Identity.IsAuthenticated )
+                    if ( currentPerson == null )
                     {
                         throw new Rock.Web.FileUploadException( "Must be logged in.", System.Net.HttpStatusCode.Forbidden );
                     }
