@@ -1023,13 +1023,6 @@ WHERE
 
             public void EnsureFlowHasLatestInstance( CommunicationFlow flow )
             {
-                if ( flow.CommunicationFlowInstances.Any() )
-                {
-                    // There is already a one-time flow instance so return.
-                    return;
-                }
-
-                // No instances yet so try to create one.
                 var schedule = flow.Schedule;
                 if ( schedule == null )
                 {
@@ -1044,6 +1037,18 @@ WHERE
                     return;
                 }
 
+                if ( flow.CommunicationFlowInstances.Any() )
+                {
+                    // There is already a one-time flow instance; update its start date if needed, then return.
+                    if ( _communicationFlowService.UpdateOneTimeFlowInstanceStartDate( flow, firstStartDateTime.Value.Date ) )
+                    {
+                        _saveChangesService.SaveChanges();
+                    }
+
+                    return;
+                }
+
+                // No instances yet so try to create one.
                 var instance = new CommunicationFlowInstance
                 {
                     CommunicationFlowId = flow.Id,
