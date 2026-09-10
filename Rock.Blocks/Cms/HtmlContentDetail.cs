@@ -582,7 +582,9 @@ namespace Rock.Blocks.Cms
         /// <summary>
         /// Derives the three-state approval status from the entity's IsApproved
         /// flag and approver fields. A denied version is unapproved but records
-        /// who denied it, while a pending version records nobody.
+        /// who denied it, while a pending version records nobody. Rows the
+        /// WebForms block un-approved by overwriting kept their old approver, so
+        /// they read as Denied here until the next save normalizes them.
         /// </summary>
         /// <returns>The derived approval status.</returns>
         private static HtmlContentApprovalStatus GetApprovalStatus( HtmlContent htmlContent )

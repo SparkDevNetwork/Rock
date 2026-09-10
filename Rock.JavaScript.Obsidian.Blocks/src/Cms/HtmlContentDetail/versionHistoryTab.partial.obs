@@ -6,7 +6,8 @@
           liveUpdates>
         <TextColumn name="version"
                     title="Version"
-                    field="versionText" />
+                    field="versionText"
+                    sortField="version" />
 
         <Column name="lastModified"
                 title="Last Modified"

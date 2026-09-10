@@ -28,7 +28,7 @@ namespace Rock.ViewModels.Blocks.Cms.HtmlContentDetail
         /// <summary>
         /// Gets or sets a value indicating whether previous versions are kept
         /// and the Version History tab and overwrite option are shown. This is
-        /// true for every Versioning &amp; Approval mode other than Off.
+        /// true when Enable Versioning or Require Approval is on.
         /// </summary>
         public bool IsVersioningEnabled { get; set; }
 
