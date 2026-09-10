@@ -3,7 +3,6 @@
     <Grid :data="gridData"
           keyField="idKey"
           itemTerm="Version"
-          light
           liveUpdates>
         <TextColumn name="version"
                     title="Version"
@@ -11,10 +10,11 @@
 
         <Column name="lastModified"
                 title="Last Modified"
-                field="modifiedDateTime">
+                field="modifiedDateTime"
+                width="30%">
             <template #format="{ row }">
                 {{ row.modifiedByName }}
-                <span class="text-muted">({{ getElapsedText(row.modifiedDateTime as string) }})</span>
+                <span class="text-muted ml-1">({{ getElapsedText(row.modifiedDateTime as string) }})</span>
             </template>
         </Column>
 
@@ -32,8 +32,7 @@
 
         <Column name="select"
                 width="120px"
-                headerClass="grid-columncommand"
-                itemClass="grid-columncommand">
+                itemClass="text-right">
             <template #format="{ row }">
                 <HighlightLabel v-if="row.isCurrent" labelType="info">Current</HighlightLabel>
 

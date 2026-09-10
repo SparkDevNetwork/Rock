@@ -516,19 +516,6 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Determines whether a save request would leave the row exactly as it
-        /// is, so an idle Save by a non-approver cannot demote live content.
-        /// </summary>
-        /// <returns><see langword="true"/> if nothing would change; otherwise <see langword="false"/>.</returns>
-        private static bool IsUnchanged( HtmlContent htmlContent, SaveHtmlContentRequestBag request )
-        {
-            return htmlContent.Content == ( request.Content ?? string.Empty )
-                && htmlContent.StartDateTime == request.StartDateTime.AsDateTime()
-                && htmlContent.ExpireDateTime == request.ExpireDateTime.AsDateTime()
-                && GetApprovalStatus( htmlContent ) == request.ApprovalStatus;
-        }
-
-        /// <summary>
         /// Applies the WebForms approval rules onto the content's IsApproved
         /// flag and approver fields, extended with the Denied state the
         /// redesigned status toggle and tooltip need.
@@ -698,7 +685,8 @@ namespace Rock.Blocks.Cms
                     ModifiedDateTime = v.ModifiedDateTime?.ToString( "s" ),
                     ModifiedByName = v.ModifiedByPerson?.FullName,
                     IsApproved = v.IsApproved,
-                    ApprovedByName = v.ApprovedByPerson?.FullName,
+                    // A denied version still records who acted on it, but that person is not an approver.
+                    ApprovedByName = v.IsApproved ? v.ApprovedByPerson?.FullName : null,
                     StartDateTime = v.StartDateTime?.ToString( "s" ),
                     ExpireDateTime = v.ExpireDateTime?.ToString( "s" ),
                     IsCurrent = v.Version == currentVersion
@@ -803,11 +791,6 @@ namespace Rock.Blocks.Cms
 
             var entityValue = GetEntityValue();
             var htmlContent = GetContentVersion( entityValue, request.Version );
-
-            if ( htmlContent != null && IsUnchanged( htmlContent, request ) )
-            {
-                return ActionOk( new SaveHtmlContentResponseBag { IsSaved = true } );
-            }
 
             var isContentChanged = htmlContent == null || htmlContent.Content != newContent;
             var isNewVersionRequired = htmlContent == null
