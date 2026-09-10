@@ -6,11 +6,13 @@
         </div>
 
         <div v-if="options.isApprovalRequired" class="col-md-6">
-            <ButtonGroup v-if="options.isCurrentPersonApprover"
-                         v-model="approvalStatusValue"
-                         label="Approval Status"
-                         formGroupClasses="d-flex flex-column align-items-end"
-                         :items="approvalStatusItems" />
+            <!-- The inline flex column shrinks to the buttons, so the label lines up with their left edge. -->
+            <div v-if="options.isCurrentPersonApprover" class="text-right">
+                <ButtonGroup v-model="approvalStatusValue"
+                             label="Approval Status"
+                             formGroupClasses="d-inline-flex flex-column text-left"
+                             :items="approvalStatusItems" />
+            </div>
 
             <StaticFormControl v-else label="Approval Status" modelValue="">
                 <HighlightLabel :labelType="approvalLabelType" :tooltip="approvalTooltip" tooltipPlacement="top">
@@ -34,16 +36,16 @@
                          help="The dates this content is available to display. Leave blank on either end for no limit. Requires approval to take effect, if approval is required." />
     </div>
 
-    <CheckBox v-if="options.isVersioningEnabled"
-              v-model="isOverwriteCurrentVersion"
-              label="Overwrite Current Version"
-              help="Whether saving replaces the current version instead of creating a new one." />
+    <InlineCheckBox v-if="options.isVersioningEnabled"
+                    v-model="isOverwriteCurrentVersion"
+                    label="Overwrite Current Version"
+                    help="Whether saving replaces the current version instead of creating a new one." />
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, watch } from "vue";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";

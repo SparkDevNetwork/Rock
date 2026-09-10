@@ -536,19 +536,18 @@ namespace Rock.Blocks.Cms
         /// <param name="htmlContent">The row being saved.</param>
         /// <param name="requestedStatus">The status the editor asked for.</param>
         /// <param name="isContentChanged">Whether the content text differs from the loaded version.</param>
-        /// <returns><see langword="true"/> if the saved version is waiting for approval; otherwise <see langword="false"/>.</returns>
-        private bool ApplyApprovalStatus( HtmlContent htmlContent, HtmlContentApprovalStatus requestedStatus, bool isContentChanged )
+        private void ApplyApprovalStatus( HtmlContent htmlContent, HtmlContentApprovalStatus requestedStatus, bool isContentChanged )
         {
             if ( !IsApprovalRequired )
             {
                 SetApprovalStatus( htmlContent, HtmlContentApprovalStatus.Approved );
-                return false;
+                return;
             }
 
             if ( IsCurrentPersonAuthorized( Authorization.APPROVE ) )
             {
                 SetApprovalStatus( htmlContent, requestedStatus );
-                return !htmlContent.IsApproved;
+                return;
             }
 
             // As in WebForms, a non-approver only sends the version back for review when the text itself changed.
@@ -556,8 +555,6 @@ namespace Rock.Blocks.Cms
             {
                 SetApprovalStatus( htmlContent, HtmlContentApprovalStatus.PendingApproval );
             }
-
-            return !htmlContent.IsApproved;
         }
 
         /// <summary>
@@ -832,7 +829,7 @@ namespace Rock.Blocks.Cms
             htmlContent.StartDateTime = request.StartDateTime.AsDateTime();
             htmlContent.ExpireDateTime = request.ExpireDateTime.AsDateTime();
 
-            var isApprovalPending = ApplyApprovalStatus( htmlContent, request.ApprovalStatus, isContentChanged );
+            ApplyApprovalStatus( htmlContent, request.ApprovalStatus, isContentChanged );
 
             RockContext.SaveChanges();
             HtmlContentService.FlushCachedContent( BlockId, entityValue );
@@ -840,7 +837,9 @@ namespace Rock.Blocks.Cms
             return ActionOk( new SaveHtmlContentResponseBag
             {
                 IsSaved = true,
-                IsApprovalPending = isApprovalPending
+
+                // Only new content that is being held back from display is worth warning about.
+                IsApprovalPending = isContentChanged && !htmlContent.IsApproved
             } );
         }
 

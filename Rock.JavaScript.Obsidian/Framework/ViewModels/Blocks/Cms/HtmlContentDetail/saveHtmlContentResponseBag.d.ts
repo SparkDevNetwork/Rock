@@ -24,8 +24,10 @@
 /** Result of the Save block action of the HTML Content block. */
 export type SaveHtmlContentResponseBag = {
     /**
-     * Gets or sets a value indicating whether the saved version is waiting
-     * for approval and will not be visible until it is approved.
+     * Gets or sets a value indicating whether the save changed the content
+     * text and left it unapproved, so the new text will not be visible
+     * until it is approved. This is false when only the dates or the
+     * approval status changed.
      */
     isApprovalPending: boolean;
 
