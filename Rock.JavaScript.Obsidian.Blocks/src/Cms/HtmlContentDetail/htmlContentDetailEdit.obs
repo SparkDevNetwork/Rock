@@ -3,6 +3,7 @@
     <TabbedModal v-model="isModalOpen"
                  v-model:selectedTab="selectedTab"
                  :tabs="tabs"
+                 tabBarType="pills"
                  title="Edit HTML"
                  saveText="Save"
                  @save="onSave">

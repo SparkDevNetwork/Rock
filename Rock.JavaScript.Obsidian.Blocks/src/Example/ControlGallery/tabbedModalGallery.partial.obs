@@ -3,7 +3,7 @@
 
         <RockButton @click="isModalOpen = !isModalOpen">Toggle Modal</RockButton>
 
-        <TabbedModal v-model="isModalOpen" v-model:selectedTab="selectedTab" :tabs="tabs" @save="onSave" saveText="Save" title="Bible Book Type">
+        <TabbedModal v-model="isModalOpen" v-model:selectedTab="selectedTab" :tabs="tabs" :tabBarType="tabBarType" @save="onSave" saveText="Save" title="Bible Book Type">
             <template #tabpane="{ item }">
                 <!-- This v-if prevents the tab panes that aren't shown from rendering, so they can't have required fields making the form invalid. -->
                 <div v-if="item === selectedTab">
@@ -11,6 +11,17 @@
                 </div>
             </template>
         </TabbedModal>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList v-model="tabBarType"
+                                  label="Tab Bar Type"
+                                  :items="tabBarTypeItems"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+        </template>
 
         <template #props>
             <p>
@@ -50,6 +61,17 @@
                         <td>
                             A <code>v-model</code> for specifying which tab is currently selected.
                             Forwarded to the TabbedContent component.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>tabBarType</code></td>
+                        <td>"tabs" | "pills"</td>
+                        <td>"tabs"</td>
+                        <td>
+                            The style of tab bar to display. Forwarded to the TabbedContent
+                            component, which passes it to the TabbedBar. Underlined tabs are
+                            pulled up against the modal title so the underline spans its full
+                            width; pills keep the normal gap below it.
                         </td>
                     </tr>
                     <tr>
@@ -116,6 +138,8 @@
     const tabs = ref(Object.keys(options));
     const selectedTab = ref("");
     const bookType = ref("");
+    const tabBarType = ref<"tabs" | "pills">("tabs");
+    const tabBarTypeItems = [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }];
 
     watch(selectedTab, () => {
         bookType.value = "";
@@ -134,10 +158,14 @@
 
     const importCode = getSfcControlImportPath("tabbedModal");
     const exampleCode = computed(() => {
+        const tabBarTypeAttribute = tabBarType.value === "tabs"
+            ? ""
+            : `\n             tabBarType="${tabBarType.value}"`;
+
         return `
 <TabbedModal v-model="isModalOpen"
              v-model:selectedTab="selectedTab"
-             :tabs="['Tab 1', 'Tab 2']"
+             :tabs="['Tab 1', 'Tab 2']"${tabBarTypeAttribute}
              @save="onSave"
              saveText="Save"
              title="Modal Title">

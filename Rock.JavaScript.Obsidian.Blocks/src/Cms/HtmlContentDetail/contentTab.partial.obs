@@ -28,9 +28,11 @@
                 :encryptedImageRootFolder="options.encryptedImageRootFolder ?? ''"
                 :userSpecificRoot="options.isUserSpecificRoot" />
 
-    <DateRangePicker v-model="displayDates"
-                     label="Display Dates"
-                     help="The dates this content is available to display. Leave blank on either end for no limit. Requires approval to take effect, if approval is required." />
+    <div class="mt-3">
+        <DateRangePicker v-model="displayDates"
+                         label="Display Dates"
+                         help="The dates this content is available to display. Leave blank on either end for no limit. Requires approval to take effect, if approval is required." />
+    </div>
 
     <CheckBox v-if="options.isVersioningEnabled"
               v-model="isOverwriteCurrentVersion"
