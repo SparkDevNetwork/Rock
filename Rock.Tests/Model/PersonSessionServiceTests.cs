@@ -2206,6 +2206,173 @@ public class PersonSessionServiceTests
 
     #endregion ResolveSessionForRequest — happy path + reissue
 
+    #region ResolveSessionForRequestReadOnly — no side effects
+
+    /// <summary>
+    /// The read-only resolver returns a valid session and mutates neither the
+    /// request nor the response (no reissue, no expiry). This is the contract the
+    /// <c>RockRequestContext</c> identity factory relies on.
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequestReadOnly_ValidSession_ReturnsSessionWithNoCookieMutation()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = true,
+        };
+        rockContext.Set<PersonSession>().Add( session );
+
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequestReadOnly( requestContext );
+
+        Assert.IsNotNull( result );
+        Assert.AreEqual( session.Guid, result.Guid );
+        Assert.IsEmpty( response.AddedCookies );
+        Assert.IsEmpty( response.RemovedCookies );
+    }
+
+    /// <summary>
+    /// A cookie past the half-life would trigger a reissue through the full
+    /// resolver, but the read-only resolver returns the session WITHOUT reissuing.
+    /// This is the key behavioral contrast: reissue is a side effect owned by the
+    /// managed pipeline.
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequestReadOnly_PastHalfLife_ReturnsSessionWithoutReissue()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = true,
+        };
+        rockContext.Set<PersonSession>().Add( session );
+
+        var stalePayload = new PersonSessionCookiePayload
+        {
+            Version = PersonSessionService.CookiePayloadVersion,
+            SessionGuid = session.Guid,
+            IssuedAt = RockDateTime.Now.AddDays( -( ( PersonSessionService.AuthCookieTimeout.TotalDays / 2 ) + 5 ) ),
+        };
+        var staleCookieValue = Rock.Security.Encryption.EncryptString( JsonSerializer.Serialize( stalePayload ) );
+
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( staleCookieValue, response );
+
+        var result = service.ResolveSessionForRequestReadOnly( requestContext );
+
+        Assert.IsNotNull( result );
+        Assert.AreEqual( session.Guid, result.Guid );
+        Assert.IsEmpty( response.AddedCookies, "The read-only resolver must not reissue the cookie." );
+        Assert.IsEmpty( response.RemovedCookies );
+    }
+
+    /// <summary>
+    /// An expired session resolves to null, and unlike the full resolver the
+    /// read-only resolver does NOT expire the cookie.
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequestReadOnly_ExpiredSession_ReturnsNullWithoutExpiringCookie()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            ExpiresDateTime = RockDateTime.Now.AddHours( -1 ),
+            IsPersistent = false,
+        };
+        rockContext.Set<PersonSession>().Add( session );
+
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequestReadOnly( requestContext );
+
+        Assert.IsNull( result );
+        Assert.IsEmpty( response.RemovedCookies, "The read-only resolver must not expire the cookie." );
+    }
+
+    /// <summary>
+    /// A locked-out login fails closed (null) through the read-only resolver, but
+    /// WITHOUT the sign-out side effects: the session stays active and no cookie is
+    /// cleared. The mark-inactive / sign-out happens on the next managed request via
+    /// the full resolver.
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequestReadOnly_LockedOutUserLogin_ReturnsNullWithoutSideEffects()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        var userLogin = new UserLogin
+        {
+            Id = 50,
+            UserName = "locked",
+            PersonId = 100,
+            IsConfirmed = true,
+            IsLockedOut = true,
+        };
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            UserLoginId = 50,
+            UserLogin = userLogin,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = false,
+        };
+        rockContext.Set<UserLogin>().Add( userLogin );
+        rockContext.Set<PersonSession>().Add( session );
+
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequestReadOnly( requestContext );
+
+        Assert.IsNull( result );
+        Assert.IsTrue( session.IsActive, "The read-only resolver must not mark the session inactive." );
+        Assert.IsEmpty( response.RemovedCookies, "The read-only resolver must not clear the cookie." );
+    }
+
+    #endregion ResolveSessionForRequestReadOnly — no side effects
+
     #region ProcessImpersonationToken matrix
 
     /// <summary>
