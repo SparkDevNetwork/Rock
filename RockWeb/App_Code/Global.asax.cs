@@ -635,7 +635,48 @@ namespace RockWeb
             // PostMapRequestHandler the request's handler is known, so static
             // files (which map to no managed handler) can be skipped and only
             // real dynamic requests pay for the lookup.
-            RockRequestContext.AttachToCurrentRequest( Context );
+            var rockRequestContext = RockRequestContext.AttachToCurrentRequest( Context );
+
+            /*
+                9/10/26 - CLAUDE
+
+                Install a lazily-invoked identity resolver on the request context. It
+                resolves the PersonSession - the FULL, side-effecting resolution
+                (reissue, kill-switch mark-inactive, locked-out sign-out) - only when
+                the current identity is first read, so:
+                  - static-asset requests that never read identity pay nothing, which
+                    is the same reason the eager per-asset lookup was deferred above;
+                  - OWIN-terminated requests (SignalR, OIDC, plugins) - which never run
+                    Application_PostMapRequestHandler - resolve AND invalidate a session
+                    when they ask for the current person;
+                  - managed requests resolve exactly once: PostMapRequestHandler reads
+                    PersonSession (triggering this factory) rather than resolving
+                    separately, then applies the managed-only side effects
+                    (Context.User, HttpContext.Items).
+
+                The closure MUST NOT throw: Lazy caches an exception and would then
+                fault every identity read for the request, so a resolve failure is
+                swallowed to null - the same way PostMapRequestHandler treats a bad
+                cookie. Cookie reissue inside ResolveSessionForRequest is itself
+                best-effort, so a late/OWIN cookie-write failure does not discard the
+                resolved session. The RockContext is intentionally not disposed so the
+                resolved Person / UserLogin stay usable for the rest of the request.
+
+                Reason: Give OWIN and lazy consumers a single, pipeline-agnostic identity source that also invalidates.
+            */
+            rockRequestContext.SetPersonSessionFactory( () =>
+            {
+                try
+                {
+                    var rockContext = RockApp.Current.CreateRockContext();
+                    return new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
+                }
+                catch ( Exception ex )
+                {
+                    Debug.WriteLine( ex.Message );
+                    return null;
+                }
+            } );
         }
 
         /// <summary>
@@ -651,18 +692,20 @@ namespace RockWeb
         /// Handles the PostMapRequestHandler event of the Application control.
         /// By this stage the request's handler has been selected, so a dynamic
         /// request (which maps to a managed handler) can be told apart from a
-        /// natively served static file (which has no managed handler). The
-        /// new-format <c>.ROCK</c> cookie is resolved here, and only for
-        /// dynamic requests, so the many static asset requests a single
-        /// authenticated page load generates do not each incur a database
-        /// session lookup.
+        /// natively served static file (which has no managed handler). For dynamic
+        /// requests this reads <c>RockRequestContext.PersonSession</c>, which triggers
+        /// the lazy identity factory installed in <c>Application_BeginRequest</c> (or
+        /// returns the session set by a legacy upgrade), then applies the managed-only
+        /// side effects (<c>Context.User</c> and <c>HttpContext.Items</c>). Static
+        /// files are skipped so the many static asset requests a single authenticated
+        /// page load generates do not each incur a database session lookup.
         /// </summary>
         /// <remarks>
         /// Legacy cookies are resolved earlier, in
         /// <c>Application_PostAuthenticateRequest</c>, via
-        /// <c>FormsAuthenticationModule</c> plus the upgrade shim. When that
-        /// path has already resolved a session this handler bails out so it
-        /// does not re-resolve (and clobber) it.
+        /// <c>FormsAuthenticationModule</c> plus the upgrade shim; that path sets the
+        /// session explicitly, so reading <c>PersonSession</c> here returns it without
+        /// re-triggering the factory (no re-resolve, no clobber).
         /// </remarks>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
@@ -691,46 +734,29 @@ namespace RockWeb
                 return;
             }
 
-            // A legacy cookie may already have been upgraded and its session
-            // resolved in Application_PostAuthenticateRequest. In that case the
-            // cookie snapshot still holds the pre-upgrade legacy value, so
-            // re-resolving here would fail to decode it and null out the
-            // upgraded session. Bail out when a session is already present.
-            if ( rockRequestContext.PersonSession != null )
-            {
-                return;
-            }
-
             try
             {
-                // This RockContext is intentionally NOT disposed. The resolved
-                // PersonSession / UserLogin / PersonAlias.Person must remain
-                // usable (including lazy navigation) for the rest of the
-                // request, and the request context holds references to those
-                // entities. Rock already leaves most per-request RockContexts
-                // undisposed, so this does not introduce a new leak.
-                var rockContext = RockApp.Current.CreateRockContext();
+                // Reading PersonSession triggers the lazy identity factory installed
+                // in Application_BeginRequest (the full, side-effecting resolution:
+                // reissue, kill-switch mark-inactive, locked-out sign-out) for a
+                // new-format cookie, or returns the session already set explicitly by
+                // the legacy upgrade in Application_PostAuthenticateRequest. Either way
+                // resolution happens exactly once, and the identity is then available
+                // on the request context (CurrentPerson / CurrentUser derive from the
+                // session, so Impersonation / UserToken sessions resolve a person even
+                // without a backing UserLogin).
+                var personSession = rockRequestContext.PersonSession;
 
-                var personSession = new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
+                // Apply the managed-only side effects the factory does not: mirror the
+                // resolved identity into HttpContext.Items (read by the Model<T> audit
+                // path and WebForms / Lava CurrentPerson) and set an authenticated
+                // principal. Only UserLogin-backed sessions get a principal;
+                // Impersonation / UserToken sessions do not (core reads the person from
+                // RockRequestContext, not the principal). Null propagation makes this a
+                // clean no-op for anonymous requests.
+                Context.Items["CurrentPerson"] = rockRequestContext.CurrentPerson;
+                Context.Items["CurrentUser"] = rockRequestContext.CurrentUser;
 
-                // Stash the resolved session on the request context so downstream
-                // callers (blocks, MeetsRequirement checks, SignalR hubs, etc.)
-                // read the same instance for the duration of the request. Null is
-                // legitimate for anonymous requests and is handled by consumers.
-                rockRequestContext.SetPersonSession( personSession );
-
-                // CurrentPerson comes from the session's person and CurrentUser
-                // from its UserLogin, set together. Impersonation and UserToken
-                // sessions have no backing UserLogin but still carry a PersonAlias,
-                // so CurrentPerson is resolved for them too. Null propagation makes
-                // this a clean no-op (anonymous) when there is no session.
-                rockRequestContext.SetCurrentIdentity( personSession?.PersonAlias?.Person, personSession?.UserLogin );
-                Context.Items["CurrentPerson"] = personSession?.PersonAlias?.Person;
-                Context.Items["CurrentUser"] = personSession?.UserLogin;
-
-                // Only set the principal when the session has a backing UserLogin.
-                // Sessions without one (Impersonation / UserToken) do not set a
-                // principal here.
                 if ( personSession?.UserLogin != null )
                 {
                     var identity = new System.Security.Principal.GenericIdentity( personSession.UserLogin.UserName );

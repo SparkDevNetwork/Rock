@@ -2206,15 +2206,17 @@ public class PersonSessionServiceTests
 
     #endregion ResolveSessionForRequest — happy path + reissue
 
-    #region ResolveSessionForRequestReadOnly — no side effects
+    #region ResolveSessionForRequest — best-effort reissue
 
     /// <summary>
-    /// The read-only resolver returns a valid session and mutates neither the
-    /// request nor the response (no reissue, no expiry). This is the contract the
-    /// <c>RockRequestContext</c> identity factory relies on.
+    /// Reissue is best-effort: when the cookie write fails - simulated here by a
+    /// response context whose <c>AddCookie</c> throws (e.g. a late identity read
+    /// after the response has started, or an OWIN response that cannot take a
+    /// <c>Set-Cookie</c>) - <c>ResolveSessionForRequest</c> must still return the
+    /// resolved session rather than discarding it.
     /// </summary>
     [TestMethod]
-    public void ResolveSessionForRequestReadOnly_ValidSession_ReturnsSessionWithNoCookieMutation()
+    public void ResolveSessionForRequest_ReissueWriteFailure_StillReturnsSession()
     {
         using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
@@ -2233,44 +2235,7 @@ public class PersonSessionServiceTests
         };
         rockContext.Set<PersonSession>().Add( session );
 
-        var cookieValue = service.GetCookieValue( session );
-        var response = new TrackingResponseContext();
-        var requestContext = BuildRequestContext( cookieValue, response );
-
-        var result = service.ResolveSessionForRequestReadOnly( requestContext );
-
-        Assert.IsNotNull( result );
-        Assert.AreEqual( session.Guid, result.Guid );
-        Assert.IsEmpty( response.AddedCookies );
-        Assert.IsEmpty( response.RemovedCookies );
-    }
-
-    /// <summary>
-    /// A cookie past the half-life would trigger a reissue through the full
-    /// resolver, but the read-only resolver returns the session WITHOUT reissuing.
-    /// This is the key behavioral contrast: reissue is a side effect owned by the
-    /// managed pipeline.
-    /// </summary>
-    [TestMethod]
-    public void ResolveSessionForRequestReadOnly_PastHalfLife_ReturnsSessionWithoutReissue()
-    {
-        using var scope = TestHelper.CreateScopedRockApp();
-        var rockContext = scope.App.CreateRockContext();
-        var service = new PersonSessionService( rockContext );
-
-        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
-
-        var session = new PersonSession
-        {
-            Id = 1,
-            Guid = Guid.NewGuid(),
-            PersonAliasId = 100,
-            CreationSource = PersonSessionCreationSource.Component,
-            IsActive = true,
-            IsPersistent = true,
-        };
-        rockContext.Set<PersonSession>().Add( session );
-
+        // A cookie past the half-life forces a reissue attempt, which will throw.
         var stalePayload = new PersonSessionCookiePayload
         {
             Version = PersonSessionService.CookiePayloadVersion,
@@ -2279,99 +2244,53 @@ public class PersonSessionServiceTests
         };
         var staleCookieValue = Rock.Security.Encryption.EncryptString( JsonSerializer.Serialize( stalePayload ) );
 
-        var response = new TrackingResponseContext();
+        var response = new ThrowOnAddCookieResponseContext();
         var requestContext = BuildRequestContext( staleCookieValue, response );
 
-        var result = service.ResolveSessionForRequestReadOnly( requestContext );
+        var result = service.ResolveSessionForRequest( requestContext );
 
-        Assert.IsNotNull( result );
+        Assert.IsNotNull( result, "A failed reissue write must not discard the resolved session." );
         Assert.AreEqual( session.Guid, result.Guid );
-        Assert.IsEmpty( response.AddedCookies, "The read-only resolver must not reissue the cookie." );
-        Assert.IsEmpty( response.RemovedCookies );
     }
 
     /// <summary>
-    /// An expired session resolves to null, and unlike the full resolver the
-    /// read-only resolver does NOT expire the cookie.
+    /// An <see cref="IRockResponseContext"/> whose <c>AddCookie</c> throws, used to
+    /// exercise the best-effort reissue path.
     /// </summary>
-    [TestMethod]
-    public void ResolveSessionForRequestReadOnly_ExpiredSession_ReturnsNullWithoutExpiringCookie()
+    private sealed class ThrowOnAddCookieResponseContext : IRockResponseContext
     {
-        using var scope = TestHelper.CreateScopedRockApp();
-        var rockContext = scope.App.CreateRockContext();
-        var service = new PersonSessionService( rockContext );
+        public void AddCookie( BrowserCookie cookie ) => throw new InvalidOperationException( "Simulated cookie-write failure (response already started)." );
 
-        var session = new PersonSession
+        public void RemoveCookie( BrowserCookie cookie )
         {
-            Id = 1,
-            Guid = Guid.NewGuid(),
-            PersonAliasId = 100,
-            CreationSource = PersonSessionCreationSource.Component,
-            IsActive = true,
-            ExpiresDateTime = RockDateTime.Now.AddHours( -1 ),
-            IsPersistent = false,
-        };
-        rockContext.Set<PersonSession>().Add( session );
+        }
 
-        var cookieValue = service.GetCookieValue( session );
-        var response = new TrackingResponseContext();
-        var requestContext = BuildRequestContext( cookieValue, response );
+        public void AddBreadCrumb( Rock.Web.IBreadCrumb breadcrumb )
+        {
+        }
 
-        var result = service.ResolveSessionForRequestReadOnly( requestContext );
+        public void AddHtmlElement( string id, string name, string content, Dictionary<string, string> attributes, Rock.Enums.Net.ResponseElementLocation location )
+        {
+        }
 
-        Assert.IsNull( result );
-        Assert.IsEmpty( response.RemovedCookies, "The read-only resolver must not expire the cookie." );
+        public void RedirectToUrl( string url, bool permanent = false )
+        {
+        }
+
+        public void SetHttpHeader( string name, string value )
+        {
+        }
+
+        public void SetPageTitle( string title )
+        {
+        }
+
+        public void SetBrowserTitle( string title )
+        {
+        }
     }
 
-    /// <summary>
-    /// A locked-out login fails closed (null) through the read-only resolver, but
-    /// WITHOUT the sign-out side effects: the session stays active and no cookie is
-    /// cleared. The mark-inactive / sign-out happens on the next managed request via
-    /// the full resolver.
-    /// </summary>
-    [TestMethod]
-    public void ResolveSessionForRequestReadOnly_LockedOutUserLogin_ReturnsNullWithoutSideEffects()
-    {
-        using var scope = TestHelper.CreateScopedRockApp();
-        var rockContext = scope.App.CreateRockContext();
-        var service = new PersonSessionService( rockContext );
-
-        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
-
-        var userLogin = new UserLogin
-        {
-            Id = 50,
-            UserName = "locked",
-            PersonId = 100,
-            IsConfirmed = true,
-            IsLockedOut = true,
-        };
-        var session = new PersonSession
-        {
-            Id = 1,
-            Guid = Guid.NewGuid(),
-            PersonAliasId = 200,
-            UserLoginId = 50,
-            UserLogin = userLogin,
-            CreationSource = PersonSessionCreationSource.Component,
-            IsActive = true,
-            IsPersistent = false,
-        };
-        rockContext.Set<UserLogin>().Add( userLogin );
-        rockContext.Set<PersonSession>().Add( session );
-
-        var cookieValue = service.GetCookieValue( session );
-        var response = new TrackingResponseContext();
-        var requestContext = BuildRequestContext( cookieValue, response );
-
-        var result = service.ResolveSessionForRequestReadOnly( requestContext );
-
-        Assert.IsNull( result );
-        Assert.IsTrue( session.IsActive, "The read-only resolver must not mark the session inactive." );
-        Assert.IsEmpty( response.RemovedCookies, "The read-only resolver must not clear the cookie." );
-    }
-
-    #endregion ResolveSessionForRequestReadOnly — no side effects
+    #endregion ResolveSessionForRequest — best-effort reissue
 
     #region ProcessImpersonationToken matrix
 

@@ -1376,88 +1376,6 @@ public partial class PersonSessionService
     [RockInternal( "20.0", keepInternalForever: true )]
     public PersonSession ResolveSessionForRequest( RockRequestContext requestContext )
     {
-        var resolution = EvaluateSessionForRequest( requestContext );
-
-        switch ( resolution.Outcome )
-        {
-            case SessionResolutionOutcome.Invalid:
-                // Not found, inactive, or expired: clear the stale cookie.
-                ExpireAuthCookie( requestContext );
-                return null;
-
-            case SessionResolutionOutcome.KillSwitched:
-                // Issued before the kill-switch threshold: mark inactive
-                // (SaveHook stamps InactiveDateTime) and clear the cookie.
-                resolution.Session.IsActive = false;
-                ( Context as RockContext ).SaveChanges();
-                ExpireAuthCookie( requestContext );
-                return null;
-
-            case SessionResolutionOutcome.LockedOutOrUnconfirmed:
-                // The backing UserLogin is locked out or no longer confirmed:
-                // sign out. The session is passed explicitly because it has not
-                // yet been attached to the request context at this point, so the
-                // parameterless overload would not know which session to mark
-                // inactive.
-                SignOut( requestContext, resolution.Session );
-                return null;
-
-            case SessionResolutionOutcome.Valid:
-                // Reissue MUST NOT touch PersonSession.IssuedDateTime - only the
-                // cookie's iat changes.
-                if ( resolution.ReissueRequired )
-                {
-                    SetAuthCookie( resolution.Session, requestContext );
-                }
-                return resolution.Session;
-
-            default:
-                // NoSession: no cookie present, or a legacy-format / tampered /
-                // otherwise undecodable cookie. Left alone (the legacy upgrade
-                // path handles legacy-format cookies); nothing to clean up.
-                return null;
-        }
-    }
-
-    /// <summary>
-    /// Read-only counterpart to
-    /// <see cref="ResolveSessionForRequest(RockRequestContext)"/>: resolves and
-    /// validates the current session (decode, load, active / expiry / kill-switch /
-    /// locked-out checks) and returns the valid <see cref="PersonSession"/> or
-    /// <c>null</c>, WITHOUT any side effects - no cookie reissue or expiry, no
-    /// marking a session inactive, no sign-out.
-    /// </summary>
-    /// <remarks>
-    /// This is what the <c>RockRequestContext</c> identity factory installs, so the
-    /// current identity resolves on any request - including OWIN-terminated ones
-    /// that never run the managed pipeline and cannot meaningfully write cookies. A
-    /// kill-switched or locked-out session fails closed here (returns <c>null</c>);
-    /// the corresponding state change (mark inactive / sign out) is applied by the
-    /// side-effecting <see cref="ResolveSessionForRequest(RockRequestContext)"/> on
-    /// the next managed request, or by Rock Cleanup.
-    /// </remarks>
-    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
-    /// <returns>The valid <see cref="PersonSession"/>, or <c>null</c>.</returns>
-    [RockInternal( "20.0", keepInternalForever: true )]
-    public PersonSession ResolveSessionForRequestReadOnly( RockRequestContext requestContext )
-    {
-        var resolution = EvaluateSessionForRequest( requestContext );
-
-        return resolution.Outcome == SessionResolutionOutcome.Valid ? resolution.Session : null;
-    }
-
-    /// <summary>
-    /// Shared read-only evaluation behind
-    /// <see cref="ResolveSessionForRequest(RockRequestContext)"/> and
-    /// <see cref="ResolveSessionForRequestReadOnly(RockRequestContext)"/>. Reads and
-    /// decodes the cookie, loads the session, runs every validity check, and
-    /// computes whether a reissue is due, but performs NO side effects; the caller
-    /// decides what to do with the resulting <see cref="SessionResolution.Outcome"/>.
-    /// </summary>
-    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
-    /// <returns>The read-only evaluation result.</returns>
-    private SessionResolution EvaluateSessionForRequest( RockRequestContext requestContext )
-    {
         if ( requestContext == null )
         {
             throw new ArgumentNullException( nameof( requestContext ) );
@@ -1466,13 +1384,14 @@ public partial class PersonSessionService
         var cookieValue = requestContext.GetCookieValue( AuthCookieName );
         if ( cookieValue.IsNullOrWhiteSpace() )
         {
-            return new SessionResolution { Outcome = SessionResolutionOutcome.NoSession };
+            return null;
         }
 
         if ( !TryDecodeCookie( cookieValue, out var payload, out var metadata ) )
         {
-            // Legacy-format cookie, tampered, or otherwise undecodable.
-            return new SessionResolution { Outcome = SessionResolutionOutcome.NoSession };
+            // Legacy-format cookie, tampered, or otherwise undecodable. Left alone
+            // here; the legacy upgrade path picks up legacy-format cookies.
+            return null;
         }
 
         // Eager-load UserLogin and the session's person. UserLogin.Person is
@@ -1487,7 +1406,9 @@ public partial class PersonSessionService
             || !session.IsActive
             || ( session.ExpiresDateTime.HasValue && session.ExpiresDateTime.Value <= RockDateTime.Now ) )
         {
-            return new SessionResolution { Outcome = SessionResolutionOutcome.Invalid, Session = session };
+            // Not found, inactive, or expired: clear the stale cookie.
+            ExpireAuthCookie( requestContext );
+            return null;
         }
 
         // Kill-switch check. Always compares against PersonSession.IssuedDateTime,
@@ -1501,66 +1422,46 @@ public partial class PersonSessionService
             && killSwitchThreshold.Value <= RockDateTime.Now
             && session.IssuedDateTime < killSwitchThreshold.Value )
         {
-            return new SessionResolution { Outcome = SessionResolutionOutcome.KillSwitched, Session = session };
+            // Mark inactive (SaveHook stamps InactiveDateTime) and clear the cookie.
+            session.IsActive = false;
+            ( Context as RockContext ).SaveChanges();
+            ExpireAuthCookie( requestContext );
+            return null;
         }
 
-        // If the session is attached to a UserLogin record that has been marked
-        // as locked out, or is no longer confirmed, the caller logs the individual
-        // out.
+        // If the session's backing UserLogin is locked out or no longer confirmed,
+        // sign out. The session is passed explicitly because it has not yet been
+        // attached to the request context at this point, so the parameterless
+        // overload would not know which session to mark inactive.
         if ( session.UserLogin != null && ( session.UserLogin.IsConfirmed != true || session.UserLogin.IsLockedOut == true ) )
         {
-            return new SessionResolution { Outcome = SessionResolutionOutcome.LockedOutOrUnconfirmed, Session = session };
+            SignOut( requestContext, session );
+            return null;
         }
 
         // Reissue triggers (any one fires reissue). Reissue MUST NOT touch
-        // PersonSession.IssuedDateTime - only the cookie's iat changes.
+        // PersonSession.IssuedDateTime - only the cookie's iat changes. It is
+        // best-effort: a cookie-write failure (a late identity read after the
+        // response has started, or an OWIN response that cannot take a Set-Cookie)
+        // must NOT discard the resolved session, so the refresh is swallowed on
+        // failure and happens on a later request instead.
         var halfLife = TimeSpan.FromTicks( AuthCookieTimeout.Ticks / 2 );
         var halfLifeReached = ( RockDateTime.Now - payload.IssuedAt ) >= halfLife;
         var olderPayloadVersion = payload.Version < CookiePayloadVersion;
 
-        return new SessionResolution
+        if ( halfLifeReached || metadata.DecryptedWithOldKey || olderPayloadVersion )
         {
-            Outcome = SessionResolutionOutcome.Valid,
-            Session = session,
-            ReissueRequired = halfLifeReached || metadata.DecryptedWithOldKey || olderPayloadVersion,
-        };
-    }
+            try
+            {
+                SetAuthCookie( session, requestContext );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+            }
+        }
 
-    /// <summary>
-    /// The disposition of an <see cref="EvaluateSessionForRequest"/> evaluation,
-    /// describing what (if any) side effect a side-effecting caller should apply.
-    /// </summary>
-    private enum SessionResolutionOutcome
-    {
-        /// <summary>No cookie present, or the cookie was not a decodable new-format cookie. No side effect.</summary>
-        NoSession,
-
-        /// <summary>A session cookie was present but the session is missing, inactive, or expired. Expire the cookie.</summary>
-        Invalid,
-
-        /// <summary>The session was issued before the kill-switch threshold. Mark inactive and expire the cookie.</summary>
-        KillSwitched,
-
-        /// <summary>The session's backing <c>UserLogin</c> is locked out or unconfirmed. Sign out.</summary>
-        LockedOutOrUnconfirmed,
-
-        /// <summary>The session is valid and may authenticate the request. Reissue when <see cref="SessionResolution.ReissueRequired"/>.</summary>
-        Valid,
-    }
-
-    /// <summary>
-    /// Result of a read-only session evaluation. <see cref="Session"/> carries the
-    /// loaded session (when one was found) so a side-effecting caller can act on it;
-    /// <see cref="ReissueRequired"/> is meaningful only when <see cref="Outcome"/>
-    /// is <see cref="SessionResolutionOutcome.Valid"/>.
-    /// </summary>
-    private struct SessionResolution
-    {
-        public SessionResolutionOutcome Outcome;
-
-        public PersonSession Session;
-
-        public bool ReissueRequired;
+        return session;
     }
 
     /// <summary>
