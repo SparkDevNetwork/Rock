@@ -243,4 +243,199 @@ public class RockRequestContextTests
     }
 
     #endregion MeetsRequirement
+
+    #region Identity resolution (explicit vs. factory precedence)
+
+    /// <summary>
+    /// A fresh context with neither an explicit identity nor a factory exposes a
+    /// null <see cref="RockRequestContext.CurrentPerson"/> and
+    /// <see cref="RockRequestContext.CurrentUser"/> (anonymous).
+    /// </summary>
+    [TestMethod]
+    public void Identity_DefaultsToNull_OnFreshContext()
+    {
+        var context = new RockRequestContext();
+
+        Assert.IsNull( context.CurrentPerson );
+        Assert.IsNull( context.CurrentUser );
+        Assert.IsNull( context.PersonSession );
+    }
+
+    /// <summary>
+    /// <see cref="RockRequestContext.SetCurrentIdentity(Person, UserLogin)"/> pins
+    /// <see cref="RockRequestContext.CurrentPerson"/> and
+    /// <see cref="RockRequestContext.CurrentUser"/>; with no session set and no
+    /// factory, <see cref="RockRequestContext.PersonSession"/> stays null. This is
+    /// the <c>ClientConnectedAsync</c> shape (identity without a session).
+    /// </summary>
+    [TestMethod]
+    public void SetCurrentIdentity_PinsPersonAndUser_LeavesPersonSessionNull()
+    {
+        var person = new Person();
+        var user = new UserLogin { UserName = "ted" };
+        var context = new RockRequestContext();
+
+        context.SetCurrentIdentity( person, user );
+
+        Assert.AreSame( person, context.CurrentPerson );
+        Assert.AreSame( user, context.CurrentUser );
+        Assert.IsNull( context.PersonSession );
+    }
+
+    /// <summary>
+    /// The factory resolves all three properties from one <see cref="PersonSession"/>
+    /// when no explicit value was set: <see cref="RockRequestContext.PersonSession"/>
+    /// is the resolved session, <see cref="RockRequestContext.CurrentPerson"/> derives
+    /// from <c>PersonAlias.Person</c>, and <see cref="RockRequestContext.CurrentUser"/>
+    /// from <c>UserLogin</c>.
+    /// </summary>
+    [TestMethod]
+    public void Factory_ResolvesAllThree_FromResolvedSession()
+    {
+        var person = new Person();
+        var user = new UserLogin { UserName = "ted" };
+        var session = new PersonSession
+        {
+            IsActive = true,
+            PersonAlias = new PersonAlias { Person = person },
+            UserLogin = user,
+        };
+        var context = new RockRequestContext();
+
+        context.SetPersonSessionFactory( () => session );
+
+        Assert.AreSame( session, context.PersonSession );
+        Assert.AreSame( person, context.CurrentPerson );
+        Assert.AreSame( user, context.CurrentUser );
+    }
+
+    /// <summary>
+    /// The factory is invoked lazily - not until a property is first read - and
+    /// exactly once, with the result shared across all three properties.
+    /// </summary>
+    [TestMethod]
+    public void Factory_IsInvokedLazily_AndOnce()
+    {
+        var session = new PersonSession
+        {
+            IsActive = true,
+            PersonAlias = new PersonAlias { Person = new Person() },
+            UserLogin = new UserLogin(),
+        };
+        var callCount = 0;
+        var context = new RockRequestContext();
+
+        context.SetPersonSessionFactory( () =>
+        {
+            callCount++;
+            return session;
+        } );
+
+        Assert.AreEqual( 0, callCount, "Factory must not run until an identity property is read." );
+
+        _ = context.PersonSession;
+        _ = context.CurrentPerson;
+        _ = context.CurrentUser;
+
+        Assert.AreEqual( 1, callCount, "Factory must resolve once and cache the result for all three properties." );
+    }
+
+    /// <summary>
+    /// A factory that resolves null (anonymous) leaves all three properties null.
+    /// </summary>
+    [TestMethod]
+    public void Factory_ResolvingNull_LeavesIdentityNull()
+    {
+        var context = new RockRequestContext();
+
+        context.SetPersonSessionFactory( () => null );
+
+        Assert.IsNull( context.PersonSession );
+        Assert.IsNull( context.CurrentPerson );
+        Assert.IsNull( context.CurrentUser );
+    }
+
+    /// <summary>
+    /// An explicit identity wins over the factory for
+    /// <see cref="RockRequestContext.CurrentPerson"/> /
+    /// <see cref="RockRequestContext.CurrentUser"/>, while
+    /// <see cref="RockRequestContext.PersonSession"/> (not set explicitly) still
+    /// comes from the factory. This is the pipeline shape: <c>BeginRequest</c>
+    /// installs the factory, then the managed pipeline pins the identity via
+    /// <c>SetCurrentIdentity</c>.
+    /// </summary>
+    [TestMethod]
+    public void ExplicitIdentity_WinsOverFactory_ForPersonAndUser()
+    {
+        var explicitPerson = new Person();
+        var explicitUser = new UserLogin { UserName = "explicit" };
+        var factorySession = new PersonSession
+        {
+            IsActive = true,
+            PersonAlias = new PersonAlias { Person = new Person() },
+            UserLogin = new UserLogin { UserName = "factory" },
+        };
+        var context = new RockRequestContext();
+
+        context.SetPersonSessionFactory( () => factorySession );
+        context.SetCurrentIdentity( explicitPerson, explicitUser );
+
+        Assert.AreSame( explicitPerson, context.CurrentPerson );
+        Assert.AreSame( explicitUser, context.CurrentUser );
+        Assert.AreSame( factorySession, context.PersonSession );
+    }
+
+    /// <summary>
+    /// An explicit <see cref="PersonSession"/> wins over the factory for
+    /// <see cref="RockRequestContext.PersonSession"/>, while
+    /// <see cref="RockRequestContext.CurrentPerson"/> /
+    /// <see cref="RockRequestContext.CurrentUser"/> (no explicit identity) still
+    /// derive from the factory's session.
+    /// </summary>
+    [TestMethod]
+    public void ExplicitSession_WinsOverFactory_ForPersonSession()
+    {
+        var explicitSession = new PersonSession { IsActive = true };
+        var factoryPerson = new Person();
+        var factoryUser = new UserLogin { UserName = "factory" };
+        var factorySession = new PersonSession
+        {
+            IsActive = true,
+            PersonAlias = new PersonAlias { Person = factoryPerson },
+            UserLogin = factoryUser,
+        };
+        var context = new RockRequestContext();
+
+        context.SetPersonSessionFactory( () => factorySession );
+        context.SetPersonSession( explicitSession );
+
+        Assert.AreSame( explicitSession, context.PersonSession );
+        Assert.AreSame( factoryPerson, context.CurrentPerson );
+        Assert.AreSame( factoryUser, context.CurrentUser );
+    }
+
+    /// <summary>
+    /// <see cref="RockRequestContext.SetPersonSessionFactory(Func{PersonSession})"/>
+    /// with null removes a previously-installed factory, returning the context to
+    /// the anonymous default.
+    /// </summary>
+    [TestMethod]
+    public void SetPersonSessionFactory_Null_ClearsFactory()
+    {
+        var session = new PersonSession
+        {
+            IsActive = true,
+            PersonAlias = new PersonAlias { Person = new Person() },
+        };
+        var context = new RockRequestContext();
+        context.SetPersonSessionFactory( () => session );
+
+        context.SetPersonSessionFactory( null );
+
+        Assert.IsNull( context.PersonSession );
+        Assert.IsNull( context.CurrentPerson );
+        Assert.IsNull( context.CurrentUser );
+    }
+
+    #endregion Identity resolution (explicit vs. factory precedence)
 }

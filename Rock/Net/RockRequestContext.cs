@@ -111,13 +111,39 @@ namespace Rock.Net
         /// </value>
         public virtual IRockResponseContext Response { get; private set; }
 
+        #region Identity Backing State
+
+        /*
+            9/10/26 - CLAUDE
+
+            CurrentPerson / CurrentUser / PersonSession resolve from ONE source so
+            they can never disagree about who is signed in: an explicit value set via
+            SetCurrentIdentity / SetPersonSession, or - when none was set - the
+            lazily-resolved PersonSession supplied by SetPersonSessionFactory. The
+            factory resolves a PersonSession and the person / user derive from it
+            (PersonAlias.Person / UserLogin), matching what the auth pipeline does.
+            Explicit set always wins; the factory is the fallback, which is what lets
+            OWIN requests (that never run the managed identity pipeline) resolve an
+            identity on first read.
+
+            Reason: Single, lazily-resolved source of truth for the current identity across every request type.
+        */
+        private Lazy<PersonSession> _personSessionFactory;
+        private bool _isIdentityExplicit;
+        private bool _isSessionExplicit;
+        private Person _currentPerson;
+        private UserLogin _currentUser;
+        private PersonSession _personSession;
+
+        #endregion Identity Backing State
+
         /// <summary>
         /// Gets the current user.
         /// </summary>
         /// <value>
         /// The current user.
         /// </value>
-        public virtual UserLogin CurrentUser { get; private set; }
+        public virtual UserLogin CurrentUser => _isIdentityExplicit ? _currentUser : _personSessionFactory?.Value?.UserLogin;
 
         /// <summary>
         /// Gets the current person.
@@ -133,7 +159,7 @@ namespace Rock.Net
         /// impersonation or user-token session) and to avoid walking the
         /// property tree on every access.
         /// </remarks>
-        public virtual Person CurrentPerson { get; private set; }
+        public virtual Person CurrentPerson => _isIdentityExplicit ? _currentPerson : _personSessionFactory?.Value?.PersonAlias?.Person;
 
         /// <summary>
         /// Gets the <see cref="PersonSession"/> resolved for the current
@@ -151,7 +177,7 @@ namespace Rock.Net
         /// anonymous requests are legitimate.
         /// </para>
         /// </remarks>
-        public virtual PersonSession PersonSession { get; internal set; }
+        public virtual PersonSession PersonSession => _isSessionExplicit ? _personSession : _personSessionFactory?.Value;
 
         /// <summary>
         /// Gets the current visitor <see cref="PersonAlias"/> identifier. If
@@ -416,8 +442,9 @@ namespace Rock.Net
         {
             Response = response;
 
-            CurrentUser = currentUser;
-            CurrentPerson = currentUser?.Person;
+            _currentUser = currentUser;
+            _currentPerson = currentUser?.Person;
+            _isIdentityExplicit = currentUser != null;
 
             RequestUri = request.UrlProxySafe();
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -496,8 +523,9 @@ namespace Rock.Net
         {
             Response = response;
 
-            CurrentUser = currentUser;
-            CurrentPerson = currentUser?.Person;
+            _currentUser = currentUser;
+            _currentPerson = currentUser?.Person;
+            _isIdentityExplicit = currentUser != null;
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -701,8 +729,9 @@ namespace Rock.Net
         [RockInternal( "20.0", true )]
         public void SetCurrentIdentity( Person currentPerson, UserLogin currentUser )
         {
-            CurrentPerson = currentPerson;
-            CurrentUser = currentUser;
+            _currentPerson = currentPerson;
+            _currentUser = currentUser;
+            _isIdentityExplicit = true;
         }
 
         /// <summary>
@@ -721,7 +750,47 @@ namespace Rock.Net
         [RockInternal( "20.0", true )]
         public void SetPersonSession( PersonSession personSession )
         {
-            PersonSession = personSession;
+            _personSession = personSession;
+            _isSessionExplicit = true;
+        }
+
+        /// <summary>
+        /// Installs a lazily-invoked resolver for the current
+        /// <see cref="PersonSession"/>. When neither <see cref="SetCurrentIdentity(Person, UserLogin)"/>
+        /// nor <see cref="SetPersonSession(PersonSession)"/> has been called, the
+        /// <see cref="PersonSession"/> property (and the <see cref="CurrentPerson"/> /
+        /// <see cref="CurrentUser"/> derived from it) resolve from
+        /// <paramref name="sessionFactory"/> on first access, once, and the result is
+        /// cached for the life of the context. An explicit set always wins over the
+        /// factory.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Intended to be installed once at request entry (<c>Application_BeginRequest</c>),
+        /// which runs for every request - managed and OWIN-terminated alike. Because it
+        /// resolves on first read rather than eagerly, requests that never read the
+        /// current identity (static assets) pay nothing, and OWIN endpoints that never
+        /// run the managed identity pipeline still resolve an identity when they ask
+        /// for it.
+        /// </para>
+        /// <para>
+        /// The factory MUST perform <strong>read-only</strong> resolution - no cookie
+        /// reissue or expiry, which stay in the managed pipeline - and MUST NOT read
+        /// back <see cref="PersonSession"/> / <see cref="CurrentPerson"/> /
+        /// <see cref="CurrentUser"/> (that would re-enter the <see cref="System.Lazy{T}"/>
+        /// and throw). It also MUST NOT throw: a throwing factory is cached by
+        /// <see cref="System.Lazy{T}"/> and would fault every subsequent identity read
+        /// for the request, so resolve failures must be swallowed to <c>null</c>, the
+        /// same way the managed pipeline already treats a bad cookie.
+        /// </para>
+        /// </remarks>
+        /// <param name="sessionFactory">The read-only resolver that returns the current <see cref="PersonSession"/>, or <c>null</c> for an anonymous request.</param>
+        [RockInternal( "20.0", true )]
+        public void SetPersonSessionFactory( Func<PersonSession> sessionFactory )
+        {
+            _personSessionFactory = sessionFactory == null
+                ? null
+                : new Lazy<PersonSession>( sessionFactory, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication );
         }
 
         /// <summary>
