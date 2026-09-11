@@ -15,12 +15,18 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Net;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Moq;
 
 using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Net;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Net;
 
@@ -438,4 +444,64 @@ public class RockRequestContextTests
     }
 
     #endregion Identity resolution (explicit vs. factory precedence)
+
+    #region Route-data page parameter filtering
+
+    /// <summary>
+    /// Framework route-data keys prefixed <c>"MS_"</c> (e.g. System.Web.Http's
+    /// <c>"MS_SubRoutes"</c>, whose value is an <c>IHttpRouteData[]</c>) are NOT
+    /// page parameters and must be filtered out when a request's route data is
+    /// merged into <see cref="RockRequestContext.PageParameters"/>. Otherwise
+    /// they leak into any URL rebuilt from the page parameters (e.g.
+    /// <c>GetCurrentPageUrl</c>) - which is how <c>?MS_SubRoutes=...</c> ended
+    /// up on an impersonation redirect URL. Real route parameters (PascalCase,
+    /// like <c>PersonId</c>) must still come through.
+    /// </summary>
+    [TestMethod]
+    public void PageParameters_ExcludeFrameworkRouteKeys_ButKeepRealRouteParameters()
+    {
+        // The request-context constructor resolves geolocation / visitor state,
+        // which needs a configured RockApp.
+        using var scope = TestHelper.CreateScopedRockApp();
+
+        var routeData = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase )
+        {
+            ["MS_SubRoutes"] = new object[0],
+            ["PersonId"] = "42",
+        };
+
+        var context = BuildRequestContextWithRouteData( routeData );
+
+        var parameters = context.GetPageParameters();
+
+        Assert.IsFalse( parameters.ContainsKey( "MS_SubRoutes" ), "Framework route key MS_SubRoutes should be filtered out of page parameters." );
+        Assert.AreEqual( "42", parameters["PersonId"] );
+    }
+
+    #endregion Route-data page parameter filtering
+
+    #region Test infrastructure
+
+    /// <summary>
+    /// Builds a <see cref="RockRequestContext"/> backed by a Moq
+    /// <see cref="IRequest"/> whose route data is <paramref name="routeData"/>,
+    /// so page-parameter merging from route values can be asserted. All other
+    /// request members are stubbed to empty.
+    /// </summary>
+    private static RockRequestContext BuildRequestContextWithRouteData( IDictionary<string, object> routeData )
+    {
+        var requestMock = new Mock<IRequest>( MockBehavior.Strict );
+        requestMock.SetupGet( r => r.RemoteAddress ).Returns( IPAddress.Loopback );
+        requestMock.SetupGet( r => r.RequestUri ).Returns( ( Uri ) null );
+        requestMock.SetupGet( r => r.Method ).Returns( "GET" );
+        requestMock.SetupGet( r => r.QueryString ).Returns( new NameValueCollection( StringComparer.OrdinalIgnoreCase ) );
+        requestMock.SetupGet( r => r.RouteData ).Returns( routeData );
+        requestMock.SetupGet( r => r.Headers ).Returns( new NameValueCollection( StringComparer.OrdinalIgnoreCase ) );
+        requestMock.SetupGet( r => r.Cookies ).Returns( new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase ) );
+        requestMock.SetupGet( r => r.CookiesValuesAreUrlDecoded ).Returns( false );
+
+        return new RockRequestContext( requestMock.Object, new NullRockResponseContext(), currentUser: null );
+    }
+
+    #endregion Test infrastructure
 }

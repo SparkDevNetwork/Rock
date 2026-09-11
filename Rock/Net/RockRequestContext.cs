@@ -251,6 +251,11 @@ namespace Rock.Net
                     {
                         foreach ( var kvp in routeValues )
                         {
+                            if ( !IsPageParameterRouteKey( kvp.Key ) )
+                            {
+                                continue;
+                            }
+
                             _pageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
                         }
 
@@ -264,6 +269,24 @@ namespace Rock.Net
             {
                 _pageParameters = value;
             }
+        }
+
+        /// <summary>
+        /// Determines whether a route-data key should surface as a page
+        /// parameter. ASP.NET's routing frameworks (System.Web.Routing and
+        /// System.Web.Http) stash internal bookkeeping in route data under keys
+        /// prefixed <c>"MS_"</c> - for example <c>"MS_SubRoutes"</c>, whose
+        /// value is an <c>IHttpRouteData[]</c>. Those are not page parameters
+        /// and must never leak into a URL rebuilt from
+        /// <see cref="PageParameters"/> (e.g. <c>GetCurrentPageUrl</c>). Rock
+        /// page parameters are PascalCase and never carry this prefix.
+        /// </summary>
+        /// <param name="routeKey">The route-data key.</param>
+        /// <returns><c>true</c> when the key is a real page parameter; <c>false</c> for a framework key.</returns>
+        private static bool IsPageParameterRouteKey( string routeKey )
+        {
+            return routeKey != null
+                && !routeKey.StartsWith( "MS_", StringComparison.OrdinalIgnoreCase );
         }
 
         /// <summary>
@@ -558,6 +581,11 @@ namespace Rock.Net
 
             foreach ( var kvp in request.RouteData )
             {
+                if ( !IsPageParameterRouteKey( kvp.Key ) )
+                {
+                    continue;
+                }
+
                 PageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
             }
 
