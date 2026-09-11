@@ -749,19 +749,19 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 
 ### User-token (`rckipid`) email links
 
-- [ ] Click an email link with a valid `rckipid`. The user lands on the target page authenticated as the token's target person; the URL no longer carries `rckipid`.
-- [ ] Personalized content renders for the token's target person on that page even though the `UserToken` session has NO backing `UserLogin` (e.g. `{{ CurrentPerson.FullName }}` and merge fields resolve to the target person). This verifies `RockRequestContext.CurrentPerson` is sourced from `PersonSession.PersonAlias.Person`, not from `CurrentUser?.Person`, for sessions with a null `UserLogin`.
-- [ ] `PersonToken.TimesUsed` advances to 1 on the first click.
-- [ ] Navigating to another page in the same browsing session does NOT advance `TimesUsed` (the token is "consumed" once per session, not per page).
-- [ ] Re-clicking the same email link in another tab while the session is active does NOT advance `TimesUsed` (rule 2 of the matrix).
-- [ ] Clicking the link from an already-logged-in `Component` session for the SAME person leaves the session unchanged but strips `rckipid` from the URL (rule 4).
-- [ ] Clicking the link from a `Component` session for a DIFFERENT person marks the current session inactive and creates a new `UserToken` session (rule 5).
-- [ ] Clicking the link while in an admin-impersonation session abandons impersonation and creates a `UserToken` session (rule 3).
-- [ ] Clicking an expired / revoked / over-`UsageLimit` token marks the current session inactive; the resulting page load is anonymous (rule 1).
-- [ ] Clicking a link to an MFA-required page prompts for MFA (NEW behavior; was previously bypassed). Without MFA, access is denied.
-- [ ] Clicking an `rckipid` link whose token is page-scoped to page A, but the link URL targets a DIFFERENT page, is treated as an unusable token (rule 1): the current session is signed out, `rckipid` is stripped, and the resulting page load is anonymous (NOT a "not-authorized" error, because page-scope mismatch at session establishment folds into the invalid-token rule).
-- [ ] Establishing a `UserToken` session by clicking an `rckipid` link that DOES target its scoped page succeeds; the recipient can view that page.
-- [ ] After establishing a valid `UserToken` session, navigating to a page outside the token's scope (no `rckipid`) triggers per-request page-scope re-validation, which returns not-authorized while leaving the session active (the recipient can return to the in-scope page).
+- [x] Click an email link with a valid `rckipid`. The user lands on the target page authenticated as the token's target person; the URL no longer carries `rckipid`.
+- [x] Personalized content renders for the token's target person on that page even though the `UserToken` session has NO backing `UserLogin` (e.g. `{{ CurrentPerson.FullName }}` and merge fields resolve to the target person). This verifies `RockRequestContext.CurrentPerson` is sourced from `PersonSession.PersonAlias.Person`, not from `CurrentUser?.Person`, for sessions with a null `UserLogin`.
+- [x] `PersonToken.TimesUsed` advances to 1 on the first click.
+- [x] Navigating to another page in the same browsing session does NOT advance `TimesUsed` (the token is "consumed" once per session, not per page).
+- [x] Re-clicking the same email link in another tab while the session is active does NOT advance `TimesUsed` (rule 2 of the matrix).
+- [x] Clicking the link from an already-logged-in `Component` session for the SAME person leaves the session unchanged but strips `rckipid` from the URL (rule 4).
+- [x] Clicking the link from a `Component` session for a DIFFERENT person marks the current session inactive and creates a new `UserToken` session (rule 5).
+- [x] Clicking the link while in an admin-impersonation session abandons impersonation and creates a `UserToken` session (rule 3).
+- [x] Clicking an expired / revoked / over-`UsageLimit` token marks the current session inactive; the resulting page load is anonymous (rule 1).
+- Clicking a link to an MFA-required page prompts for MFA (NEW behavior; was previously bypassed). Without MFA, access is denied. Not testable, pages can't be set MFA.
+- [x] Clicking an `rckipid` link whose token is page-scoped to page A, but the link URL targets a DIFFERENT page, is treated as an unusable token (rule 1): the current session is signed out, `rckipid` is stripped, and the resulting page load is anonymous (NOT a "not-authorized" error, because page-scope mismatch at session establishment folds into the invalid-token rule).
+- [x] Establishing a `UserToken` session by clicking an `rckipid` link that DOES target its scoped page succeeds; the recipient can view that page.
+- [x] After establishing a valid `UserToken` session, navigating to a page outside the token's scope (no `rckipid`) triggers per-request page-scope re-validation, which returns not-authorized while leaving the session active (the recipient can return to the in-scope page).
 
 ### Legacy cookie upgrade
 
