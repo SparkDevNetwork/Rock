@@ -723,7 +723,7 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 - [x] "Remember me" unchecked → cookie has no `Expires` attribute; browser close clears it; next session is anonymous until login.
 - [x] Standard logout marks the current `PersonSession` inactive, clears the `.ROCK` cookie, and does NOT log the user out of other devices.
 - [x] Logout also clears the unsecured check-in person-identifier cookie (`.ROCK`-adjacent self-identification cookie), so a subsequent check-in self-service flow no longer recognizes the signed-out person.
-- [ ] Cross-subdomain logins (`DOMAINS_SHARING_LOGINS` configured): logging in on `sub1.example.org` issues the `.ROCK` cookie at the shared domain (`.example.org`) plus the companion `.ROCK_DOMAIN` breadcrumb cookie; logging out clears both at that same shared domain so the session ends on `sub2.example.org` as well.
+- Cross-subdomain logins (`DOMAINS_SHARING_LOGINS` configured): logging in on `sub1.example.org` issues the `.ROCK` cookie at the shared domain (`.example.org`) plus the companion `.ROCK_DOMAIN` breadcrumb cookie; logging out clears both at that same shared domain so the session ends on `sub2.example.org` as well. - This can't be easily tested on iis express.
 - [x] Logging in as the same person while already authenticated reuses the existing session (does NOT create a duplicate row).
 - [x] Logging in as a different person while authenticated marks the prior session inactive and creates a new one.
 
@@ -774,28 +774,28 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 
 ### Cookie reissue
 
-- [ ] A long-lived persistent session reissues the cookie at half-life (default 15 days). Verify by force-aging the `iat` (e.g. via test seed) and confirming a `Set-Cookie` header appears.
-- [ ] Rotating `DataEncryptionKey` (`OldDataEncryptionKey1` set to the previous value) causes the next request to reissue the cookie with the new key, regardless of `iat` age.
-- [ ] Reissue does NOT change `PersonSession.IssuedDateTime` (kill-switch correctness preserved).
+- [x] A long-lived persistent session reissues the cookie at half-life (default 15 days). Verify by force-aging the `iat` (e.g. via test seed) and confirming a `Set-Cookie` header appears.
+- [x] Rotating `DataEncryptionKey` (`OldDataEncryptionKey1` set to the previous value) causes the next request to reissue the cookie with the new key, regardless of `iat` age.
+- [x] Reissue does NOT change `PersonSession.IssuedDateTime` (kill-switch correctness preserved).
 
 ### API key requests
 
-- [ ] First request with a newly issued API key creates an `ApiKey` `PersonSession`.
-- [ ] Subsequent API-key requests reuse the existing session.
-- [ ] Activity bus task advances `LastActivityDateTime` (throttled).
-- [ ] Deleting the `UserLogin` (revoking the key) nulls the session's `UserLoginId` via `ON DELETE SET NULL`; the historical row is preserved.
-- [ ] Future requests with the deleted key authenticate as anonymous; the orphaned session is not resurrected.
-- [ ] JWT requests do NOT create `PersonSession` rows (verify by issuing JWT against an unused user and counting rows).
-- [ ] OAuth bearer requests do NOT create `PersonSession` rows.
+- [x] First request with a newly issued API key creates an `ApiKey` `PersonSession`.
+- [x] Subsequent API-key requests reuse the existing session.
+- [x] Activity bus task advances `LastActivityDateTime` (throttled).
+- [x] Deleting the `UserLogin` (revoking the key) nulls the session's `UserLoginId` via `ON DELETE SET NULL`; the historical row is preserved.
+- [x] Future requests with the deleted key authenticate as anonymous; the orphaned session is not resurrected.
+- [x] JWT requests do NOT create `PersonSession` rows (verify by issuing JWT against an unused user and counting rows).
+- [x] OAuth bearer requests do NOT create `PersonSession` rows.
 
 ### REST `api/Auth/Login` endpoint
 
 This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge to create a `Component` `PersonSession` directly (it previously minted a legacy `FormsAuthenticationTicket` cookie that was upgraded on the next request).
 
-- [ ] `POST api/Auth/Login` with valid credentials returns a new-format `.ROCK` cookie and creates a `Component` `PersonSession` for the user. Reusing that cookie on a subsequent REST call authenticates as that user (no re-login).
-- [ ] The created session reports `MultiFactor` strength and grants access to MFA-gated resources without a second factor. This is intentional v1 compatibility behavior: the endpoint stamps MFA recency on purpose (see the engineering note in `AuthController.Login`). It is a documented rule-break preserved for existing API consumers, NOT a pattern to follow.
-- [ ] Invalid credentials still return `401 Unauthorized` and create no `PersonSession`.
-- [ ] `persisted: true` produces a persistent cookie; `persisted: false` produces a session cookie, same as before the migration.
+- [x] `POST api/Auth/Login` with valid credentials returns a new-format `.ROCK` cookie and creates a `Component` `PersonSession` for the user. Reusing that cookie on a subsequent REST call authenticates as that user (no re-login).
+- [x] The created session reports `MultiFactor` strength and grants access to MFA-gated resources without a second factor. This is intentional v1 compatibility behavior: the endpoint stamps MFA recency on purpose (see the engineering note in `AuthController.Login`). It is a documented rule-break preserved for existing API consumers, NOT a pattern to follow.
+- [x] Invalid credentials still return `401 Unauthorized` and create no `PersonSession`.
+- [x] `persisted: true` produces a persistent cookie; `persisted: false` produces a session cookie, same as before the migration.
 
 ### `InteractionSession` linkage
 
@@ -829,8 +829,8 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 ### SignalR / real-time hubs
 
 - [x] SignalR hub connection from an authenticated browser exposes the current `PersonSession` to hub actions.
-- [ ] SignalR hub connection from an anonymous browser proceeds anonymously; hub actions see no current person.
-- [ ] Long-lived SignalR connections do NOT trigger excessive `UpdatePersonSessionLastActivity` writes (the bus task is intentionally not fired for hub traffic).
+- [x] SignalR hub connection from an anonymous browser proceeds anonymously; hub actions see no current person.
+- [x] Long-lived SignalR connections do NOT trigger excessive `UpdatePersonSessionLastActivity` writes (the bus task is intentionally not fired for hub traffic).
 
 ### Cross-cutting
 
@@ -846,13 +846,13 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 ### Regression: previously broken pages
 
 - ChangePassword (Obsidian, `Rock.Blocks/Security/ChangePassword.cs`) and the OIDC Authorize block (WebForms, `RockWeb/Blocks/Security/Oidc/Authorize.ascx.cs`) do **not** enforce step-up via `MeetsRequirement` in this release: neither references `AuthenticationRequirement` or `Elevated`. (An earlier draft of this plan asserted they did; that was inaccurate.) There is no manual step-up regression to run for these blocks. Add the corresponding manual items back here if step-up enforcement is later wired into them.
-- [ ] `RockPage.cs:941` MFA-required page enforcement: enforcement runs through `RockRequestContext.MeetsRequirement(MultiFactor)`. The deprecated `UserLogin.IsTwoFactorAuthenticated` property is obsolete but still functional (it reflects the current session via the Phase 14 bridge), so any lingering reader sees correct values during the deprecation window.
+- [x] `RockPage.cs:941` MFA-required page enforcement: enforcement runs through `RockRequestContext.MeetsRequirement(MultiFactor)`. The deprecated `UserLogin.IsTwoFactorAuthenticated` property is obsolete but still functional (it reflects the current session via the Phase 14 bridge), so any lingering reader sees correct values during the deprecation window.
 
 ### Kill-switch and recovery
 
-- [ ] Setting `RejectAuthenticationCookiesIssuedBefore` to `RockDateTime.Now` marks every active `PersonSession` issued before the threshold inactive on first request and expires their cookies. Users are forced to re-log in.
-- [ ] After kill-switch fires, fresh logins produce new `PersonSession` rows with `IssuedDateTime > threshold` that are not rejected.
-- [ ] Legacy-cookie kill-switch path: a user presenting a pre-deployment legacy `FormsAuthenticationTicket` whose `IssueDate` precedes the kill-switch threshold is rejected on the *current* request, the cookie is expired and the request is anonymous. (Verify by setting the threshold to a recent value, then making a request with a legacy cookie issued before it; the user should be forced to re-log in without ever briefly authenticating. This exercises the dual-reader bridge block in Phase 5's BeginRequest hook.)
+- [x] Setting `RejectAuthenticationCookiesIssuedBefore` to `RockDateTime.Now` marks every active `PersonSession` issued before the threshold inactive on first request and expires their cookies. Users are forced to re-log in.
+- [x] After kill-switch fires, fresh logins produce new `PersonSession` rows with `IssuedDateTime > threshold` that are not rejected.
+- [x] Legacy-cookie kill-switch path: a user presenting a pre-deployment legacy `FormsAuthenticationTicket` whose `IssueDate` precedes the kill-switch threshold is rejected on the *current* request, the cookie is expired and the request is anonymous. (Verify by setting the threshold to a recent value, then making a request with a legacy cookie issued before it; the user should be forced to re-log in without ever briefly authenticating. This exercises the dual-reader bridge block in Phase 5's BeginRequest hook.)
 
 ### Manual follow-ups
 
