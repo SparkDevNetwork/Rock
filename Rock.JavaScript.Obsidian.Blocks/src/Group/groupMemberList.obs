@@ -1,0 +1,299 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="config.options?.isGridVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          personKeyField="personIdKey"
+          :title="config.options?.title ?? undefined"
+          titleIconCssClass="ti ti-users"
+          :itemTerm="config.options?.itemTerm ?? undefined"
+          :exportTitle="config.options?.exportTitle ?? undefined"
+          :entityTypeGuid="EntityType.GroupMember"
+          :rowClass="getRowClass"
+          stickyHeader
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <template v-if="config.options?.warningMessage" #gridHeaderPrepend>
+            <NotificationBox :alertType="AlertType.Warning" class="mb-0">
+                <strong>No roles!</strong> {{ config.options.warningMessage }}
+            </NotificationBox>
+        </template>
+
+        <SelectColumn />
+
+        <Column name="exportFullNameReversed"
+                title="Name"
+                field="exportFullNameReversed"
+                :hideOnScreen="true" />
+
+        <PersonColumn name="person"
+                      title="Name"
+                      field="person"
+                      :formatComponent="PersonNameCell"
+                      :isNoteColumnVisible="config.options?.isNoteColumnVisible ?? false"
+                      enableHoverInfo
+                      :excludeFromExport="true"
+                      visiblePriority="xs"
+                      width="250px" />
+
+        <TextColumn name="maritalStatus"
+                    title="Marital Status"
+                    field="maritalStatus"
+                    :hideOnScreen="!config.options?.isMaritalStatusColumnVisible"
+                    visiblePriority="lg" />
+
+        <Column name="connectionStatus"
+                title="Connection Status"
+                field="connectionStatus"
+                :hideOnScreen="true" />
+
+        <TextColumn v-if="config.options?.isGenderColumnVisible"
+                    name="gender"
+                    title="Gender"
+                    field="gender"
+                    :excludeFromExport="true"
+                    visiblePriority="lg" />
+
+        <Column name="registrations"
+                title="Registration"
+                field="registrations"
+                itemClass="grid-cell-stack"
+                :hideOnScreen="!isRegistrationColumnVisible"
+                :excludeFromExport="true"
+                :disableSort="true"
+                visiblePriority="lg">
+            <template #format="{ row }">
+                <div v-for="registration in ((row.registrations as ListItemBag[] | null) ?? [])" :key="registration.value ?? ''">
+                    <a v-if="registrationUrl" :href="registrationUrl?.replace('((Key))', registration.value ?? '')" @click.stop>{{ registration.text }}</a>
+                    <template v-else>{{ registration.text }}</template>
+                </div>
+            </template>
+        </Column>
+
+        <TextColumn name="role"
+                    title="Role"
+                    field="role"
+                    visiblePriority="xs" />
+
+        <DateColumn name="dateAdded"
+                    title="Date Added"
+                    field="dateAdded"
+                    :hideOnScreen="!config.options?.isDateAddedColumnVisible"
+                    visiblePriority="md" />
+
+        <DateTimeColumn v-if="config.options?.isAttendanceColumnVisible"
+                        name="firstAttended"
+                        title="First Attended"
+                        field="firstAttended"
+                        :excludeFromExport="true"
+                        visiblePriority="lg" />
+
+        <DateTimeColumn v-if="config.options?.isAttendanceColumnVisible"
+                        name="lastAttended"
+                        title="Last Attended"
+                        field="lastAttended"
+                        :excludeFromExport="true"
+                        visiblePriority="lg" />
+
+        <TextColumn name="note"
+                    title="Note"
+                    field="note"
+                    :hideOnScreen="!config.options?.isNoteColumnVisible"
+                    visiblePriority="md" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <TextColumn name="status"
+                    title="Status"
+                    field="status"
+                    visiblePriority="xs" />
+
+        <Column name="nickName"
+                title="Nick Name"
+                field="nickName"
+                :hideOnScreen="true" />
+
+        <Column name="lastName"
+                title="Last Name"
+                field="lastName"
+                :hideOnScreen="true" />
+
+        <DateColumn name="birthDate"
+                    title="Birth Date"
+                    field="birthDate"
+                    :hideOnScreen="true" />
+
+        <Column name="age"
+                title="Age"
+                field="age"
+                :hideOnScreen="true" />
+
+        <Column name="email"
+                title="Email"
+                field="email"
+                :hideOnScreen="true" />
+
+        <Column name="recordStatusValueId"
+                title="RecordStatusValueId"
+                field="recordStatusValueId"
+                :hideOnScreen="true" />
+
+        <Column name="recordStatus"
+                title="Record Status"
+                field="recordStatus"
+                :hideOnScreen="true" />
+
+        <Column name="exportGender"
+                title="Gender"
+                field="gender"
+                :hideOnScreen="true" />
+
+        <BooleanColumn name="isDeceased"
+                       title="Is Deceased"
+                       field="isDeceased"
+                       :hideOnScreen="true" />
+
+        <Column name="homePhone"
+                title="Home Phone"
+                field="homePhone"
+                :hideOnScreen="true" />
+
+        <Column name="cellPhone"
+                title="Cell Phone"
+                field="cellPhone"
+                :hideOnScreen="true" />
+
+        <Column name="homeAddress"
+                title="Home Address"
+                field="homeAddress"
+                :hideOnScreen="true" />
+
+        <Column name="latitude"
+                title="Latitude"
+                field="latitude"
+                :hideOnScreen="true" />
+
+        <Column name="longitude"
+                title="Longitude"
+                field="longitude"
+                :hideOnScreen="true" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import PersonNameCell from "./GroupMemberList/personNameCell.partial.obs";
+    import { NavigationUrlKey } from "./GroupMemberList/types.partial";
+    import Grid, { AttributeColumns, BooleanColumn, Column, DateColumn, DateTimeColumn, PersonColumn, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { GroupMemberListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberList/groupMemberListOptionsBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ListBlockBox<GroupMemberListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+
+    /** Set from the loaded rows rather than the options bag, since the column shows only when a listed member has a registration. */
+    const isRegistrationColumnVisible = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const registrationUrl = computed((): string | undefined => {
+        return config.navigationUrls?.[NavigationUrlKey.RegistrationPage] || undefined;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            isRegistrationColumnVisible.value = (result.data.rows ?? [])
+                .some(row => ((row.registrations as ListItemBag[] | null) ?? []).length > 0);
+
+            return result.data;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the CSS classes that style a row according to the member's and person's standing.
+     *
+     * @param row The row being rendered.
+     *
+     * @returns The space delimited class list for the row.
+     */
+    function getRowClass(row: Record<string, unknown>): string {
+        const classes: string[] = [];
+
+        if (row.isInactive === true) {
+            classes.push("is-inactive");
+        }
+
+        if (row.isPersonInactive === true) {
+            classes.push("is-inactive-person");
+        }
+
+        if (row.isDeceased === true) {
+            classes.push("is-deceased");
+        }
+
+        return classes.join(" ");
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        const detailUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage];
+
+        if (detailUrl) {
+            window.location.href = detailUrl.replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        const addUrl = config.navigationUrls?.[NavigationUrlKey.AddPage];
+
+        if (addUrl) {
+            window.location.href = addUrl;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    gridDataSource.value = loadGridData();
+</script>

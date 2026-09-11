@@ -10,6 +10,7 @@
 //  + Group Scheduler v2 - styles for the Obsidian group scheduler block.
 //  + Group Schedule Status Board v2
 //  + Group Finder - styles for the Obsidian group finder block.
+//  + Group Member List - styles for the Obsidian group member list block.
 // =============================================================
 
 
@@ -1912,3 +1913,13 @@
 }
 
 // ====================== END GROUP FINDER ======================
+
+
+// ======================== GROUP MEMBER LIST ========================
+// Indicators stay inline so they share a line with the name and wrap with it,
+// rather than claiming a row of their own once the column is squeezed.
+.group-member-list-name > :not(:first-child) {
+  margin-left:              var(--spacing-tiny);
+}
+
+// ====================== END GROUP MEMBER LIST ======================

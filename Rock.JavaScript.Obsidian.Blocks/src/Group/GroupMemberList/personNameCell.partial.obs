@@ -1,0 +1,120 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="d-flex flex-fill align-items-center">
+        <PersonAvatar v-if="!hideAvatar"
+                      :personIdKey="person?.idKey ?? ''"
+                      :photoUrl="person?.photoUrl ?? ''"
+                      :photoSize="36"
+                      marginRight="3"
+                      :alwaysShowAvatar="alwaysShowAvatar"
+                      :enableHoverInfo="enableHoverInfo" />
+
+        <div class="flex-grow-1">
+            <div class="group-member-list-name">
+                <strong>{{ formattedName }}</strong>
+
+                <i v-if="signalColor" :class="signalIconCssClass || 'ti ti-flag'" :style="{ color: signalColor }"></i>
+
+                <span v-if="hasMultipleRoles"
+                      :ref="(el) => addTooltip(el as Element)"
+                      data-toggle="tooltip"
+                      data-placement="top"
+                      :data-original-title="multipleRolesTooltip">
+                    <i class="ti ti-exclamation-circle text-warning"></i>
+                </span>
+
+                <span v-if="note"
+                      :ref="(el) => addTooltip(el as Element)"
+                      data-toggle="tooltip"
+                      data-placement="top"
+                      :data-original-title="note">
+                    <i class="ti ti-file-type-txt text-info"></i>
+                </span>
+
+                <i v-if="isUnsigned" class="ti ti-edit text-danger"></i>
+            </div>
+
+            <div v-if="person?.connectionStatus" class="text-muted">{{ person.connectionStatus }}</div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const props = defineProps(standardCellProps);
+
+    // #region Values
+
+    const hideAvatar = props.column.props.hideAvatar as boolean;
+    const alwaysShowAvatar = props.column.props.alwaysShowAvatar as boolean;
+    const enableHoverInfo = props.column.props.enableHoverInfo as boolean;
+
+    /** Explains the multiple-roles warning icon. */
+    const multipleRolesTooltip = "This person has multiple roles in this group. This is an unsupported configuration for groups with Group Scheduling enabled. The system does not support scheduling the same person with different roles.";
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const person = computed((): PersonFieldBag | undefined => {
+        if (!props.column.field) {
+            return undefined;
+        }
+
+        const value = props.row[props.column.field] as PersonFieldBag | undefined;
+
+        return value && typeof value === "object" ? value : undefined;
+    });
+
+    const formattedName = computed((): string => {
+        return `${person.value?.nickName ?? ""} ${person.value?.lastName ?? ""}`.trim();
+    });
+
+    const signalColor = computed((): string => {
+        return (props.row.signalColor as string | null) ?? "";
+    });
+
+    const signalIconCssClass = computed((): string => {
+        return (props.row.signalIconCssClass as string | null) ?? "";
+    });
+
+    const hasMultipleRoles = computed((): boolean => {
+        return props.row.hasMultipleRoles === true;
+    });
+
+    const isUnsigned = computed((): boolean => {
+        return props.row.isUnsigned === true;
+    });
+
+    /** The note, shown here only when it has no column of its own. */
+    const note = computed((): string => {
+        if (props.column.props.isNoteColumnVisible === true) {
+            return "";
+        }
+
+        return ((props.row.note as string | null) ?? "").trim();
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Attaches tooltip behavior to an icon as it renders, which the grid does not do for
+     * `data-toggle="tooltip"` elements on its own.
+     *
+     * @param element The icon element to attach the tooltip to.
+     */
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
+        }
+    }
+
+    // #endregion Functions
+</script>
