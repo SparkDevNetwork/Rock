@@ -163,8 +163,7 @@ namespace Rock.Blocks.Cms
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "37985D9E-A685-4110-8AB8-AB166DC9C33E" )]
-    // was [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.HTML_CONTENT )]
-    [Rock.SystemGuid.BlockTypeGuid( "17E49D62-95F5-43AD-99E9-9366995D56A2" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.HTML_CONTENT )]
     public class HtmlContentDetail : RockBlockType, IHasCustomActions
     {
         #region Keys
