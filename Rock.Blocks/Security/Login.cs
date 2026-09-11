@@ -817,6 +817,25 @@ namespace Rock.Blocks.Security
 
                 if ( session == null )
                 {
+                    // Creating a fresh session means this browser's cookie is
+                    // being replaced, so any prior session it carried is
+                    // orphaned. Mark that prior session inactive (the
+                    // browser-takeover case: a different person, or a
+                    // same-person transition off a non-Component source such as
+                    // Impersonation / UserToken / Legacy). Sessions on the prior
+                    // person's OTHER devices are untouched - they have their own
+                    // rows. Re-load into THIS context because
+                    // RequestContext.PersonSession was resolved elsewhere.
+                    if ( priorSession != null )
+                    {
+                        var priorSessionToDeactivate = personSessionService.Get( priorSession.Guid );
+
+                        if ( priorSessionToDeactivate != null && priorSessionToDeactivate.IsActive )
+                        {
+                            priorSessionToDeactivate.IsActive = false;
+                        }
+                    }
+
                     session = personSessionService.StartComponentSession(
                         RequestContext,
                         personAliasId,

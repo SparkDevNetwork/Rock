@@ -347,12 +347,14 @@ public class LoginTests
 
     /// <summary>
     /// Logging in as a DIFFERENT person while already authenticated creates
-    /// a new session (spec's InteractionSession sync table: "Login, already
-    /// authenticated, different person | Create new") - the prior person's
-    /// session is not reused.
+    /// a new session AND marks the prior person's session inactive (spec's
+    /// InteractionSession sync table: "Login, already authenticated,
+    /// different person | Create new"). The browser's cookie is replaced, so
+    /// the prior session it carried is orphaned and must be deactivated;
+    /// the prior person's sessions on other devices are untouched.
     /// </summary>
     [TestMethod]
-    public void Authenticate_DifferentPersonAlreadyAuthenticated_CreatesNewSession()
+    public void Authenticate_DifferentPersonAlreadyAuthenticated_CreatesNewAndDeactivatesPrior()
     {
         // Arrange.
         using var scope = TestHelper.CreateScopedRockApp();
@@ -374,9 +376,14 @@ public class LoginTests
             isPersisted: false,
             isTwoFactorAuthenticated: false );
 
-        // Assert - a second session row exists and the request now points at it.
+        // Assert - a second session exists, the prior is inactive, and the
+        // request now points at the new session.
         var sessions = rockContext.Set<PersonSession>().ToList();
         Assert.HasCount( 2, sessions );
+        var priorSession = sessions.Single( s => s.UserLoginId == firstUserLogin.Id );
+        var newSession = sessions.Single( s => s.UserLoginId == secondUserLogin.Id );
+        Assert.IsFalse( priorSession.IsActive, "Prior person's session should be marked inactive." );
+        Assert.IsTrue( newSession.IsActive );
         Assert.AreEqual( secondUserLogin.Id, block.RequestContext.PersonSession.UserLoginId );
     }
 
