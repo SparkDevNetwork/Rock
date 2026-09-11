@@ -141,20 +141,51 @@ Deferred to develop. Even collapsing every trio to two tables and dropping the c
 
 - Depth bisect. Someone with the reporter's repro should send the stock template with content at depths 16, 18, 21, and 24 to Apple Mail on iOS. The result sets the threshold constant and decides whether the two-level warning is accurate or conservative.
 
-## Future Work
+## Potential Future Work
 
-Deferred to develop, ordered by risk:
+Neither item below is scheduled. They were drafted as standalone specs during this work and folded back here so nothing sits in `specs/` looking in flight. Both build on the depth math above and on the MJML lessons recorded in the rejected evaluation.
 
-1. Elide the column dropzone trio at persist when it carries no inline styles. The column trio is created with bare `margin-wrapper` / `border-wrapper` / `padding-wrapper` classes and no stylesheet rule targets the bare classes, so the decision is purely local. Requires a new section version with load-time re-inflation because `findComponentInnerWrappers` is strict. Saves three tables per nesting level. Unit-testable in Jest for persist, load, persist idempotence.
-2. Merge border and padding wrappers into one table per component. Plausible on one `<td>` carrying border, radius, background, and padding, but changes which element carries `bgcolor` in Outlook. Needs client renders before touching.
-3. Outlook ghost tables inside MSO conditional comments and `div`-based columns. Rewrites the grid. Not a near-term candidate.
+### Section depth reduction (develop)
+
+Elide the column dropzone wrapper trio at save time when it carries no inline styles, and rebuild it on load through a new section version, so the strict structure reader and every property panel keep working unchanged. Drops a section level from 7 tables to 4 in the common case.
+
+| Structure | Today | After |
+|---|---|---|
+| Per section level | 7 | 4 (unstyled column) |
+| Single section, one leaf | 14 | 11 |
+| Two nested sections | 21 | 15 |
+| Three nested sections | 28 | 19 |
+
+Why the column trio is safe to elide: it is created by bare `createElementWrappers` (`utils.partial.ts:3860`) with the unsuffixed classes `margin-wrapper`, `border-wrapper`, `padding-wrapper`, and no stylesheet rule targets those bare classes; leaf components are styled through `-for-{type}` rules instead. The column trio is therefore styled exclusively inline (background color, border radius, padding, alignment from the column property group; column border is not exposed), which makes "does this wrapper do anything" decidable from the element alone.
+
+Persist: in `getHtml`, after the existing temporary-wrapper and temporary-class cleanup runs on the cloned document, replace each `td.section-column` trio that has no inline `style`, no `bgcolor`, and no attributes beyond the fixed `border`, `cellpadding`, `cellspacing`, `width`, `role`, and classes with its `div.dropzone`. The live editor document is never touched. Load: bump the section version past `v17.3-alpha` and, in `getSectionComponentHelper().migrate`, wrap any `td.section-column` whose first child is `div.dropzone` in a fresh trio. Migration already runs unconditionally on load, so saved templates upgrade the first time they open.
+
+Requirements: keep the trio verbatim when anything is styled; persist, load, persist must be byte-identical; no visual change in the editor or in mail clients; Jest coverage for both the elided and the kept case plus idempotence.
+
+Risks: downgrade (an older Rock's `findComponentInnerWrappers` returns `null` for a column without the trio and the column panel breaks; Rock does not support downgrade but the release note should say so) and any plugin that queries `.section-column > .margin-wrapper`, none known in core.
+
+Later phases, scoped only: merge the border and padding wrappers into one table per component (a single `<td>` can carry border, radius, `overflow: hidden`, background, and padding, but this moves the element that carries `bgcolor`, which was itself the subject of #6889, so it needs Litmus or Email on Acid renders first); then Outlook ghost tables inside `<!--[if mso | IE]-->` with `div`-based columns, which rewrites the `small-N` responsive grid and is not a near-term candidate.
+
+Rejected variants: collapsing at serialization without re-inflating on load (the strict reader breaks the column panel on the next open); creating wrappers on demand in the live editor (every `writeLocalProps` binds to the full trio by structure, so the DOM shape would change while the user types); eliding leaf component trios (their wrappers are styled through stylesheet rules as well as inline, so "unstyled" needs a different decision procedure; sections first).
+
+Caveat that keeps this paired with the cap below: collapse buys roughly one extra nesting level of headroom. Even with every trio reduced, three nested sections sit near the only depth proven safe, so it does not make arbitrary nesting safe.
+
+### Section nesting cap (one release after the warning)
+
+Refuse the drop placeholder when a section would land past the threshold, the guard MJML gets from its schema. Applies equally to dropping a new layout, moving an existing section, cloning one, and dragging a saved section from the Sections panel, since those routes share the placement code. Forward-looking only: existing nested sections in loaded templates are never removed, moved, or restructured; the 20.1 warning keeps covering them.
+
+Design: reuse `NestedSectionWarningMinimumAncestorCount` and `countSectionAncestors` so the cap and the warning can never disagree. In the iframe's drag-over placement path (the block that positions `draggingPlaceholderElement`) and in `onIFrameComponentTypeDragDrop`, when the dragged type is a section layout, compute the ancestor count the section would have at the candidate dropzone (the nearest `.component-section` ancestor's count plus one); if it meets the threshold, skip placeholder insertion, mark the dropzone with a runtime class such as `${RockRuntimeClassCssClassPrefix}-drop-refused` for an inline "not allowed" cue, and make the drop a no-op. Nothing is written to the document, so `getHtml` is unaffected and there is no migration.
+
+Timing: no earlier than the release after this warning ships, so churches with nested templates have had a version to flatten them before the structure is blocked outright. If the depth bisect moves the threshold first, the warning moves with it through the shared constant.
+
+Risks: existing three-deep templates stay broken on iOS until edited (the warning is the mitigation); a person who dismissed the warning and then cannot drop where expected may be confused (the inline cue, plus the banner returning whenever the count rises from zero, addresses this); a threshold deeper than two levels would make the cap stricter than necessary until the constant is tuned.
+
+Rejected variants: shipping the cap in 20.1 alongside the warning (no release in between for churches to flatten); capping by measured table depth instead of section nesting level (table depth is an implementation detail that changes as the depth-reduction phases land, and users think in sections); silently flattening nested sections on load (rewrites approved templates without consent).
 
 ## Related
 
 - [GitHub issue #6995](https://github.com/SparkDevNetwork/Rock/issues/6995) (open, no comments as of 2026-09-10; requirements live in this spec)
 - [Asana DEV-15221](https://app.asana.com/1/20866866924293/project/1208321217019996/task/1217848502343497) (synchronized mirror of the GitHub issue, Version v20.1, Pipeline Stage In Progress)
-- [Email Designer Section Depth Reduction](260910-email-designer-section-depth-reduction.md) (the deferred structural work, specified for develop)
-- [Email Designer Section Nesting Cap](260910-email-designer-section-nesting-cap.md) (the cap, scheduled one release after this warning)
-- [MJML Email Builder Adoption](rejected/communication/260910-mjml-email-builder-adoption.md) (full evaluation and rejection record for the MJML alternative)
+- [MJML Email Builder Adoption](../../rejected/communication/260910-mjml-email-builder-adoption.md) (full evaluation and rejection record for the MJML alternative)
 - [MJML documentation](https://documentation.mjml.io/) and [mjml-browser](https://github.com/mjmlio/mjml/blob/master/packages/mjml-browser/README.md) (reference material for the rejected alternative)
 - Prior client-rendering fixes in this control: #7004, #6889, #6754

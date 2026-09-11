@@ -92,11 +92,11 @@ Rejected. MJML does not accept HTML input, so there is nothing for it to consume
 Rejected. The two representations drift the moment the user edits the HTML surface; there is no way to fold DOM edits back into MJML source.
 
 ### Adopt MJML's structural lessons without MJML
-Adopted instead. Bound section nesting, emit only the wrapper tables a component's props require, and move to ghost-table columns over time. Tracked in the #6995 spec and its follow-on structural spec.
+Adopted instead. Bound section nesting, emit only the wrapper tables a component's props require, and move to ghost-table columns over time. Tracked in the #6995 spec's Potential Future Work section.
 
 ## Related
 
-- [Email Designer Nested Section iOS Mail Depth](../../260910-email-designer-nested-section-ios-mail-depth.md), the active spec for the 20.1 warning and the deferred structural work
+- [Email Designer Nested Section iOS Mail Depth](../../completed/communication/260910-email-designer-nested-section-ios-mail-depth.md), the spec for the 20.1 warning and the deferred structural work
 - [GitHub issue #6995](https://github.com/SparkDevNetwork/Rock/issues/6995)
 - [MJML documentation](https://documentation.mjml.io/) (component list and schema constraints, read 2026-09-10)
 - [mjml-browser README](https://github.com/mjmlio/mjml/blob/master/packages/mjml-browser/README.md) (client-side limitations)
