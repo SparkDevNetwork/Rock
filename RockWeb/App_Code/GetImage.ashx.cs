@@ -749,7 +749,7 @@ namespace RockWeb
             };
             foreach ( string key in context.Request.QueryString )
             {
-                if ( nonResizeQueryStrings.Contains( key.ToLower() ) )
+                if ( key != null && nonResizeQueryStrings.Contains( key.ToLower() ) )
                 {
                     count++;
                 }

@@ -690,6 +690,20 @@ namespace RockWeb
                         return true;
                     }
 
+                    // Ignore client-disconnect errors (Win32 0x800704CD = ERROR_NETNAME_DELETED):
+                    // the remote host closed the connection while we were still writing the
+                    // response. Benign and high-volume - a user navigating away or, most often,
+                    // a media player / CDN abandoning a Range request mid-stream (e.g. the Bible
+                    // audio "listen" endpoint served through BunnyCDN slicing). Keyed on the error
+                    // code so it catches every write path (WebForms Flush, SignalR, streamed Web
+                    // API content) regardless of which frame is on the stack. Placed low in the
+                    // chain since it is a broad message-only match: the specific stack-frame checks
+                    // above take precedence and this only runs when they do not match.
+                    if ( message.Contains( "0x800704CD" ) )
+                    {
+                        return true;
+                    }
+
                     // The ArgumentException raised when WebForms event validation
                     // rejects a postback, also overwhelmingly bot-driven.
                     if ( ex is ArgumentException && message.Contains( "Invalid postback or callback argument" ) )
@@ -762,10 +776,30 @@ namespace RockWeb
                         }
                     }
 
+                    /*
+                        9/11/26 - NA
+
+                        A malformed URL with invalid characters in the path (a stray "&",
+                        an encoded quote, an injected script snippet, etc.) makes ASP.NET
+                        request validation throw a 400 HttpException from
+                        ValidateInputIfRequiredByConfig before the request reaches any
+                        handler. This is overwhelmingly bot/scanner traffic and the
+                        framework already rejects it, so - exactly like the
+                        HttpRequestValidationException case (dangerous Form/QueryString
+                        values) - we leave it unhandled (the request still fails with a
+                        400) but skip the log and email noise. Matching the specific
+                        message keeps this narrow: every other 400 still logs.
+
+                        Reason: Suppress high-volume, zero-diagnostic-value "dangerous Request.Path" bot noise.
+                    */
+                    var isDangerousRequestPath = ex is HttpException dangerousPathEx
+                        && dangerousPathEx.GetHttpCode() == 400
+                        && ( dangerousPathEx.Message ?? string.Empty ).Contains( "potentially dangerous Request.Path" );
+
                     // Note that a throttled exception is still left unhandled, so
                     // the request fails visibly. Only the logging and the email
                     // notification are skipped.
-                    if ( !( ex is HttpRequestValidationException ) && !ShouldThrottleException( ex ) )
+                    if ( !( ex is HttpRequestValidationException ) && !isDangerousRequestPath && !ShouldThrottleException( ex ) )
                     {
                         LogAndSendNotification( ex );
                     }
