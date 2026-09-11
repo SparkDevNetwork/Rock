@@ -799,13 +799,13 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 
 ### `InteractionSession` linkage
 
-- [ ] Anonymous user arrives → `InteractionSession` row created with `PersonSessionId = null`.
-- [ ] Anonymous user logs in → the existing `InteractionSession` row is updated in place to set `PersonSessionId` to the new `PersonSession.Id` (no duplicate `InteractionSession` row).
-- [ ] Already-authenticated user (persistent cookie) arrives → first interaction creates an `InteractionSession` with `PersonSessionId` set at insert.
-- [ ] User logs out → next request creates a new `InteractionSession` with `PersonSessionId = null`.
-- [ ] User logs in as a different person → new `InteractionSession` row with the new `PersonSessionId`.
-- [ ] Legacy cookie upgrade with an existing `InteractionSession` → that row is updated to point at the upgraded `Legacy` `PersonSession` (no duplicate).
-- [ ] Legacy cookie upgrade with no existing `InteractionSession` → the first subsequent `InteractionSession` is stamped with the upgraded `PersonSession.Id` at insert.
+- [x] Anonymous user arrives → `InteractionSession` row created with `PersonSessionId = null`.
+- [x] Anonymous user logs in → the existing `InteractionSession` row is updated in place to set `PersonSessionId` to the new `PersonSession.Id` (no duplicate `InteractionSession` row).
+- [x] Already-authenticated user (persistent cookie) arrives → first interaction creates an `InteractionSession` with `PersonSessionId` set at insert.
+- [x] User logs out → next request creates a new `InteractionSession` with `PersonSessionId = null`.
+- [x] User logs in as a different person → new `InteractionSession` row with the new `PersonSessionId`.
+- [x] Legacy cookie upgrade with an existing `InteractionSession` → that row is updated to point at the upgraded `Legacy` `PersonSession` (no duplicate).
+- [x] Legacy cookie upgrade with no existing `InteractionSession` → the first subsequent `InteractionSession` is stamped with the upgraded `PersonSession.Id` at insert.
 
 ### Rock Mobile
 
@@ -834,14 +834,14 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 
 ### Cross-cutting
 
-- [ ] Web farm: a cookie issued by node A validates correctly on node B (the `DataEncryptionKey` is shared).
-- [ ] Active Users block lists users with recent `PersonSession.LastActivityDateTime`; matches expectations across multiple devices for the same person (each device = separate session row).
-- [ ] App pool recycle does NOT mark all users offline (no more `MarkOnlineUsersOffline`).
-- [ ] Data Automation job correctly reactivates people based on `PersonSession` activity (verify with a person whose `UserLogin.LastActivityDateTime` is stale but `PersonSession.LastActivityDateTime` is recent, they should be treated as active).
-- [ ] Person merge: existing `PersonSession` rows are left pointing at their original `PersonAlias` (no fix-up to merge target).
-- [ ] Rock Cleanup job marks expired `PersonSession` rows inactive but does NOT delete them. Historical rows remain queryable.
-- [ ] `Authorization.SignOut()` (and any caller routed through `PersonSessionService`) invalidates only the current session, leaving other active sessions for the same person intact.
-- [ ] Generic fallback redirects (`FormsAuthentication.RedirectToLoginPage` callers in RockPage, Fundraising, AttendanceSelfEntry) still work when no login page is configured.
+- [x] Web farm: a cookie issued by node A validates correctly on node B (the `DataEncryptionKey` is shared).
+- [x] Active Users block lists users with recent `PersonSession.LastActivityDateTime`; matches expectations across multiple devices for the same person (each device = separate session row).
+- [x] App pool recycle does NOT mark all users offline (no more `MarkOnlineUsersOffline`).
+- [x] Data Automation job correctly reactivates people based on `PersonSession` activity (verify with a person whose `UserLogin.LastActivityDateTime` is stale but `PersonSession.LastActivityDateTime` is recent, they should be treated as active).
+- [x] Person merge: existing `PersonSession` rows are left pointing at their original `PersonAlias` (no fix-up to merge target).
+- [x] Rock Cleanup job marks expired `PersonSession` rows inactive but does NOT delete them. Historical rows remain queryable.
+- [x] `Authorization.SignOut()` (and any caller routed through `PersonSessionService`) invalidates only the current session, leaving other active sessions for the same person intact.
+- [x] Generic fallback redirects (`FormsAuthentication.RedirectToLoginPage` callers in RockPage, Fundraising, AttendanceSelfEntry) still work when no login page is configured.
 
 ### Regression: previously broken pages
 
