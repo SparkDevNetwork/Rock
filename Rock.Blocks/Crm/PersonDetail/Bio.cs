@@ -1074,15 +1074,42 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 return ActionForbidden( "Impersonation is not allowed for this person." );
             }
 
-            var impersonationToken = person.GetImpersonationToken( RockDateTime.Now.AddMinutes( 5 ), 1, null );
-            var queryParams = new Dictionary<string, string>
+            if ( !person.PrimaryAliasId.HasValue )
             {
-                ["rckipid"] = impersonationToken
-            };
+                return ActionBadRequest( "The person cannot be impersonated because they have no primary alias." );
+            }
 
+            /*
+                9/11/26 - DH
+
+                Admin impersonation is now a cookie-based handoff through
+                PersonSessionService.ImpersonatePerson: it creates an
+                Impersonation-source PersonSession, writes the new .ROCK cookie
+                on this response, and records the HistoryLogin. It replaces the
+                legacy GetImpersonationToken path, which minted a PersonToken row
+                and carried an rckipid in the redirect URL. The URL now carries
+                no token.
+
+                Reason: Impersonation follows the PersonSession model - no
+                PersonToken, no rckipid.
+            */
+            try
+            {
+                PersonSessionService.ImpersonatePerson( RequestContext, person.PrimaryAliasId.Value );
+            }
+            catch ( InvalidOperationException ex )
+            {
+                // The admin's own session/InteractionSession was not available
+                // (e.g. it expired between rendering the button and clicking it).
+                return ActionBadRequest( ex.Message );
+            }
+
+            // The redirect URL carries no token. Framework route keys such as
+            // MS_SubRoutes are filtered out of page parameters at the source
+            // (RockRequestContext), so the current-page fallback stays clean.
             var url = GetAttributeValue( AttributeKey.ImpersonationStartPage ).IsNotNullOrWhiteSpace()
-                ? this.GetLinkedPageUrl( AttributeKey.ImpersonationStartPage, queryParams )
-                : this.GetCurrentPageUrl( queryParams );
+                ? this.GetLinkedPageUrl( AttributeKey.ImpersonationStartPage )
+                : this.GetCurrentPageUrl();
 
             return ActionOk( url );
         }
