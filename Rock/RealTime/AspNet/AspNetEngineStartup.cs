@@ -138,18 +138,20 @@ namespace Rock.RealTime.AspNet
             }
 
             // Check if we have a logged in person, if so don't check for visitor.
-            if ( claimsPrincipal.Identity?.Name.IsNotNullOrWhiteSpace() == true )
+            // Resolve the person from the RockRequestContext (the .ROCK cookie session,
+            // resolved lazily by the identity factory installed in BeginRequest). This
+            // MUST NOT gate on the OWIN principal's Identity.Name: that is only set by
+            // the managed pipeline, which never runs for these OWIN requests, so gating
+            // on it left every authenticated SignalR connection anonymous.
+            var currentPersonId = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson?.Id;
+
+            if ( currentPersonId.HasValue )
             {
-                var currentPersonId = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson?.Id;
+                var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:person", currentPersonId.Value.ToString() ) } );
 
-                if ( currentPersonId.HasValue )
-                {
-                    var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:person", currentPersonId.Value.ToString() ) } );
+                claimsPrincipal.AddIdentity( identity );
 
-                    claimsPrincipal.AddIdentity( identity );
-
-                    return nextHandler();
-                }
+                return nextHandler();
             }
 
             var visitorKeyCookie = context.Request.Cookies[Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY];
