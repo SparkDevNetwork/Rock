@@ -15,9 +15,10 @@
                 <DropDownList v-if="!isMyConnectionsView"
                               v-model="selectedConnector"
                               :items="staticConnectionTypeOptions?.connectorKeyItems ?? []"
+                              :disabled="isLimitedToAssignedConnections"
                               blankValue="All Requests"
                               enhanceForLongLists />
-                <DropDownList v-else-if="!selectedOpportunity"
+                <DropDownList v-else-if="!isConnectionTypeFilterHidden && !selectedOpportunity"
                               v-model="selectedType"
                               :items="box.options?.connectionTypeItems ?? []"
                               blankValue="All Types" />
@@ -1078,6 +1079,12 @@
 
     const isMyConnectionsView = ref<boolean>(box.options?.isMyConnectionsView ?? false);
 
+    // Block setting flags. When the block is pinned to a single Connection Type the slicer's
+    // type filter is hidden in My Connections view; when limited to assigned connections the
+    // connector filter is locked to the current person.
+    const isConnectionTypeFilterHidden = ref<boolean>(box.options?.isConnectionTypeFilterHidden ?? false);
+    const isLimitedToAssignedConnections = ref<boolean>(box.options?.isLimitedToAssignedConnections ?? false);
+
     const myConnectionsPageUrl = ref(box.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
 
     function onMyConnectionsClick(): void {
@@ -1124,7 +1131,7 @@
 
     // Context Slicer configuration
     const selectedCampus = ref<ListItemBag | null>(null);
-    const selectedConnector = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedConnector)) ? (store.state.currentPerson?.idKey ?? "") : preferences.getValue(PreferenceKey.SelectedConnector));
+    const selectedConnector = ref<string>(isLimitedToAssignedConnections.value || isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedConnector)) ? (store.state.currentPerson?.idKey ?? "") : preferences.getValue(PreferenceKey.SelectedConnector));
     const internalSelectedType = ref(preferences.getValue(PreferenceKey.FilterConnectionType));
     const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
 
@@ -2061,8 +2068,13 @@
             }
         }
 
-        // Connector filter
-        if (!isNullOrWhiteSpace(selectedConnector.value) && selectedConnector.value !== "All Requests") {
+        // Connector filter. When limited to assigned connections the block setting pins the
+        // filter to the current person regardless of the saved selection.
+        const connectorFilterValue = isLimitedToAssignedConnections.value
+            ? (store.state.currentPerson?.idKey ?? "")
+            : selectedConnector.value;
+
+        if (!isNullOrWhiteSpace(connectorFilterValue) && connectorFilterValue !== "All Requests") {
             const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
 
             if (!connectorValue || typeof connectorValue !== "object") {
@@ -2070,7 +2082,7 @@
             }
 
             // Check against the selected connector filter.
-            return connectorValue?.value === selectedConnector.value;
+            return connectorValue?.value === connectorFilterValue;
         }
 
         // Campus Filter
