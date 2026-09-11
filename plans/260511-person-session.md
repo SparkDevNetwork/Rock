@@ -724,8 +724,8 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 - [x] Standard logout marks the current `PersonSession` inactive, clears the `.ROCK` cookie, and does NOT log the user out of other devices.
 - [x] Logout also clears the unsecured check-in person-identifier cookie (`.ROCK`-adjacent self-identification cookie), so a subsequent check-in self-service flow no longer recognizes the signed-out person.
 - [ ] Cross-subdomain logins (`DOMAINS_SHARING_LOGINS` configured): logging in on `sub1.example.org` issues the `.ROCK` cookie at the shared domain (`.example.org`) plus the companion `.ROCK_DOMAIN` breadcrumb cookie; logging out clears both at that same shared domain so the session ends on `sub2.example.org` as well.
-- [ ] Logging in as the same person while already authenticated reuses the existing session (does NOT create a duplicate row).
-- [ ] Logging in as a different person while authenticated marks the prior session inactive and creates a new one.
+- [x] Logging in as the same person while already authenticated reuses the existing session (does NOT create a duplicate row).
+- [x] Logging in as a different person while authenticated marks the prior session inactive and creates a new one.
 
 ### Step-up and MFA
 
@@ -828,7 +828,7 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 
 ### SignalR / real-time hubs
 
-- [ ] SignalR hub connection from an authenticated browser exposes the current `PersonSession` to hub actions.
+- [x] SignalR hub connection from an authenticated browser exposes the current `PersonSession` to hub actions.
 - [ ] SignalR hub connection from an anonymous browser proceeds anonymously; hub actions see no current person.
 - [ ] Long-lived SignalR connections do NOT trigger excessive `UpdatePersonSessionLastActivity` writes (the bus task is intentionally not fired for hub traffic).
 
