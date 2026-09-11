@@ -205,10 +205,9 @@ namespace Rock.Blocks.Group
         #region Properties
 
         /// <summary>
-        /// The campus identifier page parameter, carried through to
-        /// navigation URLs.
+        /// The campus page parameter, carried through to navigation URLs.
         /// </summary>
-        private int? CampusId => PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+        private CampusCache Campus => CampusCache.Get( PageParameter( PageParameterKey.CampusId ), !PageCache.Layout.Site.DisablePredictableIds );
 
         /// <summary>
         /// The sign-up project location identifier page parameter.
@@ -1131,9 +1130,9 @@ namespace Rock.Blocks.Group
             };
 
             // CampusId rides along for the Campus Team feature's pages.
-            if ( CampusId.HasValue )
+            if ( Campus != null )
             {
-                queryParams[PageParameterKey.CampusId] = CampusId.Value.ToString();
+                queryParams[PageParameterKey.CampusId] = Campus.IdKey;
             }
 
             // Sign-up mode sends the occurrence identifiers back to the attendee list.
@@ -1163,9 +1162,9 @@ namespace Rock.Blocks.Group
                 [PageParameterKey.GroupId] = entity.GroupId.ToString()
             };
 
-            if ( CampusId.HasValue )
+            if ( Campus != null )
             {
-                queryParams[PageParameterKey.CampusId] = CampusId.Value.ToString();
+                queryParams[PageParameterKey.CampusId] = Campus.IdKey;
             }
 
             if ( IsSignUpMode )

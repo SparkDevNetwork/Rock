@@ -1,0 +1,153 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div v-if="isGenderFilterVisible" class="col-md-6">
+                <CheckBoxList v-model="genders"
+                              label="Gender"
+                              horizontal
+                              :items="genderItems" />
+            </div>
+
+            <div v-if="isCampusFilterVisible" class="col-md-6">
+                <CampusPicker v-model="campus"
+                              label="Family Campus"
+                              showBlankItem
+                              includeInactive
+                              forceVisible />
+            </div>
+
+            <div v-if="registrationInstances.length > 0" class="col-md-6">
+                <DropDownList v-model="registrationInstance"
+                              label="Registration"
+                              help="Limits the list to people who registered for this event, whether or not their membership came from that registration. The Registration column has its own filter, which is narrower: it matches only the registration a member was added to this group through."
+                              :items="registrationInstances"
+                              showBlankItem />
+            </div>
+
+            <div v-if="isSignedDocumentFilterVisible" class="col-md-6">
+                <DropDownList v-model="signedDocument"
+                              label="Signed Document"
+                              :items="signedDocumentItems"
+                              showBlankItem />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        /** The filters currently in effect. */
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        /** Whether the modal is shown. */
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** Whether the Gender filter is offered, which takes a hidden Gender column. */
+        isGenderFilterVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether the Family Campus filter is offered. */
+        isCampusFilterVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether the Signed Document filter is offered. */
+        isSignedDocumentFilterVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The registration instances the group is linked to. The Registration filter is offered only when there is one. */
+        registrationInstances: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const campus = ref(props.modelValue.campus);
+    const genders = ref(props.modelValue.genders ?? []);
+    const registrationInstance = ref(props.modelValue.registrationInstance ?? "");
+    const signedDocument = ref(props.modelValue.signedDocument ?? "");
+
+    const genderItems: ListItemBag[] = [
+        { value: Gender.Male.toString(), text: GenderDescription[Gender.Male] },
+        { value: Gender.Female.toString(), text: GenderDescription[Gender.Female] },
+        { value: Gender.Unknown.toString(), text: GenderDescription[Gender.Unknown] }
+    ];
+
+    const signedDocumentItems: ListItemBag[] = [
+        { value: "Yes", text: "Yes" },
+        { value: "No", text: "No" }
+    ];
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            campus: campus.value,
+            genders: genders.value,
+            registrationInstance: registrationInstance.value,
+            signedDocument: signedDocument.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        campus.value = props.modelValue.campus;
+        genders.value = props.modelValue.genders ?? [];
+        registrationInstance.value = props.modelValue.registrationInstance ?? "";
+        signedDocument.value = props.modelValue.signedDocument ?? "";
+    });
+
+    // #endregion Watchers
+</script>
