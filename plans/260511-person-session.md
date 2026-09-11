@@ -737,15 +737,15 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 
 ### Admin impersonation
 
-- [ ] Click "Impersonate" on the Person Bio block. The redirect URL contains NO `rckipid` query parameter.
-- [ ] After redirect, the current user is the impersonated person, not the admin.
-- [ ] No `PersonToken` row was created during this flow (SQL check on the `PersonToken` table immediately before and after).
-- [ ] A `HistoryLogin` row is written capturing the impersonation start.
-- [ ] The admin's MFA recency is preserved on the impersonation session (verify by visiting an MFA-required page as the impersonated user; the admin's MFA stamping should grant access without re-prompting, assuming the admin was recently MFA-authenticated).
-- [ ] "Stop impersonating" returns the admin to their original session. The impersonation session is marked inactive; the impersonator's prior session is the current session again.
-- [ ] "Stop impersonating" also re-attaches the admin's original `InteractionSession` so the admin's pre-impersonation activity trail picks up where it left off (verify by inspecting the `InteractionSession` rows tied to the admin's browser session, the row from before impersonation should be the "current" one after restore, with the impersonation-period row preserved as historical).
-- [ ] If the impersonator's prior session is deleted or itself inactive while impersonation is in progress, "stop impersonating" gracefully fails closed (current session inactive, user becomes anonymous). Verify by manually marking the impersonator's session inactive in SQL and then clicking stop.
-- [ ] Two admins impersonating the same target person at the same time work independently (two separate impersonation sessions).
+- [x] Click "Impersonate" on the Person Bio block. The redirect URL contains NO `rckipid` query parameter.
+- [x] After redirect, the current user is the impersonated person, not the admin.
+- [x] No `PersonToken` row was created during this flow (SQL check on the `PersonToken` table immediately before and after).
+- [x] A `HistoryLogin` row is written capturing the impersonation start.
+- [x] The admin's MFA recency is preserved on the impersonation session (verify by visiting an MFA-required page as the impersonated user; the admin's MFA stamping should grant access without re-prompting, assuming the admin was recently MFA-authenticated).
+- [x] "Stop impersonating" returns the admin to their original session. The impersonation session is marked inactive; the impersonator's prior session is the current session again.
+- [x] "Stop impersonating" also re-attaches the admin's original `InteractionSession` so the admin's pre-impersonation activity trail picks up where it left off (verify by inspecting the `InteractionSession` rows tied to the admin's browser session, the row from before impersonation should be the "current" one after restore, with the impersonation-period row preserved as historical).
+- [x] If the impersonator's prior session is deleted or itself inactive while impersonation is in progress, "stop impersonating" gracefully fails closed (current session inactive, user becomes anonymous). Verify by manually marking the impersonator's session inactive in SQL and then clicking stop.
+- [x] Two admins impersonating the same target person at the same time work independently (two separate impersonation sessions).
 
 ### User-token (`rckipid`) email links
 
