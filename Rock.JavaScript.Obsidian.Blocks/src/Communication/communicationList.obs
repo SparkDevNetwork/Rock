@@ -187,7 +187,7 @@
     import Grid, { Column, DeleteColumn, LabelColumn, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { InferredCommunicationStatus, InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
+    import { InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
     import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
@@ -199,7 +199,6 @@
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { Enumerable } from "@Obsidian/Utility/linq";
     import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
@@ -551,19 +550,6 @@
         return (row as Row).isDeleteDisabled;
     }
 
-    /**
-     * `true` if the communication is still editable, meaning it has not yet
-     * been approved or sent.
-     *
-     * @param status The inferred status of the communication.
-     */
-    function isEditable(status: InferredCommunicationStatus): boolean {
-        return status === InferredCommunicationStatus.Transient
-            || status === InferredCommunicationStatus.Draft
-            || status === InferredCommunicationStatus.PendingApproval
-            || status === InferredCommunicationStatus.Denied;
-    }
-
     // #endregion Functions
 
     // #region Event Handlers
@@ -639,30 +625,10 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
-        const row = findRow(key);
-
-        // Legacy-qualified communications can only be edited in the legacy
-        // wizard, so send them there while still editable. Once approved or
-        // sent they are view-only, so fall through to the Obsidian detail page
-        // and its friendly route.
-        if (row && row.isLegacyCommunication && isEditable(row.inferredStatus)) {
-            if (config.navigationUrls?.[NavigationUrlKey.LegacyDetailPage]) {
-                window.location.href = config.navigationUrls[NavigationUrlKey.LegacyDetailPage].replace("((Key))", key);
-                return;
-            }
-        }
-
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
             return;
         }
-    }
-
-    function findRow(key: string): Row | undefined {
-        return Enumerable.from(gridData?.rows ?? [])
-            .cast<Row>((r): r is Row => true)
-            .where(r => r.idKey === key)
-            .firstOrDefault();
     }
 
     /**
