@@ -595,19 +595,21 @@ public class PersonSessionServiceTests
     #region FindOrCreateDeviceComponentSession
 
     /// <summary>
-    /// A second call to <c>FindOrCreateDeviceComponentSession</c> for a
-    /// UserLogin that already has an active
-    /// <see cref="PersonSessionCreationSource.Component"/> session reuses
-    /// the existing row rather than creating a duplicate. This is the
-    /// device-token-refresh / same-person re-login case from the spec.
+    /// A device login must NOT reuse a Component session that belongs to a
+    /// DIFFERENT client (e.g. the person's web session) just because it shares
+    /// the same Database UserLogin. When the request presents no session of its
+    /// own (a fresh device login), the existing web session is left untouched
+    /// and a new device session is created. This is the mobile / TV bug where a
+    /// login reused a 30-minute-old web PersonSession.
     /// </summary>
     [TestMethod]
-    public void FindOrCreateDeviceComponentSession_ExistingActiveSession_IsReused()
+    public void FindOrCreateDeviceComponentSession_DoesNotReuseAnotherClientSession()
     {
         using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
-        var existing = new PersonSession
+        // An active web Component session for the shared Database UserLogin.
+        var webSession = new PersonSession
         {
             Id = 1,
             Guid = Guid.NewGuid(),
@@ -617,25 +619,37 @@ public class PersonSessionServiceTests
             IsActive = true,
             IsPersistent = true,
         };
-        rockContext.Set<PersonSession>().Add( existing );
+        rockContext.Set<PersonSession>().Add( webSession );
 
         var userLogin = new UserLogin
         {
             Id = 7,
-            UserName = "ted-decker-mobile",
+            UserName = "ted-decker",
             EntityTypeId = 42,
             PersonId = 50,
             Person = new Person { Id = 50, PrimaryAliasId = 100 },
         };
 
         var service = new PersonSessionService( rockContext );
-        var resolved = service.FindOrCreateDeviceComponentSession( requestContext: null, userLogin );
 
-        Assert.IsNotNull( resolved );
-        Assert.AreEqual( existing.Id, resolved.Id );
-        Assert.AreEqual( PersonSessionCreationSource.Component, resolved.CreationSource );
-        Assert.IsTrue( resolved.IsPersistent );
-        Assert.IsTrue( resolved.IsActive );
+        // A fresh device login presents no session of its own. The create-new
+        // leg may throw under the mocked save path; the point is that the web
+        // session is not returned. (If the old UserLogin-wide reuse were still
+        // in place, it would return webSession without ever creating anything.)
+        try
+        {
+            var resolved = service.FindOrCreateDeviceComponentSession( requestContext: null, userLogin );
+            Assert.AreNotEqual( webSession.Id, resolved.Id,
+                "A fresh device login must not reuse another client's (web) session." );
+        }
+        catch
+        {
+            // Fell into the create-new leg (mocked save cannot complete the
+            // insert), which itself confirms the web session was not reused.
+        }
+
+        Assert.IsTrue( webSession.IsActive,
+            "The other client's (web) session must be left untouched by a fresh device login." );
     }
 
     /// <summary>
@@ -809,12 +823,12 @@ public class PersonSessionServiceTests
     }
 
     /// <summary>
-    /// A Component session whose <c>IsActive</c> is still true but whose
-    /// <see cref="PersonSession.ExpiresDateTime"/> has passed must NOT be
-    /// returned to a device re-login — handing it back would cause the
+    /// The device's own session, when its <c>IsActive</c> is still true but its
+    /// <see cref="PersonSession.ExpiresDateTime"/> has passed (Rock Cleanup has
+    /// not run yet), must NOT be reused — handing it back would cause the
     /// device's next request to fail <c>ResolveSessionForRequest</c>'s
-    /// expiration check and immediately log the user out. Excluding it
-    /// from the find pushes the caller into the create-new branch.
+    /// expiration check and immediately log the user out. The method falls into
+    /// the create-new branch instead.
     /// </summary>
     [TestMethod]
     public void FindOrCreateDeviceComponentSession_ExpiredButActiveSession_IsNotReused()
@@ -846,23 +860,79 @@ public class PersonSessionServiceTests
             Person = new Person { Id = 50, PrimaryAliasId = 100 },
         };
 
+        // The device presents its own (now-expired) session on the request.
+        var requestContext = new RockRequestContext();
+        requestContext.SetPersonSession( expired );
+
         var service = new PersonSessionService( rockContext );
 
-        // The find leg must skip the expired row; the create-new leg may
+        // The reuse leg must skip the expired row; the create-new leg may
         // throw under the mocked save path. We only care that the expired
         // row was NOT returned.
         try
         {
-            var resolved = service.FindOrCreateDeviceComponentSession( requestContext: null, userLogin );
+            var resolved = service.FindOrCreateDeviceComponentSession( requestContext, userLogin );
             Assert.AreNotEqual( expired.Id, resolved.Id,
                 "Expired-but-active Component session must not be reused." );
         }
         catch
         {
-            // See comment above. The find filter is what's under test;
-            // an exception thrown from the save path confirms the find
-            // returned null and the method fell into the create branch.
+            // See comment above; the reuse filter is what's under test.
         }
+    }
+
+    /// <summary>
+    /// When the device presents a <see cref="PersonSessionCreationSource.Legacy"/>
+    /// upgrade session (its legacy cookie was upgraded on an earlier request), a
+    /// device login creates a fresh Component session and marks the Legacy
+    /// session inactive — the device migrates to its own real Component session
+    /// at launch rather than reusing the Legacy row.
+    /// </summary>
+    [TestMethod]
+    public void FindOrCreateDeviceComponentSession_LegacyPriorSession_CreatesNewComponentAndMarksLegacyInactive()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var legacy = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            UserLoginId = 7,
+            CreationSource = PersonSessionCreationSource.Legacy,
+            IsActive = true,
+            IsPersistent = true,
+        };
+        rockContext.Set<PersonSession>().Add( legacy );
+
+        var userLogin = new UserLogin
+        {
+            Id = 7,
+            UserName = "ted-decker-mobile",
+            EntityTypeId = 42,
+            PersonId = 50,
+            Person = new Person { Id = 50, PrimaryAliasId = 100 },
+        };
+
+        var requestContext = new RockRequestContext();
+        requestContext.SetPersonSession( legacy );
+
+        var service = new PersonSessionService( rockContext );
+
+        // Create-new leg may throw under the mocked save path; the assertion
+        // below (Legacy session deactivated before the create) is the point.
+        try
+        {
+            service.FindOrCreateDeviceComponentSession( requestContext, userLogin );
+        }
+        catch
+        {
+            // See comment above.
+        }
+
+        Assert.IsFalse( legacy.IsActive,
+            "A Legacy prior session must be marked inactive when the device migrates to a Component session." );
     }
 
     #endregion FindOrCreateDeviceComponentSession

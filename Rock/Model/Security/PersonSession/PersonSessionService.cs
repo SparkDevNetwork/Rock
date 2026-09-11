@@ -507,37 +507,55 @@ public partial class PersonSessionService
 
         var rockContext = Context as RockContext;
 
-        // "Different person on the same device" handling. If the request
-        // came in with an existing PersonSession that belongs to a
-        // different UserLogin, mark that prior session inactive. The new
-        // session created below takes over the device. This matches the
-        // spec's InteractionSession sync table rule
-        // "Login, already authenticated, different person | Create new",
-        // adapted to mobile / TV where the prior session is the device's
-        // previous owner. Re-fetch the prior row into THIS context before
-        // mutating because RockRequestContext.PersonSession was tracked by
-        // a different context.
-        var priorSessionGuid = requestContext?.PersonSession?.Guid;
-        var priorSessionUserLoginId = requestContext?.PersonSession?.UserLoginId;
-        var changedDevice = priorSessionGuid.HasValue
-            && priorSessionGuid.Value != Guid.Empty
-            && priorSessionUserLoginId.HasValue
-            && priorSessionUserLoginId.Value != userLogin.Id;
+        /*
+            9/11/26 - DH
 
-        if ( changedDevice )
+            Reuse is scoped to the device's OWN session - the one the current
+            request resolved from the cookie IT presented
+            (RockRequestContext.PersonSession) - never a UserLogin-wide lookup.
+            Mobile / TV and web share the same Database UserLogin, so a
+            UserLogin-wide "find any active Component session" reused a session
+            belonging to a different client (e.g. the person's web session, even
+            one created 30+ minutes earlier). Keying reuse on the presented
+            cookie's PersonSession Guid mirrors the web Login flow, so each
+            client keeps its own session. Component sessions carry no uniqueness
+            constraint (see the AddPersonSessionModel migration), so multiple
+            concurrent sessions per UserLogin - one per device / browser - are
+            legitimate.
+
+            Reason: A device login reuses only THIS device's session, never
+            another client's.
+        */
+        var requestSession = requestContext?.PersonSession;
+        var priorSession = ( requestSession != null && requestSession.Guid != Guid.Empty )
+            ? Get( requestSession.Guid )
+            : null;
+
+        // Same-device token refresh / same-person re-login: reuse the device's
+        // own session when it is still an active, non-expired Component session
+        // for this UserLogin. Only an active, non-expired row is reusable - Rock
+        // Cleanup is the canonical writer that flips IsActive on expiration, so
+        // until it runs there can be expired-but-active rows; returning one
+        // would make the device's next request fail ResolveSessionForRequest's
+        // expiration check and immediately log out.
+        if ( priorSession != null
+            && priorSession.CreationSource == PersonSessionCreationSource.Component
+            && priorSession.UserLoginId == userLogin.Id
+            && priorSession.IsActive
+            && ( priorSession.ExpiresDateTime == null || priorSession.ExpiresDateTime > RockDateTime.Now ) )
         {
-            var prior = Get( priorSessionGuid.Value );
-            if ( prior != null && prior.IsActive )
-            {
-                prior.IsActive = false;
-                rockContext.SaveChanges();
-            }
+            return priorSession;
         }
 
-        var existing = FindActiveComponentSession( userLogin.Id );
-        if ( existing != null )
+        // Creating a new session means this device's cookie is being (re)issued,
+        // so any prior session it carried is superseded on this device: a
+        // different person (account switch), or a non-Component source such as a
+        // Legacy upgrade session migrating to a real Component session at launch.
+        // Mark it inactive so it does not linger active. Sessions on the person's
+        // OTHER devices / browsers are untouched - each has its own row.
+        if ( priorSession != null && priorSession.IsActive )
         {
-            return existing;
+            priorSession.IsActive = false;
         }
 
         var personAliasId = ( userLogin.Person?.PrimaryAliasId )
@@ -551,48 +569,9 @@ public partial class PersonSessionService
             isPersistent: true );
 
         Add( session );
+        rockContext.SaveChanges();
 
-        try
-        {
-            rockContext.SaveChanges();
-            return session;
-        }
-        catch ( DbUpdateException ex ) when ( IsUniqueConstraintViolation( ex ) )
-        {
-            rockContext.Entry( session ).State = System.Data.Entity.EntityState.Detached;
-
-            return FindActiveComponentSession( userLogin.Id );
-        }
-    }
-
-    /// <summary>
-    /// Finds the active <see cref="PersonSessionCreationSource.Component"/>
-    /// <see cref="PersonSession"/> for the supplied <see cref="UserLogin"/>.
-    /// Used by the device flows (Mobile, TV) to detect the "same person
-    /// re-login" case before creating a duplicate.
-    /// </summary>
-    /// <remarks>
-    /// Filters out sessions whose <see cref="PersonSession.ExpiresDateTime"/>
-    /// has passed even when their <c>IsActive</c> flag is still true (Rock
-    /// Cleanup is the canonical writer that flips <c>IsActive = false</c>
-    /// on expiration; until that job runs there can be expired-but-active
-    /// rows). Returning one of those would cause the device's next request
-    /// to hit <c>ResolveSessionForRequest</c>'s expiration check and
-    /// immediately log the user out — the exact regression the
-    /// find-or-create path is supposed to prevent. Excluding them here
-    /// pushes the caller into the "create new" branch instead.
-    /// </remarks>
-    /// <param name="userLoginId">The identifier of the <see cref="UserLogin"/>.</param>
-    /// <returns>The first matching active Component session, or <c>null</c>.</returns>
-    private PersonSession FindActiveComponentSession( int userLoginId )
-    {
-        var now = RockDateTime.Now;
-        return Queryable()
-            .Where( s => s.UserLoginId == userLoginId
-                && s.CreationSource == PersonSessionCreationSource.Component
-                && s.IsActive
-                && ( s.ExpiresDateTime == null || s.ExpiresDateTime > now ) )
-            .FirstOrDefault();
+        return session;
     }
 
     /// <summary>
