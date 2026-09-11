@@ -366,7 +366,7 @@ function ReviewFlag(elem) {
                 rockContext.SaveChanges();
 
                 StartWorkflow( request, rockContext, AttributeKey.PrayedWorkflow );
-                PrayerRequestService.EnqueuePrayerInteraction( request, CurrentPerson, PageCache.Layout.Site.Name, Request.UserAgent, RockPage.GetClientIpAddress(), RockPage.Session["RockSessionId"]?.ToString().AsGuidOrNull() );
+                PrayerRequestService.EnqueuePrayerInteraction( request, CurrentPerson, PageCache.Layout.Site.Name, Request.UserAgent, RockPage.GetClientIpAddress(), RockPage.RequestContext?.SessionGuid );
             }
         }
 

@@ -622,8 +622,9 @@ namespace Rock.Transactions
                 this.IPAddress = string.Empty;
             }
 
+            // The browser-session identifier is the cookie-backed
+            // RockRequestContext.SessionGuid, not ASP.NET Session["RockSessionId"].
             this.BrowserSessionId = this.BrowserSessionId
-                ?? rockPage?.Session["RockSessionId"]?.ToString().AsGuidOrNull()
                 ?? RockRequestContextAccessor.Current?.SessionGuid;
 
             this.PersonSessionId = this.PersonSessionId

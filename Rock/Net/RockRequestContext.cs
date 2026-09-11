@@ -405,9 +405,15 @@ namespace Rock.Net
 
         /// <summary>
         /// The unique identifier of the (interaction) session related to this
-        /// request.
+        /// request - the browser-session identifier backed by the
+        /// <see cref="Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID"/>
+        /// cookie. Public so interaction-tracking code outside the Rock
+        /// assembly (e.g. WebForms blocks) can read it directly instead of the
+        /// former ASP.NET <c>Session["RockSessionId"]</c>; the setter stays
+        /// internal (mutated only through <see cref="SetBrowserSessionId(Guid)"/>
+        /// and <see cref="RegenerateBrowserSessionId"/>).
         /// </summary>
-        internal Guid SessionGuid { get; set; } = Guid.NewGuid();
+        public Guid SessionGuid { get; internal set; } = Guid.NewGuid();
 
         /// <summary>
         /// <para>
@@ -514,7 +520,7 @@ namespace Rock.Net
 
             CurrentVisitorId = LoadCurrentVisitorId();
 
-            SessionGuid = request.RequestContext.HttpContext.Session?["RockSessionId"].ToStringSafe().AsGuidOrNull() ?? Guid.NewGuid();
+            InitializeBrowserSessionId();
         }
 
         /// <summary>
@@ -611,6 +617,8 @@ namespace Rock.Net
             AddContextEntitiesFromHeaders();
 
             CurrentVisitorId = LoadCurrentVisitorId();
+
+            InitializeBrowserSessionId();
         }
 
         #endregion
@@ -822,22 +830,45 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Replaces the browser-session identifier (<c>RockSessionId</c>) with
-        /// a fresh <see cref="Guid"/> so the next interaction-tracking call
-        /// creates a new <c>InteractionSession</c> row rather than adopting
-        /// the previous one.
+        /// Resolves the browser-session identifier (<see cref="SessionGuid"/>)
+        /// from the <see cref="Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID"/>
+        /// cookie, minting and writing a fresh one when the request carries none.
+        /// </summary>
+        /// <remarks>
+        /// This replaces the former ASP.NET <c>Session["RockSessionId"]</c>
+        /// backing. ASP.NET Session state is not available in
+        /// <c>Application_BeginRequest</c> (it loads at <c>AcquireRequestState</c>),
+        /// which is where the request context is now built, so the value has to
+        /// live in a plain cookie that is present on every request from the
+        /// start of the pipeline - including OWIN and block-action requests,
+        /// which never touch ASP.NET Session at all.
+        /// </remarks>
+        private void InitializeBrowserSessionId()
+        {
+            var existing = GetCookieValue( Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID ).AsGuidOrNull();
+
+            if ( existing.HasValue )
+            {
+                SessionGuid = existing.Value;
+                return;
+            }
+
+            SetBrowserSessionId( Guid.NewGuid() );
+        }
+
+        /// <summary>
+        /// Replaces the browser-session identifier with a fresh
+        /// <see cref="Guid"/> so the next interaction-tracking call creates a
+        /// new <c>InteractionSession</c> row rather than adopting the previous
+        /// one.
         /// </summary>
         /// <remarks>
         /// Called from auth-event handlers per the PersonSession spec's
         /// reset rules: logout, login-as-a-different-person, and admin
         /// impersonation start. Login-when-not-already-authenticated and
-        /// legacy cookie upgrade deliberately do NOT regenerate; they
-        /// keep the existing <c>RockSessionId</c> so the SQL upsert's
-        /// UPDATE path adopts the anonymous browser's pre-auth journey.
-        /// Writes through to ASP.NET <c>HttpContext.Session</c> when
-        /// available so <see cref="Rock.Web.UI.RockPage"/>'s fallback read
-        /// (<c>Session["RockSessionId"]</c>) picks up the new value on
-        /// subsequent reads in this request and across requests.
+        /// legacy cookie upgrade deliberately do NOT regenerate; they keep the
+        /// existing identifier so the SQL upsert's UPDATE path adopts the
+        /// anonymous browser's pre-auth journey.
         /// </remarks>
         /// <returns>The newly generated <see cref="Guid"/>.</returns>
         [RockInternal( "20.0", true )]
@@ -851,15 +882,19 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Re-points the browser-session identifier (<c>RockSessionId</c>) at
-        /// the supplied <paramref name="browserSessionId"/>. Used when ending
-        /// an admin-impersonation session to restore the admin's pre-impersonation
+        /// Re-points the browser-session identifier at the supplied
+        /// <paramref name="browserSessionId"/>. Used when ending an
+        /// admin-impersonation session to restore the admin's pre-impersonation
         /// <c>InteractionSession</c> row.
         /// </summary>
         /// <remarks>
-        /// Writes through to ASP.NET <c>HttpContext.Session</c> when available;
-        /// the in-memory <see cref="SessionGuid"/> is also updated so the
-        /// remainder of this request observes the new identifier.
+        /// Updates the in-memory <see cref="SessionGuid"/> so the remainder of
+        /// this request observes the new identifier, mirrors it into the
+        /// in-memory <see cref="Cookies"/> so any later
+        /// <see cref="GetCookieValue(string)"/> read in this request agrees,
+        /// and writes the <see cref="Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID"/>
+        /// cookie so subsequent requests carry it. The cookie has no expiration
+        /// (dies with the browser), matching the browser-session lifetime.
         /// </remarks>
         /// <param name="browserSessionId">The <see cref="Guid"/> to install as the current browser-session identifier.</param>
         [RockInternal( "20.0", true )]
@@ -867,12 +902,18 @@ namespace Rock.Net
         {
             SessionGuid = browserSessionId;
 
-            var session = HttpContext.Current?.Session;
+            var browserSessionIdValue = browserSessionId.ToString();
 
-            if ( session != null )
+            Cookies.AddOrReplace( Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID, browserSessionIdValue );
+
+            Response.AddCookie( new BrowserCookie
             {
-                session["RockSessionId"] = browserSessionId;
-            }
+                Name = Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID,
+                Value = browserSessionIdValue,
+                Path = "/",
+                HttpOnly = true,
+                IsEssential = true,
+            } );
         }
 
         #endregion

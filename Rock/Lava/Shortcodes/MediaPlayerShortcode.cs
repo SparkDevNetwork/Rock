@@ -384,7 +384,9 @@ so you can customize this to be exactly what you want.</p>
             Guid? sessionGuid;
             try
             {
-                sessionGuid = ( HttpContext.Current?.Handler as RockPage )?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
+                // The browser-session identifier now lives on the request
+                // context (cookie-backed), not ASP.NET Session["RockSessionId"].
+                sessionGuid = Rock.Net.RockRequestContextAccessor.Current?.SessionGuid;
             }
             catch
             {

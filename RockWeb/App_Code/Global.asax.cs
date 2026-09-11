@@ -548,8 +548,18 @@ namespace RockWeb
                 // ignore exception
             }
 
-            // add new session id
-            Session["RockSessionId"] = Guid.NewGuid();
+            /*
+                9/11/26 - DH
+
+                The browser-session identifier is no longer stored in ASP.NET
+                Session ("RockSessionId"). It now lives in the cookie-backed
+                RockRequestContext.SessionGuid (see RequestCookieKey.ROCK_SESSION_ID),
+                established in Application_BeginRequest, because ASP.NET Session
+                state is not available that early in the pipeline.
+
+                Reason: Browser-session id moved out of ASP.NET Session into a
+                plain cookie.
+            */
         }
 
         /// <summary>

@@ -1090,7 +1090,9 @@ public class PersonSessionServiceTests
         // new auth cookie pointing at the restored session and updates the
         // request context's PersonSession so the rest of the request sees
         // the admin's restored identity.
-        Assert.HasCount( 1, response.AddedCookies,
+        // Filter to the auth cookie: restore also re-points the browser-session
+        // id, which now writes a .ROCK_SESSION_ID cookie.
+        Assert.HasCount( 1, response.AddedCookies.Where( c => c.Name == PersonSessionService.AuthCookieName ).ToList(),
             "EndImpersonationAndRestore must write the new auth cookie for the restored session." );
         Assert.AreEqual( restored.Guid, requestContext.PersonSession.Guid,
             "EndImpersonationAndRestore must attach the restored session to the request context." );
@@ -1166,17 +1168,24 @@ public class PersonSessionServiceTests
 
     /// <summary>
     /// <see cref="RockRequestContext.SetBrowserSessionId(Guid)"/> writes the
-    /// supplied <see cref="Guid"/> through to <c>SessionGuid</c>.
+    /// supplied <see cref="Guid"/> through to <c>SessionGuid</c> and persists it
+    /// as the <see cref="Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID"/>
+    /// cookie (a session cookie, no expiration) so subsequent requests carry it.
     /// </summary>
     [TestMethod]
-    public void SetBrowserSessionId_WritesSuppliedGuid()
+    public void SetBrowserSessionId_WritesSuppliedGuid_AndSessionCookie()
     {
-        var requestContext = new RockRequestContext();
+        var response = new TrackingResponseContext();
+        var requestContext = new RockRequestContext( response );
         var target = Guid.NewGuid();
 
         requestContext.SetBrowserSessionId( target );
 
         Assert.AreEqual( target, requestContext.SessionGuid );
+
+        var sessionCookie = response.AddedCookies.Single( c => c.Name == Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID );
+        Assert.AreEqual( target.ToString(), sessionCookie.Value );
+        Assert.IsNull( sessionCookie.Expires, "The browser-session cookie should be a session cookie (no expiration)." );
     }
 
     #endregion Browser-session id reset / restore
@@ -1222,7 +1231,9 @@ public class PersonSessionServiceTests
         Assert.HasCount( 0, rockContext.Set<PersonToken>().ToList(),
             "ImpersonatePerson must not write a PersonToken row." );
 
-        Assert.HasCount( 1, response.AddedCookies,
+        // Filter to the auth cookie: impersonation also regenerates the
+        // browser-session id, which now writes a .ROCK_SESSION_ID cookie.
+        Assert.HasCount( 1, response.AddedCookies.Where( c => c.Name == PersonSessionService.AuthCookieName ).ToList(),
             "ImpersonatePerson must write the new-format auth cookie via the request context." );
 
         Assert.AreEqual( newSession.Guid, requestContext.PersonSession.Guid,
@@ -3525,6 +3536,15 @@ public class PersonSessionServiceTests
     {
         var headers = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
         var requestUri = host.IsNotNullOrWhiteSpace() ? new Uri( $"https://{host}/" ) : ( Uri ) null;
+
+        // Seed the browser-session cookie so the request-context constructor
+        // treats this like a returning browser and does NOT mint + write a
+        // fresh .ROCK_SESSION_ID cookie, which would otherwise show up in
+        // response.AddedCookies and throw off the auth-cookie count assertions.
+        if ( !cookies.ContainsKey( Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID ) )
+        {
+            cookies[Rock.Personalization.RequestCookieKey.ROCK_SESSION_ID] = Guid.NewGuid().ToString();
+        }
 
         var requestMock = new Mock<IRequest>( MockBehavior.Strict );
         requestMock.SetupGet( r => r.RemoteAddress ).Returns( IPAddress.Loopback );
