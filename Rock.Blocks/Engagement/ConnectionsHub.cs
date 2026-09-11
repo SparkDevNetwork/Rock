@@ -110,6 +110,21 @@ namespace Rock.Blocks.Engagement
         EditorMode = CodeEditorMode.Lava,
         Order = 7 )]
 
+    [ConnectionTypeField(
+        "Connection Type",
+        Key = AttributeKey.ConnectionType,
+        Description = "Optional connection type to limit the block to. When set, the block always displays this type and ignores the ConnectionType page parameter.",
+        IsRequired = false,
+        Order = 8 )]
+
+    [BooleanField(
+        "Limit to Assigned Connections",
+        Key = AttributeKey.OnlyShowAssigned,
+        Description = "When enabled, only requests assigned to the current person will be shown.",
+        DefaultBooleanValue = false,
+        IsRequired = true,
+        Order = 9 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "CEE15B88-3B23-4378-9CB1-E59A97A94D1B" )]
@@ -128,6 +143,8 @@ namespace Rock.Blocks.Engagement
             public const string Badges = "Badges";
             public const string LavaHeadingTemplate = "LavaHeadingTemplate";
             public const string LavaBadgeBar = "LavaBadgeBar";
+            public const string ConnectionType = "ConnectionType";
+            public const string OnlyShowAssigned = "OnlyShowAssigned";
         }
 
         private static class NavigationUrlKey
@@ -192,6 +209,36 @@ namespace Rock.Blocks.Engagement
         protected Guid? FilterConnectionType => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterConnectionType )
             .AsGuidOrNull();
+
+        /// <summary>
+        /// Gets the identifier of the active Connection Type pinned by the "Connection Type"
+        /// block setting, or null when the setting is empty or points at an inactive or
+        /// deleted type. When set, the block always displays this type: Standard view ignores
+        /// the ConnectionType page parameter and My Connections view hides its type filter.
+        /// </summary>
+        private int? ConfiguredConnectionTypeId
+        {
+            get
+            {
+                var configuredGuid = GetAttributeValue( AttributeKey.ConnectionType ).AsGuidOrNull();
+
+                if ( !configuredGuid.HasValue )
+                {
+                    return null;
+                }
+
+                var connectionTypeCache = ConnectionTypeCache.Get( configuredGuid.Value );
+
+                return connectionTypeCache?.IsActive == true ? connectionTypeCache.Id : ( int? ) null;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the "Limit to Assigned Connections" block setting is
+        /// enabled, in which case every request query is restricted to the current person as
+        /// connector and the slicer's connector filter is locked to "My Requests".
+        /// </summary>
+        private bool IsLimitedToAssignedConnections => GetAttributeValue( AttributeKey.OnlyShowAssigned ).AsBoolean();
 
         public PersonPreferenceCollection PersonPreferences
         {
@@ -288,16 +335,37 @@ namespace Rock.Blocks.Engagement
             ConnectionType connectionType;
 
             var connectionOpportunity = new ConnectionOpportunityService( RockContext ).GetInclude( PageParameter( PageParameterKey.ConnectionOpportunity ), o => o.ConnectionType, !PageCache.Layout.Site.DisablePredictableIds );
+            var configuredConnectionTypeId = ConfiguredConnectionTypeId;
 
-            if ( connectionOpportunity != null )
+            // The Connection Type block setting pins the block to one type. A ConnectionOpportunity
+            // page parameter is only honored as a filter seed when it belongs to that type; the
+            // ConnectionType page parameter is ignored entirely.
+            if ( configuredConnectionTypeId.HasValue && connectionOpportunity != null && connectionOpportunity.ConnectionTypeId != configuredConnectionTypeId.Value )
             {
-                options.ConnectionOpportunityGuidFromPageParameter = connectionOpportunity.Guid;
+                connectionOpportunity = null;
+            }
+
+            if ( configuredConnectionTypeId.HasValue )
+            {
+                connectionType = new ConnectionTypeService( RockContext ).Queryable()
+                    .Include( a => a.ConnectionStatuses )
+                    .FirstOrDefault( a => a.Id == configuredConnectionTypeId.Value );
+            }
+            else if ( connectionOpportunity != null )
+            {
                 connectionType = connectionOpportunity.ConnectionType;
             }
             else
             {
                 connectionType = new ConnectionTypeService( RockContext ).GetInclude( PageParameter( PageParameterKey.ConnectionType ), a => a.ConnectionStatuses, !PageCache.Layout.Site.DisablePredictableIds );
             }
+
+            if ( connectionOpportunity != null )
+            {
+                options.ConnectionOpportunityGuidFromPageParameter = connectionOpportunity.Guid;
+            }
+
+            options.IsLimitedToAssignedConnections = IsLimitedToAssignedConnections;
 
             string preferenceKey;
             options.GridDataToShowItems = new List<GridDataToShowItemBag>();
@@ -353,7 +421,14 @@ namespace Rock.Blocks.Engagement
             }
 
             var connectorPerson = new PersonService( RockContext ).Get( PageParameter( PageParameterKey.Connector ), !PageCache.Layout.Site.DisablePredictableIds );
-            if ( connectorPerson != null )
+            if ( IsLimitedToAssignedConnections )
+            {
+                // The block setting locks the connector filter to the current person, so the
+                // Connector page parameter and any previously saved selection are ignored.
+                this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, RequestContext.CurrentPerson.IdKey );
+                this.PersonPreferences.Save();
+            }
+            else if ( connectorPerson != null )
             {
                 this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, connectorPerson.IdKey );
 
@@ -660,7 +735,11 @@ namespace Rock.Blocks.Engagement
 
         private void SetMyConnectionsModeOptions( ConnectionsHubOptionsBag options )
         {
-            var connectorPerson = new PersonService( RockContext ).Get( PageParameter( PageParameterKey.Connector ), !PageCache.Layout.Site.DisablePredictableIds );
+            // When limited to assigned connections the view is always the current person's,
+            // regardless of the Connector page parameter.
+            var connectorPerson = IsLimitedToAssignedConnections
+                ? RequestContext.CurrentPerson
+                : new PersonService( RockContext ).Get( PageParameter( PageParameterKey.Connector ), !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( connectorPerson == null )
             {
@@ -687,12 +766,18 @@ namespace Rock.Blocks.Engagement
             // My Connections mode only supports the List and Grid views, so limit the options to those.
             options.EnabledViews = EnabledViewFlags.List | EnabledViewFlags.Grid;
 
+            // The Connection Type block setting pins My Connections view to one type, which also
+            // hides the slicer's type filter since there is nothing left to choose between.
+            var configuredConnectionTypeId = ConfiguredConnectionTypeId;
+            options.IsConnectionTypeFilterHidden = configuredConnectionTypeId.HasValue;
+
             var connectionTypes = new ConnectionTypeService( RockContext ).Queryable()
                 .Include( ct => ct.ConnectionOpportunities )
                 .Include( ct => ct.ConnectionTypeSources )
                 .Include( ct => ct.ConnectionActivityTypes )
                 .Include( ct => ct.ConnectionWorkflows )
                 .Where( ct => ct.IsActive )
+                .Where( ct => !configuredConnectionTypeId.HasValue || ct.Id == configuredConnectionTypeId.Value )
                 .ToList();
 
             options.ConnectionTypeItems = connectionTypes.ToListItemBagList();
@@ -1345,6 +1430,20 @@ namespace Rock.Blocks.Engagement
 
             connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( PageParameter( PageParameterKey.ConnectionOpportunity ), !PageCache.Layout.Site.DisablePredictableIds );
 
+            var configuredConnectionTypeId = ConfiguredConnectionTypeId;
+
+            if ( configuredConnectionTypeId.HasValue )
+            {
+                // The Connection Type block setting pins the block to one type. An opportunity
+                // from another type is discarded rather than allowed to redirect the request.
+                if ( connectionOpportunity != null && connectionOpportunity.ConnectionTypeId != configuredConnectionTypeId.Value )
+                {
+                    connectionOpportunity = null;
+                }
+
+                return ConnectionTypeCache.Get( configuredConnectionTypeId.Value );
+            }
+
             if ( connectionOpportunity != null )
             {
                 return ConnectionTypeCache.Get( connectionOpportunity.ConnectionTypeId );
@@ -1410,9 +1509,18 @@ namespace Rock.Blocks.Engagement
             var connectionOpportunityGuid = preferences.GetValue( string.Format( PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey, "my-connections" ) ).AsGuidOrNull();
 
             var connectionTypeService = new ConnectionTypeService( RockContext );
-            var connectionTypeQry = connectionTypeService.Queryable().Where( ct => !FilterConnectionType.HasValue || ct.Guid == FilterConnectionType.Value );
+            var configuredConnectionTypeId = ConfiguredConnectionTypeId;
+            var filterConnectionType = FilterConnectionType;
 
-            var selectedConnector = new PersonService( RockContext ).Get( SelectedConnector, !PageCache.Layout.Site.DisablePredictableIds );
+            // The Connection Type block setting pins the metrics to one type; otherwise the
+            // optional slicer type filter applies.
+            var connectionTypeQry = configuredConnectionTypeId.HasValue
+                ? connectionTypeService.Queryable().Where( ct => ct.Id == configuredConnectionTypeId.Value )
+                : connectionTypeService.Queryable().Where( ct => !filterConnectionType.HasValue || ct.Guid == filterConnectionType.Value );
+
+            var selectedConnector = IsLimitedToAssignedConnections
+                ? RequestContext.CurrentPerson
+                : new PersonService( RockContext ).Get( SelectedConnector, !PageCache.Layout.Site.DisablePredictableIds );
 
             // Use the aggregate variant so that when FilterConnectionType is null and the queryable
             // spans multiple ConnectionTypes, we get a single row that combines all of them rather
@@ -4118,7 +4226,15 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             // access to, and the slicer's optional Connection Type filter is read from a
             // person preference (FilterConnectionType) like every other slicer filter.
             ConnectionType connectionType;
-            if ( IsMyConnectionsMode )
+            var configuredConnectionTypeId = ConfiguredConnectionTypeId;
+
+            if ( configuredConnectionTypeId.HasValue )
+            {
+                // The Connection Type block setting wins over both the page parameters and the
+                // FilterConnectionType preference so a crafted request cannot target another type.
+                connectionType = new ConnectionTypeService( RockContext ).Get( configuredConnectionTypeId.Value );
+            }
+            else if ( IsMyConnectionsMode )
             {
                 connectionType = FilterConnectionType.HasValue
                     ? new ConnectionTypeService( RockContext ).Get( FilterConnectionType.Value )
@@ -4339,7 +4455,13 @@ WHERE 1 = 1" );
             }
 
             // Connector filter
-            if ( SelectedConnector.IsNotNullOrWhiteSpace() )
+            if ( IsLimitedToAssignedConnections )
+            {
+                // The block setting restricts every request to the current person as connector,
+                // regardless of the saved SelectedConnector preference.
+                sql.Append( "\n  AND cp.[Id] = @CurrentPersonId" );
+            }
+            else if ( SelectedConnector.IsNotNullOrWhiteSpace() )
             {
                 // "All Requests" is the sentinel for "show every connector," so it intentionally
                 // decodes to no Id and applies no filter. Any other value is a connector's IdKey.
