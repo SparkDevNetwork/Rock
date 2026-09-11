@@ -75,6 +75,15 @@ namespace RockWeb.Blocks.Security.Oidc
                 {
                     new PersonSessionService( rockContext ).SignOut( RockPage.RequestContext );
                 }
+
+                // Regenerate the browser-session identifier so the next
+                // interaction-tracking call creates a fresh InteractionSession
+                // row rather than continuing to write activity against the row
+                // tied to the just-logged-out PersonSession. Matches the
+                // "Logout | Create new" row of the spec's InteractionSession
+                // sync table (SignOut deliberately leaves this to the logout
+                // caller).
+                RockPage.RequestContext.RegenerateBrowserSessionId();
             }
             else if ( !string.IsNullOrWhiteSpace( response.Error ) )
             {

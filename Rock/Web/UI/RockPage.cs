@@ -733,6 +733,15 @@ namespace Rock.Web.UI
                     new PersonSessionService( logoutRockContext ).SignOut( RequestContext );
                 }
 
+                // Regenerate the browser-session identifier so the next
+                // interaction-tracking call creates a fresh InteractionSession
+                // row rather than continuing to write activity against the row
+                // tied to the just-logged-out PersonSession. Matches the
+                // "Logout | Create new" row of the spec's InteractionSession
+                // sync table (SignOut deliberately leaves this to the logout
+                // caller).
+                RequestContext.RegenerateBrowserSessionId();
+
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
                 if ( _pageCache != null )
