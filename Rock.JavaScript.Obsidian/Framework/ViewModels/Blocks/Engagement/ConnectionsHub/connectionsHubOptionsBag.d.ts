@@ -96,8 +96,22 @@ export type ConnectionsHubOptionsBag = {
     /** Gets whether board view is enabled for this connection type. */
     isBoardViewEnabled: boolean;
 
+    /**
+     * Gets or sets a value indicating whether the context slicer's Connection Type filter
+     * should be hidden in the "My Connections" view because the block is pinned to a single
+     * Connection Type by its block setting.
+     */
+    isConnectionTypeFilterHidden: boolean;
+
     /** Gets whether grid view is enabled for this connection type. */
     isGridViewEnabled: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the block is limited to requests assigned to
+     * the current person. When true the context slicer's connector filter is rendered
+     * disabled and locked to "My Requests".
+     */
+    isLimitedToAssignedConnections: boolean;
 
     /** Gets whether list view is enabled for this connection type. */
     isListViewEnabled: boolean;
