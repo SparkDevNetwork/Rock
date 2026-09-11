@@ -754,32 +754,85 @@ namespace Rock.Blocks.Security
 
                 var mfaRecency = isTwoFactorAuthenticated ? ( DateTime? ) RockDateTime.Now : null;
 
-                // Capture the prior PersonSession's PersonAliasId (if any)
-                // BEFORE creating the new session. If a different person was
-                // already authenticated on this request (e.g. user A signs
-                // out implicitly by signing in as user B), the spec's
-                // InteractionSession sync table calls for a fresh
-                // InteractionSession - so we regenerate RockSessionId below.
+                // Capture the prior PersonSession (if any) BEFORE creating or
+                // reusing a session. It drives two transition rules from the
+                // spec's InteractionSession sync table:
+                //   * "Login, already authenticated, same person (step-up only)
+                //     | Reuse existing" - a re-login as the same person reuses
+                //     the current Component session (re-stamping its recency)
+                //     instead of creating a duplicate. Creating a new row here
+                //     would leave a growing pile of active sessions for the
+                //     same person and would reset IssuedDateTime, breaking the
+                //     kill switch.
+                //   * "Login, already authenticated, different person | Create
+                //     new" - a different person creates a fresh session AND
+                //     regenerates RockSessionId below so a new InteractionSession
+                //     is started.
                 // Login-when-not-already-authenticated keeps the existing
                 // RockSessionId so the SQL upsert's UPDATE path adopts the
                 // anonymous browser's pre-auth journey onto the new session.
-                var priorSessionPersonAliasId = RequestContext.PersonSession?.PersonAliasId;
+                var priorSession = RequestContext.PersonSession;
+                var priorSessionPersonAliasId = priorSession?.PersonAliasId;
 
                 var personSessionService = new PersonSessionService( rockContext );
-                var session = personSessionService.StartComponentSession(
-                    RequestContext,
-                    personAliasId,
-                    userLogin.Id,
-                    authComponent.TypeId,
-                    isPersisted,
-                    mfaRecency );
+
+                // Only a same-person re-login onto an existing Component session
+                // is a reuse. A prior session with a different CreationSource
+                // (Impersonation, UserToken, Legacy) is intentionally NOT reused
+                // - a credential login transitions those to a fresh Component
+                // session.
+                var isSamePersonReauthentication = priorSession != null
+                    && priorSession.PersonAliasId == personAliasId
+                    && priorSession.CreationSource == PersonSessionCreationSource.Component;
+
+                PersonSession session = null;
+
+                if ( isSamePersonReauthentication )
+                {
+                    // Re-load the prior session into THIS context;
+                    // RequestContext.PersonSession was resolved on a different
+                    // context and cannot be saved through here. If it is missing
+                    // or no longer active (e.g. expired / killed between
+                    // resolution and now), fall through to creating a new one.
+                    var existingSession = personSessionService.Get( priorSession.Guid );
+
+                    if ( existingSession != null && existingSession.IsActive )
+                    {
+                        existingSession.AuthenticationComponentId = authComponent.TypeId;
+                        existingSession.IsPersistent = isPersisted;
+                        existingSession.LastStepUpAuthenticationDateTime = RockDateTime.Now;
+
+                        // Advance MFA recency only when this authentication
+                        // actually completed MFA; a password-only re-login must
+                        // NOT clear an MFA recency window the session already
+                        // earned.
+                        if ( mfaRecency.HasValue )
+                        {
+                            existingSession.LastMultiFactorAuthenticationDateTime = mfaRecency;
+                        }
+
+                        session = existingSession;
+                    }
+                }
+
+                if ( session == null )
+                {
+                    session = personSessionService.StartComponentSession(
+                        RequestContext,
+                        personAliasId,
+                        userLogin.Id,
+                        authComponent.TypeId,
+                        isPersisted,
+                        mfaRecency );
+
+                    personSessionService.Add( session );
+                }
 
                 if ( expiresIn.HasValue )
                 {
                     session.ExpiresDateTime = RockDateTime.Now.Add( expiresIn.Value );
                 }
 
-                personSessionService.Add( session );
                 rockContext.SaveChanges();
 
                 personSessionService.SetAuthCookie( session, RequestContext );
@@ -789,8 +842,8 @@ namespace Rock.Blocks.Security
                     RequestContext.RegenerateBrowserSessionId();
                 }
 
-                // Make the new session available to anything that reads
-                // PersonSession off the request context later in this
+                // Make the new or reused session available to anything that
+                // reads PersonSession off the request context later in this
                 // same request (e.g. a redirect handler).
                 RequestContext.SetPersonSession( session );
             }

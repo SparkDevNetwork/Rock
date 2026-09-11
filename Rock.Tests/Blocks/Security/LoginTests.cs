@@ -270,6 +270,116 @@ public class LoginTests
                 isTwoFactorAuthenticated: false ) );
     }
 
+    /// <summary>
+    /// Re-authenticating as the SAME person while already authenticated
+    /// reuses the current <see cref="PersonSessionCreationSource.Component"/>
+    /// session (spec's InteractionSession sync table: "Login, already
+    /// authenticated, same person (step-up only) | Reuse existing") rather
+    /// than creating a duplicate row. The reused session keeps its
+    /// <see cref="PersonSession.Guid"/> (and therefore its
+    /// <c>IssuedDateTime</c>, preserving kill-switch semantics), and its
+    /// step-up recency advances.
+    /// </summary>
+    [TestMethod]
+    public void Authenticate_SamePersonAlreadyAuthenticated_ReusesExistingSession()
+    {
+        // Arrange.
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var authComponent = GetDatabaseAuthComponent( rockContext );
+        var userLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "testuser", personId: 1, primaryAliasId: 1 );
+        var block = BuildLoginBlock( rockContext, new NullRockResponseContext() );
+
+        // Establish the initial session.
+        block.Authenticate( userLogin: userLogin,
+            authComponent: authComponent,
+            isPersisted: false,
+            isTwoFactorAuthenticated: false );
+        var firstSessionGuid = block.RequestContext.PersonSession.Guid;
+        var firstStepUp = block.RequestContext.PersonSession.LastStepUpAuthenticationDateTime;
+
+        // Act - the same person authenticates again while still logged in.
+        block.Authenticate( userLogin: userLogin,
+            authComponent: authComponent,
+            isPersisted: false,
+            isTwoFactorAuthenticated: false );
+
+        // Assert - no duplicate row; the same session is reused and re-stamped.
+        var sessions = rockContext.Set<PersonSession>().ToList();
+        Assert.HasCount( 1, sessions );
+        Assert.AreEqual( firstSessionGuid, sessions[0].Guid );
+        Assert.IsTrue( sessions[0].IsActive );
+        Assert.AreEqual( firstSessionGuid, block.RequestContext.PersonSession.Guid );
+        Assert.IsTrue( sessions[0].LastStepUpAuthenticationDateTime >= firstStepUp );
+    }
+
+    /// <summary>
+    /// A same-person re-login that does NOT complete MFA must not clear an
+    /// MFA recency window the reused session already earned (a password-only
+    /// step-up must not downgrade the session's MFA status).
+    /// </summary>
+    [TestMethod]
+    public void Authenticate_SamePersonReauth_WithoutMfa_PreservesExistingMfaRecency()
+    {
+        // Arrange.
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var authComponent = GetDatabaseAuthComponent( rockContext );
+        var userLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "testuser", personId: 1, primaryAliasId: 1 );
+        var block = BuildLoginBlock( rockContext, new NullRockResponseContext() );
+
+        // Establish the initial session WITH MFA satisfied.
+        block.Authenticate( userLogin: userLogin,
+            authComponent: authComponent,
+            isPersisted: false,
+            isTwoFactorAuthenticated: true );
+
+        // Act - re-authenticate as the same person WITHOUT MFA.
+        block.Authenticate( userLogin: userLogin,
+            authComponent: authComponent,
+            isPersisted: false,
+            isTwoFactorAuthenticated: false );
+
+        // Assert - the reused session retains its MFA recency stamp.
+        var session = rockContext.Set<PersonSession>().Single();
+        Assert.IsNotNull( session.LastMultiFactorAuthenticationDateTime );
+    }
+
+    /// <summary>
+    /// Logging in as a DIFFERENT person while already authenticated creates
+    /// a new session (spec's InteractionSession sync table: "Login, already
+    /// authenticated, different person | Create new") - the prior person's
+    /// session is not reused.
+    /// </summary>
+    [TestMethod]
+    public void Authenticate_DifferentPersonAlreadyAuthenticated_CreatesNewSession()
+    {
+        // Arrange.
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var authComponent = GetDatabaseAuthComponent( rockContext );
+        var firstUserLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 1, userName: "firstuser", personId: 1, primaryAliasId: 1 );
+        var secondUserLogin = SeedUserLogin( rockContext, authComponent, userLoginId: 2, userName: "seconduser", personId: 2, primaryAliasId: 2 );
+        var block = BuildLoginBlock( rockContext, new NullRockResponseContext() );
+
+        // First person logs in.
+        block.Authenticate( userLogin: firstUserLogin,
+            authComponent: authComponent,
+            isPersisted: false,
+            isTwoFactorAuthenticated: false );
+
+        // Act - a different person logs in on the same request context.
+        block.Authenticate( userLogin: secondUserLogin,
+            authComponent: authComponent,
+            isPersisted: false,
+            isTwoFactorAuthenticated: false );
+
+        // Assert - a second session row exists and the request now points at it.
+        var sessions = rockContext.Set<PersonSession>().ToList();
+        Assert.HasCount( 2, sessions );
+        Assert.AreEqual( secondUserLogin.Id, block.RequestContext.PersonSession.UserLoginId );
+    }
+
     #region Test infrastructure
 
     /// <summary>
