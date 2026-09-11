@@ -15,8 +15,10 @@
                      :replaceComponentRequest="replaceComponentRequest"
                      :cssVariables="cssVariables"
                      :getHtmlRequest="getHtmlRequest"
+                     :isNestedSectionHighlightEnabled="isNestedSectionHighlightEnabled"
                      @emailDocumentUpdated="$emit('emailDocumentUpdated', $event)"
-                     @componentAdded="$emit('componentAdded', $event)" />
+                     @componentAdded="$emit('componentAdded', $event)"
+                     @nestedSectionsChanged="$emit('nestedSectionsChanged', $event)" />
         <Overlay :isVisible="isOverlayShown"
                  backgroundColor="transparent"
                  targetSelector=".editor-window"
@@ -69,6 +71,11 @@
             required: true
         },
 
+        isNestedSectionHighlightEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
         selectedComponentElement: {
             type: Object as PropType<HTMLElement | null | undefined>,
             required: true
@@ -114,6 +121,7 @@
         (e: "emailDocumentUpdated", value: { emailDocument: Document, areGlobalDefaultsRequired: boolean; }): void;
         (e: "componentAdded", value: { componentTypeName: ComponentTypeName; componentElement: HTMLElement; }): void;
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
+        (e: "nestedSectionsChanged", value: { nestedSectionCount: number; }): void;
     }>();
 
     // #region Values

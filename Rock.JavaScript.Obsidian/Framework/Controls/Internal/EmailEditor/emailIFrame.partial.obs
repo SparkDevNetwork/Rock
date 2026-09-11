@@ -34,12 +34,14 @@ iframe {
         decodeLavaEncodedEntities,
         EmptyDropzoneSvgPixelWidth,
         ensureBodyWrapsEmailWrapper,
+        findNestedSectionElements,
         FontFamilies,
         getComponentHelper,
         getComponentHostSelector,
         getComponentTypeName,
         GlobalCssClasses,
         LineHeights,
+        NestedSectionCssClass,
         removeTemporaryAttributes,
         removeTemporaryClasses,
         removeTemporaryElements,
@@ -149,6 +151,11 @@ iframe {
         getHtmlRequest: {
             type: Object as PropType<GetHtmlRequest | null | undefined>,
             required: true
+        },
+
+        isNestedSectionHighlightEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     });
 
@@ -156,6 +163,7 @@ iframe {
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
         (e: "componentAdded", value: { componentTypeName: ComponentTypeName; componentElement: HTMLElement; }): void;
         (e: "emailDocumentUpdated", value: { emailDocument: Document, areGlobalDefaultsRequired: boolean; }): void;
+        (e: "nestedSectionsChanged", value: { nestedSectionCount: number; }): void;
     }>();
 
     const draggingCssClass = `${RockRuntimeClassCssClassPrefix}-is-dragging` as const;
@@ -179,6 +187,8 @@ iframe {
     const emptySectionElementToBeAddedTo = ref<HTMLElement | null | undefined>();
     const wrapperAutoRemovalObserver = ref<MutationObserver | null | undefined>();
     const sectionComponentMutationObserver = ref<MutationObserver | null | undefined>();
+    const nestedSectionObserver = ref<MutationObserver | null | undefined>();
+    const isNestedSectionRefreshPending = ref<boolean>(false);
     const dropzoneEmptyResizeObserver = ref<ResizeObserver | null | undefined>();
 
     // Global default providers and effects.
@@ -516,6 +526,34 @@ iframe {
     }
 
     /**
+     * Recomputes which sections are nested deeply enough to warn about, refreshes their highlighting, and notifies the parent.
+     */
+    function refreshNestedSections(): void {
+        isNestedSectionRefreshPending.value = false;
+
+        const iFrameDocument = iFrameElement.value?.contentDocument;
+
+        if (!iFrameDocument) {
+            return;
+        }
+
+        const nestedSectionElements = findNestedSectionElements(iFrameDocument);
+
+        // Clear stale highlights first so sections that are no longer nested lose the outline.
+        iFrameDocument.querySelectorAll(`.${NestedSectionCssClass}`).forEach(el => el.classList.remove(NestedSectionCssClass));
+
+        if (props.isNestedSectionHighlightEnabled) {
+            // Highlight the runtime wrapper when one exists so the overlay is painted above the section's content.
+            nestedSectionElements.forEach(el => {
+                const wrapper = el.parentElement?.classList.contains(RockRuntimeWrapperElementCssClass) ? el.parentElement : el;
+                wrapper.classList.add(NestedSectionCssClass);
+            });
+        }
+
+        emit("nestedSectionsChanged", { nestedSectionCount: nestedSectionElements.length });
+    }
+
+    /**
      * Gets the processed HTML for this email iframe.
      */
     function getHtml(options: GetHtmlRequest): void {
@@ -821,6 +859,28 @@ ${createCssRuleset(":root", props.cssVariables)}
 
 body.${draggingCssClass}, body.${draggingCssClass} * {
     cursor: grabbing;
+}
+
+/*
+    09/10/26 - JMH
+
+    The highlight is an absolutely positioned overlay on the runtime wrapper rather than an
+    outline on the section table. An inset outline is painted beneath the section's own
+    content (nested wrappers are positioned and paint later), so it was invisible in practice.
+    The wrapper's ::after is taken by the hover labels, hence ::before. The color is fixed
+    because the email canvas is always light no matter which Rock theme is active, and the
+    dark theme's warning token is a pale tint that disappears on white.
+
+    Reason: Make the nested-section highlight reliably visible above section content.
+*/
+.rock-runtime-wrapper-element.${NestedSectionCssClass}::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border: 2px solid #c4631c;
+    background-color: rgba(196, 99, 28, 0.12);
 }
 
 html ::-webkit-scrollbar {
@@ -1160,8 +1220,34 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             });
         });
 
+        nestedSectionObserver.value?.disconnect();
+        nestedSectionObserver.value = new MutationObserver((mutations) => {
+            if (isNestedSectionRefreshPending.value) {
+                return;
+            }
+
+            // Only structural changes involving sections can alter nesting; ignore text edits and the like.
+            const isSectionStructureChanged = mutations.some(mutation =>
+                Enumerable.from(mutation.addedNodes)
+                    .concat(Enumerable.from(mutation.removedNodes))
+                    .ofType(isElement)
+                    .any(e => e.classList.contains("component-section") || !!e.querySelector(".component-section")));
+
+            if (!isSectionStructureChanged) {
+                return;
+            }
+
+            // Batch processing with requestAnimationFrame.
+            isNestedSectionRefreshPending.value = true;
+            requestAnimationFrame(() => refreshNestedSections());
+        });
+        nestedSectionObserver.value.observe(iFrameDocument.body, { childList: true, subtree: true });
+
         // Wrap component elements to give them runtime styling.
         wrapComponentElements(iFrameDocument);
+
+        // Runs after wrapping so the highlight lands on the wrappers.
+        refreshNestedSections();
 
         // Finally, let other components know the document was updated.
         emit("emailDocumentUpdated", { emailDocument: iFrameDocument, areGlobalDefaultsRequired });
@@ -2047,6 +2133,10 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         }
     });
 
+    watch(() => props.isNestedSectionHighlightEnabled, () => {
+        refreshNestedSections();
+    });
+
     watch([draggingElement, draggingPlaceholderElement], ([draggingEl, draggingPlaceholderEl], [oldDraggingEl]) => {
         if (draggingEl || draggingPlaceholderEl) {
             iFrameElement.value?.contentDocument?.body.classList.add(draggingCssClass);
@@ -2073,6 +2163,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         wrapperAutoRemovalObserver.value?.disconnect();
         dropzoneEmptyResizeObserver.value?.disconnect();
         sectionComponentMutationObserver.value?.disconnect();
+        nestedSectionObserver.value?.disconnect();
 
         globalBackgroundColorProvider.value?.dispose();
     });
