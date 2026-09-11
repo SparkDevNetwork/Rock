@@ -43,7 +43,7 @@ namespace Rock.Model
             get
             {
                 // only get notes they have auth to VIEW ( note that VIEW has special rules based on approval status, etc. See Note.IsAuthorized for details )
-                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+                var currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
 
                 var viewableChildNotes = ChildNotes.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
 
@@ -62,7 +62,7 @@ namespace Rock.Model
         {
             get
             {
-                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+                var currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
                 var currentPersonId = currentPerson?.Id;
                 if ( currentPersonId.HasValue )
                 {
@@ -94,7 +94,7 @@ namespace Rock.Model
             {
                 if ( !_viewableDescendentsCount.HasValue )
                 {
-                    var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+                    var currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
 
                     using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {

@@ -28,11 +28,9 @@ namespace Rock.Model
         /// </summary>
         internal void SetInitiator()
         {
-            if ( !InitiatorPersonAliasId.HasValue &&
-                HttpContext.Current != null &&
-                HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            if ( !InitiatorPersonAliasId.HasValue )
             {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                var currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
                 if ( currentPerson != null )
                 {
                     InitiatorPersonAliasId = currentPerson.PrimaryAliasId;

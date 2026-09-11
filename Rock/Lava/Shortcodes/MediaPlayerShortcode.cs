@@ -444,16 +444,9 @@ so you can customize this to be exactly what you want.</p>
             // First check for a person override value included in lava context
             var currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
 
-            if ( currentPerson == null )
+            if ( currentPerson == null && context != null )
             {
-                var httpContext = HttpContext.Current;
-
-                if ( context != null
-                    && httpContext != null
-                    && httpContext.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
-                }
+                currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
             }
 
             return currentPerson;

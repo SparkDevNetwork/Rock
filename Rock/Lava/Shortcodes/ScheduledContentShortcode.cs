@@ -292,11 +292,7 @@ of how it works.</p>
 
             if ( currentPerson == null )
             {
-                var httpContext = System.Web.HttpContext.Current;
-                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
-                }
+                currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
             }
 
             return currentPerson;

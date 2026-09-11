@@ -472,13 +472,17 @@ namespace Rock.Data
 
             try
             {
-                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                }
-                else if ( RockRequestContextAccessor.Current != null )
+                // RockRequestContext is the source of truth for the current person.
+                // HttpContext.Items["CurrentPerson"] is a write-only backward-compat
+                // shim retained only as a last-resort fallback (e.g. a plugin that
+                // still writes it directly) for the deprecation window.
+                if ( RockRequestContextAccessor.Current != null )
                 {
                     currentPerson = RockRequestContextAccessor.Current.CurrentPerson;
+                }
+                else if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                {
+                    currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
                 }
                 else
                 {

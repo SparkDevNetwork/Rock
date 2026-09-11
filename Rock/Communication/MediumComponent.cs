@@ -110,7 +110,7 @@ namespace Rock.Communication
 
                 if ( rockMessage.CurrentPerson == null )
                 {
-                    rockMessage.CurrentPerson = HttpContext.Current?.Items["CurrentPerson"] as Person;
+                    rockMessage.CurrentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
                 }
 
                 // Use the transport to send communication

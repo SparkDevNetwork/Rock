@@ -123,7 +123,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void LoadItems()
         {
-            var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+            var currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
             var systemPhoneNumbers = SystemPhoneNumberCache.All()
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )

@@ -57,29 +57,26 @@ namespace Rock.Workflow.Action
 
             // Get the current person alias if possible
             PersonAlias personAlias = null;
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            var currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
+            if ( currentPerson != null && currentPerson.PrimaryAlias != null )
             {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    personAlias = currentPerson.PrimaryAlias;
+                personAlias = currentPerson.PrimaryAlias;
 
-                    // Get the attribute to set
-                    Guid guid = GetAttributeValue( action, "PersonAttribute" ).AsGuid();
-                    if ( !guid.IsEmpty() )
+                // Get the attribute to set
+                Guid guid = GetAttributeValue( action, "PersonAttribute" ).AsGuid();
+                if ( !guid.IsEmpty() )
+                {
+                    var personAttribute = AttributeCache.Get( guid, rockContext );
+                    if ( personAttribute != null )
                     {
-                        var personAttribute = AttributeCache.Get( guid, rockContext );
-                        if ( personAttribute != null )
+                        // If this is a person type attribute
+                        if ( personAttribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                         {
-                            // If this is a person type attribute
-                            if ( personAttribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
-                            {
-                                SetWorkflowAttributeValue( action, guid, personAlias.Guid.ToString() );
-                            }
-                            else if ( personAttribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid(), rockContext ).Id )
-                            {
-                                SetWorkflowAttributeValue( action, guid, currentPerson.FullName );
-                            }
+                            SetWorkflowAttributeValue( action, guid, personAlias.Guid.ToString() );
+                        }
+                        else if ( personAttribute.FieldTypeId == FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid(), rockContext ).Id )
+                        {
+                            SetWorkflowAttributeValue( action, guid, currentPerson.FullName );
                         }
                     }
                 }

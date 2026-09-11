@@ -131,7 +131,7 @@ namespace Rock.Web.UI.Controls
         private void LoadItems()
         {
             var selectedItemId = SelectedSystemPhoneNumberId;
-            var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+            var currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
             var systemPhoneNumbers = SystemPhoneNumberCache.All()
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )

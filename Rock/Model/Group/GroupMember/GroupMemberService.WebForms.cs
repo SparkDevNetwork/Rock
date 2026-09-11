@@ -45,10 +45,7 @@ namespace Rock.Model
 
             if ( !currentPersonAliasId.HasValue )
             {
-                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPersonAliasId = ( HttpContext.Current.Items["CurrentPerson"] as Person )?.PrimaryAliasId;
-                }
+                currentPersonAliasId = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson?.PrimaryAliasId;
             }
 
             groupMember.IsArchived = true;

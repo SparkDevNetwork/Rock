@@ -96,7 +96,7 @@ namespace Rock.Web.UI.Controls
             // add Empty option first
             this.Items.Add( new ListItem() );
 
-            var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+            var currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
 
             var allEntityFilters = DataViewFilterCache.All().Where( df => df.EntityTypeId == _entityTypeId ).ToList();
 

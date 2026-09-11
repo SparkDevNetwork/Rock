@@ -140,9 +140,9 @@ namespace Rock.Lava
                 {
                     currentPerson = rockPage.CurrentPerson;
                 }
-                else if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                else
                 {
-                    currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                    currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
                 }
             }
 

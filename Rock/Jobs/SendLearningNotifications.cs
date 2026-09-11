@@ -749,7 +749,7 @@ namespace Rock.Jobs
 
                     if ( smsMessage.CurrentPerson == null )
                     {
-                        smsMessage.CurrentPerson = HttpContext.Current?.Items["CurrentPerson"] as Person;
+                        smsMessage.CurrentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
                     }
 
                     if ( smsMessage.FromSystemPhoneNumber == null )

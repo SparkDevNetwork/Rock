@@ -479,14 +479,8 @@ You may have noticed that distance values are returned in meters. If you're more
                 return currentRequest.CurrentPerson;
             }
 
-            // Finally check the HttpContext.
-            var httpContext = System.Web.HttpContext.Current;
-            if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
-            {
-                return httpContext.Items["CurrentPerson"] as Person;
-            }
-
-            return null;
+            // Finally, fall back to the ambient RockRequestContext.
+            return Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
         }
 
         /// <summary>

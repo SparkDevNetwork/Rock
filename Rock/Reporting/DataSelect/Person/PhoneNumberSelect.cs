@@ -325,10 +325,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             Rock.Model.Person _currentPerson = null;
 
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                _currentPerson = HttpContext.Current.Items["CurrentPerson"] as Rock.Model.Person;
-            }
+            _currentPerson = Rock.Net.RockRequestContextAccessor.Current?.CurrentPerson;
 
             var selectionParts = selection.Split( '|' );
             if ( selectionParts.Length > 0 )
