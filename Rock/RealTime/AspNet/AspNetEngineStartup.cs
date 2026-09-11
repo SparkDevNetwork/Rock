@@ -132,24 +132,32 @@ namespace Rock.RealTime.AspNet
         /// <returns>A Task that indicates when this process has completed.</returns>
         private static Task RegisterSignalRClaims( IOwinContext context, Func<Task> nextHandler )
         {
-            if ( !( context.Request.User is ClaimsPrincipal claimsPrincipal ) )
-            {
-                return nextHandler();
-            }
+            /*
+                9/11/26 - DH
 
-            // Check if we have a logged in person, if so don't check for visitor.
-            // Resolve the person from the RockRequestContext (the .ROCK cookie session,
-            // resolved lazily by the identity factory installed in BeginRequest). This
-            // MUST NOT gate on the OWIN principal's Identity.Name: that is only set by
-            // the managed pipeline, which never runs for these OWIN requests, so gating
-            // on it left every authenticated SignalR connection anonymous.
+                Identity for a SignalR (OWIN) request is resolved from the
+                RockRequestContext (the .ROCK cookie session, resolved lazily by
+                the identity factory installed in BeginRequest), never from
+                context.Request.User. OWIN endpoints do not run the managed
+                authentication pipeline, so that principal carries no Rock
+                identity - the previous Identity.Name gate on it left every
+                authenticated connection anonymous. The principal is only a
+                carrier for the claim that SignalR exposes to hub actions via
+                HubCallerContext.User, so we must resolve the person first and
+                only then attach the claim to whatever principal exists (creating
+                one when the request has none), rather than bailing out when the
+                request has no ClaimsPrincipal.
+
+                Reason: RockRequestContext is the source of truth for the current
+                person; the OWIN principal is not.
+            */
             var currentPersonId = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson?.Id;
 
             if ( currentPersonId.HasValue )
             {
                 var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:person", currentPersonId.Value.ToString() ) } );
 
-                claimsPrincipal.AddIdentity( identity );
+                AddIdentityToRequestPrincipal( context, identity );
 
                 return nextHandler();
             }
@@ -160,10 +168,31 @@ namespace Rock.RealTime.AspNet
             {
                 var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:visitor", visitorKeyCookie ) } );
 
-                claimsPrincipal.AddIdentity( identity );
+                AddIdentityToRequestPrincipal( context, identity );
             }
 
             return nextHandler();
+        }
+
+        /// <summary>
+        /// Attaches the identity carrying a Rock SignalR claim to the OWIN request
+        /// principal so it is exposed to hub actions through the hub caller
+        /// context's User. When the request already has a <see cref="ClaimsPrincipal"/>
+        /// the identity is added to it; otherwise a new principal is created and
+        /// assigned to the request.
+        /// </summary>
+        /// <param name="context">The OWIN context whose request principal receives the identity.</param>
+        /// <param name="identity">The identity carrying the Rock claim to attach.</param>
+        private static void AddIdentityToRequestPrincipal( IOwinContext context, ClaimsIdentity identity )
+        {
+            if ( context.Request.User is ClaimsPrincipal claimsPrincipal )
+            {
+                claimsPrincipal.AddIdentity( identity );
+            }
+            else
+            {
+                context.Request.User = new ClaimsPrincipal( identity );
+            }
         }
 
         /// <summary>
