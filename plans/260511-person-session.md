@@ -823,8 +823,8 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 
 ### Auth0 / external `IExternalRedirectAuthentication` providers
 
-- [ ] OAuth redirect callback flows through the Obsidian Login block and produces a `Component` `PersonSession` with `AuthenticationComponentId` set to the Auth0 component. No Auth0-specific code was needed.
-- [ ] Step-up and MFA recency stamping behave correctly for Auth0-authenticated sessions.
+- [x] OAuth redirect callback flows through the Obsidian Login block and produces a `Component` `PersonSession` with `AuthenticationComponentId` set to the Auth0 component. No Auth0-specific code was needed.
+- Step-up and MFA recency stamping behave correctly for Auth0-authenticated sessions. - Not tested
 
 ### SignalR / real-time hubs
 
