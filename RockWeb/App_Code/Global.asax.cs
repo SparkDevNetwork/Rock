@@ -757,6 +757,29 @@ namespace RockWeb
                 Context.Items["CurrentPerson"] = rockRequestContext.CurrentPerson;
                 Context.Items["CurrentUser"] = rockRequestContext.CurrentUser;
 
+                /*
+                    9/11/26 - CLAUDE
+
+                    LEGACY PLUGIN-COMPATIBILITY. Setting Context.User (and the matching
+                    HttpContext.Items write above) exists only so plugins that still read
+                    HttpContext.Current.User / Thread.CurrentPrincipal / Items["CurrentPerson"]
+                    keep working during the deprecation window. Core Rock no longer reads
+                    the principal for the current person: RockPage proxies RockRequestContext,
+                    the REST cookie path and FileUploader read RockRequestContext, and the
+                    audit / Lava / workflow readers were migrated to RockRequestContext.
+
+                    It is also inherently incomplete - a principal is set only for
+                    UserLogin-backed sessions, so Impersonation / UserToken sessions (which
+                    have a CurrentPerson but no UserLogin) never get one - which is exactly
+                    why core must not depend on it.
+
+                    Remove this principal write (and the matching one in
+                    Application_PostAuthenticateRequest) in a future major version once
+                    plugin guidance has moved to RockRequestContext. See the spec's
+                    "The principal (Context.User) is a managed-pipeline convenience" note.
+
+                    Reason: Context.User is a plugin-compat shim; core reads identity from RockRequestContext.
+                */
                 if ( personSession?.UserLogin != null )
                 {
                     var identity = new System.Security.Principal.GenericIdentity( personSession.UserLogin.UserName );
@@ -834,6 +857,11 @@ namespace RockWeb
                         // path's contract).
                         rockRequestContext.SetPersonSession( upgradedSession );
 
+                        // LEGACY PLUGIN-COMPATIBILITY. This Context.User write is the same
+                        // plugin-compat shim as the one in Application_PostMapRequestHandler
+                        // (see the engineering note there); core reads identity from
+                        // RockRequestContext, not the principal. Remove both in a future
+                        // major version.
                         var identity = new System.Security.Principal.GenericIdentity( upgradedSession.UserLogin.UserName );
                         Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
 
