@@ -729,11 +729,11 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 
 ### Step-up and MFA
 
-- [ ] Visit a page that requires MFA: if no recent MFA, the user is prompted for both primary credential and second factor (concurrent). After successful submit, `LastMultiFactorAuthenticationDateTime` advances.
-- [ ] MFA window honored: revisiting the MFA-required page within `MultiFactorWindowMinutes` does NOT re-prompt.
-- [ ] MFA window expires: after the window, revisiting re-prompts.
-- [ ] Step-up window honored / expires similarly for pages that require `Elevated`.
-- [ ] Browsing between MFA-required pages does NOT advance the MFA timestamp (only actual MFA entry does).
+- [x] Visit a page that requires MFA: if no recent MFA, the user is prompted for both primary credential and second factor (concurrent). After successful submit, `LastMultiFactorAuthenticationDateTime` advances.
+- [x] MFA window honored: revisiting the MFA-required page within `MultiFactorWindowMinutes` does NOT re-prompt.
+- [x] MFA window expires: after the window, revisiting re-prompts.
+- Step-up (`Elevated`) has **no UI enforcement trigger in this release**: no page or block calls `MeetsRequirement( AuthenticationRequirement.Elevated )` (only `MultiFactor` is enforced, in `RockPage`). The 30-minute step-up window and the `Elevated`/`MultiFactor` requirement matrix are covered by unit tests (`Rock.Tests/Net/RockRequestContextTests.cs`), not by a manual navigation. Re-add a manual item here if a future change wires an `Elevated` requirement to a page.
+- [x] Browsing between MFA-required pages does NOT advance the MFA timestamp (only actual MFA entry does).
 
 ### Admin impersonation
 
@@ -845,8 +845,7 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 
 ### Regression: previously broken pages
 
-- [ ] ChangePassword (Obsidian): correctly enforces step-up via `MeetsRequirement`.
-- [ ] Authorize.ascx (WebForms): correctly enforces step-up via the new properties / `MeetsRequirement`.
+- ChangePassword (Obsidian, `Rock.Blocks/Security/ChangePassword.cs`) and the OIDC Authorize block (WebForms, `RockWeb/Blocks/Security/Oidc/Authorize.ascx.cs`) do **not** enforce step-up via `MeetsRequirement` in this release: neither references `AuthenticationRequirement` or `Elevated`. (An earlier draft of this plan asserted they did; that was inaccurate.) There is no manual step-up regression to run for these blocks. Add the corresponding manual items back here if step-up enforcement is later wired into them.
 - [ ] `RockPage.cs:941` MFA-required page enforcement: enforcement runs through `RockRequestContext.MeetsRequirement(MultiFactor)`. The deprecated `UserLogin.IsTwoFactorAuthenticated` property is obsolete but still functional (it reflects the current session via the Phase 14 bridge), so any lingering reader sees correct values during the deprecation window.
 
 ### Kill-switch and recovery
