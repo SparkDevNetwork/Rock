@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Connection
         "SMS Link Page",
         Description = "Page that will be linked for SMS enabled phones.",
         Order = 4,
-        DefaultValue = Rock.SystemGuid.Page.NEW_COMMUNICATION,
+        DefaultValue = Rock.SystemGuid.Page.NEW_COMMUNICATION_OBSIDIAN,
         Key = AttributeKeys.SmsLinkPage )]
 #pragma warning restore CS0618 // Type or member is obsolete
     [BadgesField(

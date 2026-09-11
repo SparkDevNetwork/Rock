@@ -1222,13 +1222,6 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets the URL to redirect to after a reload-style action. A hidden communication that requires the
-        /// WebForms wizard is sent to the legacy page, which can render and edit it; everything else reloads the current page.
-        /// </summary>
-        /// <param name="communication">The communication being redirected to.</param>
-        /// <param name="pageParams">The page parameters to include in the URL.</param>
-        /// <returns>The redirect URL.</returns>
-        /// <summary>
         /// Determines whether the simple Communication Entry block is absent from the current page. A non-wizard
         /// communication is edited by that block, so when it is absent such a communication must be redirected to
         /// the Simple Communication Page. Checking this also prevents the simple page from redirecting to itself.
