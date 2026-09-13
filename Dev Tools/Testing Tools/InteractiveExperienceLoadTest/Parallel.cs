@@ -1,4 +1,4 @@
-﻿namespace InteractiveExperienceLoadTest
+namespace InteractiveExperienceLoadTest
 {
     /// <summary>
     /// Helper methods for doing things in parallel.

@@ -1,4 +1,4 @@
-﻿using Rock.CodeGeneration.FileGenerators;
+using Rock.CodeGeneration.FileGenerators;
 using Rock.CodeGeneration.Utility;
 
 using System;

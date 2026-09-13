@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="LaunchWorkflow" %>
+<%@ WebHandler Language="C#" Class="LaunchWorkflow" %>
 // <copyright>
 // Copyright 2013 by the Spark Development Network
 //

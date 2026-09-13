@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Owin;
 using Owin;
 using System.Web;

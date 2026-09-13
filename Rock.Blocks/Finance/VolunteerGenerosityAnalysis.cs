@@ -1,4 +1,4 @@
-﻿using Rock;
+using Rock;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;

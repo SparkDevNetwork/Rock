@@ -1,4 +1,4 @@
-﻿using Rock.Communication.Chat;
+using Rock.Communication.Chat;
 using Rock.Model;
 using Rock.SystemGuid;
 
