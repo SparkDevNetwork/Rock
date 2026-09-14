@@ -615,6 +615,9 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( "You are not authorized to delete this registration." );
             }
 
+            // Remove any expired sessions first so an abandoned, timed-out session cannot block the delete.
+            RegistrationSessionService.RemoveExpiredSessionsForRegistration( registration.Id );
+
             if ( !registrationService.CanDelete( registration, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
