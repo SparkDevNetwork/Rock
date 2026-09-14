@@ -3435,6 +3435,65 @@ public class PersonSessionServiceTests
     }
 
     /// <summary>
+    /// A legacy ticket whose backing <see cref="UserLogin"/> has been locked
+    /// out since the cookie was issued is refused: no <see cref="PersonSession"/>
+    /// is created, the helper returns null, and the stale cookie is expired.
+    /// FormsAuthentication validated the ticket without knowing about lockout,
+    /// so this gate mirrors <c>ResolveSessionForRequest</c> for the legacy path.
+    /// </summary>
+    [TestMethod]
+    public void UpgradeLegacyTicket_ReturnsNullAndExpiresCookie_WhenUserLoginIsLockedOut()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200, isConfirmed: true, isLockedOut: true );
+
+        var ticket = BuildTicket( "ted", RockDateTime.Now.AddDays( -10 ), isImpersonated: false );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( response );
+
+        var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
+        var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        Assert.IsNull( session );
+        Assert.AreEqual( 0, rockContext.Set<PersonSession>().Count() );
+        Assert.HasCount( 1, response.RemovedCookies );
+        Assert.AreEqual( PersonSessionService.AuthCookieName, response.RemovedCookies[0].Name );
+    }
+
+    /// <summary>
+    /// A legacy ticket whose backing <see cref="UserLogin"/> is no longer
+    /// confirmed is refused: no <see cref="PersonSession"/> is created, the
+    /// helper returns null, and the stale cookie is expired. Mirrors the
+    /// locked-out gate and <c>ResolveSessionForRequest</c> for the legacy path.
+    /// </summary>
+    [TestMethod]
+    public void UpgradeLegacyTicket_ReturnsNullAndExpiresCookie_WhenUserLoginIsNotConfirmed()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        SeedUserLogin( rockContext, userLoginId: 7, userName: "ted", personId: 100, primaryAliasId: 200, isConfirmed: false, isLockedOut: false );
+
+        var ticket = BuildTicket( "ted", RockDateTime.Now.AddDays( -10 ), isImpersonated: false );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( response );
+
+        var service = new PersonSessionService( rockContext );
+#pragma warning disable CS0618 // Type or member is obsolete
+        var session = service.UpgradeLegacyTicket( ticket, requestContext );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        Assert.IsNull( session );
+        Assert.AreEqual( 0, rockContext.Set<PersonSession>().Count() );
+        Assert.HasCount( 1, response.RemovedCookies );
+        Assert.AreEqual( PersonSessionService.AuthCookieName, response.RemovedCookies[0].Name );
+    }
+
+    /// <summary>
     /// An upgraded session leaves <c>LastStepUpAuthenticationDateTime</c>
     /// and <c>LastMultiFactorAuthenticationDateTime</c> null, so the
     /// session reports <see cref="AuthenticationStrength.Authenticated"/>
@@ -3740,7 +3799,7 @@ public class PersonSessionServiceTests
     /// <c>RockContext</c>. The navigation property is wired manually
     /// because mocked EF does not auto-load <c>Include</c>.
     /// </summary>
-    private static void SeedUserLogin( Rock.Data.RockContext rockContext, int userLoginId, string userName, int personId, int primaryAliasId )
+    private static void SeedUserLogin( Rock.Data.RockContext rockContext, int userLoginId, string userName, int personId, int primaryAliasId, bool isConfirmed = true, bool isLockedOut = false )
     {
         var person = new Person
         {
@@ -3748,12 +3807,18 @@ public class PersonSessionServiceTests
             PrimaryAliasId = primaryAliasId,
         };
 
+        // Default to a confirmed, non-locked-out login: a user holding a valid
+        // legacy forms cookie is by definition confirmed, so the happy-path
+        // tests exercise that state. The isConfirmed / isLockedOut overrides let
+        // the refusal tests seed the states UpgradeLegacyTicket rejects.
         var userLogin = new UserLogin
         {
             Id = userLoginId,
             UserName = userName,
             PersonId = personId,
             Person = person,
+            IsConfirmed = isConfirmed,
+            IsLockedOut = isLockedOut,
         };
 
         rockContext.Set<Person>().Add( person );

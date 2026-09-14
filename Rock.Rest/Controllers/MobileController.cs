@@ -93,17 +93,18 @@ namespace Rock.Rest.Controllers
                 return NotFound();
             }
 
-            // Ensure the user login is still active, otherwise log them out.
-            var principal = ControllerContext.Request.GetUserPrincipal();
-            if ( person != null && !principal.Identity.Name.StartsWith( "rckipid=" ) )
-            {
-                var userLogin = new UserLoginService( rockContext ).GetByUserName( principal.Identity.Name );
+            /*
+                9/14/26 - DH
 
-                if ( userLogin?.IsConfirmed != true || userLogin?.IsLockedOut == true )
-                {
-                    person = null;
-                }
-            }
+                The locked-out / unconfirmed UserLogin check that used to live here
+                was removed. Session resolution now enforces it centrally:
+                ResolveSessionForRequest handles new-format cookies and
+                UpgradeLegacyTicket handles the legacy path, so a locked-out or
+                unconfirmed user never reaches this method with a valid person.
+
+                Reason: Removed duplicate lockout check now enforced by PersonSession.
+            */
+            var principal = ControllerContext.Request.GetUserPrincipal();
 
             var launchPacket = new LaunchPacket
             {

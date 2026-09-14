@@ -1830,6 +1830,20 @@ public partial class PersonSessionService
             return null;
         }
 
+        // Step 3.5: Refuse locked-out or unconfirmed logins. FormsAuthentication
+        // validated the legacy ticket without knowing about lockout state, so a
+        // user locked out (or unconfirmed) after the cookie was issued would
+        // otherwise be upgraded into a valid PersonSession on this first request.
+        // ResolveSessionForRequest enforces this same gate for new-format cookies,
+        // so enforcing it here keeps the legacy upgrade symmetric and closes the
+        // one-request window on every entry point (previously only mobile
+        // GetLaunchPacket checked it, and only for itself).
+        if ( userLogin.IsConfirmed != true || userLogin.IsLockedOut == true )
+        {
+            ExpireAuthCookie( requestContext );
+            return null;
+        }
+
         // Step 4: Find or create the Legacy PersonSession via the
         // composite key (UserLoginId, IssuedDateTime = ticket.IssueDate,
         // CreationSource = Legacy). Repeated presentations of the same
