@@ -531,15 +531,22 @@ public partial class PersonSessionService
             ? Get( requestSession.Guid )
             : null;
 
-        // Same-device token refresh / same-person re-login: reuse the device's
-        // own session when it is still an active, non-expired Component session
-        // for this UserLogin. Only an active, non-expired row is reusable - Rock
-        // Cleanup is the canonical writer that flips IsActive on expiration, so
-        // until it runs there can be expired-but-active rows; returning one
-        // would make the device's next request fail ResolveSessionForRequest's
-        // expiration check and immediately log out.
+        // Reuse the device's own session - the one the current request resolved
+        // from the cookie it presented - REGARDLESS of its CreationSource, when
+        // it is still an active, non-expired session for this UserLogin. This
+        // covers device token refresh, same-person re-login, AND a legacy-cookie
+        // client: the legacy upgrade already resolved the request to a Legacy
+        // PersonSession and already emitted a new-format cookie for it, so
+        // returning THAT session hands back a token for the same row. Creating a
+        // new Component session here instead (and deactivating the Legacy one)
+        // split the identity across two rows and left the response's .ROCK
+        // cookie pointing at the now-inactive Legacy session, signing the device
+        // out on its next request. Only an active, non-expired row is reusable -
+        // Rock Cleanup is the canonical writer that flips IsActive on expiration,
+        // so until it runs there can be expired-but-active rows; returning one
+        // would fail ResolveSessionForRequest's expiration check on the next
+        // request.
         if ( priorSession != null
-            && priorSession.CreationSource == PersonSessionCreationSource.Component
             && priorSession.UserLoginId == userLogin.Id
             && priorSession.IsActive
             && ( priorSession.ExpiresDateTime == null || priorSession.ExpiresDateTime > RockDateTime.Now ) )
@@ -547,13 +554,13 @@ public partial class PersonSessionService
             return priorSession;
         }
 
-        // Creating a new session means this device's cookie is being (re)issued,
-        // so any prior session it carried is superseded on this device: a
-        // different person (account switch), or a non-Component source such as a
-        // Legacy upgrade session migrating to a real Component session at launch.
-        // Mark it inactive so it does not linger active. Sessions on the person's
-        // OTHER devices / browsers are untouched - each has its own row.
-        if ( priorSession != null && priorSession.IsActive )
+        // A prior session for a DIFFERENT person (account switch on this device)
+        // is superseded by the new session: mark it inactive so it does not
+        // linger active. A same-person prior that fell through above
+        // (inactive / expired) is left alone for Rock Cleanup - deactivating a
+        // same-person Legacy session here would break the composite-key
+        // idempotency a non-migrating client (Rock TV) relies on.
+        if ( priorSession != null && priorSession.IsActive && priorSession.UserLoginId != userLogin.Id )
         {
             priorSession.IsActive = false;
         }

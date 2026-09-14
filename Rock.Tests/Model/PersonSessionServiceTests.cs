@@ -883,13 +883,16 @@ public class PersonSessionServiceTests
 
     /// <summary>
     /// When the device presents a <see cref="PersonSessionCreationSource.Legacy"/>
-    /// upgrade session (its legacy cookie was upgraded on an earlier request), a
-    /// device login creates a fresh Component session and marks the Legacy
-    /// session inactive — the device migrates to its own real Component session
-    /// at launch rather than reusing the Legacy row.
+    /// upgrade session (its legacy cookie was upgraded on an earlier request),
+    /// a device login REUSES that Legacy session rather than minting a new
+    /// Component row. The legacy upgrade already resolved the request to the
+    /// Legacy session and already issued a new-format cookie for it, so handing
+    /// back a token for the same row keeps a single active session; creating a
+    /// new Component row (and deactivating the Legacy one) would leave the
+    /// response's cookie pointing at an inactive row and sign the device out.
     /// </summary>
     [TestMethod]
-    public void FindOrCreateDeviceComponentSession_LegacyPriorSession_CreatesNewComponentAndMarksLegacyInactive()
+    public void FindOrCreateDeviceComponentSession_LegacyPriorSession_IsReused()
     {
         using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
@@ -919,20 +922,13 @@ public class PersonSessionServiceTests
         requestContext.SetPersonSession( legacy );
 
         var service = new PersonSessionService( rockContext );
+        var resolved = service.FindOrCreateDeviceComponentSession( requestContext, userLogin );
 
-        // Create-new leg may throw under the mocked save path; the assertion
-        // below (Legacy session deactivated before the create) is the point.
-        try
-        {
-            service.FindOrCreateDeviceComponentSession( requestContext, userLogin );
-        }
-        catch
-        {
-            // See comment above.
-        }
-
-        Assert.IsFalse( legacy.IsActive,
-            "A Legacy prior session must be marked inactive when the device migrates to a Component session." );
+        // The Legacy session is reused as-is: same row, still active, and no
+        // new (Component) row was created.
+        Assert.AreEqual( legacy.Id, resolved.Id );
+        Assert.IsTrue( legacy.IsActive, "The reused Legacy session must remain active." );
+        Assert.HasCount( 1, rockContext.Set<PersonSession>().ToList() );
     }
 
     #endregion FindOrCreateDeviceComponentSession
