@@ -27,7 +27,7 @@ using Rock.Rest.Filters;
 using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Rest
+namespace Rock.Tests.Integration.Rest.Filters
 {
     /// <summary>
     /// Tests for the REST PIN-authentication guard.
