@@ -26,10 +26,10 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.ViewModels.Utility;
-using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
 {

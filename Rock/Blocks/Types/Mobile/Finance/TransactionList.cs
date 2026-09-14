@@ -15,14 +15,15 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Finance.TransactionList;
-using Rock.Common.Mobile.ViewModel;
-using Rock.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Finance.TransactionList;
+using Rock.Common.Mobile.ViewModel;
+using Rock.Model;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {

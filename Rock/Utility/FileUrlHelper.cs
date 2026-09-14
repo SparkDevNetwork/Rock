@@ -16,6 +16,7 @@
 //
 
 using System;
+
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;

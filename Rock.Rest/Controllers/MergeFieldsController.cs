@@ -17,13 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Rest.v2;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Rest.v2;
 
 namespace Rock.Rest.Controllers
 {

@@ -17,8 +17,8 @@
 
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
 using Rock.Enums.Event;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail
 {

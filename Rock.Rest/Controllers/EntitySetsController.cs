@@ -14,16 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.Http;
+
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
-using System.Linq;
-using System.Data.Entity;
-using Rock.Model;
 
 namespace Rock.Rest.Controllers
 {

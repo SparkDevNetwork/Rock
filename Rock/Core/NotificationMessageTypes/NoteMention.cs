@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Model;
@@ -30,7 +31,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
-using Rock.Configuration;
 
 namespace Rock.Core.NotificationMessageTypes
 {

@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using Azure.Storage.Blobs;
 using System.Collections.Concurrent;
 using System.Net.Http;
+
+using Azure.Storage.Blobs;
 
 namespace Rock.Storage.Common
 {

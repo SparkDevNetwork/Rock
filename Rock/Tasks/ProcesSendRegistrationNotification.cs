@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System;
+
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;

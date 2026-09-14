@@ -24,12 +24,12 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 
 using TimeZoneConverter;
 
 using Calendar = Ical.Net.Calendar;
-using Rock.Configuration;
 
 namespace Rock.Model
 {

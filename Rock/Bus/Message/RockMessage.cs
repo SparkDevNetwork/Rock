@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+
 using Rock.Bus.Queue;
 
 namespace Rock.Bus.Message

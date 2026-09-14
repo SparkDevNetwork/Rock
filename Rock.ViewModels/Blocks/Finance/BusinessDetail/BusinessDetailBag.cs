@@ -15,10 +15,11 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
 using System;
 using System.Collections.Generic;
+
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
 {

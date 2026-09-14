@@ -34,19 +34,22 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+
 using Humanizer;
 using Humanizer.Localisation;
+
 using Ical.Net;
+
 using ImageResizer;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Core.Geography;
+using Rock.Core.Geography.Classes;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Enums.Geography;
-using Rock.Core.Geography;
-using Rock.Core.Geography.Classes;
 using Rock.Lava.Filters.Internal;
 using Rock.Logging;
 using Rock.Model;

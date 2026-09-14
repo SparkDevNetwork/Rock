@@ -15,13 +15,15 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
+
 using static Rock.Jobs.PopulateInteractionSessionData;
 
 namespace Rock.Jobs

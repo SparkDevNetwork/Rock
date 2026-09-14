@@ -14,15 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Enums.Security;
-using Rock.Lava;
-using Rock.Security;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {

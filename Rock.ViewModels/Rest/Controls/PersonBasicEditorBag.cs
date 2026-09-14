@@ -15,9 +15,10 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using Rock.ViewModels.Utility;
-using Rock.ViewModels.Controls;
+
 using Rock.Model;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Rest.Controls
 {

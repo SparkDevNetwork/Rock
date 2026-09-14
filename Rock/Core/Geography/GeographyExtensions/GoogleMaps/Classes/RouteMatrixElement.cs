@@ -16,6 +16,7 @@
 //
 
 using System;
+
 using Newtonsoft.Json;
 
 namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps.Classes

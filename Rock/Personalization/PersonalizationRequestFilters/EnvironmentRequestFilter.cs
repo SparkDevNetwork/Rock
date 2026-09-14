@@ -20,7 +20,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+
 using Nest;
+
 using Rock.Net;
 
 namespace Rock.Personalization

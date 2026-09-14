@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json.Linq;
 
 using Rock.Cms.ContentCollection.Attributes;

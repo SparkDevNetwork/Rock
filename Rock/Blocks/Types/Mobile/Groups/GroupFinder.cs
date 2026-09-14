@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Core.Campus.Options;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -31,7 +32,6 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using Regex = System.Text.RegularExpressions.Regex;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {

@@ -16,6 +16,7 @@
 //
 
 using System.ComponentModel;
+
 using Rock.Enums;
 
 namespace Rock.Model

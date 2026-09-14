@@ -23,11 +23,11 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
 using Rock.Net;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
 {

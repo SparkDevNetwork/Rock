@@ -14,20 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Reminders;
-using Rock.Common.Mobile.Blocks.Reminders.ReminderList;
-using Rock.Data;
-using Rock.Mobile;
-using Rock.Model;
-using Rock.Web.Cache;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Reminders;
+using Rock.Common.Mobile.Blocks.Reminders.ReminderList;
 using Rock.Configuration;
+using Rock.Data;
+using Rock.Mobile;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Reminders
 {

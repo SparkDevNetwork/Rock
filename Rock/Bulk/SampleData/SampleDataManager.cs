@@ -14,14 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using Rock;
-using Rock.Attribute;
-using Rock.Communication;
-using Rock.Data;
-using Rock.Lava;
-using Rock.Logging;
-using Rock.Model;
-using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -31,14 +23,23 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+using Rock;
+using Rock.Attribute;
+using Rock.Communication;
 using Rock.Configuration;
+using Rock.Data;
+using Rock.Lava;
+using Rock.Logging;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {

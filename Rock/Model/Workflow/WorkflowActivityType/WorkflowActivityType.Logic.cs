@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Web.Cache;
 using System.Data.Entity;
+
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {

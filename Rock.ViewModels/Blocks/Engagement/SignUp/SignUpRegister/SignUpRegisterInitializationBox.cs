@@ -15,10 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Enums.Blocks.Engagement.SignUp;
 using Rock.ViewModels.Utility;
-
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
 {

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
 using MassTransit;
 
 namespace Rock.Bus.Transport

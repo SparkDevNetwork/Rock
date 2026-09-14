@@ -17,7 +17,9 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
 using MassTransit;
+
 using Rock.Attribute;
 using Rock.Security;
 

@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock.SystemKey;
 using Rock.Enums.Core;
+using Rock.SystemKey;
 
 namespace Rock.Utility.Settings.Giving
 {

@@ -15,10 +15,11 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Enums.Engagement;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {

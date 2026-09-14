@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Badge;
 using Rock.Data;
 using Rock.Model;

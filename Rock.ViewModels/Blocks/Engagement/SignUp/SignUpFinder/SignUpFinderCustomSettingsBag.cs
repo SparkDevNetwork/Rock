@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 

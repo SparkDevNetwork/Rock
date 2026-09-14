@@ -16,7 +16,9 @@
 //
 
 using System.Diagnostics;
+
 using MassTransit;
+
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
 

@@ -16,8 +16,9 @@
 //
 
 
-using Rock.ViewModels.Utility;
 using System;
+
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {

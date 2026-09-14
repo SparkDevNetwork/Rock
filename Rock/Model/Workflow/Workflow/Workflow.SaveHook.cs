@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock;
-using Rock.Data;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock;
+using Rock.Data;
 
 namespace Rock.Model
 {

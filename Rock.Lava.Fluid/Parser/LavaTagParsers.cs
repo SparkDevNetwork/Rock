@@ -15,9 +15,12 @@
 // </copyright>
 //
 using System;
+
 using Fluid.Parser;
+
 using Parlot;
 using Parlot.Fluent;
+
 using static Parlot.Fluent.Parsers;
 
 namespace Rock.Lava.Fluid

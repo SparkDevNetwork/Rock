@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+
 using Rock.Configuration;
 
 namespace Rock.Model

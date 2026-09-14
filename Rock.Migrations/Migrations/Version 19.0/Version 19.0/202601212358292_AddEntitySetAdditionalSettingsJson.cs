@@ -17,6 +17,7 @@
 namespace Rock.Migrations
 {
     using System;
+
     using Rock.Migrations.Migrations;
 
     /// <summary>

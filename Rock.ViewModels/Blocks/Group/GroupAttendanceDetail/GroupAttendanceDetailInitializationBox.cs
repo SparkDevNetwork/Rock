@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.Enums.Blocks.Group.GroupAttendanceDetail;
 using Rock.ViewModels.Utility;
 

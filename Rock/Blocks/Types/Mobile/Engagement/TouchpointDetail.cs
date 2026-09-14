@@ -21,8 +21,8 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Engagement.OutreachDashboard;
 using Rock.Common.Mobile.Blocks.Engagement.ContactProfile;
+using Rock.Common.Mobile.Blocks.Engagement.OutreachDashboard;
 using Rock.Common.Mobile.Blocks.Engagement.TouchpointDetail;
 using Rock.Enums.Engagement;
 using Rock.Mobile;

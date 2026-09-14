@@ -17,14 +17,15 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Bus.Queue;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Bus.QueueList;
-using System.Linq;
-using Rock.Obsidian.UI;
 
 namespace Rock.Blocks.Bus
 {

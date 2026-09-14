@@ -19,13 +19,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+
 using CsvHelper;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-
 // Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
 using SlingshotCore = global::Slingshot.Core;
-using Rock.Configuration;
 
 namespace Rock.Slingshot
 {

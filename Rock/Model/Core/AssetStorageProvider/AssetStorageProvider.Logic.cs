@@ -15,9 +15,10 @@
 // </copyright>
 //
 
+using System.Data.Entity;
+
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
-using System.Data.Entity;
 
 namespace Rock.Model
 {

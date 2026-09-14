@@ -17,6 +17,7 @@
 namespace Rock.Migrations
 {
     using System.Collections.Generic;
+
     using Rock.Model;
 
     /// <summary>

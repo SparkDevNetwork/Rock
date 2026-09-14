@@ -18,11 +18,11 @@ namespace Rock.Migrations
 {
     using System;
     using System.Collections.Generic;
-    using System.Data.Common;
     using System.Data;
+    using System.Data.Common;
     using System.Data.Entity.Migrations;
-    using System.Text.RegularExpressions;
     using System.Data.SqlClient;
+    using System.Text.RegularExpressions;
 
     /// <summary>
     ///

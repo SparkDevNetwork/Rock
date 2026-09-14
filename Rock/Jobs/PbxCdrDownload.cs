@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+
 using Rock.Attribute;
 
 namespace Rock.Jobs

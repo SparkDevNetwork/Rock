@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel.DataAnnotations;
+
 using Rock.Data;
 
 namespace Rock.BulkImport

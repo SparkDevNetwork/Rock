@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-using Rock.Model;
 using System;
+
+using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Cms.LibraryViewer
 {

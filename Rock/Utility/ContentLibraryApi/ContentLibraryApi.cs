@@ -15,14 +15,16 @@
 // </copyright>
 //
 
-using RestSharp;
 using System;
 using System.Configuration;
 using System.Net;
 
+using Microsoft.Extensions.Logging;
+
+using RestSharp;
+
 using Rock.Attribute;
 using Rock.Logging;
-using Microsoft.Extensions.Logging;
 
 namespace Rock.Utility.ContentLibraryApi
 {

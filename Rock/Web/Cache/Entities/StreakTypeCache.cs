@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
 
 using Rock.Configuration;

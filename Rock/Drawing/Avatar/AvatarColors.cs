@@ -16,6 +16,7 @@
 //
 
 using System;
+
 using Rock.Utility;
 
 namespace Rock.Drawing.Avatar

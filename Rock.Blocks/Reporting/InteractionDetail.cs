@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -22,9 +26,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks.Reporting.InteractionDetail;
 using Rock.Web;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Rock.Blocks.Reporting
 {

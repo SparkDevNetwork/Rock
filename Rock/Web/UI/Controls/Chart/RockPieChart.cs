@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Rock.Chart;
 
 namespace Rock.Web.UI.Controls

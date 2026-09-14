@@ -26,11 +26,11 @@ using EF6.TagWith;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
 using Rock.SystemKey;
-using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Model

@@ -17,9 +17,9 @@
 
 using System;
 
-using Rock.ViewModels.Utility;
 using Rock.Enums.Lms;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningProgramCompletionDetail
 {

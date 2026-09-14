@@ -15,15 +15,16 @@
 // </copyright>
 //
 
-using Rock.Data;
-using Rock.Enums.Security;
-using Rock.Security;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {

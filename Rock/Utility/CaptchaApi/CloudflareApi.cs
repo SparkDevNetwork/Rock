@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
+
 using RestSharp;
+
 using Rock.Web;
 
 namespace Rock.Utility.CaptchaApi

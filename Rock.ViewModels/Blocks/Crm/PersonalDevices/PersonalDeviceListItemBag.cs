@@ -16,6 +16,7 @@
 //
 
 using System;
+
 using Rock.Enums.Mobile;
 using Rock.ViewModels.Utility;
 

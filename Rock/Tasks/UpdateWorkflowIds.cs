@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Configuration;
-using Rock.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+
+using Rock.Configuration;
+using Rock.Data;
 
 namespace Rock.Tasks
 {

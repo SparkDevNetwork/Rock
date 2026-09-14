@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Linq;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model

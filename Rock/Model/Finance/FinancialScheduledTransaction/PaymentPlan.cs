@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Rock.Attribute;
 
 namespace Rock.Model

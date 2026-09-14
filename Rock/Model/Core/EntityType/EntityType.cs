@@ -21,9 +21,9 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Security;
+using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {

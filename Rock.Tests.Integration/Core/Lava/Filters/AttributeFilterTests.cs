@@ -23,8 +23,8 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tests.Shared.Constants;
 using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Filters
 {

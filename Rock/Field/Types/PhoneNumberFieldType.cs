@@ -14,15 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.UI.Controls;
 using System.Collections.Generic;
 using System.Linq;
-
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {

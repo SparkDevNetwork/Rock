@@ -15,9 +15,10 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
 using System.Collections.Generic;
+
 using Rock.Enums.AI.Agent;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.AI.AISkillToolList
 {

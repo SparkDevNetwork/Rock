@@ -15,14 +15,14 @@
 // </copyright>
 //
 
-using Rock.Data;
-using Rock.Model;
-using Rock.Personalization;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Model;
+using Rock.Personalization;
 
 namespace Rock.Web.Cache
 {

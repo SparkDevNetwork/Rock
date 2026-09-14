@@ -16,6 +16,7 @@
 //
 using System;
 using System.Configuration;
+
 using Rock.Utility;
 
 namespace Rock.Store

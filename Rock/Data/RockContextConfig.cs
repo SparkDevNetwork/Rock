@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System.Data.Entity;
+
 using EF6.TagWith;
+
 using Rock.Data.Interception;
 
 namespace Rock.Data

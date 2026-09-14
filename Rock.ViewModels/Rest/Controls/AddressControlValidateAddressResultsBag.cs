@@ -16,6 +16,7 @@
 //
 
 using System;
+
 using Rock.ViewModels.Controls;
 
 namespace Rock.ViewModels.Rest.Controls

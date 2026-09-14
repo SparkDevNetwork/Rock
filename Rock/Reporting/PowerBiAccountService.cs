@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;

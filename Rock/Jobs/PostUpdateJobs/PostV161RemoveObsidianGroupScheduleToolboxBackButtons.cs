@@ -15,13 +15,13 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-
-using System.ComponentModel;
-using Rock.Configuration;
 
 namespace Rock.Jobs.PostUpdateJobs
 {

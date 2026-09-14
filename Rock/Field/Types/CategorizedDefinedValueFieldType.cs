@@ -21,9 +21,9 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
-#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using TreeNode = Rock.Web.UI.Controls.TreeNode;
+
 using Rock.Configuration;
 
 namespace Rock.Field.Types

@@ -15,10 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Enums.Blocks.Group.Scheduling;
 using Rock.ViewModels.Utility;
-
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
 {

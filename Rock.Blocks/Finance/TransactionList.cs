@@ -24,6 +24,7 @@ using System.Linq;
 using RestSharp.Extensions;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Model;
@@ -38,7 +39,6 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using static Rock.Blocks.Finance.TransactionList;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Finance
 {

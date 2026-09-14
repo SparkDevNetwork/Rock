@@ -25,6 +25,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -33,7 +34,6 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
-using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Person
 {

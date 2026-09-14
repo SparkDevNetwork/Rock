@@ -1,21 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Security.Policy;
+using System.Threading.Tasks;
+
+using Rock.Attribute;
 using Rock.Communication.Chat;
+using Rock.Enums.Communication.Chat;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.SystemGuid;
-
-using System.ComponentModel;
-using System.Threading.Tasks;
-using Rock.Attribute;
-using Rock.ViewModels.Blocks.Communication.Chat.ChatView;
-using Rock.Web.Cache;
-using System;
-using Rock.ViewModels.Controls;
-using Rock.Enums.Communication.Chat;
-using Rock.ViewModels.Utility;
-using System.Collections.Generic;
-using System.Linq;
-using Rock.Mobile;
 using Rock.Utility;
-using System.Security.Policy;
+using Rock.ViewModels.Blocks.Communication.Chat.ChatView;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication.Chat
 {

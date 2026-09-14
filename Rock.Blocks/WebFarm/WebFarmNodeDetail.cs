@@ -15,6 +15,12 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -23,11 +29,6 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
 
 namespace Rock.Blocks.WebFarm
 {

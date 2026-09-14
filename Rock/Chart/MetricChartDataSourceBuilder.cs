@@ -15,13 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using System.Linq;
-using Rock.Attribute;
 
 namespace Rock.Chart
 {

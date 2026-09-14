@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Http;
+
 using Ical.Net;
+
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;

@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Communication.Transport;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Observability;
@@ -47,7 +48,6 @@ using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.Commu
 using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
 using CommunicationType = Rock.Model.CommunicationType;
 using PushOpenAction = Rock.Utility.PushOpenAction;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Communication
 {

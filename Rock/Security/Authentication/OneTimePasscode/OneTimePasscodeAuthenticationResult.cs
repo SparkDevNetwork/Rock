@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Rock.Attribute;
 using Rock.Enums.Blocks.Security.Login;
 using Rock.Model;

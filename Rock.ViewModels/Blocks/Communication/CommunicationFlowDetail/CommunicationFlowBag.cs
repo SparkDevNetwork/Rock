@@ -16,10 +16,10 @@
 //
 
 using System;
-
-using Rock.ViewModels.Utility;
-using Rock.Enums.Communication;
 using System.Collections.Generic;
+
+using Rock.Enums.Communication;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowDetail
 {

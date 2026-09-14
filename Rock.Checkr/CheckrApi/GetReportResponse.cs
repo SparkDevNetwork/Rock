@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Newtonsoft.Json;
 
 namespace Rock.Checkr.CheckrApi

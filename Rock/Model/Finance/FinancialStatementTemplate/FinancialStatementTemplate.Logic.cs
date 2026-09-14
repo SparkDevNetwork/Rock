@@ -16,6 +16,7 @@
 //
 
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Rock.Financial;
 
 namespace Rock.Model

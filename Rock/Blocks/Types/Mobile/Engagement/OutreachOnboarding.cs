@@ -16,9 +16,9 @@
 
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Linq;
 
 using Rock.Attribute;
-using System.Linq;
 using Rock.Common.Mobile.Blocks.Engagement.OutreachOnboarding.cs;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Enums.Core;

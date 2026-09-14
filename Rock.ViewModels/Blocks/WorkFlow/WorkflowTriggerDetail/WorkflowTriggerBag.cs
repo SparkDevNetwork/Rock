@@ -15,9 +15,10 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
-using Rock.Model;
 using System.Collections.Generic;
+
+using Rock.Model;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Workflow.WorkflowTriggerDetail
 {

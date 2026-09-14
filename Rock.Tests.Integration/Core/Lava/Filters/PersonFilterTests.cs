@@ -26,8 +26,8 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared.Constants;
 using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Shared.Constants;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 

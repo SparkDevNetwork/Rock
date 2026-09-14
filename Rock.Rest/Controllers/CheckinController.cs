@@ -24,12 +24,12 @@ using System.Web;
 using System.Web.Http;
 
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
-using Rock.Configuration;
 
 namespace Rock.Rest.Controllers
 {

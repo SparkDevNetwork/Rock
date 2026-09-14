@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Controls;
 
 namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration

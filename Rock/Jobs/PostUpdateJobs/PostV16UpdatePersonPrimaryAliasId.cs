@@ -14,12 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using System;
-using System.ComponentModel;
 
 namespace Rock.Jobs
 {

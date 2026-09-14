@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache.Entities;

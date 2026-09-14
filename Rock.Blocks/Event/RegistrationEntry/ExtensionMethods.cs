@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Model;
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.Web.Cache;

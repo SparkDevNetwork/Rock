@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.IO;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.IO;
 
 namespace Rock.Badge.Component
 {

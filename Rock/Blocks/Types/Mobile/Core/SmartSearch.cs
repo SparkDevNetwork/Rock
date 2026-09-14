@@ -14,20 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Core.SmartSearch;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Search;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Core
 {

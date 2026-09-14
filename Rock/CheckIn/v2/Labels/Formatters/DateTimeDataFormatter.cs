@@ -17,6 +17,7 @@
 
 using System;
 using System.Globalization;
+
 using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.CheckIn.v2.Labels.Formatters

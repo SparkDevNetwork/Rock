@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 
 namespace Rock.Chart

@@ -16,6 +16,7 @@
 //
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+
 using Rock.Security;
 
 namespace Rock.Model

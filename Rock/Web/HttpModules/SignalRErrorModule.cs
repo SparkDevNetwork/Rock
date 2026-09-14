@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Web;
+
 using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Rock.Web.HttpModules

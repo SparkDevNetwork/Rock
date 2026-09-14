@@ -21,11 +21,11 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
-using Rock.Configuration;
 
 namespace Rock.Model
 {

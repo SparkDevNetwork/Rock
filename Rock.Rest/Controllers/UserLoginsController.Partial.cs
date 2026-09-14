@@ -20,6 +20,7 @@ using System.Net.Http;
 using System.Web.Http;
 
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;

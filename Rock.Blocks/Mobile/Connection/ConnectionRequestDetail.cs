@@ -34,16 +34,15 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+using ConnectionState = Rock.Model.ConnectionState;
+using GroupMemberStatus = Rock.Model.GroupMemberStatus;
+using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
+using MobileActivityEntryType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ActivityEntryType;
 using MobileConnectionState = Rock.Common.Mobile.Enums.ConnectionState;
 using MobileDueStatus = Rock.Common.Mobile.Enums.DueStatus;
 using MobileGroupMemberStatus = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.GroupMemberStatus;
 using MobileMeetsGroupRequirement = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.MeetsGroupRequirement;
-using MobileActivityEntryType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ActivityEntryType;
 using MobileSystemUpdateType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.SystemUpdateType;
-
-using ConnectionState = Rock.Model.ConnectionState;
-using GroupMemberStatus = Rock.Model.GroupMemberStatus;
-using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
 
 namespace Rock.Blocks.Mobile.Connection
 {

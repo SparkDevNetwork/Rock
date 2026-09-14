@@ -14,14 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Model;
-using Rock.Net;
-using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
-using Rock.Web.UI.Controls;
-using Rock.Web.Utilities;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -30,7 +22,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.UI.Controls;
+using Rock.Web.Utilities;
 
 namespace Rock.Reporting.DataFilter
 {

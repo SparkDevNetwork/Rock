@@ -30,6 +30,7 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Finance.FinancialBatchDetail;
 using Rock.Common.Mobile.ViewModel;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -38,7 +39,6 @@ using Rock.SystemGuid;
 using Rock.Web.Cache;
 
 using BatchStatus = Rock.Model.BatchStatus;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {

@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 

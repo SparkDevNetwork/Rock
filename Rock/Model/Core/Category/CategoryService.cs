@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model.Core.Category.Options;

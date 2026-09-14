@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Threading.Tasks;
+
 using Quartz;
 
 using Rock.Model;
-
-using System.Threading.Tasks;
 
 namespace Rock.Jobs
 {

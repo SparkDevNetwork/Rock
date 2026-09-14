@@ -15,6 +15,7 @@ using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
 using Rock.Communication.Transport;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
@@ -23,7 +24,6 @@ using Rock.Tests.Integration.TestFramework.Database;
 using SmtpServer;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
-using Rock.Configuration;
 
 namespace Rock.Tests.Integration.Core.Jobs
 {

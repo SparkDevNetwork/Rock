@@ -14,9 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Microsoft.Extensions.Logging;
-
-using Rock.Logging;
 using System;
 using System.Collections;
 using System.IO;
@@ -25,6 +22,10 @@ using System.Text;
 using System.Web.Security;
 using System.Web.UI;
 using System.Xml;
+
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
 
 namespace Rock.Web.UI
 {

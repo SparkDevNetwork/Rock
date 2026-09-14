@@ -16,6 +16,7 @@
 //
 
 using System;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.CategoryDetail

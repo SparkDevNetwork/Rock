@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Linq;
+
 using Rock.Address;
 using Rock.Configuration;
 using Rock.Data;

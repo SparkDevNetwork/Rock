@@ -23,6 +23,7 @@ using Ical.Net;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -33,7 +34,6 @@ using Rock.Tests.Shared.Utility;
 using Rock.Web.Cache;
 
 using TimeZoneConverter;
-using Rock.Configuration;
 
 namespace Rock.Tests.Integration.Core.Model
 {

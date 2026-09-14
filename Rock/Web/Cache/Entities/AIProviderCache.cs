@@ -17,6 +17,7 @@
 
 using System;
 using System.Runtime.Serialization;
+
 using Rock.AI.Provider;
 using Rock.Data;
 using Rock.Model;

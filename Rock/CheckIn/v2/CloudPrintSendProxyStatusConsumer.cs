@@ -22,8 +22,8 @@ using MassTransit;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
-using Rock.RealTime.Topics;
 using Rock.RealTime;
+using Rock.RealTime.Topics;
 
 namespace Rock.CheckIn.v2
 {

@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Quartz.Impl.Matchers;
+
 using Quartz;
+using Quartz.Impl.Matchers;
 
 using Rock.Attribute;
 using Rock.Configuration;

@@ -18,6 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
+
     using Rock;
 
     /// <summary>

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Event.RegistrationEntry

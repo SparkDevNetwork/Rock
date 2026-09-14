@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Model;
 using System;
+
+using Rock.Model;
 
 namespace Rock.Financial
 {

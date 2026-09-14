@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Rock.Attribute;
 using Rock.Security.Authentication.ExternalRedirectAuthentication;
 

@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Security;

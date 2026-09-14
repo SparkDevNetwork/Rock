@@ -14,22 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Crm.PersonProfile;
+using Rock.Common.Mobile.ViewModel;
 using Rock.Configuration;
+using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using System.Linq;
-using Rock.Mobile;
-using Rock.Data;
-using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using Rock.Security;
-using Rock.Common.Mobile.ViewModel;
 
 namespace Rock.Blocks.Types.Mobile.Crm
 {

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Linq;
+
 using Rock.Data;
 
 namespace Rock.Model

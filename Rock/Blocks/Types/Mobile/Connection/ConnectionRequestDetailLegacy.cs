@@ -26,6 +26,7 @@ using Rock.ClientService.Core.Campus;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy;
 using Rock.Common.Mobile.Enums;
+using Rock.Configuration;
 using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Enums.Connection;
@@ -39,7 +40,6 @@ using ConnectionState = Rock.Model.ConnectionState;
 using DueStatus = Rock.Common.Mobile.Enums.DueStatus;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {

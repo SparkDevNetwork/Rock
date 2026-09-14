@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 using Rock.Data;
 using Rock.Utility;
 using Rock.Web.Cache;
-
-using System.Collections.Generic;
 
 namespace Rock.Model
 {

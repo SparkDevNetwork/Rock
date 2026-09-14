@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Rock.Configuration;
 
 namespace Rock.Model

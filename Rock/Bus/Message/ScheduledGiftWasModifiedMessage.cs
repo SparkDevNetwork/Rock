@@ -14,15 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock;
 using Rock.Bus.Queue;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
-using System;
-using System.Data.Entity;
-using System.Linq;
 
 namespace Rock.Bus.Message
 {

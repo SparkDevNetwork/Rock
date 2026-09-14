@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Model;
-
 using System.Runtime.Serialization;
+
+using Rock.Model;
 
 namespace Rock.CheckIn
 {

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Data.Entity;
+
 using Rock.Security;
 using Rock.Web.Cache;
 

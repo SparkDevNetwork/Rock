@@ -14,7 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -25,16 +35,6 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Person
 {

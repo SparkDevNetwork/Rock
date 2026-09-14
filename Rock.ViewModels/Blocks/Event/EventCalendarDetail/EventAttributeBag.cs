@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.ViewModels.Utility;
 using System;
+
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.EventCalendarDetail
 {

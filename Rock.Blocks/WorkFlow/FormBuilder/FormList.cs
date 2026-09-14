@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock;
@@ -29,7 +30,6 @@ using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using System.Data.Entity;
 
 namespace Rock.Blocks.WorkFlow.FormBuilder
 {

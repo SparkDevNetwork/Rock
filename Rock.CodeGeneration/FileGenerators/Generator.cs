@@ -2,9 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Rock.CodeGeneration.Utility;
-
 using Rock;
+using Rock.CodeGeneration.Utility;
 
 namespace Rock.CodeGeneration.FileGenerators
 {

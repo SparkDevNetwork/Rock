@@ -15,9 +15,10 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
 using System;
 using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.BinaryFileDetail
 {

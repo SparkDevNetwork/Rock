@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace Rock.Model
 {

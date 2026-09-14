@@ -20,8 +20,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web.UI;
 
 using Newtonsoft.Json;
@@ -29,14 +29,14 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.CheckIn.v2.Labels;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.CheckIn.Labels;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
-using Rock.Configuration;
-using Rock.ViewModels.CheckIn.Labels;
-using Rock.ViewModels.Utility;
 
 namespace Rock.Utility
 {

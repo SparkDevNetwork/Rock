@@ -34,8 +34,8 @@ using Rock.Security.SecurityGrantRules;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
-using Rock.ViewModels.Utility;
 using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication

@@ -29,8 +29,8 @@ using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Blocks.Cms.ContentChannelNavigation;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 

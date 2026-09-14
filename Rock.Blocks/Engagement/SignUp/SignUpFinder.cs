@@ -37,6 +37,7 @@ using System.Data.Entity.Spatial;
 #endif
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Configuration;
 
 namespace Rock.Blocks.Engagement.SignUp

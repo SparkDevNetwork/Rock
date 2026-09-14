@@ -15,7 +15,13 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.AI;
@@ -24,12 +30,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerRequestDetail;
 using Rock.Web.Cache;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Prayer
 {

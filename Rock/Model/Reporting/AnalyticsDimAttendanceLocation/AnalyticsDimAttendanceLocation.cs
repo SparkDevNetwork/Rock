@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Utility;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {

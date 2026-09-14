@@ -17,6 +17,7 @@
 
 using System;
 using System.Data.Entity.Spatial;
+
 using Newtonsoft.Json;
 
 namespace Rock.Core.Geography.Classes

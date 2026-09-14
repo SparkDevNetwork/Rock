@@ -25,11 +25,11 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Follow;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Follow;
 
 namespace Rock.Jobs
 {

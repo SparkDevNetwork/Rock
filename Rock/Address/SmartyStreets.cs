@@ -22,7 +22,9 @@ using System.Linq;
 using System.Net;
 
 using Newtonsoft.Json;
+
 using RestSharp;
+
 using Rock.Attribute;
 using Rock.Model;
 

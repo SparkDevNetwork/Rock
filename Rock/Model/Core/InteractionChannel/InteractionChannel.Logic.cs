@@ -17,6 +17,7 @@
 //
 
 using System.Data.Entity;
+
 using Rock.Web.Cache;
 
 namespace Rock.Model

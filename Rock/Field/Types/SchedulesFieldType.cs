@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
-using OpenXmlPowerTools;
 #endif
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;

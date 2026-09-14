@@ -25,6 +25,7 @@ using System.Xml.Linq;
 using Humanizer;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -38,7 +39,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 
 using DisplayInNavWhen = Rock.Model.DisplayInNavWhen;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Mobile
 {

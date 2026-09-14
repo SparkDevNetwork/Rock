@@ -17,11 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Configuration;
-using Rock.Web.Cache;
 using Rock.Model;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {

@@ -17,7 +17,9 @@
 
 using System;
 using System.Collections.Generic;
+
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.Moderations;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations

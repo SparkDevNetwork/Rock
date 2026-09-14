@@ -18,20 +18,20 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Utility;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Group.GroupList;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using System.Data.Entity;
 
 namespace Rock.Blocks.Group
 {

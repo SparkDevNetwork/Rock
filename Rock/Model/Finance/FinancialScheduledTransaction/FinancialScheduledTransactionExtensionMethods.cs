@@ -16,6 +16,7 @@
 
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 
 namespace Rock.Model

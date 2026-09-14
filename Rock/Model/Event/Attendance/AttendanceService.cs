@@ -30,6 +30,7 @@ using Rock.Attribute;
 using Rock.BulkImport;
 using Rock.Chart;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums;
 using Rock.Enums.Event;
@@ -40,7 +41,6 @@ using Rock.ViewModels.Event;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
-using Rock.Configuration;
 
 namespace Rock.Model
 {

@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;using Rock.Attribute;
+using System.ComponentModel;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 

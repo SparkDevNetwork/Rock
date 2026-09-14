@@ -15,9 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Enums.Controls;
 using Rock.ViewModels.Utility;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
 {

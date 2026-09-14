@@ -15,11 +15,11 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
 using Rock.Model;
-using System;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
 {

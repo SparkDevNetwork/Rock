@@ -16,14 +16,14 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-
-using Rock.Attribute;
-using Rock.Reporting;
-using Rock.Web.UI.Controls;
 #if WEBFORMS
 using System.Web.UI.WebControls;
 using System.Web.UI;
 #endif
+
+using Rock.Attribute;
+using Rock.Reporting;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {

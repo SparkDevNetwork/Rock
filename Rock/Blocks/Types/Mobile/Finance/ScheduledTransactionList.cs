@@ -14,17 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Model;
-using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
-using System.ComponentModel;
-using System.Linq;
-using System.Data.Entity;
-using Rock;
-using Rock.Common.Mobile.Blocks.Finance.ScheduledTransactionList;
-using Rock.Common.Mobile.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+
+using Rock;
+using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Finance.ScheduledTransactionList;
+using Rock.Common.Mobile.ViewModel;
+using Rock.Model;
+using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {

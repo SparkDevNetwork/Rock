@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;using Rock.Attribute;
+using System.Threading.Tasks;
+
+using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;

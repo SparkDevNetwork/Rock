@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail;
 using Rock.ViewModels.Blocks.Cms.ContentCollectionDetail;
 using Rock.ViewModels.Core.Grid;

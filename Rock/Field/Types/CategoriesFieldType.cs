@@ -20,8 +20,12 @@ using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
+#endif
+
+#if WEBFORMS
 using Newtonsoft.Json.Linq;
 #endif
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Constants;

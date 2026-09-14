@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.DownhillCss.Utility;
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using Rock.DownhillCss.Utility;
 
 namespace Rock.DownhillCss
 {

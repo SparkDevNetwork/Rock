@@ -32,6 +32,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
 using Rock.Bus.Message;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
@@ -44,7 +45,6 @@ using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
-using Rock.Configuration;
 
 namespace Rock.Data
 {

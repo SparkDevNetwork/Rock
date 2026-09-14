@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Utility;

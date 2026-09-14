@@ -15,7 +15,9 @@
 // </copyright>
 
 using System.Configuration;
+
 using RestSharp;
+
 using Rock.Update.Interfaces;
 using Rock.Update.Models;
 

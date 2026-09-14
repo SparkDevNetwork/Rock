@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Rock.Enums.Blocks.Group.Scheduling;
 
 namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler

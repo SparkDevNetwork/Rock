@@ -20,8 +20,11 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Configuration;
@@ -29,8 +32,6 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
 
 namespace Rock.Jobs
 {

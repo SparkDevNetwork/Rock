@@ -24,12 +24,12 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Personalization;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.RequestFilterDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Personalization;
 
 namespace Rock.Blocks.Cms
 {

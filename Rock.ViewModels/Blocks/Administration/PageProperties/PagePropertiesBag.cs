@@ -15,13 +15,13 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
 using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.ViewModels.Controls;
-using System;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Administration.PageProperties
 {

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Rock.Communication;
 // Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
 using SlingshotCore = global::Slingshot.Core;

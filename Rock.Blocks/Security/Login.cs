@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Security.Login;
 using Rock.Enums.Security;
@@ -40,7 +41,6 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using Authorization = Rock.Security.Authorization;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Security
 {

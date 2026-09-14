@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

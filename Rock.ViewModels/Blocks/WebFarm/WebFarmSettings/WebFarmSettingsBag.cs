@@ -15,9 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail;
 using Rock.ViewModels.Utility;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
 {

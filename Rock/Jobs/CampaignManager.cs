@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;using Rock;
+using System.Linq;
+
+using Rock;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;

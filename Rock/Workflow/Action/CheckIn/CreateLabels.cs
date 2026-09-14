@@ -25,11 +25,11 @@ using Newtonsoft.Json;
 
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
-using Rock.Configuration;
 
 namespace Rock.Workflow.Action.CheckIn
 {

@@ -1,5 +1,7 @@
 using System;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 
 namespace Rock.NCOA

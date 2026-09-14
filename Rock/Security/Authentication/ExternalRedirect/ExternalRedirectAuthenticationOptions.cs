@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Rock.Attribute;
 
 namespace Rock.Security.Authentication.ExternalRedirectAuthentication

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Enums.Engagement;
 using Rock.Model;

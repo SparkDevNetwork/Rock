@@ -14,17 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using Microsoft.EntityFrameworkCore;
-
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
-
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Microsoft.EntityFrameworkCore;
+
+using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {

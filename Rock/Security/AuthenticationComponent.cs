@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Specialized;
 using System.Web;
+
+using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
-using Rock.Attribute;
 
 namespace Rock.Security
 {

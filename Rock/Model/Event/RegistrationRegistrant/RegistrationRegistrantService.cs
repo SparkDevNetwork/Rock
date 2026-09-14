@@ -21,19 +21,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
-using Rock.RealTime.Topics;
 using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Reporting;
 using Rock.Utility;
+using Rock.ViewModels.Event.RegistrationEntry;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-using Microsoft.Extensions.Logging;
-using Rock.Configuration;
-using Rock.ViewModels.Event.RegistrationEntry;
 using Z.EntityFramework.Plus;
-using Rock.ViewModels.Utility;
 
 namespace Rock.Model
 {

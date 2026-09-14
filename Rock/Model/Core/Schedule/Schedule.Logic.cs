@@ -16,19 +16,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Ical.Net;
+using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
+
+using Rock.Attribute;
 using Rock.Enums.Security;
 using Rock.Lava;
-using Rock.Web.Cache;
-using Ical.Net.CalendarComponents;
-using System.ComponentModel.DataAnnotations;
-using Rock.Attribute;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {

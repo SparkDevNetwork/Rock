@@ -14,17 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Lava;
-using Rock.Model;
-using Rock.Web.Cache;
-
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Configuration;
+using Rock.Data;
+using Rock.Lava;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {

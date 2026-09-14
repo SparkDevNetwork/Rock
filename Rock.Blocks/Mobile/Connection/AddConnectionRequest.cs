@@ -33,11 +33,10 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-using Detail = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
-using MobileConnectionState = Rock.Common.Mobile.Enums.ConnectionState;
-
 using ConnectionState = Rock.Model.ConnectionState;
+using Detail = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
+using MobileConnectionState = Rock.Common.Mobile.Enums.ConnectionState;
 
 namespace Rock.Blocks.Mobile.Connection
 {

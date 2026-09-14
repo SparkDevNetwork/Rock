@@ -18,11 +18,11 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
 using Rock.Enums.CheckIn;
-using Rock.Model;
 using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
+using Rock.Model;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
 {

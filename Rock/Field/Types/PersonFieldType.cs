@@ -21,8 +21,8 @@ using System.Linq;
 using System.Linq.Expressions;
 #if WEBFORMS
 using System.Web.UI;
-using OpenXmlPowerTools;
 #endif
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;

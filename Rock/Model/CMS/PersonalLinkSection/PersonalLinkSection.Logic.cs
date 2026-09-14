@@ -16,6 +16,7 @@
 
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+
 using Rock.Data;
 using Rock.Web.Cache;
 

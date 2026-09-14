@@ -19,6 +19,7 @@ namespace Rock.Migrations
     using System;
     using System.Data.Entity.Migrations;
     using System.Net;
+
     using Rock.SystemGuid;
 
     /// <summary>

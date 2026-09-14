@@ -18,6 +18,7 @@ namespace Rock.Migrations
 {
     using System.Collections.Generic;
     using System.Data;
+
     using Rock.Data;
     using Rock.Security;
     using Rock.Utility.Enums;

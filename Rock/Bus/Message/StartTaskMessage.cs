@@ -16,6 +16,7 @@
 //
 
 using System;
+
 using Rock.Bus.Queue;
 
 namespace Rock.Bus.Message

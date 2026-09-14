@@ -22,8 +22,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
-using Rock.Web.UI;
 using Rock.ViewModels.Controls;
+using Rock.Web.UI;
 
 namespace Rock.Lava.Shortcodes
 {
