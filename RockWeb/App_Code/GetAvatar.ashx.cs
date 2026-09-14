@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Microsoft.Extensions.DependencyInjection;
-
 using Rock;
 using Rock.Configuration;
 using Rock.Data;
@@ -96,13 +94,13 @@ namespace RockWeb
             // Process any cache refresh request for single item
             if ( context.Request.QueryString["RefreshItemCache"] != null && context.Request.QueryString["RefreshItemCache"].AsBoolean() )
             {
-                RefreshItemCache( cachedFilePath );
+                RefreshItemCache( context, cachedFilePath );
             }
 
             // Process any cache refresh for all items
             if ( context.Request.QueryString["RefreshCache"] != null && context.Request.QueryString["RefreshCache"].AsBoolean() )
             {
-                RefreshCache( cacheFolder );
+                RefreshCache( context, cacheFolder );
             }
 
             Stream fileContent = null;
@@ -190,11 +188,12 @@ namespace RockWeb
         /// <summary>
         /// Refreshs the cache for a specific item
         /// </summary>
+        /// <param name="context">The request HttpContext, used to resolve the current person.</param>
         /// <param name="filePath"></param>
-        private void RefreshItemCache( string filePath )
+        private void RefreshItemCache( HttpContext context, string filePath )
         {
             // Ensure the person is allowed to refresh the cache
-            if ( !IsPersonAllowedRefeshCache() )
+            if ( !IsPersonAllowedRefeshCache( context ) )
             {
                 return;
             }
@@ -209,11 +208,31 @@ namespace RockWeb
         /// <summary>
         /// Determines if the person is in a role that allows them to refresh cache
         /// </summary>
+        /// <param name="context">The request HttpContext, used to resolve the current person.</param>
         /// <returns></returns>
-        private bool IsPersonAllowedRefeshCache()
+        private bool IsPersonAllowedRefeshCache( HttpContext context )
         {
-            var rockContext = RockApp.Current.CreateRockContext();
-            var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
+            /*
+                9/14/26 - CLAUDE
+
+                Resolve the current person from the RockRequestContext stored on the request's
+                HttpContext.Items (attached in Application_BeginRequest under
+                RockRequestContext.HttpContextItemsKey), NOT from the ambient
+                IRockRequestContextAccessor. BeginProcessRequest dispatches ProcessRequest via
+                Delegate.BeginInvoke, so this runs on a thread-pool completion thread where the
+                AsyncLocal the accessor uses is not guaranteed to be present. `context` is the
+                real request HttpContext and Items lives on that object, so it survives the
+                boundary. When this handler is converted to OWIN / HttpTaskAsyncHandler, resolve
+                from IRockRequestContextAccessor instead.
+
+                Reason: AsyncLocal accessor is unreliable in the BeginInvoke completion; read the context from Items.
+            */
+            var currentPerson = ( context.Items[RockRequestContext.HttpContextItemsKey] as RockRequestContext )?.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return false;
+            }
 
             return RoleCache.AllRoles()
                         .Where( r =>
@@ -226,11 +245,12 @@ namespace RockWeb
         /// <summary>
         /// Refreshes the cache on all cached avatars
         /// </summary>
+        /// <param name="context">The request HttpContext, used to resolve the current person.</param>
         /// <param name="cacheFolder"></param>
-        private void RefreshCache( string cacheFolder )
+        private void RefreshCache( HttpContext context, string cacheFolder )
         {
             // Ensure the person is allowed to refresh the cache
-            if ( !IsPersonAllowedRefeshCache() )
+            if ( !IsPersonAllowedRefeshCache( context ) )
             {
                 return;
             }

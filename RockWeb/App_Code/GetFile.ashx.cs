@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Microsoft.Extensions.DependencyInjection;
-
 using Rock;
 using Rock.Configuration;
 using Rock.Data;
@@ -108,7 +106,30 @@ namespace RockWeb
                 if ( binaryFile != null )
                 {
                     binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                    var currentPerson = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.CurrentPerson;
+
+                    /*
+                        9/14/26 - CLAUDE
+
+                        Resolve the current person from the RockRequestContext stored on the
+                        request's HttpContext.Items (attached in Application_BeginRequest under
+                        RockRequestContext.HttpContextItemsKey), NOT from the ambient
+                        IRockRequestContextAccessor. This runs in EndProcessRequest, the async
+                        completion of the IHttpAsyncHandler, which executes on an APM completion
+                        thread. The accessor is AsyncLocal-backed and its value is not guaranteed
+                        to flow across that raw completion boundary (OnExecuteRequestStep re-seats
+                        it per pipeline step, but the ADO.NET completion is not a pipeline step),
+                        so reading the accessor here can return null and deny an authorized user.
+                        `context` (from IAsyncResult.AsyncState) is the real request HttpContext,
+                        and Items survives the boundary because it lives on that object.
+
+                        When this handler is converted to OWIN / HttpTaskAsyncHandler, resolve
+                        from IRockRequestContextAccessor instead: an awaited continuation restores
+                        the ExecutionContext (and the AsyncLocal), and OWIN endpoints do not
+                        populate HttpContext.Items the same way.
+
+                        Reason: AsyncLocal accessor is unreliable in the APM completion; read the context from Items.
+                    */
+                    var currentPerson = ( context.Items[RockRequestContext.HttpContextItemsKey] as RockRequestContext )?.CurrentPerson;
                     var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
                     // If no parent entity is specified then check if there is security on the BinaryFileType
