@@ -856,6 +856,20 @@ namespace Rock.Rest.v2.Controllers
 
                 if ( person != null )
                 {
+                    /*
+                        9/14/26 - DH
+
+                        Reading identity from the Web API principal (GetUserPrincipal /
+                        Identity.Name) is the legacy pattern and is NOT recommended going
+                        forward. This should be updated to resolve the current person and
+                        user from RockRequestContext / PersonSession instead. It is left
+                        as-is for now because migrating it fully is a larger change: the
+                        passwordless AuthToken generated below for the TV client is keyed
+                        off the principal's user name, so switching the source also means
+                        reworking how those device logins are generated.
+
+                        Reason: GetUserPrincipal is legacy; migrate to RockRequestContext later.
+                    */
                     var principal = ControllerContext.Request.GetUserPrincipal();
 
                     launchPacket.CurrentPerson = TvHelper.GetTvPerson( person );
