@@ -19,6 +19,7 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model.Event.RegistrationInstance.Options;
 
@@ -320,6 +321,40 @@ namespace Rock.Model
                 {
                     ExceptionLogService.LogException( e );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Removes every expired <see cref="RegistrationSession"/> that references the specified registration.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         An expired session no longer holds a reserved spot or an in-progress payment, so it
+        ///         should not keep a registration from being deleted. Unexpired sessions are left in place.
+        ///         Call this before <see cref="RegistrationService.CanDelete(Registration, out string)"/>
+        ///         so a registration is not blocked from deletion by a session that has already timed out.
+        ///     </para>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        /// <param name="registrationId">The identifier of the registration whose expired sessions should be removed.</param>
+        /// <returns>The number of expired sessions that were removed.</returns>
+        [RockInternal( "20.1" )]
+        public static int RemoveExpiredSessionsForRegistration( int registrationId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+                var expiredSessionsQuery = registrationSessionService.Queryable()
+                    .Where( s => s.RegistrationId == registrationId && s.ExpirationDateTime < RockDateTime.Now );
+
+                registrationSessionService.DeleteRange( expiredSessionsQuery );
+
+                return rockContext.SaveChanges();
             }
         }
 

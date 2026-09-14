@@ -529,6 +529,9 @@ namespace RockWeb.Blocks.Event
                             return;
                         }
 
+                        // Remove any expired sessions first so an abandoned, timed-out session cannot block the delete.
+                        RegistrationSessionService.RemoveExpiredSessionsForRegistration( registration.Id );
+
                         string errorMessage;
                         if ( !registrationService.CanDelete( registration, out errorMessage ) )
                         {
