@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,18 +25,19 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
+using Newtonsoft.Json;
+
 using Rock;
 using Rock.Configuration;
 using Rock.Data;
-using Rock.Web.UI.Controls;
-using Newtonsoft.Json;
 using Rock.Lava;
 using Rock.Net;
 using Rock.Obsidian.UI.GridField;
+using Rock.Security;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
-using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect
 {

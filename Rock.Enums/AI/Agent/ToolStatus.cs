@@ -1,4 +1,4 @@
-﻿namespace Rock.Enums.AI.Agent
+namespace Rock.Enums.AI.Agent
 {
     /// <summary>
     /// Indicates the overall outcome of a tool call.

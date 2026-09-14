@@ -1,4 +1,4 @@
-﻿namespace InteractiveExperienceLoadTest
+namespace InteractiveExperienceLoadTest
 {
     /// <summary>
     /// The parameters to send to the login API endpoint.

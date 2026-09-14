@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,12 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Ical.Net.DataTypes;
+
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Ical.Net.DataTypes;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {

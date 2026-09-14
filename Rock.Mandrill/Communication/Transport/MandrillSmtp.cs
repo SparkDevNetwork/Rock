@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net.Mail;
+
 using Rock.Attribute;
 
 namespace Rock.Communication.Transport

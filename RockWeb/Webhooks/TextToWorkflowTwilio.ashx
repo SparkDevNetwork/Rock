@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="TextToWorkflowTwilio" %>
+<%@ WebHandler Language="C#" Class="TextToWorkflowTwilio" %>
 // <copyright>
 // Copyright 2013 by the Spark Development Network
 //

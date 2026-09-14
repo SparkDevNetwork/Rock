@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Configuration;
-using Rock.Data;
-using Rock.Model;
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {

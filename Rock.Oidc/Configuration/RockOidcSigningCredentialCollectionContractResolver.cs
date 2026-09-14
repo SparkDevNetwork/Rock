@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 
 using System.Reflection;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 

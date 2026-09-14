@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,8 +22,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
-using Rock.Web.UI;
 using Rock.ViewModels.Controls;
+using Rock.Web.UI;
 
 namespace Rock.Lava.Shortcodes
 {

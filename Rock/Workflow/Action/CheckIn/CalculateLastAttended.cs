@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,8 @@ using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
 
-using Rock.Data;
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 

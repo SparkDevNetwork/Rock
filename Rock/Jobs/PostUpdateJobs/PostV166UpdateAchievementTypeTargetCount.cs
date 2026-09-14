@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,15 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
+using System.Linq;
+
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-
-using System.ComponentModel;
-using System.Linq;
-using Rock.Configuration;
 
 namespace Rock.Jobs.PostUpdateJobs
 {

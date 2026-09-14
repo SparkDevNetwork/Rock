@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,13 +16,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data.Entity;
-using System.Data.Entity.Core.Objects;
 using System.Web;
-using Humanizer;using Rock.Attribute;
+
+using Humanizer;
+
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
@@ -30,7 +34,6 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
 
 namespace Rock.Jobs
 {

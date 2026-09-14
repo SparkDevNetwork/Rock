@@ -1,4 +1,4 @@
-﻿namespace Rock.CodeGeneration.Utility
+namespace Rock.CodeGeneration.Utility
 {
     /// <summary>
     /// Represents a single TypeScript import that will need to be added

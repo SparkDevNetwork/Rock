@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,8 +27,8 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Tv.Classes;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Tv.RokuApplicationDetail;
 using Rock.ViewModels.Blocks.Cms.SiteDetail;
+using Rock.ViewModels.Blocks.Tv.RokuApplicationDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 

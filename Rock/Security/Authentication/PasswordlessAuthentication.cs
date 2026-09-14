@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,21 +15,22 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel.Composition;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
+
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security.Authentication.OneTimePasscode;
 using Rock.Security.Authentication.Passwordless;
 using Rock.Utility.Enums;
+using Rock.Web.Cache;
 
 namespace Rock.Security.Authentication
 {

@@ -1,13 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Model;
 using Rock.Financial;
+using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 

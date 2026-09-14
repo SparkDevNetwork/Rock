@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ using Rock.Tv.Classes;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Tv.AppleTvAppDetail;
 using Rock.Web.Cache;
+
 using static Rock.Model.BenevolenceType;
 
 namespace Rock.Blocks.Tv

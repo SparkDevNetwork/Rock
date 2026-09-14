@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Entity;
+
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Workflow;
-using System.Data.Entity;
 
 namespace Rock.Model
 {

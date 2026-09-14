@@ -1,39 +1,42 @@
-﻿using System.ComponentModel;
-using System.Linq;
-using Rock.Attribute;
-using Rock.Web.UI;
-
-using Rock.Configuration;
-using Rock.Model;
-using Rock.ViewModels.Blocks.Engagement.ConnectionsHub;
-using Rock.ViewModels.Blocks;
-using Rock.Obsidian.UI;
-using Rock.Web.Cache;
-using System.Data.Entity;
-using Rock.SystemGuid;
-using Rock.ViewModels.Core.Grid;
-using Rock.Utility;
 using System;
-using Rock.ViewModels.Utility;
-using Rock.Security;
 using System.Collections.Generic;
-using Rock.Data;
-using Newtonsoft.Json;
-using Rock.Reporting;
-using Rock.SystemKey;
-using Rock.Web;
-using Rock.Enums.Connection;
-using Rock.Tasks;
-using Rock.Web.UI.Controls;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Rock.AI.Classes.ChatCompletions;
-using static Rock.Model.ConnectionType.ConnectionTypeAdditionalSettings;
-using Rock.Model.Connection.ConnectionType.Options;
+
 using Microsoft.Extensions.DependencyInjection;
+
+using Newtonsoft.Json;
+
 using Rock.AI;
+using Rock.AI.Classes.ChatCompletions;
+using Rock.Attribute;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Enums.Connection;
+using Rock.Model;
+using Rock.Model.Connection.ConnectionType.Options;
+using Rock.Obsidian.UI;
+using Rock.Reporting;
+using Rock.Security;
+using Rock.SystemGuid;
+using Rock.SystemKey;
+using Rock.Tasks;
+using Rock.Utility;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Engagement.ConnectionsHub;
+using Rock.ViewModels.Core.Grid;
+using Rock.ViewModels.Utility;
+using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
+
+using static Rock.Model.ConnectionType.ConnectionTypeAdditionalSettings;
 
 namespace Rock.Blocks.Engagement
 {

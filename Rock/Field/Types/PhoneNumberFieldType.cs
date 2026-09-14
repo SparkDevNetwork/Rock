@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,15 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.UI.Controls;
 using System.Collections.Generic;
 using System.Linq;
-
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {

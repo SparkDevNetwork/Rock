@@ -136,6 +136,12 @@
     const host = ref<HTMLElement | null>(null);
     const mode = ref<CaptchaMode>(CaptchaMode.Visible);
 
+    // Single per-tab key: one solved token is reused across forms in the same browser tab.
+    const captchaTokenCacheKey = "rock-captcha-token";
+
+    // Re-challenge slightly before the real expiry to absorb clock skew.
+    const captchaTokenExpirationMarginMs = 60 * 1000;
+
     // #endregion Values
 
     // #region Computed Values
@@ -179,6 +185,85 @@
     // #endregion Computed Values
 
     // #region Functions
+
+    type CachedCaptchaToken = {
+        token: string;
+
+        /** Unix time in milliseconds. */
+        expiresAt: number;
+    };
+
+    // sessionStorage access can throw (private mode, blocked storage); a failure just means no reuse.
+    function readCachedToken(): CachedCaptchaToken | null {
+        try {
+            const raw = sessionStorage.getItem(captchaTokenCacheKey);
+
+            if (!raw) {
+                return null;
+            }
+
+            const parsed = JSON.parse(raw) as CachedCaptchaToken;
+
+            if (typeof parsed?.token === "string" && typeof parsed?.expiresAt === "number") {
+                return parsed;
+            }
+        }
+        catch {
+            // Ignored: treat unavailable or malformed storage as no cached token.
+        }
+
+        return null;
+    }
+
+    function writeCachedToken(token: string, expiresAt: number): void {
+        try {
+            sessionStorage.setItem(captchaTokenCacheKey, JSON.stringify({ token, expiresAt }));
+        }
+        catch {
+            // Ignored: without storage the control still works, just without reuse.
+        }
+    }
+
+    function clearCachedToken(): void {
+        try {
+            sessionStorage.removeItem(captchaTokenCacheKey);
+        }
+        catch {
+            // Ignored: nothing to do if storage is unavailable.
+        }
+    }
+
+    // Reuse a token solved earlier in this tab, but only after the server confirms it is still
+    // valid. The client-side expiry check above is a fast pre-filter; the encrypted token can
+    // only be judged by the server, so confirm before skipping the challenge.
+    async function tryReuseCachedToken(): Promise<boolean> {
+        const cached = readCachedToken();
+
+        if (!cached || Date.now() >= cached.expiresAt - captchaTokenExpirationMarginMs) {
+            return false;
+        }
+
+        const result = await validateToken(cached.token);
+
+        if (disposed) {
+            return true;
+        }
+
+        if (!result?.isTokenValid) {
+            // The server no longer accepts it; drop it and fall back to a fresh challenge.
+            clearCachedToken();
+            return false;
+        }
+
+        // Field-type usage reports validity through this event.
+        if (props.performValidation) {
+            emit("tokenValidated", true);
+        }
+
+        internalValue.value = cached.token;
+        tokenPromiseSource.resolve(cached.token);
+        return true;
+    }
 
     /**
      * Get the control configuration from the server.
@@ -251,6 +336,12 @@
         const result = await http.post<CaptchaVerifyResultBag>("/api/v2/Controls/CaptchaVerify", undefined, options);
 
         if (result.isSuccess && result.data) {
+            // Cache the solved token here: this is the only place the expiry is available
+            // (the solve event and the token itself do not expose it).
+            if (result.data.isVerified && result.data.token && result.data.expires) {
+                writeCachedToken(result.data.token, result.data.expires);
+            }
+
             const resp = {
                 success: result.data.isVerified,
                 token: result.data.token ?? "",
@@ -282,6 +373,10 @@
         internalValue.value = "";
 
         if (mode.value === CaptchaMode.Disabled) {
+            return;
+        }
+
+        if (await tryReuseCachedToken()) {
             return;
         }
 
@@ -354,6 +449,9 @@
      * unmount, which should be preferred in standard flows.
      */
     function refreshToken(): void {
+        // Drop the cached token so the re-render issues a fresh challenge.
+        clearCachedToken();
+
         // Complete the previous one-shot promise and start a new one.
         tokenPromiseSource.resolve(undefined);
         tokenPromiseSource = new PromiseCompletionSource<string | undefined>();

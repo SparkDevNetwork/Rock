@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Model;
@@ -29,7 +30,6 @@ using Rock.ViewModels.Core;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
-using Rock.Configuration;
 
 namespace Rock.Core.NotificationMessageTypes
 {

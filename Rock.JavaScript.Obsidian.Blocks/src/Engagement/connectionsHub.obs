@@ -2154,7 +2154,26 @@
         // When a new request is selected from the list we need to clear breadcrumbs.
         connectionRequestBreadcrumbs.value = [];
 
-        selectedRequestKeyForDockedPanel.value = key;
+        /*
+            9/11/26 - KBH
+
+            Details normally load from the watcher on selectedRequestKeyForDockedPanel.
+            Drilling into an Additional Request swaps the details without changing that
+            key, so re-selecting the same row after closing the panel is a same-value
+            write and the watcher never fires, leaving the drilled-into request on screen
+            with no breadcrumb back. Fetch explicitly in that case.
+
+            Reason: Vue watchers do not fire on same-value writes. (Fixes #7035)
+        */
+        const isSameRequestSelected = selectedRequestKeyForDockedPanel.value === key;
+
+        if (isSameRequestSelected) {
+            getConnectionRequestDetails(key);
+        }
+        else {
+            selectedRequestKeyForDockedPanel.value = key;
+        }
+
         isFlyoutOpen.value = false;
         isDockedPanelVisible.value = true;
     }

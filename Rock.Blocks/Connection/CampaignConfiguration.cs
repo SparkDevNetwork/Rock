@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,9 +22,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Model;
 using Rock.Security;
-using Rock.Constants;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Connection.CampaignConfiguration;

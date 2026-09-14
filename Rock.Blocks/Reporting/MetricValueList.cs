@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,11 +27,11 @@ using Rock.Field;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Reporting.MetricValueList;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Reporting

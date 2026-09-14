@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,8 +17,9 @@
 namespace Rock.Migrations
 {
     using System;
-    using System.Data.Entity.Migrations;
     using System.Collections.Generic;
+    using System.Data.Entity.Migrations;
+
     using Rock.Model;
 
     /// <summary>

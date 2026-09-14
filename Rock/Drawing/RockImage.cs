@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,20 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Data.Entity;
+using System.IO;
+using System.Threading;
+using System.Web;
+
+using Microsoft.Ajax.Utilities;
+
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
+
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing.Processors.Drawing;
-using SixLabors.ImageSharp;
-using System.Threading;
-using System;
-using System.Web;
-using System.IO;
-using Rock.Web.Cache;
-using System.Data.Entity;
-using Microsoft.Ajax.Utilities;
-using Rock.Security;
 
 namespace Rock.Drawing
 {

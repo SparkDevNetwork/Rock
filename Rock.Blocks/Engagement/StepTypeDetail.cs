@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,14 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Data.Entity.SqlServer;
+using System.Linq;
+using System.Text;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -22,8 +30,6 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using ChartDataBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.ChartDataBag;
-using SeriesBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.SeriesBag;
 using Rock.ViewModels.Blocks.Engagement.StepTypeDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -32,13 +38,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
-using System.Linq;
-using System.Text;
+using ChartDataBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.ChartDataBag;
+using SeriesBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.SeriesBag;
 
 namespace Rock.Blocks.Engagement
 {

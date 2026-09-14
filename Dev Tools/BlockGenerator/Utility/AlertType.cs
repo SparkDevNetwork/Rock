@@ -1,4 +1,4 @@
-﻿namespace BlockGenerator.Utility
+namespace BlockGenerator.Utility
 {
     public enum AlertType
     {

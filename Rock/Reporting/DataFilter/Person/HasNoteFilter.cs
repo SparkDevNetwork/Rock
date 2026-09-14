@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,16 +24,15 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
 // This is to get the enums without the prefix
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
-using Rock.Configuration;
 
 namespace Rock.Reporting.DataFilter.Person
 {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,11 +20,14 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+
 using Google.Cloud.Storage.V1;
+
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
 using Rock.Storage.Common;
+
 using GoogleObject = Google.Apis.Storage.v1.Data.Object;
 
 namespace Rock.Storage.AssetStorage

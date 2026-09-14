@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,13 +15,13 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Data;
-using System.Linq;
 
 namespace Rock.CheckIn.v2.Labels
 {

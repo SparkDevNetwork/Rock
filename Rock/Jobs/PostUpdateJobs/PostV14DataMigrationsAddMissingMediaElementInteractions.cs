@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,18 +15,18 @@
 // </copyright>
 //
 
-using Microsoft.EntityFrameworkCore;
-
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+
+using Microsoft.EntityFrameworkCore;
+
+using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {

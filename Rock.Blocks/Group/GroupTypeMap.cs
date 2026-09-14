@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,11 +23,11 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Group.GroupTypeMap;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Group.GroupTypeMap;
 
 namespace Rock.Blocks.Group
 {

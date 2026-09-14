@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,8 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
+
 using Newtonsoft.Json;
+
 using RestSharp;
+
 using Rock.Update.Interfaces;
 using Rock.Update.Models;
 using Rock.Web.Cache;

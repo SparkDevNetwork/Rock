@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -36,7 +37,6 @@ using Twilio.Rest.Api.V2010.Account;
 
 using TwilioExceptions = Twilio.Exceptions;
 using TwilioTypes = Twilio.Types;
-using Rock.Configuration;
 
 namespace Rock.Communication.Transport
 {

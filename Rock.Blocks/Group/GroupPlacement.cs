@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,16 +26,16 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Group;
 using Rock.Model;
-using Rock.RealTime.Topics;
 using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupPlacement;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Enums.Group;
 
 namespace Rock.Blocks.Group
 {

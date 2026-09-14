@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,12 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Constants;
@@ -25,11 +31,7 @@ using Rock.ViewModels.Blocks.WebFarm.WebFarmNodeDetail;
 using Rock.ViewModels.Blocks.WebFarm.WebFarmSettings;
 using Rock.Web;
 using Rock.WebFarm;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
+
 using static Rock.Model.WebFarmNodeMetricService;
 
 namespace Rock.Blocks.WebFarm

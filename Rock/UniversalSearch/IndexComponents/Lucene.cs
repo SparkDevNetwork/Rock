@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ using Lucene.Net.Util;
 using Newtonsoft.Json.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
@@ -46,7 +47,6 @@ using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Web.Cache;
 
 using Document = Lucene.Net.Documents.Document;
-using Rock.Configuration;
 
 namespace Rock.UniversalSearch.IndexComponents
 {
