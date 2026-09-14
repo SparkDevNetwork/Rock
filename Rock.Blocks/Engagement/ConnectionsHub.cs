@@ -3490,12 +3490,13 @@ namespace Rock.Blocks.Engagement
         /// from family members of the requester.
         /// </summary>
         /// <remarks>
-        /// Each settings entry is queried independently and the results are combined via union.
+        /// Each settings entry is queried independently and the results are combined via union,
+        /// then ordered by created date descending with Id descending as a tiebreaker.
         /// Returns an empty list if no settings are provided.
         /// </remarks>
         /// <param name="settingsList">The list of additional request display settings that define which Connection Types, states, and persons to include.</param>
         /// <param name="requesterPerson">The requester person whose Connection Requests (and optionally their family members') are retrieved.</param>
-        /// <returns>A list of <see cref="AdditionalRequestBag"/> objects representing the matching Connection Requests across all configured settings.</returns>
+        /// <returns>A list of <see cref="AdditionalRequestBag"/> objects representing the matching Connection Requests across all configured settings, ordered newest first.</returns>
         public List<AdditionalRequestBag> GetAdditionalConnectionRequests( List<AdditionalRequestToShowSettings> settingsList, Rock.Model.Person requesterPerson )
         {
             if ( settingsList == null || !settingsList.Any() )
@@ -3543,19 +3544,25 @@ namespace Rock.Blocks.Engagement
                     : combinedQuery.Union( query );
             }
 
-            var additionalRequestsProjection = combinedQuery.Select( r => new
-            {
-                RequestId = r.Id,
-                ConnectionOpportunityId = r.ConnectionOpportunity.Id,
-                ConnectionOpportunityName = r.ConnectionOpportunity.Name,
-                ConnectionStatus = r.ConnectionStatus.Name,
-                r.ConnectorPersonAlias,
-                ConnectorNickName = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.NickName : string.Empty,
-                ConnectorLastName = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.LastName : string.Empty,
-                RequestCreatedDateTime = r.CreatedDateTime,
-                RequesterNickName = r.PersonAlias.Person.NickName,
-                RequesterLastName = r.PersonAlias.Person.LastName
-            } ).ToList();
+            // UNION carries no ordering guarantee and the client only shows the first five rows,
+            // so order newest first here. Id breaks ties for batch-created requests that share a timestamp.
+            var additionalRequestsProjection = combinedQuery
+                .OrderByDescending( r => r.CreatedDateTime )
+                .ThenByDescending( r => r.Id )
+                .Select( r => new
+                {
+                    RequestId = r.Id,
+                    ConnectionOpportunityId = r.ConnectionOpportunity.Id,
+                    ConnectionOpportunityName = r.ConnectionOpportunity.Name,
+                    ConnectionStatus = r.ConnectionStatus.Name,
+                    r.ConnectorPersonAlias,
+                    ConnectorNickName = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.NickName : string.Empty,
+                    ConnectorLastName = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.LastName : string.Empty,
+                    RequestCreatedDateTime = r.CreatedDateTime,
+                    RequesterNickName = r.PersonAlias.Person.NickName,
+                    RequesterLastName = r.PersonAlias.Person.LastName
+                } )
+                .ToList();
 
             return additionalRequestsProjection.Select( r => new AdditionalRequestBag
             {
