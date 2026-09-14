@@ -1,0 +1,111 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="panel panel-block">
+        <div v-if="content?.titleHtml" class="panel-heading">
+            <h1 class="panel-title" v-html="content.titleHtml"></h1>
+        </div>
+        <div class="panel-body">
+
+            <NotificationBox v-if="content?.message" :alertType="messageAlertType">
+                <span v-html="content.message"></span>
+            </NotificationBox>
+
+            <template v-else>
+                <div v-html="content?.bodyHtml"></div>
+
+                <div class="actions">
+                    <button v-if="content?.showPrevious"
+                            type="button"
+                            class="btn btn-xs btn-default"
+                            :disabled="isLoading"
+                            @click="onPreviousClick">
+                        <i class="ti ti-chevron-left"></i> Prev
+                    </button>
+                    <button v-if="content?.showNext"
+                            type="button"
+                            class="btn btn-xs btn-default pull-right"
+                            :disabled="isLoading"
+                            @click="onNextClick">
+                        Next <i class="ti ti-chevron-right"></i>
+                    </button>
+                </div>
+            </template>
+
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { InternalCommunicationViewInitializationBox } from "@Obsidian/ViewModels/Blocks/Utility/InternalCommunicationView/internalCommunicationViewInitializationBox";
+    import { InternalCommunicationViewContentBag } from "@Obsidian/ViewModels/Blocks/Utility/InternalCommunicationView/internalCommunicationViewContentBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<InternalCommunicationViewInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const content = ref<InternalCommunicationViewContentBag | null | undefined>(config.content);
+    const isLoading = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const messageAlertType = computed((): AlertType => {
+        return (content.value?.messageType as AlertType) ?? AlertType.Info;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Pages backward to the next older communication item.
+     */
+    async function onPreviousClick(): Promise<void> {
+        await goToPage((content.value?.pageIndex ?? 0) + 1);
+    }
+
+    /**
+     * Pages forward to the next newer communication item.
+     */
+    async function onNextClick(): Promise<void> {
+        await goToPage((content.value?.pageIndex ?? 0) - 1);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Requests the rendered content for the specified page and replaces the current view with it.
+     *
+     * @param pageIndex The zero-based page offset to load.
+     */
+    async function goToPage(pageIndex: number): Promise<void> {
+        if (isLoading.value) {
+            return;
+        }
+
+        isLoading.value = true;
+
+        try {
+            const result = await invokeBlockAction<InternalCommunicationViewContentBag>("GetContent", { pageIndex });
+
+            if (result.isSuccess && result.data) {
+                content.value = result.data;
+            }
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
