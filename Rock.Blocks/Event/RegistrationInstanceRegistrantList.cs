@@ -140,6 +140,8 @@ namespace Rock.Blocks.Event
         private Dictionary<int, PhoneNumberLookupResult> _homePhoneNumbers = new Dictionary<int, PhoneNumberLookupResult>();
         private Dictionary<int, PhoneNumberLookupResult> _workPhoneNumbers = new Dictionary<int, PhoneNumberLookupResult>();
         private Dictionary<int, List<string>> _personCampusNames = new Dictionary<int, List<string>>();
+        private Dictionary<int, IHasAttributes> _personsById = new Dictionary<int, IHasAttributes>();
+        private Dictionary<int, IHasAttributes> _groupMembersById = new Dictionary<int, IHasAttributes>();
 
         #endregion
 
@@ -657,11 +659,11 @@ namespace Rock.Blocks.Event
                         break;
 
                     case RegistrationFieldSource.PersonAttribute:
-                        AddEntityAttributeField( builder, attribute, r => r.PersonAlias?.Person );
+                        AddEntityAttributeField( builder, attribute, r => _personsById.GetValueOrNull( r.PersonAlias?.PersonId ?? 0 ) );
                         break;
 
                     case RegistrationFieldSource.GroupMemberAttribute:
-                        AddEntityAttributeField( builder, attribute, r => r.GroupMember );
+                        AddEntityAttributeField( builder, attribute, r => _groupMembersById.GetValueOrNull( r.GroupMemberId ?? 0 ) );
                         break;
                 }
             }
@@ -1243,10 +1245,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                 var persons = items
                     .Select( r => r.PersonAlias?.Person )
                     .Where( p => p != null )
-                    .Cast<IHasAttributes>()
+                    .DistinctBy( p => p.Id )
                     .ToList();
 
-                Helper.LoadFilteredAttributes( typeof( Person ), persons, rockContext, a => personAttributeIds.Contains( a.Id ) );
+                Helper.LoadFilteredAttributes( typeof( Person ), persons.Cast<IHasAttributes>().ToList(), rockContext, a => personAttributeIds.Contains( a.Id ) );
+
+                _personsById = persons.ToDictionary( p => p.Id, p => ( IHasAttributes ) p );
             }
 
             var groupMemberAttributes = GetGridAttributesBySource( RegistrationFieldSource.GroupMemberAttribute );
@@ -1257,10 +1261,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                 var groupMembers = items
                     .Select( r => r.GroupMember )
                     .Where( gm => gm != null )
-                    .Cast<IHasAttributes>()
+                    .DistinctBy( gm => gm.Id )
                     .ToList();
 
-                Helper.LoadFilteredAttributes( typeof( GroupMember ), groupMembers, rockContext, a => groupMemberAttributeIds.Contains( a.Id ) );
+                Helper.LoadFilteredAttributes( typeof( GroupMember ), groupMembers.Cast<IHasAttributes>().ToList(), rockContext, a => groupMemberAttributeIds.Contains( a.Id ) );
+
+                _groupMembersById = groupMembers.ToDictionary( gm => gm.Id, gm => ( IHasAttributes ) gm );
             }
         }
 
