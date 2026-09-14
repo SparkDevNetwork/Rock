@@ -873,15 +873,34 @@ namespace Rock.Rest.v2.Controllers
                     var principal = ControllerContext.Request.GetUserPrincipal();
 
                     launchPacket.CurrentPerson = TvHelper.GetTvPerson( person );
-                    launchPacket.CurrentPerson.AuthToken = TvHelper.GetAuthenticationTokenFromUsername( principal.Identity.Name, RockRequestContext );
 
-                    UserLoginService.UpdateLastLogin(
-                        new UpdateLastLoginArgs {
-                            UserName = principal.Identity.Name,
-                            SourceSiteIdOverride = site.Id,
-                            ShouldSkipWritingHistoryLog = true
-                        }
-                    );
+                    /*
+                        9/14/26 - CLAUDE
+
+                        person and principal are resolved by independent mechanisms: person comes
+                        from RockRequestContext.CurrentPerson (the PersonSession authority), while
+                        principal is set only when the session is UserLogin-backed. So person != null
+                        does not guarantee a non-null principal. Read the identity name defensively so
+                        a person-without-principal session (not reachable through the TV pipeline
+                        today, but not locally enforced) degrades gracefully - the AuthToken retains
+                        the person-based value already set by GetTvPerson - rather than throwing a
+                        NullReferenceException on principal.Identity.
+
+                        Reason: Guard principal.Identity.Name at the launch packet against NRE.
+                    */
+                    var authUserName = principal?.Identity?.Name;
+                    if ( authUserName.IsNotNullOrWhiteSpace() )
+                    {
+                        launchPacket.CurrentPerson.AuthToken = TvHelper.GetAuthenticationTokenFromUsername( authUserName, RockRequestContext );
+
+                        UserLoginService.UpdateLastLogin(
+                            new UpdateLastLoginArgs {
+                                UserName = authUserName,
+                                SourceSiteIdOverride = site.Id,
+                                ShouldSkipWritingHistoryLog = true
+                            }
+                        );
+                    }
                 }
 
                 // Get or create the personal device.
