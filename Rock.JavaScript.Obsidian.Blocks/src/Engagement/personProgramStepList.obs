@@ -1,0 +1,170 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <Panel v-else
+           :title="options.programName ?? ''"
+           :style="stepsPerRowStyle">
+        <template #headerActions>
+            <button type="button"
+                    class="btn btn-xs btn-square"
+                    :class="isCardView ? 'btn-primary' : 'btn-default'"
+                    title="Card View"
+                    @click="onViewModeClick(true)">
+                <i class="ti ti-grid-dots"></i>
+            </button>
+            <button type="button"
+                    class="btn btn-xs btn-square"
+                    :class="isCardView ? 'btn-default' : 'btn-primary'"
+                    title="Grid View"
+                    @click="onViewModeClick(false)">
+                <i class="ti ti-list"></i>
+            </button>
+        </template>
+
+        <CardView v-if="isCardView"
+                  :stepTypes="stepTypes"
+                  :options="options"
+                  @add="onAddStep"
+                  @edit="onEditStep"
+                  @delete="onDeleteStep" />
+
+        <GridView v-else
+                  :stepTypes="stepTypes"
+                  :gridData="gridData"
+                  :options="options"
+                  @add="onAddStep"
+                  @edit="onEditStep"
+                  @delete="onDeleteStep" />
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PersonProgramStepListBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListBag";
+    import { PersonProgramStepListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListOptionsBag";
+    import { PersonProgramStepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepTypeBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import CardView from "./PersonProgramStepList/cardView.partial.obs";
+    import GridView from "./PersonProgramStepList/gridView.partial.obs";
+    import { PersonPreferenceKey, UrlPlaceholder } from "./PersonProgramStepList/types.partial";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<PersonProgramStepListBag, PersonProgramStepListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    const options: PersonProgramStepListOptionsBag = config.options ?? {
+        isBlockEditable: false,
+        isCampusColumnVisible: false,
+        isStartDateColumnVisible: false,
+        stepsPerRow: 5,
+        stepsPerRowMobile: 1
+    };
+
+
+    const errorMessage = ref(config.bag?.errorMessage ?? "");
+    const isCardView = ref(config.bag?.isCardView ?? false);
+    const stepTypes = ref<PersonProgramStepTypeBag[]>(config.bag?.stepTypes ?? []);
+    const gridData = ref<GridDataBag | undefined>(config.bag?.gridData ?? undefined);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const stepsPerRowStyle = computed((): Record<string, string> => {
+        return {
+            "--stepsPerRow": `${options.stepsPerRow ?? 5}`,
+            "--stepsPerRowMobile": `${options.stepsPerRowMobile ?? 1}`
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when one of the view mode buttons is clicked. Switches the view
+     * and saves the choice as a block person preference.
+     *
+     * @param showCards True to show the card view, false for the grid view.
+     */
+    async function onViewModeClick(showCards: boolean): Promise<void> {
+        isCardView.value = showCards;
+
+        preferences.setValue(PersonPreferenceKey.IsCardView, showCards ? "True" : "False");
+        await preferences.save();
+    }
+
+    /**
+     * Called when an add button is clicked. Navigates to the Step Entry page
+     * for a new step of the given type.
+     *
+     * @param stepTypeId The identifier of the step type.
+     */
+    function onAddStep(stepTypeId: number): void {
+        navigateToStepEntry(stepTypeId, 0);
+    }
+
+    /**
+     * Called when a step row or edit icon is clicked. Navigates to the Step
+     * Entry page for the existing step.
+     *
+     * @param stepTypeId The identifier of the step type.
+     * @param stepId The identifier of the step.
+     */
+    function onEditStep(stepTypeId: number, stepId: number): void {
+        navigateToStepEntry(stepTypeId, stepId);
+    }
+
+    /**
+     * Called when a delete icon is clicked. Deletes the step on the server
+     * and refreshes both views from the returned data.
+     *
+     * @param stepIdKey The identifier key of the step to delete.
+     */
+    async function onDeleteStep(stepIdKey: string): Promise<void> {
+        const result = await invokeBlockAction<PersonProgramStepListBag>("Delete", { key: stepIdKey });
+
+        if (result.isSuccess && result.data) {
+            stepTypes.value = result.data.stepTypes ?? [];
+            gridData.value = result.data.gridData ?? undefined;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to delete the step.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Fills the Step Entry URL template and navigates to it. Does nothing
+     * when no Step Entry page is configured, matching the WebForms block.
+     *
+     * @param stepTypeId The identifier of the step type.
+     * @param stepId The identifier of the step, or 0 for a new step.
+     */
+    function navigateToStepEntry(stepTypeId: number, stepId: number): void {
+        // TODO: Revisit at the end of the conversion (hide affordances or warn editors).
+        if (!options.stepEntryUrlTemplate) {
+            return;
+        }
+
+        window.location.href = options.stepEntryUrlTemplate
+            .replace(UrlPlaceholder.StepTypeId, `${stepTypeId}`)
+            .replace(UrlPlaceholder.StepId, `${stepId}`);
+    }
+
+    // #endregion Functions
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

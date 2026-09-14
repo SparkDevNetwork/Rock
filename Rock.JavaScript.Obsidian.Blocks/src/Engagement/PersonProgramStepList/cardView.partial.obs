@@ -1,0 +1,52 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="step-grid">
+        <StepTypeCard v-for="stepType in stepTypes"
+                      :key="stepType.idKey ?? stepType.id"
+                      :stepType="stepType"
+                      :stepTerm="options.stepTerm ?? 'Step'"
+                      :isBlockEditable="options.isBlockEditable ?? false"
+                      @add="emit('add', $event)"
+                      @edit="(stepTypeId, stepId) => emit('edit', stepTypeId, stepId)"
+                      @delete="emit('delete', $event)" />
+    </div>
+</template>
+
+<style scoped>
+    .step-grid {
+        display: grid;
+        grid-template-columns: repeat(var(--stepsPerRowMobile, 1), minmax(0, 1fr));
+        gap: var(--spacing-medium);
+    }
+
+    @media (min-width: 1200px) {
+        .step-grid {
+            grid-template-columns: repeat(var(--stepsPerRow, 5), minmax(0, 1fr));
+        }
+    }
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { PersonProgramStepListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListOptionsBag";
+    import { PersonProgramStepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepTypeBag";
+    import StepTypeCard from "./stepTypeCard.partial.obs";
+
+    defineProps({
+        stepTypes: {
+            type: Array as PropType<PersonProgramStepTypeBag[]>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<PersonProgramStepListOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "add", stepTypeId: number): void;
+        (e: "edit", stepTypeId: number, stepId: number): void;
+        (e: "delete", stepIdKey: string): void;
+    }>();
+</script>
