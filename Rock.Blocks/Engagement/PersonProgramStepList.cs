@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -160,6 +161,7 @@ namespace Rock.Blocks.Engagement
 
         private StepProgramCache _stepProgram;
         private Person _person;
+        private List<StepType> _stepTypes;
 
         #endregion Fields
 
@@ -207,10 +209,50 @@ namespace Rock.Blocks.Engagement
 
             bag.IsCardView = GetIsCardView( program );
 
-            // TODO: Load the person's steps, prerequisites, and step types once,
-            // then build bag.StepTypes (cards) and bag.GridData (grid rows).
+            var stepTypes = GetStepTypes( program );
+
+            // TODO: Load the person's steps of these types and the types' prerequisites once,
+            // then compute the flags, render the card Lava, and build bag.GridData.
+            bag.StepTypes = stepTypes
+                .Select( stepType => new PersonProgramStepTypeBag
+                {
+                    Id = stepType.Id,
+                    IdKey = stepType.IdKey,
+                    Name = stepType.Name,
+                    IconCssClass = stepType.IconCssClass,
+                    PrerequisiteNames = new List<string>(),
+                    Steps = new List<PersonProgramStepBag>()
+                } )
+                .ToList();
 
             return bag;
+        }
+
+        /// <summary>
+        /// Gets the active step types of the program ordered for display. The
+        /// full model is loaded because the card Lava template receives it and
+        /// customized templates may reach navigation properties the cache lacks.
+        /// </summary>
+        /// <param name="program">The step program.</param>
+        /// <returns>The ordered list of active step types.</returns>
+        private List<StepType> GetStepTypes( StepProgramCache program )
+        {
+            if ( _stepTypes != null )
+            {
+                return _stepTypes;
+            }
+
+            _stepTypes = new StepTypeService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Include( st => st.StepProgram )
+                .Include( st => st.StepTypePrerequisites.Select( p => p.PrerequisiteStepType ) )
+                .Where( st => st.StepProgramId == program.Id && st.IsActive )
+                .OrderBy( st => st.Order )
+                .ThenBy( st => st.Name )
+                .ToList();
+
+            return _stepTypes;
         }
 
         /// <summary>
