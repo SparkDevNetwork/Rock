@@ -3515,6 +3515,8 @@ namespace Rock.Blocks.Engagement
 
             detailsBag.ActivityEntries = GetActivityEntries( connectionRequest, mergeFields );
 
+            detailsBag.Workflows = GetConnectionRequestWorkflowBags( connectionRequest.Id );
+
             return detailsBag;
         }
 
@@ -3602,6 +3604,83 @@ namespace Rock.Blocks.Engagement
                 RequestCreatedDateTime = r.RequestCreatedDateTime?.ToRockDateTimeOffset(),
                 Requester = r.RequesterNickName + " " + r.RequesterLastName
             } ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the persisted workflows that were launched from the specified Connection Request
+        /// and that the current person is authorized to view, ordered newest first.
+        /// </summary>
+        /// <remarks>
+        /// Mirrors the legacy Connection Request Board's Workflows grid. Rows are filtered by VIEW
+        /// authorization on the Workflow Type so that workflows the viewer cannot open are never sent
+        /// to the client. The row URL targets the Workflow Entry page when the current person has an
+        /// active entry form on the workflow, otherwise the Workflow Detail page.
+        /// </remarks>
+        /// <param name="connectionRequestId">The identifier of the Connection Request.</param>
+        /// <returns>A list of <see cref="ConnectionRequestWorkflowBag"/> objects ordered by activation date descending.</returns>
+        private List<ConnectionRequestWorkflowBag> GetConnectionRequestWorkflowBags( int connectionRequestId )
+        {
+            // Eager load the navigation properties that ActiveActivities and HasActiveEntryForm
+            // read so that each row does not trigger its own set of lazy loads.
+            var connectionRequestWorkflows = new ConnectionRequestWorkflowService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Include( c => c.Workflow.WorkflowType )
+                .Include( c => c.Workflow.Activities.Select( a => a.ActivityType ) )
+                .Include( c => c.Workflow.Activities.Select( a => a.AssignedPersonAlias ) )
+                .Include( c => c.Workflow.Activities.Select( a => a.AssignedGroup.Members ) )
+                .Where( c => c.ConnectionRequestId == connectionRequestId
+                    && c.Workflow != null
+                    && c.Workflow.WorkflowType != null )
+                .ToList();
+
+            var workflowBags = new List<ConnectionRequestWorkflowBag>();
+
+            foreach ( var connectionRequestWorkflow in connectionRequestWorkflows )
+            {
+                var workflow = connectionRequestWorkflow.Workflow;
+                var workflowType = WorkflowTypeCache.Get( workflow.WorkflowTypeId );
+
+                if ( workflowType == null || !workflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    continue;
+                }
+
+                string workflowUrl;
+
+                if ( workflow.HasActiveEntryForm( RequestContext.CurrentPerson ) )
+                {
+                    var queryParams = new Dictionary<string, string>
+                    {
+                        ["WorkflowTypeId"] = workflow.WorkflowTypeId.ToString(),
+                        ["WorkflowGuid"] = workflow.Guid.ToString()
+                    };
+
+                    workflowUrl = this.GetLinkedPageUrl( AttributeKey.WorkflowEntryPage, queryParams );
+                }
+                else
+                {
+                    workflowUrl = this.GetLinkedPageUrl( AttributeKey.WorkflowDetailPage, "WorkflowId", workflow.IdKey );
+                }
+
+                workflowBags.Add( new ConnectionRequestWorkflowBag
+                {
+                    IdKey = connectionRequestWorkflow.IdKey,
+                    WorkflowTypeName = workflowType.Name,
+                    TriggerType = connectionRequestWorkflow.TriggerType,
+                    ActiveActivityNames = workflow.ActiveActivities
+                        .Select( a => a.ActivityTypeCache?.Name )
+                        .Where( n => n.IsNotNullOrWhiteSpace() )
+                        .ToList(),
+                    ActivatedDateTime = workflow.ActivatedDateTime?.ToRockDateTimeOffset(),
+                    IsCompleted = workflow.CompletedDateTime.HasValue,
+                    Status = workflow.Status,
+                    WorkflowUrl = workflowUrl.IsNotNullOrWhiteSpace() ? workflowUrl : null
+                } );
+            }
+
+            return workflowBags
+                .OrderByDescending( w => w.ActivatedDateTime )
+                .ToList();
         }
 
         /// <summary>
@@ -7145,6 +7224,34 @@ WHERE 1 = 1" );
             var activityEntries = GetActivityEntries( connectionRequest, mergeFields );
 
             return ActionOk( activityEntries );
+        }
+
+        /// <summary>
+        /// Gets the persisted workflows launched from the specified Connection Request that the
+        /// current person is authorized to view, used to refresh the Workflows list in the detail
+        /// panel after a workflow is launched without a full details reload.
+        /// </summary>
+        /// <param name="connectionRequestIdKey">The IdKey of the Connection Request to retrieve workflows for.</param>
+        /// <returns>A Block Action Result containing a list of <see cref="ConnectionRequestWorkflowBag"/> objects ordered by activation date descending. Returns a bad request result if the Connection Request cannot be found or the current user is not authorized to view it.</returns>
+        [BlockAction]
+        public BlockActionResult GetConnectionRequestWorkflows( string connectionRequestIdKey )
+        {
+            var connectionRequestService = new ConnectionRequestService( RockContext );
+            var connectionRequest = connectionRequestService.Get( connectionRequestIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( connectionRequest == null )
+            {
+                return ActionBadRequest( $"{Rock.Model.ConnectionRequest.FriendlyTypeName} not found." );
+            }
+
+            if ( !connectionRequest.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to view this Connection Request." );
+            }
+
+            var workflows = GetConnectionRequestWorkflowBags( connectionRequest.Id );
+
+            return ActionOk( workflows );
         }
 
         #endregion Detail View Block Actions

@@ -972,6 +972,7 @@
     import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
     import { ActivityBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityBag";
     import { ActivityEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityEntryBag";
+    import { ConnectionRequestWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestWorkflowBag";
     import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
     import { LaunchWorkflowResultBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowResultBag";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
@@ -3976,6 +3977,12 @@
 
                 isLaunchWorkflowModalVisible.value = false;
 
+                // A launch from the docked panel persists its ConnectionRequestWorkflow row
+                // synchronously, so refresh the panel's Workflows list to show it right away.
+                if (isDockedPanelVisible.value) {
+                    refreshConnectionRequestWorkflows(dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey);
+                }
+
                 return;
             }
 
@@ -4538,6 +4545,24 @@
         }
         else {
             connectionRequestDockedPanelRef.value?.setErrorMessage("activity", result.errorMessage ?? "An error occurred while getting the Connection Request activity entries.");
+        }
+    }
+
+    async function refreshConnectionRequestWorkflows(requestIdKey: string | null | undefined): Promise<void> {
+        // We only need to refresh workflows if the docked panel is open and has data.
+        if (!isDockedPanelVisible.value || !dockedPanelDetailsBox.value?.entity || !requestIdKey) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ConnectionRequestWorkflowBag[]>("GetConnectionRequestWorkflows", {
+            connectionRequestIdKey: requestIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            dockedPanelDetailsBox.value.entity.workflows = result.data;
+        }
+        else {
+            connectionRequestDockedPanelRef.value?.setErrorMessage("view", result.errorMessage ?? "An error occurred while getting the Connection Request workflows.");
         }
     }
 
