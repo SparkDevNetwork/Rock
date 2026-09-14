@@ -224,7 +224,7 @@ namespace Rock.Web
                                                 DateViewed = RockDateTime.Now,
                                                 IPAddress = WebRequestHelper.GetClientIpAddress( routeHttpRequest ),
                                                 UserAgent = routeHttpRequest.UserAgent ?? string.Empty,
-                                                UserName = requestContext.HttpContext.User?.Identity.Name,
+                                                UserName = RockRequestContextAccessor.Current?.CurrentUser?.UserName,
                                                 VisitorPersonAliasIdKey = visitorPersonAliasIdKey,
                                                 UtmSource = UtmHelper.GetUtmSourceNameFromDefinedValueOrText( interactionUtm.SourceValueId, interactionUtm.Source ),
                                                 UtmMedium = UtmHelper.GetUtmMediumNameFromDefinedValueOrText( interactionUtm.MediumValueId, interactionUtm.Medium ),

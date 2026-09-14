@@ -85,21 +85,18 @@ namespace RockWeb
 
                     if ( person == null )
                     {
-                        var principal = context.User;
-                        if ( principal != null && principal.Identity != null )
+                        // If a person wasn't specified in the URL, fall back to the
+                        // currently authenticated person and only show the communication
+                        // if they have EDIT authorization to it. Resolve the person from
+                        // the RockRequestContext rather than the raw principal so both
+                        // cookie formats (new PersonSession and legacy) are handled the
+                        // same way without a manual UserLogin lookup. The internal
+                        // RockRequestContextAccessor is not reachable from App_Code, so the
+                        // request context is resolved through the public accessor interface.
+                        var currentPerson = RockApp.Current.GetService<IRockRequestContextAccessor>()?.RockRequestContext?.CurrentPerson;
+                        if ( currentPerson != null && communication.IsAuthorized( Authorization.EDIT, currentPerson ) )
                         {
-                            var userLoginService = new Rock.Model.UserLoginService( RockApp.Current.CreateRockContext() );
-                            var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-
-                            if ( userLogin != null )
-                            {
-                                var currentPerson = userLogin.Person;
-                                // if a person wasn't specified in the URL, then only show it if the current person has EDIT auth to the communication
-                                if ( communication.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                                {
-                                    person = currentPerson;
-                                }
-                            }
+                            person = currentPerson;
                         }
                     }
 
