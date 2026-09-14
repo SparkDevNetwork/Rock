@@ -33,7 +33,7 @@
                     <slot name="inputGroupAppend"
                           :isInputGroupSupported="true"></slot>
 
-                    <teleport to="body">
+                    <teleport :to="teleportTarget">
                         <div v-if="isOpen && !isAdvancedViewVisible"
                              ref="popover"
                              class="color-picker-popover color-picker-popover-simple"
@@ -226,6 +226,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isElement } from "@Obsidian/Utility/dom";
+    import { getFullscreenElement } from "@Obsidian/Utility/fullscreen";
 
     type ColorFormat = "hex" | "rgb" | "named";
     type ShadeStop = "50" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | "950";
@@ -591,6 +592,7 @@
     const popoverButton = ref<HTMLElement>();
     const popover = ref<HTMLElement>();
     const popoverStyle = ref<Record<string, string>>({});
+    const teleportTarget = ref<HTMLElement>(document.body);
     const isOpen = ref(false);
     const svArea = ref<HTMLElement>();
     const hueArea = ref<HTMLElement>();
@@ -871,6 +873,36 @@
         );
 
         displayValue.value = formatHexForOutput(hex);
+    }
+
+    /**
+     * Gets the element the popover should be teleported into.
+     *
+     * @returns The nearest fullscreen ancestor when the picker is shown inside a
+     * fullscreen panel; otherwise the document body.
+     */
+    function getPopupContainer(): HTMLElement {
+        const trigger = colorPicker.value;
+
+        if (trigger) {
+            // Native (window) fullscreen renders only the fullscreen element's
+            // subtree, so a body-level popover would never be visible. It has to
+            // live inside the fullscreen element.
+            const nativeFullscreenElement = getFullscreenElement();
+            if (nativeFullscreenElement instanceof HTMLElement && nativeFullscreenElement.contains(trigger)) {
+                return nativeFullscreenElement;
+            }
+
+            // In-page fullscreen stacks a fixed container above the rest of the
+            // page, so a body-level popover is painted behind it. The popover has
+            // to be a descendant of that container to stack above it.
+            const pageFullscreenElement = trigger.closest<HTMLElement>(".panel-fullscreen");
+            if (pageFullscreenElement) {
+                return pageFullscreenElement;
+            }
+        }
+
+        return document.body;
     }
 
     function updatePopoverPosition(): void {
@@ -1441,6 +1473,10 @@
             document.removeEventListener("pointerdown", onClickOutside);
             return;
         }
+
+        // Resolve the teleport target before the popover renders so it lands
+        // inside any fullscreen container rather than behind it.
+        teleportTarget.value = getPopupContainer();
 
         document.addEventListener("pointerdown", onClickOutside);
         openBaselineValue.value = props.modelValue ?? "";
