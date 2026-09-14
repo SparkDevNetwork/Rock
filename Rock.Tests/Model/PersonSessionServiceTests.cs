@@ -466,249 +466,38 @@ public class PersonSessionServiceTests
         Assert.AreEqual( PersonSessionCreationSource.ApiKey, resolved.CreationSource );
     }
 
-    /// <summary>
-    /// An orphaned ApiKey session (its referenced <see cref="UserLogin"/> was
-    /// deleted, so the FK cascade SET NULL its <c>UserLoginId</c>) MUST NOT
-    /// be returned for a different UserLogin's lookup. This is the
-    /// "deleted UserLogin does not resurrect the orphan" guarantee called out
-    /// by the spec.
-    /// </summary>
-    [TestMethod]
-    public void FindOrCreateApiKeySession_OrphanedSession_IsNotResurrected()
-    {
-        using var scope = TestHelper.CreateScopedRockApp();
-        var rockContext = scope.App.CreateRockContext();
+    /*
+        9/14/26 - DH
 
-        // Orphan: a former ApiKey session whose UserLogin was deleted. The
-        // FK's ON DELETE SET NULL has nulled UserLoginId, leaving a
-        // historical row with no owner. A new UserLogin presenting the same
-        // (or different) API key must not pick this up.
-        var orphan = new PersonSession
-        {
-            Id = 1,
-            Guid = Guid.NewGuid(),
-            PersonAliasId = 100,
-            UserLoginId = null,
-            CreationSource = PersonSessionCreationSource.ApiKey,
-            IsActive = true,
-            IsPersistent = true,
-        };
-        rockContext.Set<PersonSession>().Add( orphan );
+        The mocked-db orphan-not-resurrected and expired-but-active ApiKey tests
+        that used to live here were removed. They wrapped the create/save leg in
+        a bare try/catch that swallowed even the assertion failure, so they could
+        never fail. They now live as real integration tests in
+        Rock.Tests.Integration/Model/PersonSessionTests.cs, where the save leg
+        runs against a real database and the assertions are positive.
 
-        // A fresh UserLogin (different identity).
-        var userLogin = new UserLogin
-        {
-            Id = 99,
-            UserName = "new-key-holder",
-            PersonId = 200,
-            Person = new Person { Id = 200, PrimaryAliasId = 400 },
-        };
-
-        var service = new PersonSessionService( rockContext );
-
-        // Without the upsert / DB SaveChanges, the mocked context cannot
-        // actually persist the new row. We exercise just the lookup leg:
-        // if the orphan is found, the method short-circuits and returns it.
-        // Catch the DbUpdateException that will follow when the mocked
-        // context refuses to save the new row, so we can still assert the
-        // find leg never returned the orphan.
-        try
-        {
-            var resolved = service.FindOrCreateApiKeySession( requestContext: null, userLogin );
-
-            // If we got here, a new session was returned. Verify it is NOT
-            // the orphan.
-            Assert.AreNotEqual( orphan.Id, resolved.Id,
-                "Orphaned ApiKey session must not be returned to a new UserLogin's lookup." );
-        }
-        catch
-        {
-            // Mocked save path may not fully simulate the insert/round-trip.
-            // The orphan-not-resurrected invariant is the lookup behavior:
-            // FindActiveApiKeySession filters by UserLoginId == userLoginId,
-            // and the orphan's UserLoginId is null, so it cannot match a
-            // non-null filter. The exception path means we got past the
-            // "return existing" branch, which is the property we care about.
-        }
-    }
-
-    /// <summary>
-    /// An ApiKey session whose <c>IsActive</c> is still true but whose
-    /// <see cref="PersonSession.ExpiresDateTime"/> has passed must NOT be
-    /// returned — handing it back would cause the next request to fail
-    /// <c>ResolveSessionForRequest</c>'s expiration check and immediately
-    /// log the API consumer out. Today ApiKey sessions are durable and
-    /// have no <c>ExpiresDateTime</c>, so this is a defensive guarantee
-    /// against any future change that introduces one.
-    /// </summary>
-    [TestMethod]
-    public void FindOrCreateApiKeySession_ExpiredButActiveSession_IsNotReused()
-    {
-        using var scope = TestHelper.CreateScopedRockApp();
-        var rockContext = scope.App.CreateRockContext();
-
-        // Stale-but-IsActive row: ExpiresDateTime in the past, IsActive
-        // still true (Rock Cleanup has not run yet).
-        var expired = new PersonSession
-        {
-            Id = 1,
-            Guid = Guid.NewGuid(),
-            PersonAliasId = 100,
-            UserLoginId = 7,
-            CreationSource = PersonSessionCreationSource.ApiKey,
-            IsActive = true,
-            IsPersistent = true,
-            ExpiresDateTime = RockDateTime.Now.AddMinutes( -5 ),
-        };
-        rockContext.Set<PersonSession>().Add( expired );
-
-        var userLogin = new UserLogin
-        {
-            Id = 7,
-            UserName = "ted-decker-apikey",
-            EntityTypeId = 42,
-            PersonId = 50,
-            Person = new Person { Id = 50, PrimaryAliasId = 100 },
-        };
-
-        var service = new PersonSessionService( rockContext );
-
-        // The find leg must skip the expired row; the create-new leg may
-        // throw under the mocked save path. We only care that the expired
-        // row was NOT returned.
-        try
-        {
-            var resolved = service.FindOrCreateApiKeySession( requestContext: null, userLogin );
-            Assert.AreNotEqual( expired.Id, resolved.Id,
-                "Expired-but-active ApiKey session must not be reused." );
-        }
-        catch
-        {
-            // See comment above. The find filter is what's under test;
-            // an exception thrown from the save path confirms the find
-            // returned null and the method fell into the create branch.
-        }
-    }
+        Reason: Vacuous try/catch-swallow tests promoted to integration.
+    */
 
     #endregion FindOrCreateApiKeySession
 
     #region FindOrCreateDeviceComponentSession
 
-    /// <summary>
-    /// A device login must NOT reuse a Component session that belongs to a
-    /// DIFFERENT client (e.g. the person's web session) just because it shares
-    /// the same Database UserLogin. When the request presents no session of its
-    /// own (a fresh device login), the existing web session is left untouched
-    /// and a new device session is created. This is the mobile / TV bug where a
-    /// login reused a 30-minute-old web PersonSession.
-    /// </summary>
-    [TestMethod]
-    public void FindOrCreateDeviceComponentSession_DoesNotReuseAnotherClientSession()
-    {
-        using var scope = TestHelper.CreateScopedRockApp();
-        var rockContext = scope.App.CreateRockContext();
+    /*
+        9/14/26 - DH
 
-        // An active web Component session for the shared Database UserLogin.
-        var webSession = new PersonSession
-        {
-            Id = 1,
-            Guid = Guid.NewGuid(),
-            PersonAliasId = 100,
-            UserLoginId = 7,
-            CreationSource = PersonSessionCreationSource.Component,
-            IsActive = true,
-            IsPersistent = true,
-        };
-        rockContext.Set<PersonSession>().Add( webSession );
+        The mocked-db device-component tests for "fresh login does not reuse
+        another client's session", "different UserLogin on the request marks the
+        prior session inactive", and "expired-but-active session is not reused"
+        were removed from here. Each hit the create/save leg, which the mocked
+        context cannot complete, forcing a try/catch that swallowed the outcome
+        (and, for the first, the assertion itself). They now live as real
+        integration tests in Rock.Tests.Integration/Model/PersonSessionTests.cs
+        where the save leg runs and the new-row / mark-inactive outcomes are
+        asserted positively.
 
-        var userLogin = new UserLogin
-        {
-            Id = 7,
-            UserName = "ted-decker",
-            EntityTypeId = 42,
-            PersonId = 50,
-            Person = new Person { Id = 50, PrimaryAliasId = 100 },
-        };
-
-        var service = new PersonSessionService( rockContext );
-
-        // A fresh device login presents no session of its own. The create-new
-        // leg may throw under the mocked save path; the point is that the web
-        // session is not returned. (If the old UserLogin-wide reuse were still
-        // in place, it would return webSession without ever creating anything.)
-        try
-        {
-            var resolved = service.FindOrCreateDeviceComponentSession( requestContext: null, userLogin );
-            Assert.AreNotEqual( webSession.Id, resolved.Id,
-                "A fresh device login must not reuse another client's (web) session." );
-        }
-        catch
-        {
-            // Fell into the create-new leg (mocked save cannot complete the
-            // insert), which itself confirms the web session was not reused.
-        }
-
-        Assert.IsTrue( webSession.IsActive,
-            "The other client's (web) session must be left untouched by a fresh device login." );
-    }
-
-    /// <summary>
-    /// When the current request already has a <see cref="PersonSession"/>
-    /// for a *different* <see cref="UserLogin"/>, that prior session is
-    /// marked inactive. A new device session for the incoming UserLogin is
-    /// then created (or reused, but in this test no prior Component
-    /// session exists for the incoming UserLogin so a creation attempt
-    /// follows). Covers the "Mobile login as a different person on a
-    /// device that already had a session" spec test.
-    /// </summary>
-    [TestMethod]
-    public void FindOrCreateDeviceComponentSession_DifferentUserLoginOnRequest_MarksPriorInactive()
-    {
-        using var scope = TestHelper.CreateScopedRockApp();
-        var rockContext = scope.App.CreateRockContext();
-
-        var priorSession = new PersonSession
-        {
-            Id = 1,
-            Guid = Guid.NewGuid(),
-            PersonAliasId = 100,
-            UserLoginId = 5, // belongs to the OLD UserLogin
-            CreationSource = PersonSessionCreationSource.Component,
-            IsActive = true,
-            IsPersistent = true,
-        };
-        rockContext.Set<PersonSession>().Add( priorSession );
-
-        var newUserLogin = new UserLogin
-        {
-            Id = 9, // different from priorSession.UserLoginId
-            UserName = "different-person",
-            EntityTypeId = 42,
-            PersonId = 60,
-            Person = new Person { Id = 60, PrimaryAliasId = 200 },
-        };
-
-        var requestContext = new RockRequestContext();
-        requestContext.SetPersonSession( priorSession );
-
-        var service = new PersonSessionService( rockContext );
-
-        // The "create new" branch may throw under the mocked save path
-        // because the mocked context cannot fully simulate the insert
-        // round-trip; the property we are testing is that the prior
-        // session got marked inactive BEFORE the create attempt.
-        try
-        {
-            service.FindOrCreateDeviceComponentSession( requestContext, newUserLogin );
-        }
-        catch
-        {
-            // See above — irrelevant to this test's assertion.
-        }
-
-        Assert.IsFalse( priorSession.IsActive,
-            "Prior PersonSession for the other UserLogin should be marked inactive when a different-person device login occurs." );
-    }
+        Reason: Vacuous try/catch-swallow tests promoted to integration.
+    */
 
     /// <summary>
     /// When the prior session on the request belongs to the SAME
@@ -819,65 +608,6 @@ public class PersonSessionServiceTests
         finally
         {
             System.Web.HttpContext.Current = savedContext;
-        }
-    }
-
-    /// <summary>
-    /// The device's own session, when its <c>IsActive</c> is still true but its
-    /// <see cref="PersonSession.ExpiresDateTime"/> has passed (Rock Cleanup has
-    /// not run yet), must NOT be reused — handing it back would cause the
-    /// device's next request to fail <c>ResolveSessionForRequest</c>'s
-    /// expiration check and immediately log the user out. The method falls into
-    /// the create-new branch instead.
-    /// </summary>
-    [TestMethod]
-    public void FindOrCreateDeviceComponentSession_ExpiredButActiveSession_IsNotReused()
-    {
-        using var scope = TestHelper.CreateScopedRockApp();
-        var rockContext = scope.App.CreateRockContext();
-
-        // Stale-but-IsActive row: ExpiresDateTime in the past, IsActive
-        // still true (Rock Cleanup has not run yet).
-        var expired = new PersonSession
-        {
-            Id = 1,
-            Guid = Guid.NewGuid(),
-            PersonAliasId = 100,
-            UserLoginId = 7,
-            CreationSource = PersonSessionCreationSource.Component,
-            IsActive = true,
-            IsPersistent = true,
-            ExpiresDateTime = RockDateTime.Now.AddMinutes( -5 ),
-        };
-        rockContext.Set<PersonSession>().Add( expired );
-
-        var userLogin = new UserLogin
-        {
-            Id = 7,
-            UserName = "ted-decker-mobile",
-            EntityTypeId = 42,
-            PersonId = 50,
-            Person = new Person { Id = 50, PrimaryAliasId = 100 },
-        };
-
-        // The device presents its own (now-expired) session on the request.
-        var requestContext = new RockRequestContext();
-        requestContext.SetPersonSession( expired );
-
-        var service = new PersonSessionService( rockContext );
-
-        // The reuse leg must skip the expired row; the create-new leg may
-        // throw under the mocked save path. We only care that the expired
-        // row was NOT returned.
-        try
-        {
-            var resolved = service.FindOrCreateDeviceComponentSession( requestContext, userLogin );
-            Assert.AreNotEqual( expired.Id, resolved.Id,
-                "Expired-but-active Component session must not be reused." );
-        }
-        catch
-        {
-            // See comment above; the reuse filter is what's under test.
         }
     }
 
