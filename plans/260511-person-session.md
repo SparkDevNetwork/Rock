@@ -809,17 +809,17 @@ This endpoint was migrated off the legacy `Authorization.SetAuthCookie` bridge t
 
 ### Rock Mobile
 
-- [ ] Mobile login produces a `Component` `PersonSession` with `IsPersistent = true`; the cookie value is returned in the response body.
-- [ ] Mobile API requests carrying `Cookie: .ROCK=...` resolve to the `PersonSession`, advance activity, and behave equivalently to browser requests.
-- [ ] `GetLaunchPacket` returns a fresh `CurrentPerson.AuthToken` that the client stores on next launch; the value resolves to the same `PersonSession`.
-- [ ] Pre-deployment Mobile client carrying a legacy cookie upgrades correctly via the composite-key lookup; the user is not signed out.
-- [ ] Mobile re-login as a different person creates a new session and marks the prior session inactive.
+- [x] Mobile login produces a `Component` `PersonSession` with `IsPersistent = true`; the cookie value is returned in the response body.
+- [x] Mobile API requests carrying `Cookie: .ROCK=...` resolve to the `PersonSession`, advance activity, and behave equivalently to browser requests.
+- [x] `GetLaunchPacket` returns a fresh `CurrentPerson.AuthToken` that the client stores on next launch; the value resolves to the same `PersonSession`.
+- [x] Pre-deployment Mobile client carrying a legacy cookie upgrades correctly via the composite-key lookup; the user is not signed out.
+- [x] Mobile re-login as a different person creates a new session and marks the prior session inactive.
 
 ### Rock TV
 
-- [ ] TV login produces a `Component` `PersonSession` with `IsPersistent = true`.
-- [ ] TV requests carrying the cookie resolve correctly.
-- [ ] Pre-deployment TV client carrying a legacy cookie indefinitely sends the legacy cookie; the composite-key lookup keeps it resolving to the same `PersonSession` until the user re-authenticates or the legacy reader is sunset.
+- [x] TV login produces a `Component` `PersonSession` with `IsPersistent = true`.
+- [x] TV requests carrying the cookie resolve correctly.
+- [x] Pre-deployment TV client carrying a legacy cookie indefinitely sends the legacy cookie; the composite-key lookup keeps it resolving to the same `PersonSession` until the user re-authenticates or the legacy reader is sunset.
 
 ### Auth0 / external `IExternalRedirectAuthentication` providers
 
