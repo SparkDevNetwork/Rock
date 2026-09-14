@@ -8,6 +8,7 @@
       "Rock.Enums\\Rock.Enums.csproj",
       "Rock.Lava.Shared\\Rock.Lava.Shared.csproj",
       "Rock.Rest\\Rock.Rest.csproj",
+      "Rock.Tests.Shared\\Rock.Tests.Shared.csproj",
       "Rock.ViewModels\\Rock.ViewModels.csproj"
     ]
   }
