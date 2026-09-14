@@ -853,34 +853,48 @@ namespace RockWeb
 
             try
             {
-                using ( var rockContext = RockApp.Current.CreateRockContext() )
-                {
+                /*
+                    9/14/26 - DH
+
+                    The RockContext is intentionally NOT disposed. The upgraded
+                    session and its UserLogin.Person are stashed on the request
+                    context below and must stay lazy-loadable for the rest of the
+                    request. A non-WebForms consumer - e.g. the mobile / TV
+                    GetLaunchPacket handler, which builds the MobilePerson from
+                    the person's navigation properties - reads
+                    RockRequestContext.CurrentPerson directly and never re-binds
+                    the person on its own context, so disposing here threw an
+                    ObjectDisposedException on the first navigation-property
+                    access. This matches the BeginRequest identity factory, which
+                    leaves its RockContext open for the same reason.
+
+                    Reason: Keep the upgraded Person / UserLogin usable for the
+                    whole request, including non-WebForms (mobile / TV) handlers.
+                */
+                var rockContext = RockApp.Current.CreateRockContext();
+
 #pragma warning disable CS0618 // UpgradeLegacyCookieForRequest is intentionally obsolete from day one
-                    var upgradedSession = new PersonSessionService( rockContext ).UpgradeLegacyCookieForRequest( rockRequestContext );
+                var upgradedSession = new PersonSessionService( rockContext ).UpgradeLegacyCookieForRequest( rockRequestContext );
 #pragma warning restore CS0618
 
-                    if ( upgradedSession != null && upgradedSession.UserLogin != null )
-                    {
-                        // Stash the upgraded session on the request context
-                        // so downstream callers see the same instance for
-                        // the rest of the request (matches the BeginRequest
-                        // path's contract).
-                        rockRequestContext.SetPersonSession( upgradedSession );
+                if ( upgradedSession != null && upgradedSession.UserLogin != null )
+                {
+                    // Stash the upgraded session on the request context so
+                    // downstream callers see the same instance for the rest of
+                    // the request (matches the BeginRequest path's contract).
+                    rockRequestContext.SetPersonSession( upgradedSession );
 
-                        // LEGACY PLUGIN-COMPATIBILITY. This Context.User write is the same
-                        // plugin-compat shim as the one in Application_PostMapRequestHandler
-                        // (see the engineering note there); core reads identity from
-                        // RockRequestContext, not the principal. Remove both in a future
-                        // major version.
-                        var identity = new System.Security.Principal.GenericIdentity( upgradedSession.UserLogin.UserName );
-                        Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
+                    // LEGACY PLUGIN-COMPATIBILITY. This Context.User write is the same
+                    // plugin-compat shim as the one in Application_PostMapRequestHandler
+                    // (see the engineering note there); core reads identity from
+                    // RockRequestContext, not the principal. Remove both in a future
+                    // major version.
+                    var identity = new System.Security.Principal.GenericIdentity( upgradedSession.UserLogin.UserName );
+                    Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
 
-                        // Legacy upgrades are always backed by a UserLogin, so
-                        // the current person is that user's person. (Resolved
-                        // here while this context is still open; the WebForms
-                        // page handler re-binds it on its own context.)
-                        rockRequestContext.SetCurrentIdentity( upgradedSession.UserLogin.Person, upgradedSession.UserLogin );
-                    }
+                    // Legacy upgrades are always backed by a UserLogin, so the
+                    // current person is that user's person.
+                    rockRequestContext.SetCurrentIdentity( upgradedSession.UserLogin.Person, upgradedSession.UserLogin );
                 }
             }
             catch ( Exception ex )
