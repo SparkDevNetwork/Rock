@@ -70,6 +70,7 @@ public partial class PersonSession : Model<PersonSession>, IHasAdditionalSetting
     /// where there is no concrete <c>UserLogin</c>.
     /// </remarks>
     [DataMember]
+    [IgnoreCanDelete]
     public int? UserLoginId { get; set; }
 
     /// <summary>

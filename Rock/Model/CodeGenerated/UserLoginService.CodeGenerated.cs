@@ -59,11 +59,7 @@ namespace Rock.Model
 
             // ignoring HistoryLogin,UserLoginId
 
-            if ( new Service<PersonSession>( Context ).Queryable().Any( a => a.UserLoginId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", UserLogin.FriendlyTypeName, PersonSession.FriendlyTypeName );
-                return false;
-            }
+            // ignoring PersonSession,UserLoginId
             return true;
         }
     }
