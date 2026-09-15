@@ -222,7 +222,7 @@ public partial class PersonSessionService
     /// <c>[RockInternal]</c> attribute keeps it out of the documented public API
     /// surface in the meantime.
     /// </remarks>
-    [RockInternal( "20.0", keepInternalForever: true )]
+    [RockInternal( "21.0", keepInternalForever: true )]
     public PersonSession StartComponentSession( RockRequestContext requestContext, int personAliasId, int userLoginId, int authComponentEntityTypeId, bool isPersistent, DateTime? mfaRecency = null )
     {
         var session = PopulateNewSession( requestContext, personAliasId, PersonSessionCreationSource.Component );
@@ -783,7 +783,7 @@ public partial class PersonSessionService
     /// <param name="targetPersonAliasId">The <c>PersonAlias.Id</c> of the person to impersonate.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the request has no active <see cref="PersonSession"/> (e.g., the admin's session expired between rendering the Impersonate button and clicking it).</exception>
-    [RockInternal( "20.0", keepInternalForever: true )]
+    [RockInternal( "21.0", keepInternalForever: true )]
     public static void ImpersonatePerson( RockRequestContext context, int targetPersonAliasId )
     {
         if ( context == null )
@@ -1437,7 +1437,7 @@ public partial class PersonSessionService
     /// </summary>
     /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
     /// <returns>The resolved <see cref="PersonSession"/>, or <c>null</c> when no valid session is present.</returns>
-    [RockInternal( "20.0", keepInternalForever: true )]
+    [RockInternal( "21.0", keepInternalForever: true )]
     public PersonSession ResolveSessionForRequest( RockRequestContext requestContext )
     {
         if ( requestContext == null )
@@ -1546,7 +1546,7 @@ public partial class PersonSessionService
     /// opt out of regeneration while an explicit logout opts in.
     /// </remarks>
     /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
-    [RockInternal( "20.0", keepInternalForever: true )]
+    [RockInternal( "21.0", keepInternalForever: true )]
     public void SignOut( RockRequestContext requestContext )
     {
         if ( requestContext == null )
@@ -1814,8 +1814,8 @@ public partial class PersonSessionService
     /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
     /// <returns>The upgraded <see cref="PersonSession"/>, or <c>null</c> when no legacy ticket was present or the ticket could not be upgraded.</returns>
     [Obsolete( "Bridge code for the legacy FormsAuthenticationTicket cookie format. Will be removed once legacy cookie support is sunset (targeted around Rock v23)." )]
-    [RockObsolete( "20.0" )]
-    [RockInternal( "20.0", keepInternalForever: true )]
+    [RockObsolete( "21.0" )]
+    [RockInternal( "21.0", keepInternalForever: true )]
     public PersonSession UpgradeLegacyCookieForRequest( RockRequestContext requestContext )
     {
         if ( requestContext == null )
@@ -1857,7 +1857,7 @@ public partial class PersonSessionService
     /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
     /// <returns>The upgraded <see cref="PersonSession"/>, or <c>null</c> when the ticket is impersonated, its <c>Name</c> does not resolve to a <see cref="UserLogin"/>, or upgrade is otherwise refused.</returns>
     [Obsolete( "Bridge code for the legacy FormsAuthenticationTicket cookie format. Will be removed once legacy cookie support is sunset (targeted around Rock v23)." )]
-    [RockObsolete( "20.0" )]
+    [RockObsolete( "21.0" )]
     internal PersonSession UpgradeLegacyTicket( System.Web.Security.FormsAuthenticationTicket ticket, RockRequestContext requestContext )
     {
         if ( ticket == null )

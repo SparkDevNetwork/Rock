@@ -39,7 +39,7 @@ namespace Rock.Model
         /// </remarks>
         [NotMapped]
         [LavaVisible]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [System.Obsolete( "Authentication state now lives on PersonSession. Read RockRequestContext.PersonSession or call RockRequestContext.MeetsRequirement(...) instead." )]
         public virtual bool IsAuthenticated
         {
@@ -66,7 +66,7 @@ namespace Rock.Model
         /// current <see cref="PersonSession"/>.
         /// </remarks>
         [NotMapped]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [System.Obsolete( "Two-factor state now lives on PersonSession. Call RockRequestContext.MeetsRequirement(AuthenticationRequirement.MultiFactor) instead." )]
         public virtual bool IsTwoFactorAuthenticated
         {
@@ -89,7 +89,7 @@ namespace Rock.Model
         /// </summary>
         /// <returns>A <see cref="System.String"/> representing the UserName of the user that is currently logged in.</returns>
         [Obsolete( "Use RockRequestContext.CurrentUser instead." )]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         public static string GetCurrentUserName()
         {
             if ( HostingEnvironment.IsHosted )

@@ -2829,7 +2829,7 @@ namespace Rock.Model
         /// Gets the current person.
         /// </summary>
         /// <returns>Person.</returns>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Use RockRequestContext.CurrentPerson instead." )]
         public Person GetCurrentPerson()
         {

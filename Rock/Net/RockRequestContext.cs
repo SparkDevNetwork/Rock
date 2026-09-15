@@ -662,7 +662,7 @@ namespace Rock.Net
         /// the legacy cookie reader.
         /// </para>
         /// </remarks>
-        [RockInternal( "20.0", true )]
+        [RockInternal( "21.0", true )]
         public const string HttpContextItemsKey = "Rock.Net.RockRequestContext";
 
         /// <summary>
@@ -681,7 +681,7 @@ namespace Rock.Net
         /// </remarks>
         /// <param name="context">The HTTP context the request originates from.</param>
         /// <returns>The newly created request context.</returns>
-        [RockInternal( "20.0", true )]
+        [RockInternal( "21.0", true )]
         public static RockRequestContext AttachToCurrentRequest( HttpContext context )
         {
             var requestContext = new RockRequestContext( context );
@@ -705,7 +705,7 @@ namespace Rock.Net
         /// <see cref="AttachToCurrentRequest(HttpContext)"/>.
         /// </summary>
         /// <param name="context">The HTTP context whose request is ending.</param>
-        [RockInternal( "20.0", true )]
+        [RockInternal( "21.0", true )]
         public static void DetachFromCurrentRequest( HttpContext context )
         {
             var accessor = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>();
@@ -779,7 +779,7 @@ namespace Rock.Net
         /// </remarks>
         /// <param name="currentPerson">The resolved <see cref="Person"/>, or <c>null</c> for an anonymous request.</param>
         /// <param name="currentUser">The resolved <see cref="UserLogin"/>, or <c>null</c> when the person has no backing user login (impersonation / user-token) or the request is anonymous.</param>
-        [RockInternal( "20.0", true )]
+        [RockInternal( "21.0", true )]
         public void SetCurrentIdentity( Person currentPerson, UserLogin currentUser )
         {
             _currentPerson = currentPerson;
@@ -800,7 +800,7 @@ namespace Rock.Net
         /// <c>RockWeb</c>'s runtime-generated assembly.
         /// </remarks>
         /// <param name="personSession">The resolved <see cref="PersonSession"/>, or <c>null</c> for an anonymous request.</param>
-        [RockInternal( "20.0", true )]
+        [RockInternal( "21.0", true )]
         public void SetPersonSession( PersonSession personSession )
         {
             _personSession = personSession;
@@ -838,7 +838,7 @@ namespace Rock.Net
         /// </para>
         /// </remarks>
         /// <param name="sessionFactory">The read-only resolver that returns the current <see cref="PersonSession"/>, or <c>null</c> for an anonymous request.</param>
-        [RockInternal( "20.0", true )]
+        [RockInternal( "21.0", true )]
         public void SetPersonSessionFactory( Func<PersonSession> sessionFactory )
         {
             _personSessionFactory = sessionFactory == null
@@ -888,7 +888,7 @@ namespace Rock.Net
         /// anonymous browser's pre-auth journey.
         /// </remarks>
         /// <returns>The newly generated <see cref="Guid"/>.</returns>
-        [RockInternal( "20.0", true )]
+        [RockInternal( "21.0", true )]
         public Guid RegenerateBrowserSessionId()
         {
             var newSessionId = Guid.NewGuid();
@@ -914,7 +914,7 @@ namespace Rock.Net
         /// (dies with the browser), matching the browser-session lifetime.
         /// </remarks>
         /// <param name="browserSessionId">The <see cref="Guid"/> to install as the current browser-session identifier.</param>
-        [RockInternal( "20.0", true )]
+        [RockInternal( "21.0", true )]
         public void SetBrowserSessionId( Guid browserSessionId )
         {
             SessionGuid = browserSessionId;

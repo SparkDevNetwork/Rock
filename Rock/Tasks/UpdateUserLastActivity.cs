@@ -28,14 +28,14 @@ namespace Rock.Tasks
     /// Updates <see cref="UserLogin.LastActivityDateTime"/> and <see cref="UserLogin.IsOnLine"/> based on user activity.
     /// </summary>
     /// <remarks>
-    /// Deprecated as of Rock 20.0. Use
+    /// Deprecated as of Rock 21.0. Use
     /// <see cref="UpdatePersonSessionLastActivity"/>, which updates
     /// <see cref="PersonSession.LastActivityDateTime"/> on the authoritative
     /// session row. Existing writers remain in place during the dual-reader
     /// window so plugins on the old API continue to function; they will be
     /// removed once the dual-reader window closes.
     /// </remarks>
-    [RockObsolete( "20.0" )]
+    [RockObsolete( "21.0" )]
     [Obsolete( "Use UpdatePersonSessionLastActivity instead. UserLogin.LastActivityDateTime is being replaced by PersonSession.LastActivityDateTime." )]
     public sealed class UpdateUserLastActivity : BusStartedTask<UpdateUserLastActivity.Message>
     {
@@ -127,12 +127,12 @@ namespace Rock.Tasks
             ///   <c>true</c> if [is on line]; otherwise, <c>false</c>.
             /// </value>
             /// <remarks>
-            /// Deprecated as of Rock 20.0 alongside
+            /// Deprecated as of Rock 21.0 alongside
             /// <see cref="UpdateUserLastActivity"/>. PersonSession captures
             /// online state via <see cref="PersonSession.IsActive"/>; this
             /// flag has no equivalent on the new task.
             /// </remarks>
-            [RockObsolete( "20.0" )]
+            [RockObsolete( "21.0" )]
             [Obsolete( "PersonSession captures online state via PersonSession.IsActive. There is no equivalent flag on UpdatePersonSessionLastActivity." )]
             public bool IsOnline { get; set; } = true;
 

@@ -217,7 +217,7 @@ namespace Rock.Mobile
         /// <param name="username">The username whose token should be generated for.</param>
         /// <returns>A string that represents the user's authentication token.</returns>
         [Obsolete( "Use the GetAuthenticationToken( string, RockRequestContext ) overload (internal) that accepts an explicit request context. This shim resolves the context from the ambient accessor and delegates." )]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         public static string GetAuthenticationToken( string username )
         {
             var requestContext = RockApp.Current

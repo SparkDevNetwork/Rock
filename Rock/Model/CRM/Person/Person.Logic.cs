@@ -1018,7 +1018,7 @@ namespace Rock.Model
             Reason: Impersonation is now handled by the PersonSession pipeline.
         */
         [Obsolete( "Impersonation is now handled by PersonSessionService.ProcessImpersonationToken. This method is no longer used." )]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         public virtual UserLogin GetImpersonatedUser()
         {
             UserLogin user = new UserLogin();

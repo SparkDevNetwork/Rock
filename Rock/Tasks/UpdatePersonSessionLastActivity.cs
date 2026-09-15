@@ -40,7 +40,7 @@ namespace Rock.Tasks;
 /// <c>LastActivityDateTime</c> is acceptable for the read use cases
 /// (Active Users block, Data Automation idle-detection job).
 /// </remarks>
-[RockInternal( "20.0", true )]
+[RockInternal( "21.0", true )]
 public sealed class UpdatePersonSessionLastActivity : BusStartedTask<UpdatePersonSessionLastActivity.Message>
 {
     /// <summary>

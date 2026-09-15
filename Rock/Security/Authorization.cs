@@ -824,7 +824,7 @@ namespace Rock.Security
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         /// <param name="expiresIn">The cookie expiration.</param>
         /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Legacy FormsAuthenticationTicket cookie builder. Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead." )]
         private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated, TimeSpan expiresIn )
         {
@@ -885,7 +885,7 @@ namespace Rock.Security
         /// </para>
         /// </remarks>
         [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.GetCookieValue(session) instead." )]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
             if ( isImpersonated )
@@ -919,7 +919,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="formsAuthenticationTicket">The forms authentication ticket.</param>
         /// <returns>The user data.</returns>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Parses legacy FormsAuthenticationTicket UserData; used only by the obsolete legacy-ticket upgrade path. Authentication state now lives on PersonSession." )]
         internal static IAuthenticationTicketUserData GetUserData( FormsAuthenticationTicket formsAuthenticationTicket )
         {
@@ -959,7 +959,7 @@ namespace Rock.Security
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead." )]
         public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
@@ -973,7 +973,7 @@ namespace Rock.Security
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         /// <param name="isTwoFactorAuthenticated">if set to <c>true</c> [is two-factor authenticated].</param>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.SetAuthCookie( session, requestContext ) instead." )]
         public static void SetAuthCookie( string userName, bool isPersisted, bool isImpersonated, bool isTwoFactorAuthenticated )
         {
@@ -1054,7 +1054,7 @@ namespace Rock.Security
         /// </para>
         /// </remarks>
         /// <exception cref="InvalidOperationException">Thrown when there is no active request context to sign out of.</exception>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Use PersonSessionService.SignOut( requestContext ) instead." )]
         public static void SignOut()
         {
@@ -1072,7 +1072,7 @@ namespace Rock.Security
         /// <param name="domain">The domain.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Legacy forms authentication (.ROCK) cookie builder. Use PersonSessionService.SetAuthCookie( session, requestContext ) instead." )]
         private static HttpCookie GetAuthCookie( string domain, string value )
         {
@@ -1101,7 +1101,7 @@ namespace Rock.Security
         /// Gets the domain for the forms authentication cookie. This is based on whether the current host name has an entry in the 'Domains Sharing Logins' defined type.
         /// </summary>
         /// <returns></returns>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Legacy forms authentication cookie helper, used only by the obsolete GetAuthCookie. PersonSessionService owns .ROCK cookie issuance under the PersonSession model." )]
         private static string GetCookieDomain()
         {
@@ -1615,7 +1615,7 @@ namespace Rock.Security
         /// <summary>
         /// User data in an authentication ticket.
         /// </summary>
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         [Obsolete( "Legacy FormsAuthenticationTicket UserData payload. Superseded by PersonSession-based authentication state." )]
         private class AuthenticationTicketUserData : IAuthenticationTicketUserData
         {
@@ -1892,7 +1892,7 @@ namespace Rock.Security
     /// <summary>
     /// User data in an authentication ticket.
     /// </summary>
-    [RockObsolete( "20.0" )]
+    [RockObsolete( "21.0" )]
     [Obsolete( "Legacy FormsAuthenticationTicket UserData contract. Superseded by PersonSession-based authentication state." )]
     internal interface IAuthenticationTicketUserData
     {

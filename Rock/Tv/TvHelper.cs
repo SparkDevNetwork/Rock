@@ -172,7 +172,7 @@ namespace Rock.Tv
         /// <param name="person">The person.</param>
         /// <returns></returns>
         [Obsolete( "Use the GetAuthenticationTokenFromPerson( Person, RockRequestContext ) overload (internal) that accepts an explicit request context. This shim resolves the context from the ambient accessor and delegates." )]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         public static string GetAuthenticationTokenFromPerson( Person person )
         {
             var requestContext = RockApp.Current
@@ -229,7 +229,7 @@ namespace Rock.Tv
         /// <param name="username">The username.</param>
         /// <returns></returns>
         [Obsolete( "Use the GetAuthenticationTokenFromUsername( string, RockRequestContext ) overload (internal) that accepts an explicit request context. This shim resolves the context from the ambient accessor and delegates." )]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         public static string GetAuthenticationTokenFromUsername( string username )
         {
             var requestContext = RockApp.Current

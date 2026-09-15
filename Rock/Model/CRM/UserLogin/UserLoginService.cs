@@ -155,7 +155,7 @@ namespace Rock.Model
 
         /// <inheritdoc cref="GetCurrentUser(bool)"/>
         [Obsolete( "Use RockRequestContext.PersonSession instead." )]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         public static UserLogin GetCurrentUser()
         {
             return GetCurrentUser( true );

@@ -35,7 +35,7 @@ namespace Rock.Model
         /// <param name="userIsOnline">A <see cref="System.Boolean"/> value that returns the logged in user if <c>true</c>; otherwise can return the impersonated user</param>
         /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
         [Obsolete( "Use RockRequestContext.PersonSession instead." )]
-        [RockObsolete( "20.0" )]
+        [RockObsolete( "21.0" )]
         public static UserLogin GetCurrentUser( bool userIsOnline )
         {
             var personSession = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext?.PersonSession;
