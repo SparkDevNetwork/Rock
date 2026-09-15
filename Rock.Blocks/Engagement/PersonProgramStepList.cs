@@ -210,22 +210,87 @@ namespace Rock.Blocks.Engagement
             bag.IsCardView = GetIsCardView( program );
 
             var stepTypes = GetStepTypes( program );
+            var personSteps = GetPersonSteps( person, stepTypes );
 
-            // TODO: Load the person's steps of these types and the types' prerequisites once,
-            // then compute the flags, render the card Lava, and build bag.GridData.
+            // TODO: Compute prerequisite and add eligibility flags, render the card Lava, and build bag.GridData.
             bag.StepTypes = stepTypes
-                .Select( stepType => new PersonProgramStepTypeBag
+                .Select( stepType =>
                 {
-                    Id = stepType.Id,
-                    IdKey = stepType.IdKey,
-                    Name = stepType.Name,
-                    IconCssClass = stepType.IconCssClass,
-                    PrerequisiteNames = new List<string>(),
-                    Steps = new List<PersonProgramStepBag>()
+                    var steps = personSteps[stepType.Id];
+
+                    return new PersonProgramStepTypeBag
+                    {
+                        Id = stepType.Id,
+                        IdKey = stepType.IdKey,
+                        Name = stepType.Name,
+                        IconCssClass = stepType.IconCssClass,
+                        HasSteps = steps.Any(),
+                        IsComplete = steps.Any( s => s.IsComplete ),
+                        PrerequisiteNames = new List<string>(),
+                        Steps = steps.Select( GetStepBag ).ToList()
+                    };
                 } )
                 .ToList();
 
             return bag;
+        }
+
+        /// <summary>
+        /// Gets the person's steps for the given step types, keyed by step type
+        /// identifier. Every step type has an entry even when the person has no
+        /// steps of that type. Steps are ordered oldest to newest so the last
+        /// entry is the latest step.
+        /// </summary>
+        /// <param name="person">The person whose steps are loaded.</param>
+        /// <param name="stepTypes">The step types to load steps for.</param>
+        /// <returns>The steps grouped by step type identifier.</returns>
+        private Dictionary<int, List<Step>> GetPersonSteps( Person person, List<StepType> stepTypes )
+        {
+            var stepTypesById = stepTypes.ToDictionary( st => st.Id );
+            var stepTypeIds = stepTypesById.Keys.ToList();
+
+            var steps = new StepService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Include( s => s.StepStatus )
+                .Include( s => s.Campus )
+                .Where( s => s.PersonAlias.PersonId == person.Id && stepTypeIds.Contains( s.StepTypeId ) )
+                .ToList();
+
+            // Step authorization walks StepType then StepProgram, so attach the
+            // already-loaded types to avoid two lazy loads per step.
+            foreach ( var step in steps )
+            {
+                step.StepType = stepTypesById[step.StepTypeId];
+            }
+
+            return stepTypeIds.ToDictionary(
+                stepTypeId => stepTypeId,
+                stepTypeId => steps
+                    .Where( s => s.StepTypeId == stepTypeId )
+                    .OrderBy( s => s.CompletedDateTime ?? s.EndDateTime ?? s.StartDateTime ?? s.CreatedDateTime ?? System.DateTime.MinValue )
+                    .ToList() );
+        }
+
+        /// <summary>
+        /// Builds the bag for one existing step shown in a card's hover table.
+        /// </summary>
+        /// <param name="step">The step.</param>
+        /// <returns>The populated step bag.</returns>
+        private PersonProgramStepBag GetStepBag( Step step )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+            var canEdit = step.IsAuthorized( Authorization.EDIT, currentPerson ) || step.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson );
+
+            return new PersonProgramStepBag
+            {
+                Id = step.Id,
+                IdKey = step.IdKey,
+                StatusName = step.StepStatus?.Name,
+                CompletedDateTime = step.CompletedDateTime?.ToString( "s" ),
+                CanEdit = canEdit,
+                CanDelete = canEdit
+            };
         }
 
         /// <summary>
