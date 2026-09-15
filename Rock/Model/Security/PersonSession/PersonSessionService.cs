@@ -707,11 +707,16 @@ public partial class PersonSessionService
             // Either restore reference is dangling. Fail closed: the user
             // becomes anonymous rather than silently continuing as the
             // impersonated person OR silently dropping back to the admin.
-            // Clear the `.ROCK` cookie so the next request resolves
-            // anonymously instead of trying to use the now-inactive session.
+            // Clear the `.ROCK` cookie so the NEXT request resolves
+            // anonymously, and clear the session on THIS request's context so
+            // the remainder of the current request is anonymous too. With the
+            // unified identity invariant, clearing the session clears
+            // CurrentPerson / CurrentUser as well - no separate identity reset
+            // is needed.
             if ( requestContext != null )
             {
                 ExpireAuthCookie( requestContext );
+                requestContext.SetPersonSession( null );
             }
 
             return null;
@@ -725,14 +730,18 @@ public partial class PersonSessionService
         requestContext?.SetBrowserSessionId( priorInteractionSession.Guid );
 
         // Write the new auth cookie pointing at the restored session and
-        // attach it to the request context so the remainder of this
-        // request observes the admin's restored identity. Mirrors the
-        // start-side `ImpersonatePerson` shape so every caller of either
-        // method gets the cookie + context write for free without
-        // duplicating the follow-ups at each site.
+        // attach it to the request context so the remainder of this request
+        // observes the admin's restored identity. CurrentPerson / CurrentUser
+        // derive from the effective session, so loading the restored session's
+        // PersonAlias.Person + UserLogin first is what makes the request
+        // observe the admin (not the impersonated person) for the rest of the
+        // request. Mirrors the start-side `ImpersonatePerson` shape so every
+        // caller of either method gets the cookie + context write for free
+        // without duplicating the follow-ups at each site.
         if ( requestContext != null )
         {
             SetAuthCookie( priorSession, requestContext );
+            EnsureSessionIdentityLoaded( priorSession, rockContext );
             requestContext.SetPersonSession( priorSession );
         }
 
@@ -829,9 +838,15 @@ public partial class PersonSessionService
             service.SetAuthCookie( newSession, context );
 
             // Replace the cached PersonSession on the request context so the
-            // remainder of this request observes the impersonated identity
-            // (the cookie alone takes effect on the NEXT request; this is
-            // the in-request bridge).
+            // remainder of this request observes the impersonated identity.
+            // CurrentPerson / CurrentUser derive from the effective session
+            // (see the identity invariant on RockRequestContext), so loading
+            // the new session's PersonAlias.Person first is what makes the
+            // request observe the impersonated person - an Impersonation
+            // session has no UserLogin, so CurrentUser is correctly null. The
+            // cookie alone takes effect on the NEXT request; this is the
+            // in-request bridge.
+            EnsureSessionIdentityLoaded( newSession, rockContext );
             context.SetPersonSession( newSession );
 
             // HistoryLogin audit trail. Mirrors the relevant fields from
@@ -844,6 +859,45 @@ public partial class PersonSessionService
             // + RelatedData).
             BuildImpersonationHistoryLogin( rockContext, newSession, impersonatorSession )
                 .SaveAfterDelay();
+        }
+    }
+
+    /// <summary>
+    /// Materializes the <see cref="PersonSession.PersonAlias"/> (with its
+    /// <see cref="PersonAlias.Person"/>) and <see cref="PersonSession.UserLogin"/>
+    /// navigation properties on a session that is about to be handed to
+    /// <see cref="RockRequestContext.SetPersonSession(PersonSession)"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="RockRequestContext.CurrentPerson"/> / <see cref="RockRequestContext.CurrentUser"/>
+    /// derive from the effective <see cref="PersonSession"/> (see the identity
+    /// invariant documented on <c>RockRequestContext</c>), so a freshly-created
+    /// session - which carries only the <c>PersonAliasId</c> / <c>UserLoginId</c>
+    /// foreign keys - must have these loaded or the current person / user would
+    /// resolve to <c>null</c>. The request-entry factory
+    /// (<see cref="ResolveSessionForRequest(RockRequestContext)"/>) eager-loads
+    /// them; this does the same for sessions created mid-request (login,
+    /// impersonation, restore). Idempotent: already-loaded navigations are left
+    /// alone, and a session with no <c>UserLoginId</c> (impersonation / user-token)
+    /// keeps a null <see cref="PersonSession.UserLogin"/>.
+    /// </remarks>
+    /// <param name="session">The session to populate; a <c>null</c> session is ignored.</param>
+    /// <param name="rockContext">The context to load the navigation properties from.</param>
+    private static void EnsureSessionIdentityLoaded( PersonSession session, RockContext rockContext )
+    {
+        if ( session == null )
+        {
+            return;
+        }
+
+        if ( session.PersonAlias?.Person == null )
+        {
+            session.PersonAlias = new PersonAliasService( rockContext ).GetInclude( session.PersonAliasId, a => a.Person );
+        }
+
+        if ( session.UserLoginId.HasValue && session.UserLogin == null )
+        {
+            session.UserLogin = new UserLoginService( rockContext ).Get( session.UserLoginId.Value );
         }
     }
 
@@ -1029,6 +1083,12 @@ public partial class PersonSessionService
         rockContext.SaveChanges();
 
         SetAuthCookie( newSession, requestContext );
+
+        // Load the new session's PersonAlias.Person so the remainder of this
+        // request observes the token's target person (CurrentPerson / CurrentUser
+        // derive from the effective session). A UserToken session has no
+        // UserLogin, so CurrentUser is correctly null.
+        EnsureSessionIdentityLoaded( newSession, rockContext );
         requestContext.SetPersonSession( newSession );
 
         // Spec's InteractionSession sync table calls for a fresh

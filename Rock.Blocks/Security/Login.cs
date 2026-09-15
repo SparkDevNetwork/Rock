@@ -746,8 +746,26 @@ namespace Rock.Blocks.Security
                 }
             );
 
-            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                /*
+                    9/14/26 - CLAUDE
+
+                    This RockContext is intentionally NOT wrapped in a `using`. The session
+                    created / reused below is handed to RequestContext.SetPersonSession and may
+                    be read later in the SAME request (identity resolution, a redirect handler,
+                    audit stamping). Disposing the context here would sever lazy loading for that
+                    session - per the Rock rule "do not dispose RockContext prematurely; it kills
+                    lazy loading for any entities retrieved from that context" - so a later walk of
+                    session.PersonAlias / .UserLogin would throw ObjectDisposedException. The
+                    context is reachable (and thus alive) as long as the request holds the session,
+                    and is released by GC once the request completes. The enclosing braces are kept
+                    to scope the session-building locals. This becomes unnecessary once full-request
+                    DI provides a request-scoped RockContext that survives the whole request.
+
+                    Reason: Keep the session's context alive for the rest of the request so lazy loading survives.
+                */
+                var rockContext = RockApp.Current.CreateRockContext();
+
                 var personAliasId = userLogin.Person?.PrimaryAliasId
                     ?? new UserLoginService( rockContext ).GetInclude( userLogin.Id, u => u.Person )?.Person?.PrimaryAliasId
                     ?? throw new InvalidOperationException( $"UserLogin {userLogin.Id} has no associated PersonAlias; cannot start session." );

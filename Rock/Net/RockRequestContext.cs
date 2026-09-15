@@ -117,14 +117,26 @@ namespace Rock.Net
             9/10/26 - CLAUDE
 
             CurrentPerson / CurrentUser / PersonSession resolve from ONE source so
-            they can never disagree about who is signed in: an explicit value set via
-            SetCurrentIdentity / SetPersonSession, or - when none was set - the
-            lazily-resolved PersonSession supplied by SetPersonSessionFactory. The
-            factory resolves a PersonSession and the person / user derive from it
-            (PersonAlias.Person / UserLogin), matching what the auth pipeline does.
-            Explicit set always wins; the factory is the fallback, which is what lets
-            OWIN requests (that never run the managed identity pipeline) resolve an
-            identity on first read.
+            they can never disagree about who is signed in. Precedence:
+
+              1. An explicit identity set via SetCurrentIdentity always wins for the
+                 person / user (used where the identity is known but no PersonSession
+                 is - e.g. the API-key / JWT auth paths).
+              2. Otherwise the person / user DERIVE from the effective PersonSession
+                 (PersonAlias.Person / UserLogin) - the session set via
+                 SetPersonSession if one was set, else the lazily-resolved factory
+                 session from SetPersonSessionFactory.
+
+            This is the key invariant: CurrentPerson / CurrentUser derive from the
+            same effective session that PersonSession returns, so setting the session
+            alone (SetPersonSession) keeps all three consistent - a caller that hands
+            over a new session (login, impersonation, restore) does NOT also have to
+            call SetCurrentIdentity. The one requirement is that a session passed to
+            SetPersonSession carry a loaded PersonAlias.Person / UserLogin; the factory
+            eager-loads them (ResolveSessionForRequest), and freshly-created sessions
+            populate them before handing off. The factory fallback is what lets OWIN
+            requests (that never run the managed identity pipeline) resolve an identity
+            on first read.
 
             Reason: Single, lazily-resolved source of truth for the current identity across every request type.
         */
@@ -143,7 +155,7 @@ namespace Rock.Net
         /// <value>
         /// The current user.
         /// </value>
-        public virtual UserLogin CurrentUser => _isIdentityExplicit ? _currentUser : _personSessionFactory?.Value?.UserLogin;
+        public virtual UserLogin CurrentUser => _isIdentityExplicit ? _currentUser : PersonSession?.UserLogin;
 
         /// <summary>
         /// Gets the current person.
@@ -152,14 +164,19 @@ namespace Rock.Net
         /// The current person.
         /// </value>
         /// <remarks>
-        /// Set together with <see cref="CurrentUser"/> via
-        /// <see cref="SetCurrentIdentity(Person, UserLogin)"/>. It is stored
-        /// rather than derived from <c>CurrentUser?.Person</c> so it can
+        /// Resolves from the same effective source as <see cref="PersonSession"/>:
+        /// an explicit identity set via <see cref="SetCurrentIdentity(Person, UserLogin)"/>
+        /// wins; otherwise it derives from the effective <see cref="PersonSession"/>
+        /// (the one set via <see cref="SetPersonSession(PersonSession)"/>, else the
+        /// factory), walking <c>PersonSession.PersonAlias.Person</c>. Because it
+        /// derives from the session rather than <c>CurrentUser?.Person</c>, it can
         /// represent a person with no backing <see cref="UserLogin"/> (e.g. an
-        /// impersonation or user-token session) and to avoid walking the
-        /// property tree on every access.
+        /// impersonation or user-token session). Callers that set a session via
+        /// <see cref="SetPersonSession(PersonSession)"/> and expect this property to
+        /// resolve MUST supply a session whose <c>PersonAlias.Person</c> is loaded
+        /// (the factory eager-loads it; freshly-created sessions must populate it).
         /// </remarks>
-        public virtual Person CurrentPerson => _isIdentityExplicit ? _currentPerson : _personSessionFactory?.Value?.PersonAlias?.Person;
+        public virtual Person CurrentPerson => _isIdentityExplicit ? _currentPerson : PersonSession?.PersonAlias?.Person;
 
         /// <summary>
         /// Gets the <see cref="PersonSession"/> resolved for the current

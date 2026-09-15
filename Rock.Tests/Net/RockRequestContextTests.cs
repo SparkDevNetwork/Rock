@@ -392,32 +392,65 @@ public class RockRequestContextTests
     }
 
     /// <summary>
-    /// An explicit <see cref="PersonSession"/> wins over the factory for
-    /// <see cref="RockRequestContext.PersonSession"/>, while
-    /// <see cref="RockRequestContext.CurrentPerson"/> /
-    /// <see cref="RockRequestContext.CurrentUser"/> (no explicit identity) still
-    /// derive from the factory's session.
+    /// An explicit <see cref="PersonSession"/> set via
+    /// <see cref="RockRequestContext.SetPersonSession(PersonSession)"/> - with no
+    /// explicit identity - governs all three of
+    /// <see cref="RockRequestContext.PersonSession"/>,
+    /// <see cref="RockRequestContext.CurrentPerson"/> and
+    /// <see cref="RockRequestContext.CurrentUser"/>: the person / user derive from
+    /// the explicit session (not the factory), so setting the session alone keeps
+    /// the three consistent. This is the identity invariant that lets a login /
+    /// impersonation / restore hand over a single session without also calling
+    /// <see cref="RockRequestContext.SetCurrentIdentity(Person, UserLogin)"/>.
     /// </summary>
     [TestMethod]
-    public void ExplicitSession_WinsOverFactory_ForPersonSession()
+    public void ExplicitSession_GovernsIdentity_OverFactory_WhenNoExplicitIdentity()
     {
-        var explicitSession = new PersonSession { IsActive = true };
-        var factoryPerson = new Person();
-        var factoryUser = new UserLogin { UserName = "factory" };
+        var explicitPerson = new Person();
+        var explicitUser = new UserLogin { UserName = "explicit" };
+        var explicitSession = new PersonSession
+        {
+            IsActive = true,
+            PersonAlias = new PersonAlias { Person = explicitPerson },
+            UserLogin = explicitUser,
+        };
         var factorySession = new PersonSession
         {
             IsActive = true,
-            PersonAlias = new PersonAlias { Person = factoryPerson },
-            UserLogin = factoryUser,
+            PersonAlias = new PersonAlias { Person = new Person() },
+            UserLogin = new UserLogin { UserName = "factory" },
         };
         var context = new RockRequestContext();
 
         context.SetPersonSessionFactory( () => factorySession );
         context.SetPersonSession( explicitSession );
 
+        // All three resolve from the explicit session, not the factory.
         Assert.AreSame( explicitSession, context.PersonSession );
-        Assert.AreSame( factoryPerson, context.CurrentPerson );
-        Assert.AreSame( factoryUser, context.CurrentUser );
+        Assert.AreSame( explicitPerson, context.CurrentPerson );
+        Assert.AreSame( explicitUser, context.CurrentUser );
+    }
+
+    /// <summary>
+    /// Identity derives from the effective session by walking
+    /// <c>PersonAlias.Person</c> / <c>UserLogin</c>, so a session set via
+    /// <see cref="RockRequestContext.SetPersonSession(PersonSession)"/> whose
+    /// navigation properties are NOT loaded resolves
+    /// <see cref="RockRequestContext.CurrentPerson"/> /
+    /// <see cref="RockRequestContext.CurrentUser"/> to <c>null</c> while
+    /// <see cref="RockRequestContext.PersonSession"/> is still returned. Callers
+    /// that create a session mid-request must load those navigations first (see
+    /// <c>PersonSessionService.EnsureSessionIdentityLoaded</c>).
+    /// </summary>
+    [TestMethod]
+    public void ExplicitSession_WithoutLoadedNavigations_ResolvesNullIdentity()
+    {
+        var context = new RockRequestContext();
+        context.SetPersonSession( new PersonSession { IsActive = true } );
+
+        Assert.IsNotNull( context.PersonSession );
+        Assert.IsNull( context.CurrentPerson );
+        Assert.IsNull( context.CurrentUser );
     }
 
     /// <summary>
