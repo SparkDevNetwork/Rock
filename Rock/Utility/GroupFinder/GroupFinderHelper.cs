@@ -496,7 +496,7 @@ namespace Rock.Utility.GroupFinder
             // the Google maps API.
             if ( originString.StartsWith( "postalcode" ) )
             {
-                originString = originString.Substring( 3 ).Trim();
+                originString = originString.Substring( 10 ).Trim();
             }
 
             // Otherwise, run it through the geocoder

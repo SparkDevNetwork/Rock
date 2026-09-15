@@ -46,9 +46,35 @@ internal class McpServer : IMcpServer
         }
 
         var serializerOptions = AgentSerializerOptions.GetOptions( AgentType.Mcp, chatAgent.AgentConfiguration.AudienceType );
-        var rpcRequest = new JsonRpcRequest( request.Content, serializerOptions );
+        JsonRpcRequest rpcRequest;
+
+        try
+        {
+            rpcRequest = new JsonRpcRequest( request.Content, serializerOptions );
+        }
+        catch ( JsonException )
+        {
+            // A client that sends something which is not valid JSON gets a
+            // JSON-RPC error back. It must never become an unhandled
+            // exception, otherwise it is logged as a server error. Only the
+            // parse is guarded so that a JSON failure raised inside a tool is
+            // not reported to the client as a malformed request.
+            return CreateResponse( JsonRpcResult.CreateErrorResult( JsonRpcErrorCode.ParseError, "Request content was not valid JSON." ), serializerOptions );
+        }
+
         var response = await HandleRequestAsync( chatAgent, rpcRequest, serializerOptions, cancellationToken );
 
+        return CreateResponse( response, serializerOptions );
+    }
+
+    /// <summary>
+    /// Creates the response that will be sent back to the client.
+    /// </summary>
+    /// <param name="response">The result to be written, or <c>null</c> if no response should be sent.</param>
+    /// <param name="serializerOptions">The options that will be used when serializing the result.</param>
+    /// <returns>The response that should be sent back to the client.</returns>
+    private McpResponse CreateResponse( JsonRpcResult response, JsonSerializerOptions serializerOptions )
+    {
         if ( response == null )
         {
             return new McpResponse();
@@ -76,10 +102,25 @@ internal class McpServer : IMcpServer
     /// <returns>The response to the request.</returns>
     internal async Task<JsonRpcResult> HandleRequestAsync( ChatAgentImplementation agent, JsonRpcRequest request, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
     {
-        if ( request.Method.StartsWith( "notifications/" ) || !request.Id.HasValue )
+        if ( !request.IsRequestObject )
+        {
+            return JsonRpcResult.CreateErrorResult( JsonRpcErrorCode.InvalidRequest, "Request must be a single JSON-RPC object." );
+        }
+
+        if ( request.Method?.StartsWith( "notifications/" ) == true || !request.Id.HasValue )
         {
             // Indicate no response should be sent.
             return null;
+        }
+
+        if ( !request.IsIdValid )
+        {
+            return JsonRpcResult.CreateErrorResult( JsonRpcErrorCode.InvalidRequest, "Request identifier must be a string or a number." );
+        }
+
+        if ( request.Method == null )
+        {
+            return request.CreateErrorResult( JsonRpcErrorCode.InvalidRequest, "Request did not specify a method." );
         }
         else if ( request.Method == "initialize" )
         {
