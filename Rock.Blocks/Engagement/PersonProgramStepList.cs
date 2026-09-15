@@ -26,6 +26,7 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.PersonProgramStepList;
+using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -213,7 +214,8 @@ namespace Rock.Blocks.Engagement
             var personSteps = GetPersonSteps( person, stepTypes );
             var showCampus = GetIsCampusVisible();
 
-            // TODO: Build bag.GridData.
+            bag.GridData = GetGridData( stepTypes, personSteps );
+            bag.StepStatusColors = GetStepStatusColors( personSteps );
             bag.StepTypes = stepTypes
                 .Select( stepType =>
                 {
@@ -441,11 +443,8 @@ namespace Rock.Blocks.Engagement
                 IsStartDateColumnVisible = GetAttributeValue( AttributeKey.ShowStartedDateColumn ).AsBoolean(),
                 IsBlockEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 GridDefinition = GetGridBuilder().BuildDefinition(),
-                StepEntryUrlTemplate = GetStepEntryUrlTemplate( person ),
-                StepStatusColors = new Dictionary<string, string>()
+                StepEntryUrlTemplate = GetStepEntryUrlTemplate( person )
             };
-
-            // TODO: Populate StepStatusColors from the program's statuses (name to StatusColorOrDefault).
 
             return options;
         }
@@ -579,6 +578,88 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
+        /// Builds the grid rows for every step the person has in the program,
+        /// ordered by step type order then name to match the card order.
+        /// </summary>
+        /// <param name="stepTypes">The program's active step types.</param>
+        /// <param name="personSteps">The person's steps keyed by step type identifier.</param>
+        /// <returns>The grid data.</returns>
+        private GridDataBag GetGridData( List<StepType> stepTypes, Dictionary<int, List<Step>> personSteps )
+        {
+            var steps = stepTypes.SelectMany( stepType => personSteps[stepType.Id] ).ToList();
+
+            // Load once for every step so the summary column does not query per row.
+            steps.LoadAttributes( RockContext );
+
+            var currentPerson = RequestContext.CurrentPerson;
+
+            var rows = steps
+                .Select( step => new StepRow
+                {
+                    Step = step,
+                    StepTypeName = step.StepType.Name,
+                    StepTypeIconCssClass = step.StepType.IconCssClass,
+                    StepTypeOrder = step.StepType.Order,
+                    CampusName = step.Campus?.Name ?? string.Empty,
+                    StatusName = step.StepStatus?.Name ?? string.Empty,
+                    SummaryHtml = GetSummaryHtml( step ),
+                    CanDelete = step.IsAuthorized( Authorization.EDIT, currentPerson ) || step.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson )
+                } )
+                .OrderBy( r => r.StepTypeOrder )
+                .ThenBy( r => r.StepTypeName )
+                .ToList();
+
+            return GetGridBuilder().Build( rows );
+        }
+
+        /// <summary>
+        /// Gets the colors of the statuses in use by the person's steps, keyed
+        /// by status name. Built from the already-loaded steps so no query is needed.
+        /// </summary>
+        /// <param name="personSteps">The person's steps keyed by step type identifier.</param>
+        /// <returns>The status name to color dictionary.</returns>
+        private Dictionary<string, string> GetStepStatusColors( Dictionary<int, List<Step>> personSteps )
+        {
+            return personSteps.Values
+                .SelectMany( steps => steps )
+                .Where( s => s.StepStatus != null )
+                .GroupBy( s => s.StepStatus.Name )
+                .ToDictionary( g => g.Key, g => g.First().StepStatus.StatusColorOrDefault );
+        }
+
+        /// <summary>
+        /// Builds the summary column HTML from the step's attributes that are
+        /// marked to show in grids, one "Name: Value" line per attribute.
+        /// Boolean values are shown in full; everything else is condensed.
+        /// </summary>
+        /// <param name="step">The step with attributes loaded.</param>
+        /// <returns>The summary HTML, or an empty string.</returns>
+        private string GetSummaryHtml( Step step )
+        {
+            if ( step.Attributes == null )
+            {
+                return string.Empty;
+            }
+
+            var booleanFieldTypeGuid = Rock.SystemGuid.FieldType.BOOLEAN.AsGuid();
+            var lines = new List<string>();
+
+            foreach ( var attribute in step.Attributes.Values.Where( a => a.IsGridColumn ) )
+            {
+                var rawValue = step.GetAttributeValue( attribute.Key );
+                var field = attribute.FieldType.Field;
+
+                var formattedValue = attribute.FieldType.Guid == booleanFieldTypeGuid
+                    ? field.GetHtmlValue( rawValue, attribute.ConfigurationValues )
+                    : field.GetCondensedHtmlValue( rawValue, attribute.ConfigurationValues );
+
+                lines.Add( $"{attribute.Name}: {formattedValue}" );
+            }
+
+            return string.Join( "<br />", lines );
+        }
+
+        /// <summary>
         /// Gets the grid builder that defines the columns for the grid view.
         /// </summary>
         /// <returns>The grid builder.</returns>
@@ -586,6 +667,7 @@ namespace Rock.Blocks.Engagement
         {
             return new GridBuilder<StepRow>()
                 .AddTextField( "idKey", r => r.Step.IdKey )
+                .AddField( "id", r => r.Step.Id )
                 .AddField( "stepTypeId", r => r.Step.StepTypeId )
                 .AddTextField( "stepType", r => r.StepTypeName )
                 .AddTextField( "stepTypeIconCssClass", r => r.StepTypeIconCssClass )

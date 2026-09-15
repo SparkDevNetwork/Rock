@@ -45,6 +45,12 @@ namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
         public GridDataBag GridData { get; set; }
 
         /// <summary>
+        /// Gets or sets the colors of the statuses in use by the person's
+        /// steps, keyed by status name, used to color the grid status label.
+        /// </summary>
+        public Dictionary<string, string> StepStatusColors { get; set; }
+
+        /// <summary>
         /// Gets or sets the error message to display when the block cannot
         /// render, such as when the program or person was not found.
         /// </summary>

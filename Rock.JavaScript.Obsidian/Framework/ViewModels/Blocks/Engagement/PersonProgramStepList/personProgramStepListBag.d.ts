@@ -45,6 +45,12 @@ export type PersonProgramStepListBag = {
     isCardView: boolean;
 
     /**
+     * Gets or sets the colors of the statuses in use by the person's
+     * steps, keyed by status name, used to color the grid status label.
+     */
+    stepStatusColors?: Record<string, string> | null;
+
+    /**
      * Gets or sets the active step types of the program, each with its
      * rendered card and the person's steps of that type.
      */

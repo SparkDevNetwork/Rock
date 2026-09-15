@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
 using Rock.ViewModels.Core.Grid;
 
 namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
@@ -74,11 +72,5 @@ namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
         /// Null when no Step Entry page is configured.
         /// </summary>
         public string StepEntryUrlTemplate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the step status colors keyed by status name, used to
-        /// color the status label in the grid.
-        /// </summary>
-        public Dictionary<string, string> StepStatusColors { get; set; }
     }
 }

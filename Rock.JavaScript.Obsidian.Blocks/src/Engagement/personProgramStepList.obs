@@ -32,6 +32,7 @@
         <GridView v-else
                   :stepTypes="stepTypes"
                   :gridData="gridData"
+                  :stepStatusColors="stepStatusColors"
                   :options="options"
                   @add="onAddStep"
                   @edit="onEditStep"
@@ -74,6 +75,7 @@
     const isCardView = ref(config.bag?.isCardView ?? false);
     const stepTypes = ref<PersonProgramStepTypeBag[]>(config.bag?.stepTypes ?? []);
     const gridData = ref<GridDataBag | undefined>(config.bag?.gridData ?? undefined);
+    const stepStatusColors = ref<Record<string, string>>(config.bag?.stepStatusColors ?? {});
 
     // #endregion Values
 
@@ -136,6 +138,7 @@
         if (result.isSuccess && result.data) {
             stepTypes.value = result.data.stepTypes ?? [];
             gridData.value = result.data.gridData ?? undefined;
+            stepStatusColors.value = result.data.stepStatusColors ?? {};
         }
         else {
             await alert(result.errorMessage || "Unable to delete the step.");

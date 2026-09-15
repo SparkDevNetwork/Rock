@@ -59,12 +59,6 @@ export type PersonProgramStepListOptionsBag = {
     /** Gets or sets the number of step cards shown per row on mobile. */
     stepsPerRowMobile: number;
 
-    /**
-     * Gets or sets the step status colors keyed by status name, used to
-     * color the status label in the grid.
-     */
-    stepStatusColors?: Record<string, string> | null;
-
     /** Gets or sets the term the program uses for its steps (defaults to "Step"). */
     stepTerm?: string | null;
 };

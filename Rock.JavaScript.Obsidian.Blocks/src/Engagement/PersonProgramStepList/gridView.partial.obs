@@ -54,12 +54,15 @@
                     field="summary"
                     visiblePriority="md" />
 
-        <LabelColumn name="status"
-                     title="Status"
-                     field="status"
-                     :filter="pickExistingValueFilter"
-                     :colorSource="options.stepStatusColors ?? {}"
-                     visiblePriority="xs" />
+        <Column name="status"
+                title="Status"
+                field="status"
+                :filter="pickExistingValueFilter"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-if="row.status" class="label" :style="getStatusLabelStyle(row.status)">{{ row.status }}</span>
+            </template>
+        </Column>
 
         <DeleteColumn @click="onDeleteClick" />
     </Grid>
@@ -67,8 +70,9 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import Grid, { Column, DateColumn, dateValueFilter, DeleteColumn, HtmlColumn, LabelColumn, pickExistingValueFilter, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, DateColumn, dateValueFilter, DeleteColumn, HtmlColumn, pickExistingValueFilter, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { PersonProgramStepListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListOptionsBag";
@@ -84,6 +88,11 @@
         gridData: {
             type: Object as PropType<GridDataBag | undefined>,
             required: false
+        },
+
+        stepStatusColors: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
         },
 
         options: {
@@ -118,8 +127,13 @@
      * @param key The identifier key of the selected step.
      */
     function onSelectItem(key: string): void {
-        // TODO: Resolve the row's stepTypeId and step id from gridData and emit edit.
-        console.debug("selectItem", key);
+        const row = props.gridData?.rows?.find(r => r["idKey"] === key);
+
+        if (!row) {
+            return;
+        }
+
+        emit("edit", row["stepTypeId"] as number, row["id"] as number);
     }
 
     /**
@@ -132,6 +146,32 @@
     }
 
     // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the inline style for a status label using the raw status color,
+     * matching how the card Lava template renders the status.
+     *
+     * @param statusName The status name shown in the label.
+     */
+    function getStatusLabelStyle(statusName: string): Record<string, string> | undefined {
+        const color = props.stepStatusColors[statusName];
+
+        if (!color) {
+            return undefined;
+        }
+
+        // Keep the raw status color but pick a readable text color for it.
+        const rockColor = new RockColor(color);
+
+        return {
+            backgroundColor: color,
+            color: rockColor.isLight ? "var(--color-interface-strong)" : "#fff"
+        };
+    }
+
+    // #endregion Functions
 
     // #region Watchers
 
