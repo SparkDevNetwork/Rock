@@ -212,11 +212,13 @@ namespace Rock.Blocks.Engagement
             var stepTypes = GetStepTypes( program );
             var personSteps = GetPersonSteps( person, stepTypes );
 
-            // TODO: Compute prerequisite and add eligibility flags, render the card Lava, and build bag.GridData.
+            // TODO: Render the card Lava and build bag.GridData.
             bag.StepTypes = stepTypes
                 .Select( stepType =>
                 {
                     var steps = personSteps[stepType.Id];
+                    var prerequisites = GetPrerequisiteStepTypes( stepType );
+                    var hasMetPrerequisites = HasMetPrerequisites( prerequisites, personSteps );
 
                     return new PersonProgramStepTypeBag
                     {
@@ -226,13 +228,69 @@ namespace Rock.Blocks.Engagement
                         IconCssClass = stepType.IconCssClass,
                         HasSteps = steps.Any(),
                         IsComplete = steps.Any( s => s.IsComplete ),
-                        PrerequisiteNames = new List<string>(),
+                        HasMetPrerequisites = hasMetPrerequisites,
+                        IsAddEnabled = CanAddStep( stepType, steps, hasMetPrerequisites ),
+                        PrerequisiteNames = prerequisites.Select( p => p.Name ).ToList(),
                         Steps = steps.Select( GetStepBag ).ToList()
                     };
                 } )
                 .ToList();
 
             return bag;
+        }
+
+        /// <summary>
+        /// Gets the active step types that must be completed before a step of
+        /// the given type can be added.
+        /// </summary>
+        /// <param name="stepType">The step type.</param>
+        /// <returns>The prerequisite step types.</returns>
+        private List<StepType> GetPrerequisiteStepTypes( StepType stepType )
+        {
+            return stepType.StepTypePrerequisites
+                .Select( p => p.PrerequisiteStepType )
+                .Where( p => p != null && p.IsActive )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines whether the person has a completed step for every
+        /// prerequisite step type.
+        /// </summary>
+        /// <param name="prerequisites">The prerequisite step types.</param>
+        /// <param name="personSteps">The person's steps keyed by step type identifier.</param>
+        /// <returns>True when there are no prerequisites or all are complete.</returns>
+        private bool HasMetPrerequisites( List<StepType> prerequisites, Dictionary<int, List<Step>> personSteps )
+        {
+            return prerequisites.All( prerequisite =>
+                personSteps.TryGetValue( prerequisite.Id, out var steps ) && steps.Any( s => s.IsComplete ) );
+        }
+
+        /// <summary>
+        /// Determines whether a step of the given type can be added for the
+        /// person. Requires manual editing, EDIT or MANAGE_STEPS on the step
+        /// type, met prerequisites, and either allow multiple or no existing step.
+        /// </summary>
+        /// <param name="stepType">The step type.</param>
+        /// <param name="steps">The person's existing steps of this type.</param>
+        /// <param name="hasMetPrerequisites">Whether the prerequisites are met.</param>
+        /// <returns>True when a step can be added.</returns>
+        private bool CanAddStep( StepType stepType, List<Step> steps, bool hasMetPrerequisites )
+        {
+            if ( !stepType.AllowManualEditing || !stepType.IsActive || !hasMetPrerequisites )
+            {
+                return false;
+            }
+
+            var currentPerson = RequestContext.CurrentPerson;
+            var canEdit = stepType.IsAuthorized( Authorization.EDIT, currentPerson ) || stepType.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson );
+
+            if ( !canEdit )
+            {
+                return false;
+            }
+
+            return stepType.AllowMultiple || !steps.Any();
         }
 
         /// <summary>
