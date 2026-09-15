@@ -45,11 +45,6 @@ namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the card body rendered from the step type's card Lava template.
-        /// </summary>
-        public string CardHtml { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the person can add a step
         /// of this type. Computed on the server from security, manual editing,
         /// prerequisites, and the allow multiple rule.

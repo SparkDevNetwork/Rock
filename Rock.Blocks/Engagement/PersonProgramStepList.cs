@@ -212,7 +212,6 @@ namespace Rock.Blocks.Engagement
 
             var stepTypes = GetStepTypes( program );
             var personSteps = GetPersonSteps( person, stepTypes );
-            var showCampus = GetIsCampusVisible();
 
             bag.GridData = GetGridData( stepTypes, personSteps );
             bag.StepStatusColors = GetStepStatusColors( personSteps );
@@ -231,7 +230,6 @@ namespace Rock.Blocks.Engagement
                         IdKey = stepType.IdKey,
                         Name = stepType.Name,
                         IconCssClass = stepType.IconCssClass,
-                        CardHtml = GetCardHtml( stepType, steps, person, isComplete, isAddEnabled, showCampus ),
                         HasSteps = steps.Any(),
                         IsComplete = isComplete,
                         HasMetPrerequisites = hasMetPrerequisites,
@@ -243,37 +241,6 @@ namespace Rock.Blocks.Engagement
                 .ToList();
 
             return bag;
-        }
-
-        /// <summary>
-        /// Renders the step type's card Lava template. The merge fields match
-        /// the WebForms block exactly so existing customized templates keep working.
-        /// </summary>
-        /// <param name="stepType">The step type whose template is rendered.</param>
-        /// <param name="steps">The person's steps of this type, oldest first.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="isComplete">Whether the person has a completed step of this type.</param>
-        /// <param name="isAddEnabled">Whether the person can add a step of this type.</param>
-        /// <param name="showCampus">Whether campus should be shown on the card.</param>
-        /// <returns>The rendered card HTML.</returns>
-        private string GetCardHtml( StepType stepType, List<Step> steps, Person person, bool isComplete, bool isAddEnabled, bool showCampus )
-        {
-            var latestStep = steps.LastOrDefault();
-
-            var mergeFields = RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "StepType", stepType );
-            mergeFields.Add( "Steps", steps );
-            mergeFields.Add( "Person", person );
-            mergeFields.Add( "Program", stepType.StepProgram );
-            mergeFields.Add( "IsComplete", isComplete );
-            mergeFields.Add( "CompletedDateTime", steps.Where( s => s.CompletedDateTime.HasValue ).Max( s => s.CompletedDateTime ) );
-            mergeFields.Add( "StepCount", steps.Count );
-            mergeFields.Add( "CanAddStep", isAddEnabled );
-            mergeFields.Add( "LatestStep", latestStep );
-            mergeFields.Add( "LatestStepStatus", latestStep?.StepStatus );
-            mergeFields.Add( "ShowCampus", showCampus );
-
-            return stepType.CardLavaTemplate.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>

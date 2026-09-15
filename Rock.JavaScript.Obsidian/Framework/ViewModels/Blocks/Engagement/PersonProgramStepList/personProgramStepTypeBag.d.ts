@@ -25,9 +25,6 @@ import { PersonProgramStepBag } from "@Obsidian/ViewModels/Blocks/Engagement/Per
 
 /** One step type of the program as shown on a card and as an add button. */
 export type PersonProgramStepTypeBag = {
-    /** Gets or sets the card body rendered from the step type's card Lava template. */
-    cardHtml?: string | null;
-
     /**
      * Gets or sets a value indicating whether the person has completed
      * every prerequisite step type.
