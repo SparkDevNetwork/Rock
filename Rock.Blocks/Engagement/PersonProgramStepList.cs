@@ -211,14 +211,17 @@ namespace Rock.Blocks.Engagement
 
             var stepTypes = GetStepTypes( program );
             var personSteps = GetPersonSteps( person, stepTypes );
+            var showCampus = GetIsCampusVisible();
 
-            // TODO: Render the card Lava and build bag.GridData.
+            // TODO: Build bag.GridData.
             bag.StepTypes = stepTypes
                 .Select( stepType =>
                 {
                     var steps = personSteps[stepType.Id];
                     var prerequisites = GetPrerequisiteStepTypes( stepType );
                     var hasMetPrerequisites = HasMetPrerequisites( prerequisites, personSteps );
+                    var isComplete = steps.Any( s => s.IsComplete );
+                    var isAddEnabled = CanAddStep( stepType, steps, hasMetPrerequisites );
 
                     return new PersonProgramStepTypeBag
                     {
@@ -226,10 +229,11 @@ namespace Rock.Blocks.Engagement
                         IdKey = stepType.IdKey,
                         Name = stepType.Name,
                         IconCssClass = stepType.IconCssClass,
+                        CardHtml = GetCardHtml( stepType, steps, person, isComplete, isAddEnabled, showCampus ),
                         HasSteps = steps.Any(),
-                        IsComplete = steps.Any( s => s.IsComplete ),
+                        IsComplete = isComplete,
                         HasMetPrerequisites = hasMetPrerequisites,
-                        IsAddEnabled = CanAddStep( stepType, steps, hasMetPrerequisites ),
+                        IsAddEnabled = isAddEnabled,
                         PrerequisiteNames = prerequisites.Select( p => p.Name ).ToList(),
                         Steps = steps.Select( GetStepBag ).ToList()
                     };
@@ -237,6 +241,47 @@ namespace Rock.Blocks.Engagement
                 .ToList();
 
             return bag;
+        }
+
+        /// <summary>
+        /// Renders the step type's card Lava template. The merge fields match
+        /// the WebForms block exactly so existing customized templates keep working.
+        /// </summary>
+        /// <param name="stepType">The step type whose template is rendered.</param>
+        /// <param name="steps">The person's steps of this type, oldest first.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="isComplete">Whether the person has a completed step of this type.</param>
+        /// <param name="isAddEnabled">Whether the person can add a step of this type.</param>
+        /// <param name="showCampus">Whether campus should be shown on the card.</param>
+        /// <returns>The rendered card HTML.</returns>
+        private string GetCardHtml( StepType stepType, List<Step> steps, Person person, bool isComplete, bool isAddEnabled, bool showCampus )
+        {
+            var latestStep = steps.LastOrDefault();
+
+            var mergeFields = RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "StepType", stepType );
+            mergeFields.Add( "Steps", steps );
+            mergeFields.Add( "Person", person );
+            mergeFields.Add( "Program", stepType.StepProgram );
+            mergeFields.Add( "IsComplete", isComplete );
+            mergeFields.Add( "CompletedDateTime", steps.Where( s => s.CompletedDateTime.HasValue ).Max( s => s.CompletedDateTime ) );
+            mergeFields.Add( "StepCount", steps.Count );
+            mergeFields.Add( "CanAddStep", isAddEnabled );
+            mergeFields.Add( "LatestStep", latestStep );
+            mergeFields.Add( "LatestStepStatus", latestStep?.StepStatus );
+            mergeFields.Add( "ShowCampus", showCampus );
+
+            return stepType.CardLavaTemplate.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Determines whether campus should be shown. Requires the block
+        /// setting and more than one active campus.
+        /// </summary>
+        /// <returns>True when campus should be shown.</returns>
+        private bool GetIsCampusVisible()
+        {
+            return GetAttributeValue( AttributeKey.ShowCampusColumn ).AsBoolean() && CampusCache.All( false ).Count > 1;
         }
 
         /// <summary>
@@ -392,7 +437,7 @@ namespace Rock.Blocks.Engagement
                 StepTerm = program?.StepTerm ?? "Step",
                 StepsPerRow = GetAttributeValue( AttributeKey.StepsPerRow ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRow,
                 StepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRowMobile,
-                IsCampusColumnVisible = GetAttributeValue( AttributeKey.ShowCampusColumn ).AsBoolean() && CampusCache.All( false ).Count > 1,
+                IsCampusColumnVisible = GetIsCampusVisible(),
                 IsStartDateColumnVisible = GetAttributeValue( AttributeKey.ShowStartedDateColumn ).AsBoolean(),
                 IsBlockEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 GridDefinition = GetGridBuilder().BuildDefinition(),
