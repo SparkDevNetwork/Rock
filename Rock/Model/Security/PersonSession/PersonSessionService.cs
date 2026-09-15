@@ -717,6 +717,7 @@ public partial class PersonSessionService
             {
                 ExpireAuthCookie( requestContext );
                 requestContext.SetPersonSession( null );
+                requestContext.SetCurrentIdentity( null, null );
             }
 
             return null;
@@ -801,8 +802,25 @@ public partial class PersonSessionService
             throw new InvalidOperationException( "Cannot impersonate: the current request has no active PersonSession." );
         }
 
-        using ( var rockContext = RockApp.Current.CreateRockContext() )
         {
+            /*
+                9/15/26 - CLAUDE
+
+                This RockContext is intentionally NOT wrapped in a `using`. The impersonation
+                session created below is handed to context.SetPersonSession, and CurrentPerson /
+                CurrentUser derive from it for the rest of the request. Disposing the context here
+                would sever lazy loading for that session - per the Rock rule "do not dispose
+                RockContext prematurely; it kills lazy loading for any entities retrieved from that
+                context" - so a later walk of the impersonated person's navigation properties would
+                throw ObjectDisposedException. The context is released by GC once the request (and
+                the session it holds) is gone. Mirrors the same treatment in Login.Authenticate;
+                the enclosing braces are kept to scope the session-building locals. This becomes
+                unnecessary once full-request DI provides a request-scoped RockContext.
+
+                Reason: Keep the impersonation session's context alive for the rest of the request so lazy loading survives.
+            */
+            var rockContext = RockApp.Current.CreateRockContext();
+
             // Resolve the admin's current InteractionSession via the
             // browser-session identifier (RockSessionId). StartImpersonationSession
             // needs this so the impersonation session can later be reversed via

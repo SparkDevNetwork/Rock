@@ -2006,7 +2006,21 @@ namespace Rock.Web.UI
                 return;
             }
 
-            using var rockContext = RockApp.Current.CreateRockContext();
+            /*
+                9/15/26 - CLAUDE
+
+                This RockContext is intentionally NOT a `using` declaration. EndImpersonationAndRestore
+                hands the restored session to RequestContext.SetPersonSession, and CurrentPerson /
+                CurrentUser derive from it for the rest of the request. Disposing the context at the end
+                of this handler would sever lazy loading for that session (see the Rock rule "do not
+                dispose RockContext prematurely"), so a later walk of the admin's navigation properties
+                would throw ObjectDisposedException. Mirrors Login.Authenticate and ImpersonatePerson.
+                The redirect below normally ends the request immediately; keeping the context alive makes
+                the hand-off robust for any non-redirecting path too.
+
+                Reason: Keep the restored session's context alive for the rest of the request so lazy loading survives.
+            */
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new PersonSessionService( rockContext );
 
             // Refetch the current impersonation session through this
