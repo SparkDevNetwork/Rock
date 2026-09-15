@@ -1641,6 +1641,133 @@ public class PersonSessionServiceTests
     }
 
     /// <summary>
+    /// A session whose <see cref="PersonSession.IssuedDateTime"/> precedes the
+    /// <c>RejectAuthenticationCookiesIssuedBefore</c> kill-switch threshold is
+    /// rejected on the next request: the helper returns null, the session is
+    /// marked inactive, and the stale cookie is expired. The cookie carries a
+    /// RECENT <c>IssuedAt</c> (<see cref="PersonSessionService.GetCookieValue"/>
+    /// always stamps it with "now"), yet the session is still rejected — proving
+    /// the kill switch keys off <see cref="PersonSession.IssuedDateTime"/>, not the
+    /// cookie's <c>iat</c>, which is what closes the reissue-bypass weakness.
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequest_SessionIssuedBeforeKillSwitchThreshold_IsRejectedAndCookieExpired()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        // Building the default security settings goes through SystemSettings, which
+        // needs the Text FieldType available.
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        // Kill switch: reject any session issued before 5 minutes ago. The service
+        // reads SecuritySettings from RockCache first, so publish the threshold there
+        // for ResolveSessionForRequest to read deterministically (the test scope clears
+        // RockCache on dispose, so this does not leak to other tests).
+        var settingsService = new SecuritySettingsService();
+        settingsService.SecuritySettings.RejectAuthenticationCookiesIssuedBefore = RockDateTime.Now.AddMinutes( -5 );
+        // The mock seeds no roles, so the default AccountProtectionProfileSecurityGroup
+        // entries resolve to null RoleCache; clear them so the cache-hit
+        // RefreshSecurityGroups (which the kill-switch path does not use) does not NRE.
+        settingsService.SecuritySettings.AccountProtectionProfileSecurityGroup.Clear();
+        Rock.Web.Cache.RockCache.AddOrUpdate( SecuritySettingsService.SecuritySettingsCacheKey, settingsService.SecuritySettings );
+
+        var userLogin = new UserLogin
+        {
+            Id = 52,
+            UserName = "good",
+            PersonId = 100,
+            IsConfirmed = true,
+            IsLockedOut = false,
+        };
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            UserLoginId = 52,
+            UserLogin = userLogin,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = false,
+            // The row value the kill switch inspects - issued BEFORE the threshold.
+            IssuedDateTime = RockDateTime.Now.AddMinutes( -10 ),
+        };
+        rockContext.Set<UserLogin>().Add( userLogin );
+        rockContext.Set<PersonSession>().Add( session );
+
+        // GetCookieValue stamps IssuedAt = now, so the cookie's iat is recent even
+        // though the session's IssuedDateTime is older - the reissued-cookie case.
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequest( requestContext );
+
+        Assert.IsNull( result, "A session issued before the kill-switch threshold must be rejected." );
+        Assert.IsFalse( session.IsActive, "The rejected session must be marked inactive." );
+        Assert.HasCount( 1, response.RemovedCookies );
+        Assert.AreEqual( PersonSessionService.AuthCookieName, response.RemovedCookies[0].Name );
+    }
+
+    /// <summary>
+    /// Regression guard against over-rejection: a session whose
+    /// <see cref="PersonSession.IssuedDateTime"/> is after the
+    /// <c>RejectAuthenticationCookiesIssuedBefore</c> threshold resolves normally
+    /// and is left active.
+    /// </summary>
+    [TestMethod]
+    public void ResolveSessionForRequest_SessionIssuedAfterKillSwitchThreshold_Resolves()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        rockContext.Set<FieldType>().Add( new FieldType { Id = 1, Guid = SystemGuid.FieldType.TEXT.AsGuid() } );
+
+        var settingsService = new SecuritySettingsService();
+        settingsService.SecuritySettings.RejectAuthenticationCookiesIssuedBefore = RockDateTime.Now.AddMinutes( -5 );
+        // See the before-threshold test: clear the role-backed dictionary the mock
+        // cannot populate so the cache-hit RefreshSecurityGroups does not NRE.
+        settingsService.SecuritySettings.AccountProtectionProfileSecurityGroup.Clear();
+        Rock.Web.Cache.RockCache.AddOrUpdate( SecuritySettingsService.SecuritySettingsCacheKey, settingsService.SecuritySettings );
+
+        var userLogin = new UserLogin
+        {
+            Id = 52,
+            UserName = "good",
+            PersonId = 100,
+            IsConfirmed = true,
+            IsLockedOut = false,
+        };
+        var session = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            UserLoginId = 52,
+            UserLogin = userLogin,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+            IsPersistent = false,
+            // Issued AFTER the threshold - must NOT be rejected.
+            IssuedDateTime = RockDateTime.Now.AddMinutes( -1 ),
+        };
+        rockContext.Set<UserLogin>().Add( userLogin );
+        rockContext.Set<PersonSession>().Add( session );
+
+        var cookieValue = service.GetCookieValue( session );
+        var response = new TrackingResponseContext();
+        var requestContext = BuildRequestContext( cookieValue, response );
+
+        var result = service.ResolveSessionForRequest( requestContext );
+
+        Assert.IsNotNull( result, "A session issued after the kill-switch threshold must resolve normally." );
+        Assert.IsTrue( session.IsActive, "The session must remain active." );
+    }
+
+    /// <summary>
     /// A session with no backing <see cref="UserLogin"/> (e.g. an impersonation
     /// or user-token session) is not subject to the locked-out / unconfirmed
     /// check and resolves normally.
@@ -3262,8 +3389,8 @@ public class PersonSessionServiceTests
     /// comparison runs against <c>PersonSession.IssuedDateTime</c>, and
     /// the upgrade path is the only place where that value comes from
     /// outside the system clock. (The kill-switch behavior itself is
-    /// exercised by the cookie reissue tests above; this test
-    /// guards the input.)
+    /// exercised by ResolveSessionForRequest_SessionIssuedBeforeKillSwitchThreshold_IsRejectedAndCookieExpired
+    /// and its after-threshold counterpart; this test guards the input.)
     /// </summary>
     [TestMethod]
     public void UpgradeLegacyTicket_StampsIssuedDateTime_FromTicketIssueDate()
