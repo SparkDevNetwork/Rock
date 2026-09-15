@@ -185,8 +185,27 @@ namespace Rock.Blocks.Cms
             var pageViewQry = new InteractionService( RockContext ).Queryable()
                 .Where( pv => pv.PersonAliasId.HasValue && pv.InteractionDateTime > last24Hours );
 
+            /*
+                9/15/26 - CLAUDE
+
+                A session counts as "active" for this block only when it has been touched
+                within the recency window below. PersonSession.IsActive alone stays true for
+                the whole session lifetime (hours for a transient session, up to weeks for a
+                persistent one), so filtering on it alone would list everyone who has a live
+                session rather than who is currently on the site. Bounding by
+                LastActivityDateTime restores the "who is here now" semantics that the
+                deprecated UserLogin.IsOnLine flag used to provide (it was cleared at session
+                timeout). 30 minutes approximates that timeout window; LastActivityDateTime is
+                only advanced about every 5 minutes (the activity-tracking throttle), so a
+                tighter window would not be reliable. The separate 5-minute "recent" indicator
+                below still highlights the freshest users within this list.
+
+                Reason: Bound the active list to recent activity; IsActive alone spans the whole session lifetime.
+            */
+            var activeWindowStart = RockDateTime.Now.AddMinutes( -30 );
+
             var activeSessionsQuery = new PersonSessionService( RockContext ).Queryable()
-                .Where( s => s.IsActive );
+                .Where( s => s.IsActive && s.LastActivityDateTime >= activeWindowStart );
 
             if ( currentPersonId.HasValue )
             {

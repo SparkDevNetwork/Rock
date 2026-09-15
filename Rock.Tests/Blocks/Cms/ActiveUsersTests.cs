@@ -163,7 +163,9 @@ public class ActiveUsersTests
         var rockContext = scope.App.CreateRockContext();
 
         const int targetPersonId = 7;
-        var olderActivity = RockDateTime.Now.AddMinutes( -30 );
+        // Both timestamps are within the block's active window so the collapse of
+        // two in-window sessions is what is being exercised (not the window filter).
+        var olderActivity = RockDateTime.Now.AddMinutes( -20 );
         var newerActivity = RockDateTime.Now.AddMinutes( -2 );
 
         var personAlias = SeedPerson( rockContext, targetPersonId, personAliasId: 1, nickName: "Multi", lastName: "Device" );
@@ -178,6 +180,37 @@ public class ActiveUsersTests
         var matches = result.Where( u => u.FullName == "Multi Device" ).ToList();
         Assert.HasCount( 1, matches, "Multiple sessions for the same person must collapse to one entry." );
         Assert.IsTrue( matches[0].IsRecent, "Recent flag must reflect the maximum LastActivityDateTime (2 minutes ago), not the older session." );
+    }
+
+    /// <summary>
+    /// A person whose only active <see cref="PersonSession"/> was last active
+    /// beyond the block's active window is excluded, even though the session is
+    /// still <see cref="PersonSession.IsActive"/> and the person has a page view
+    /// on this site within the last 24 hours. This guards the recency bound that
+    /// replaced the deprecated <c>UserLogin.IsOnLine</c> gate; without it, every
+    /// person holding a live (long-lived) session would be listed.
+    /// </summary>
+    [TestMethod]
+    public void GetActiveUsers_ExcludesPersonWhoseSessionIsBeyondActiveWindow()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        const int targetPersonId = 8;
+        // 45 minutes ago is inside the 24h page-view filter but outside the
+        // 30-minute active window, so the person must NOT be listed.
+        var beyondWindow = RockDateTime.Now.AddMinutes( -45 );
+
+        var personAlias = SeedPerson( rockContext, targetPersonId, personAliasId: 1, nickName: "Idle", lastName: "Session" );
+        SeedActiveSession( rockContext, sessionId: 1, personAlias, beyondWindow );
+        SeedSiteInteraction( rockContext, interactionId: 1, personAlias, SiteId, beyondWindow, interactionSessionId: 500, title: "Home" );
+
+        var block = BuildActiveUsersBlock( rockContext );
+
+        var result = block.GetActiveUsers( SiteId, pageViewCount: 5 );
+
+        Assert.IsFalse( result.Any( u => u.FullName == "Idle Session" ),
+            "A session last active beyond the active window must not be listed even though it is still active and has a recent page view." );
     }
 
     /// <summary>
