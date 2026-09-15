@@ -15,8 +15,32 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 export const enum NavigationUrlKey {
     AddPage = "AddPage",
     DetailPage = "DetailPage",
     RegistrationPage = "RegistrationPage"
 }
+
+export const enum PreferenceKey {
+    FilterCampus = "filter-campus",
+    FilterGender = "filter-gender",
+    FilterRegistrationInstance = "filter-registration-instance",
+    FilterSignedDocument = "filter-signed-document"
+}
+
+/** The filter modal's filters, every one of which narrows the query. */
+export type GridSettingsOptions = {
+    /** The campus whose families the list is limited to. */
+    campus?: ListItemBag;
+
+    /** The genders the list is limited to, as `Gender` enum values. */
+    genders?: string[];
+
+    /** The unique identifier of the registration instance the list is limited to registrants of. */
+    registrationInstance?: string | null;
+
+    /** "Yes" limits the list to people who have signed, "No" to people who have not. */
+    signedDocument?: string | null;
+};

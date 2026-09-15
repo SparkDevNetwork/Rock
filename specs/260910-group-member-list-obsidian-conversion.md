@@ -77,7 +77,8 @@ One legacy defect is not carried: the Requirements tab re-assigned its Add butto
 **Filters**
 
 - Column filters: Name (text), Role and Status (pick from existing), Gender when its column is shown, and attribute columns.
-- Filter modal, remembered per person and per group. Only Family Campus and Gender narrow the query; the rest filter the loaded rows client-side, because the row already carries what they need (`registrations`, `isUnsigned`, `dateAdded`, requirement state). Family Campus has no row data behind it and Gender has no column to filter through when its setting is off. The filters: Family Campus (Show Campus Filter, which keeps its legacy default of **true** rather than the go-forward "Obsidian booleans default false" rule; matches people in any family at that campus), Gender, Registration (shown when the group has linked registration instances; limits to registrants of the chosen instance), Signed Document Yes or No (shown when the group has a required signature document template), Date Added range (shown when Show Date Added), Requirement Type and Requirement State (shown when the group or group type has requirements).
+- Filter modal, remembered per person. Every filter in it narrows the query, because none of them can be answered from a row, and every one of them is conditional: Gender (shown when Display Gender Column is off, since with the column on its own filter does the job), Family Campus (Show Campus Filter, which keeps its legacy default of **true** rather than the go-forward "Obsidian booleans default false" rule; matches people in any family at that campus), Registration (shown when the group is linked to at least one registration instance; keeps members whose **person** registered for the chosen instance, which is what legacy matched, so it carries help text distinguishing it from the Registration column's own filter), and Signed Document Yes or No (shown when the group has a required signature document template). When none of the four applies, the settings button is not offered at all.
+- The filters a row can answer are column filters instead: Registration on the Registration column (matches only the registration a member was added through, narrower than the modal filter above), Date Added (date range, present when Show Date Added is on), and Requirement Type and Requirement State on the Requirements column (shown when the group or group type has requirements).
 
 **Requirements**
 
@@ -120,9 +121,10 @@ One legacy defect is not carried: the Requirements tab re-assigned its Add butto
 - `ISecondaryBlock.SetVisible` has no Obsidian equivalent. `PageState.setAreSecondaryBlocksShown` is a deprecated no-op since v18, so the block declares `BlockRole.Secondary` and nothing else.
 - Phone and home address data for the export-only columns loads on every request, because exports run client-side. [RegistrationInstanceRegistrantList](Rock.Blocks/Event/RegistrationInstanceRegistrantList.cs:438) made the same call.
 - First Attended and Last Attended are sortable (client-side); legacy disabled that for performance.
-- Filter preferences are block person preferences keyed per group. Legacy `{GroupId}-` grid filter preferences are not migrated.
+- Filter preferences are block person preferences, so they follow the block and the person rather than the group. Legacy `{GroupId}-` grid filter preferences are not migrated, and nothing keys the new ones per group unless someone asks for it.
 - The export no longer carries the raw `GroupMember` entity columns. Legacy's `ExcelExportSource.DataSource` mode reflects over the bound type and appends every non-virtual property ([Grid.cs:2583](Rock/Web/UI/Controls/Grid/Grid.cs:2583)), so the file ended with roughly 28 extra columns: `IsSystem`, `GroupId`, `GroupTypeId`, `PersonId`, `GroupRoleId`, the archive and schedule fields, the audit fields, and `Id`, `IdKey`, `Guid` and the `Foreign*` set. The Obsidian grid exports declared columns only. Nothing in the block requested those columns and none are user-facing, but a church scripting against the export file would see them vanish.
 - An attribute key defined at two levels of the group type chain produces one column instead of two. Legacy added a column per attribute but every one of them resolved through `dataItem.Attributes[DataField]` ([AttributeField.cs:86](Rock/Web/UI/Controls/Grid/AttributeField.cs:86)), which holds a single entry per key, so the extra columns rendered the same value under a different header. Confirmed on a test group. The surviving column is the group-qualified attribute, per [settled decision 7](#settled-decisions).
+- There are now two ways to filter by registration, where legacy had one of each and they disagreed. The modal's Registration filter keeps legacy's meaning: it lists the instances the group is linked to and keeps members whose **person** registered for the chosen instance, whether or not their membership came from that registration ([GroupMemberList.ascx.cs:1920](RockWeb/Blocks/Groups/GroupMemberList.ascx.cs:1920)). The Registration column's filter reads the column, which shows only the registration a member was added through (`RegistrationRegistrant.GroupMemberId`, as legacy's column did at [GroupMemberList.ascx.cs:2067](RockWeb/Blocks/Groups/GroupMemberList.ascx.cs:2067)). So the modal filter can keep a row whose Registration cell is empty and the column filter cannot, which is why the modal filter carries help text saying so.
 - An inactive group-qualified grid attribute no longer produces a column. Legacy passed `includeInactive: true` to `GetByEntityTypeQualifier` for group-qualified attributes while filtering `IsActive` on the inherited ones, so the two paths disagreed. Both are active-only now.
 
 ## Proposed Approach
@@ -178,7 +180,7 @@ Zero members with default settings: the group and the members queries only.
 3. **Two tabs over one data load.** The legacy Members and Requirements tabs are kept, so the block mimics what people use today. The tab selects which grid renders; both read the same `GetListItems` result, so the second tab costs no extra query. The tab bar goes in the grid's own `#gridHeaderPrepend` slot and writes `?tab=` to the URL, following [semesterGrid.partial.obs:33](Rock.JavaScript.Obsidian.Blocks/src/Lms/LearningProgramSecondaryLists/semesterGrid.partial.obs:33). Note that every Obsidian tabbed grid today switches between different entity types; ours is the first to tab between two column sets over the same rows.
 4. **Bulk requirement statuses live in the model layer and are the single source.** The rules stay in one place next to the per-member method, a test compares both outputs on the same group, and the name-cell flags and the Requirements column read the same statuses so they cannot disagree.
 5. **Inactive prompt is client-only.** The rows already carry `isInactive`, so no server round trip decides whether to prompt.
-6. **Preference keys are per group.** The block prefixes each preference key with the group guid, the way [RegistrationInstanceRegistrantList](Rock.Blocks/Event/RegistrationInstanceRegistrantList.cs:1443) scopes by template.
+6. **The modal is only for filters that have to narrow the query.** A filter a row can answer is a column filter, so the grid's own filter row handles it. Registration is in both places because legacy's filter and its column never read the same data, and dropping either one would lose a behavior somebody uses; the modal one carries help text so the difference is visible where the choice is made. Preference keys are plain block person preferences, not keyed per group; per-group scoping waits until someone asks for it.
 7. **A shared attribute key resolves to the most specific attribute.** `GridBuilder.AddField` throws on a duplicate field name, and neither `GetInheritedAttributesForQualifier` nor the group-qualified lookup deduplicates, so a key defined at two levels of a group type chain would fail the block outright. The candidates are gathered in the order [Helper.LoadAttributes](Rock/Attribute/Helper.cs:1163) uses, group-qualified then inherited from the most distant group type down, and the **first** one wins, matching the `TryAdd` that builds `entity.Attributes`. Note that Rock is not self-consistent here: `entity.AttributeValues` is built by plain assignment over the same list, so it is last-wins and can hold the inherited attribute's value under the group-qualified attribute's definition. The grid avoids that split because `GridAttributeLoader` only loads the attribute ids this method returns, so definition and value always come from the same attribute.
 
 ## Implementation Plan
@@ -192,7 +194,7 @@ Each row is a discrete implementation slice. **Implemented** means the code is w
 | 2b | Support lookups: Registration, First and Last Attended, phones and home address | [T3](#t3-columns-and-settings) | ✅ | ✅ |
 | 2c | Attribute columns | [T3](#t3-columns-and-settings) | ✅ | ✅ |
 | 3 | Name indicators and row classes | [T4](#t4-name-indicators-and-row-styling) | ✅ | ✅ |
-| 4 | Filters: column filters and the filter modal with per-group preferences | [T5](#t5-filters) | | |
+| 4 | Filters: column filters and the filter modal | [T5](#t5-filters) | ✅ | |
 | 5 | Requirements tab: tab bar, Requirements grid, bulk status helper, requirement filters, name-cell requirement triangle | [T6](#t6-requirements) | | |
 | 6 | Row actions: delete or archive, profile button, Place Elsewhere modal | [T7](#t7-row-actions), [T12](#t12-authorization) | | |
 | 7 | Grid actions: Add visibility, Communicate with inactive prompt and merge field, standard actions | [T8](#t8-grid-actions-and-communication), [T12](#t12-authorization) | | |
@@ -271,13 +273,43 @@ The requirement triangle is a name indicator too, but it reads the bulk status h
 
 ### T5. Filters
 
-- [ ] Name text filter and quick search find by first, nick, and last name; Role and Status pick from existing values.
-- [ ] Family Campus hides when Show Campus Filter is off; when on, it limits to people in a family at that campus.
-- [ ] Registration filter appears only when the group has linked instances and limits to that instance's registrants.
-- [ ] Signed Document Yes and No split the list correctly; the filter hides without a template.
-- [ ] Date Added range filters inclusively on both ends; the filter hides when Show Date Added is off.
-- [ ] Gender modal filter works with the Gender column off.
-- [ ] Filter values persist across reloads for the same group and do not leak to another group on the same page.
+- [ ] The Name column filter finds a member by nick name.
+- [ ] The Name column filter finds a member by last name.
+- [ ] The Name column filter finds a member by a legal first name that differs from their nick name.
+- [ ] The quick search finds a member by nick name.
+- [ ] The quick search finds a member by last name.
+- [ ] The quick search finds a member by a legal first name that differs from their nick name.
+- [ ] No First Name column appears on screen.
+- [ ] No First Name column appears in the export.
+- [ ] The Role column filter picks from the roles present in the list.
+- [ ] The Status column filter picks from the statuses present in the list.
+- [ ] The Gender column filter picks from existing values when Display Gender Column is on.
+- [ ] The Date Added column filter keeps a member whose date added falls on the lower bound.
+- [ ] The Date Added column filter keeps a member whose date added falls on the upper bound.
+- [ ] The Date Added column and its filter are absent when Show Date Added is off.
+- [ ] The Registration column filter is absent when no listed member has a registration.
+- [ ] The Registration column filter offers each registration on the listed rows as its own option, rather than one option per combination of them.
+- [ ] The Registration column filter keeps only the members whose own registration belongs to the chosen one.
+- [ ] The modal offers the Gender filter when Display Gender Column is off and omits it when that setting is on.
+- [ ] The modal offers the Family Campus filter only when Show Campus Filter is on.
+- [ ] The modal offers the Registration filter only when the group is linked to at least one registration instance.
+- [ ] The modal offers the Signed Document filter only when the group requires a signature document.
+- [ ] The modal holds nothing beyond those four.
+- [ ] The settings button is absent when all four modal filters are hidden: gender column on, campus filter off, no linked instance, no required template.
+- [ ] The Gender modal filter narrows the list when Display Gender Column is off.
+- [ ] Turning Display Gender Column on moves gender filtering to the column and produces the same rows.
+- [ ] The Family Campus filter keeps a person whose family at that campus is not their primary family.
+- [ ] The Signed Document filter set to Yes keeps only people who have signed.
+- [ ] The Signed Document filter set to No keeps only people who have not signed.
+- [ ] The modal's Registration filter lists the instances the group is linked to, including one that no listed member registered through.
+- [ ] The modal's Registration filter keeps a member whose person registered for the chosen instance even though their Registration cell is empty.
+- [ ] The modal's Registration filter carries help text explaining how it differs from the Registration column's filter.
+- [ ] The settings icon reads as active while a modal filter is set.
+- [ ] The settings icon reads as inactive once every modal filter is cleared.
+- [ ] A preference left behind by a modal filter that is now hidden does not light the settings icon.
+- [ ] A preference left behind by a modal filter that is now hidden does not narrow the list.
+- [ ] A modal filter value survives a page reload.
+- [ ] Saving the modal reloads the grid.
 
 ### T6. Requirements
 

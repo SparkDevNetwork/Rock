@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 /** The additional configuration options for the Group Member List block. */
 export type GroupMemberListOptionsBag = {
     /** Gets or sets the name given to the exported file. */
@@ -31,6 +33,9 @@ export type GroupMemberListOptionsBag = {
      * are shown. Neither column is exported.
      */
     isAttendanceColumnVisible: boolean;
+
+    /** Gets or sets a value indicating whether the filter modal offers the Family Campus filter. */
+    isCampusFilterVisible: boolean;
 
     /**
      * Gets or sets a value indicating whether the Date Added column is shown on screen. The
@@ -59,8 +64,20 @@ export type GroupMemberListOptionsBag = {
      */
     isNoteColumnVisible: boolean;
 
+    /**
+     * Gets or sets a value indicating whether the filter modal offers the Signed Document filter, which
+     * takes a group that requires a signature document.
+     */
+    isSignedDocumentFilterVisible: boolean;
+
     /** Gets or sets the term that names a single row. */
     itemTerm?: string | null;
+
+    /**
+     * Gets or sets the registration instances the group is linked to, which the filter modal's Registration
+     * filter chooses from. The filter is offered only when there is at least one.
+     */
+    registrationInstances?: ListItemBag[] | null;
 
     /** Gets or sets the title displayed in the panel header. */
     title?: string | null;

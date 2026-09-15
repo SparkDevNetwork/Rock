@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Group.GroupMemberList
 {
     /// <summary>
@@ -76,5 +80,22 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberList
         /// are shown. Neither column is exported.
         /// </summary>
         public bool IsAttendanceColumnVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the filter modal offers the Family Campus filter.
+        /// </summary>
+        public bool IsCampusFilterVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the filter modal offers the Signed Document filter, which
+        /// takes a group that requires a signature document.
+        /// </summary>
+        public bool IsSignedDocumentFilterVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration instances the group is linked to, which the filter modal's Registration
+        /// filter chooses from. The filter is offered only when there is at least one.
+        /// </summary>
+        public List<ListItemBag> RegistrationInstances { get; set; }
     }
 }
