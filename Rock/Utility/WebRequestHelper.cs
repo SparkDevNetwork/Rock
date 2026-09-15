@@ -440,21 +440,19 @@ namespace Rock.Utility
             }
         }
 
-        /*
-            8/24/2026 - CLAUDE
-
-            Browsers speculatively fetch and prerender pages the visitor has not
-            navigated to, which produced page view interactions for pages nobody
-            actually looked at. Chrome Speculation Rules made this common enough
-            to matter.
-
-            Reason: Prefetched pages were being counted as real page views.
-        */
-
         /// <summary>
+        /// <para>
         /// Determines whether the request headers indicate the browser is
         /// speculatively fetching or prerendering the page rather than
         /// responding to a real navigation.
+        /// </para>
+        /// <para>
+        /// Call this before recording a page view (or otherwise treating the
+        /// request as a real visit). Browsers speculatively fetch and prerender
+        /// pages the visitor has not navigated to, which would otherwise produce
+        /// page view interactions for pages nobody actually looked at. Chrome
+        /// Speculation Rules made this common enough to matter.
+        /// </para>
         /// </summary>
         /// <param name="headers">The request headers.</param>
         /// <returns><c>true</c> if the request carries prefetch or prerender intent.</returns>

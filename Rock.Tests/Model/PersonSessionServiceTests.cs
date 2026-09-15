@@ -466,38 +466,9 @@ public class PersonSessionServiceTests
         Assert.AreEqual( PersonSessionCreationSource.ApiKey, resolved.CreationSource );
     }
 
-    /*
-        9/14/26 - DH
-
-        The mocked-db orphan-not-resurrected and expired-but-active ApiKey tests
-        that used to live here were removed. They wrapped the create/save leg in
-        a bare try/catch that swallowed even the assertion failure, so they could
-        never fail. They now live as real integration tests in
-        Rock.Tests.Integration/Model/PersonSessionTests.cs, where the save leg
-        runs against a real database and the assertions are positive.
-
-        Reason: Vacuous try/catch-swallow tests promoted to integration.
-    */
-
     #endregion FindOrCreateApiKeySession
 
     #region FindOrCreateDeviceComponentSession
-
-    /*
-        9/14/26 - DH
-
-        The mocked-db device-component tests for "fresh login does not reuse
-        another client's session", "different UserLogin on the request marks the
-        prior session inactive", and "expired-but-active session is not reused"
-        were removed from here. Each hit the create/save leg, which the mocked
-        context cannot complete, forcing a try/catch that swallowed the outcome
-        (and, for the first, the assertion itself). They now live as real
-        integration tests in Rock.Tests.Integration/Model/PersonSessionTests.cs
-        where the save leg runs and the new-row / mark-inactive outcomes are
-        asserted positively.
-
-        Reason: Vacuous try/catch-swallow tests promoted to integration.
-    */
 
     /// <summary>
     /// When the prior session on the request belongs to the SAME

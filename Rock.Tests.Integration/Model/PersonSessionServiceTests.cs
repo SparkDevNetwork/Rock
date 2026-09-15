@@ -388,18 +388,6 @@ public class PersonSessionServiceTests : DatabaseTestsBase
 
     #region FindOrCreate reuse / isolation invariants
 
-    /*
-        9/14/26 - DH
-
-        These tests were promoted from Rock.Tests/Model/PersonSessionServiceTests.cs.
-        In the mocked-db suite the create/save leg cannot complete, which forced a
-        try/catch that swallowed the outcome (and, in some cases, the assertion
-        itself), leaving the tests unable to fail. Here the real save pipeline and
-        the filtered unique indexes run, so each invariant is asserted positively.
-
-        Reason: Real-DB coverage for the FindOrCreate reuse / isolation invariants.
-    */
-
     /// <summary>
     /// An orphaned <see cref="PersonSessionCreationSource.ApiKey"/> session (its
     /// <see cref="UserLogin"/> was deleted, so the FK cascade SET NULL its

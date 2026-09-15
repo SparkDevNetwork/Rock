@@ -2244,16 +2244,10 @@ Sys.Application.add_load(function () {
                 return;
             }
 
-            /*
-                8/24/2026 - CLAUDE
-
-                Reject speculative navigations before anything is recorded.
-                Chrome Speculation Rules and link prefetchers request pages the
-                visitor never actually opens, and every one of those was being
-                written as a page view.
-
-                Reason: Prefetched pages were inflating page view counts.
-            */
+            // Skip speculative prefetch / prerender navigations before anything is
+            // recorded - the visitor never actually opened these, so counting them
+            // inflates page views. See WebRequestHelper.IsPrefetchRequest for the
+            // header details and background.
             if ( WebRequestHelper.IsPrefetchRequest( Request?.Headers ) )
             {
                 return;
@@ -2311,17 +2305,10 @@ Sys.Application.add_load(function () {
                 return;
             }
 
-            /*
-                8/24/2026 - CLAUDE
-
-                Skip the callback entirely for a user agent we already know is a
-                crawler. The API endpoint rejects these too, but there is no
-                reason to hand a bot the script and pay for the round trip when
-                the user agent is identifiable from this request.
-
-                Reason: Avoids a pointless request and an Anonymous Visitor
-                cookie for traffic that will be rejected anyway.
-            */
+            // Skip the client callback for a user agent we already know is a crawler.
+            // The API endpoint would reject it anyway, so there is no reason to hand a
+            // bot the script (and create an Anonymous Visitor cookie) for a round trip
+            // that goes nowhere.
             if ( CrawlerUserAgents.IsCrawler( Request.UserAgent ) )
             {
                 return;

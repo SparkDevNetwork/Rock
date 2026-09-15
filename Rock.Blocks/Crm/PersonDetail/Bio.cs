@@ -1079,20 +1079,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 return ActionBadRequest( "The person cannot be impersonated because they have no primary alias." );
             }
 
-            /*
-                9/11/26 - DH
-
-                Admin impersonation is now a cookie-based handoff through
-                PersonSessionService.ImpersonatePerson: it creates an
-                Impersonation-source PersonSession, writes the new .ROCK cookie
-                on this response, and records the HistoryLogin. It replaces the
-                legacy GetImpersonationToken path, which minted a PersonToken row
-                and carried an rckipid in the redirect URL. The URL now carries
-                no token.
-
-                Reason: Impersonation follows the PersonSession model - no
-                PersonToken, no rckipid.
-            */
+            // Admin impersonation is now a cookie-based handoff through
+            // PersonSessionService.ImpersonatePerson: it creates an Impersonation-source
+            // PersonSession, writes the new .ROCK cookie on this response, and records the
+            // HistoryLogin. It replaces the legacy GetImpersonationToken path (which minted a
+            // PersonToken row and carried an rckipid in the redirect URL); the URL now carries no token.
             try
             {
                 PersonSessionService.ImpersonatePerson( RequestContext, person.PrimaryAliasId.Value );
