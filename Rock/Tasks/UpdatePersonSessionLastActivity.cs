@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 
+using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -39,6 +40,7 @@ namespace Rock.Tasks;
 /// <c>LastActivityDateTime</c> is acceptable for the read use cases
 /// (Active Users block, Data Automation idle-detection job).
 /// </remarks>
+[RockInternal( "20.0", true )]
 public sealed class UpdatePersonSessionLastActivity : BusStartedTask<UpdatePersonSessionLastActivity.Message>
 {
     /// <summary>
