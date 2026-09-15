@@ -451,7 +451,21 @@ export const vTooltip: Directive<HTMLElement, TooltipContent | (() => TooltipCon
     },
 
     updated(el, binding) {
-        const data = el[tooltipDataSymbol] as TooltipData;
+        const data = el[tooltipDataSymbol] as TooltipData | undefined;
+
+        /*
+            09/15/26 - JMH
+
+            A Vue patch can run this hook on an element whose tooltip state was
+            already cleared by beforeUnmount during the same update, such as a grid
+            row being removed and its DOM recycled. There is nothing to refresh
+            in that case, and dereferencing the missing state would throw.
+
+            Reason: Guard against a null dereference when the tooltip state is gone.
+        */
+        if (!data) {
+            return;
+        }
 
         data.config = getConfiguration(binding.value);
 
@@ -481,7 +495,11 @@ export const vTooltip: Directive<HTMLElement, TooltipContent | (() => TooltipCon
     },
 
     beforeUnmount(el) {
-        const data = el[tooltipDataSymbol] as TooltipData;
+        const data = el[tooltipDataSymbol] as TooltipData | undefined;
+
+        if (!data) {
+            return;
+        }
 
         data.floatingElement.remove();
         data.hoverState = 0;
