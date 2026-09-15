@@ -5,6 +5,7 @@
                       :key="stepType.idKey ?? stepType.id"
                       :stepType="stepType"
                       :stepTerm="options.stepTerm ?? 'Step'"
+                      :stepStatusColors="stepStatusColors"
                       :isBlockEditable="options.isBlockEditable ?? false"
                       @add="emit('add', $event)"
                       @edit="(stepTypeId, stepId) => emit('edit', stepTypeId, stepId)"
@@ -36,6 +37,11 @@
         stepTypes: {
             type: Array as PropType<PersonProgramStepTypeBag[]>,
             required: true
+        },
+
+        stepStatusColors: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
         },
 
         options: {

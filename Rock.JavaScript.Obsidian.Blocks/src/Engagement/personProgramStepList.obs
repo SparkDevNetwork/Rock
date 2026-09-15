@@ -15,6 +15,7 @@
         </template>
 
         <CardView :stepTypes="stepTypes"
+                  :stepStatusColors="stepStatusColors"
                   :options="options"
                   @add="onAddStep"
                   @edit="onEditStep"

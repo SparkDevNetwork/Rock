@@ -1,8 +1,71 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <div class="step-type-card" :class="cardClasses" :style="cardStyle">
+        <div class="step-type-card-main">
+            <i v-if="stepType.iconCssClass" :class="stepType.iconCssClass" class="step-type-icon"></i>
+            <div class="step-type-name">{{ stepType.name }}</div>
+        </div>
+
+        <div v-if="latestStep" class="step-type-card-details">
+            <span class="label step-status" :style="getStatusLabelStyle(latestStepStatusColor)">{{ latestStep.statusName }}</span>
+            <div class="step-date">{{ formatDate(latestStep.completedDateTime) }}</div>
+        </div>
+    </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.step-type-card {
+    --step-type-color: var(--color-primary);
+    position: relative;
+    aspect-ratio: 3 / 4;
+    max-height: 500px;
+    padding: var(--spacing-large);
+    text-align: center;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--step-type-color) 8%, transparent), transparent 40%);
+}
+
+.step-type-card-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-small);
+    height: 100%;
+}
+
+/* Pinned to the bottom so it never shifts the centered icon and name. */
+.step-type-card-details {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--spacing-large);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
+.step-type-icon {
+    font-size: 3.5rem;
+    color: var(--step-type-color);
+}
+
+.step-type-name {
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+}
+
+.step-status {
+    border-radius: var(--rounded-full);
+}
+
+.step-date {
+    color: var(--color-interface-medium);
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
@@ -10,6 +73,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { PersonProgramStepBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepBag";
     import { PersonProgramStepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepTypeBag";
+    import { getStatusLabelStyle } from "./utils.partial";
 
     const props = defineProps({
         stepType: {
@@ -20,6 +84,11 @@
         stepTerm: {
             type: String as PropType<string>,
             required: true
+        },
+
+        stepStatusColors: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
         },
 
         isBlockEditable: {
@@ -37,6 +106,20 @@
     // #region Computed Values
 
     const steps = computed((): PersonProgramStepBag[] => props.stepType.steps ?? []);
+
+    /** The person's most recent step of this type, matching WebForms' LatestStep. */
+    const latestStep = computed((): PersonProgramStepBag | undefined => steps.value[steps.value.length - 1]);
+
+    const latestStepStatusColor = computed((): string | undefined => {
+        const statusName = latestStep.value?.statusName;
+
+        return statusName ? props.stepStatusColors[statusName] : undefined;
+    });
+
+    /** Overrides the card's accent color with the step type's highlight color when set. */
+    const cardStyle = computed((): Record<string, string> | undefined => {
+        return props.stepType.highlightColor ? { "--step-type-color": props.stepType.highlightColor } : undefined;
+    });
 
     const isPrerequisiteListShown = computed((): boolean => props.isBlockEditable && !props.stepType.hasMetPrerequisites);
 

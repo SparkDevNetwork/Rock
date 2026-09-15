@@ -64,7 +64,7 @@
                 :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span v-if="row.status" class="label" :style="getStatusLabelStyle(row.status)">{{ row.status }}</span>
+                <span v-if="row.status" class="label" :style="getStatusLabelStyle(stepStatusColors[row.status])">{{ row.status }}</span>
             </template>
         </Column>
 
@@ -88,7 +88,6 @@
     import { computed, PropType, ref, watch } from "vue";
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
     import Grid, { Column, DateColumn, dateValueFilter, DeleteColumn, HtmlColumn, pickExistingValueFilter, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
-    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
@@ -96,6 +95,7 @@
     import { PersonProgramStepListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListOptionsBag";
     import { PersonProgramStepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepTypeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { getStatusLabelStyle } from "./utils.partial";
 
     const props = defineProps({
         stepTypes: {
@@ -190,32 +190,6 @@
     }
 
     // #endregion Event Handlers
-
-    // #region Functions
-
-    /**
-     * Gets the inline style for a status label using the raw status color,
-     * matching how the card Lava template renders the status.
-     *
-     * @param statusName The status name shown in the label.
-     */
-    function getStatusLabelStyle(statusName: string): Record<string, string> | undefined {
-        const color = props.stepStatusColors[statusName];
-
-        if (!color) {
-            return undefined;
-        }
-
-        // Keep the raw status color but pick a readable text color for it.
-        const rockColor = new RockColor(color);
-
-        return {
-            backgroundColor: color,
-            color: rockColor.isLight ? "var(--color-interface-strong)" : "#fff"
-        };
-    }
-
-    // #endregion Functions
 
     // #region Watchers
 

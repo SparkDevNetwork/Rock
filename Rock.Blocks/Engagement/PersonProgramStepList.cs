@@ -230,6 +230,7 @@ namespace Rock.Blocks.Engagement
                         IdKey = stepType.IdKey,
                         Name = stepType.Name,
                         IconCssClass = stepType.IconCssClass,
+                        HighlightColor = stepType.HighlightColor,
                         HasSteps = steps.Any(),
                         IsComplete = isComplete,
                         HasMetPrerequisites = hasMetPrerequisites,

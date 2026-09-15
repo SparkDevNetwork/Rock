@@ -34,6 +34,9 @@ export type PersonProgramStepTypeBag = {
     /** Gets or sets a value indicating whether the person has any step of this type. */
     hasSteps: boolean;
 
+    /** Gets or sets the step type highlight color used for the card icon. */
+    highlightColor?: string | null;
+
     /** Gets or sets the step type icon CSS class. */
     iconCssClass?: string | null;
 
