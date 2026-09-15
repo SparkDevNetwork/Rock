@@ -2,42 +2,34 @@
 <template>
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <Panel v-else
+    <Panel v-else-if="isCardView"
            :title="options.programName ?? ''"
            :style="stepsPerRowStyle">
         <template #headerActions>
             <button type="button"
-                    class="btn btn-xs btn-square"
-                    :class="isCardView ? 'btn-primary' : 'btn-default'"
-                    title="Card View"
-                    @click="onViewModeClick(true)">
-                <i class="ti ti-grid-dots"></i>
-            </button>
-            <button type="button"
-                    class="btn btn-xs btn-square"
-                    :class="isCardView ? 'btn-default' : 'btn-primary'"
+                    class="btn btn-panel-action"
                     title="Grid View"
                     @click="onViewModeClick(false)">
                 <i class="ti ti-list"></i>
             </button>
         </template>
 
-        <CardView v-if="isCardView"
-                  :stepTypes="stepTypes"
-                  :options="options"
-                  @add="onAddStep"
-                  @edit="onEditStep"
-                  @delete="onDeleteStep" />
-
-        <GridView v-else
-                  :stepTypes="stepTypes"
-                  :gridData="gridData"
-                  :stepStatusColors="stepStatusColors"
+        <CardView :stepTypes="stepTypes"
                   :options="options"
                   @add="onAddStep"
                   @edit="onEditStep"
                   @delete="onDeleteStep" />
     </Panel>
+
+    <GridView v-else
+              :stepTypes="stepTypes"
+              :gridData="gridData"
+              :stepStatusColors="stepStatusColors"
+              :options="options"
+              @add="onAddStep"
+              @edit="onEditStep"
+              @delete="onDeleteStep"
+              @showCards="onViewModeClick(true)" />
 </template>
 
 <script setup lang="ts">
