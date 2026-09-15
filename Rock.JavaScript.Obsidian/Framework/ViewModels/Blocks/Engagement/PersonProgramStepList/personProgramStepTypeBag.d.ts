@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { PersonProgramPrerequisiteBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramPrerequisiteBag";
 import { PersonProgramStepBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepBag";
 
 /** One step type of the program as shown on a card and as an add button. */
@@ -62,8 +63,8 @@ export type PersonProgramStepTypeBag = {
     /** Gets or sets the step type name. */
     name?: string | null;
 
-    /** Gets or sets the names of the prerequisite step types. */
-    prerequisiteNames?: string[] | null;
+    /** Gets or sets the prerequisite step types with their completion state. */
+    prerequisites?: PersonProgramPrerequisiteBag[] | null;
 
     /** Gets or sets the person's existing steps of this type. */
     steps?: PersonProgramStepBag[] | null;

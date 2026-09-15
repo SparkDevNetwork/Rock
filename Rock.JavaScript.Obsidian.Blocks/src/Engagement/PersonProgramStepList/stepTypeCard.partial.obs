@@ -10,6 +10,52 @@
             <span class="label step-status" :style="getStatusLabelStyle(latestStepStatusColor)">{{ latestStep.statusName }}</span>
             <div class="step-date">{{ formatDate(latestStep.completedDateTime) }}</div>
         </div>
+
+        <div v-if="isActionsShown" class="step-type-card-actions">
+            <div v-if="steps.length > 0" class="step-record-list">
+                <div v-for="step in steps" :key="step.idKey ?? step.id" class="step-record">
+                    <div class="step-record-info">
+                        <div class="step-record-status">{{ step.statusName }}</div>
+                        <div class="step-record-date">{{ getStepDateText(step) }}</div>
+                    </div>
+
+                    <button v-if="step.canEdit"
+                            type="button"
+                            class="btn btn-link step-record-action"
+                            title="Edit"
+                            @click="emit('edit', stepType.id, step.id)">
+                        <i class="ti ti-pencil"></i>
+                    </button>
+
+                    <button v-if="step.canDelete"
+                            type="button"
+                            class="btn btn-link step-record-action"
+                            title="Delete"
+                            @click="onDeleteClick(step.idKey ?? '')">
+                        <i class="ti ti-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="isPrerequisiteListShown" class="step-prerequisites">
+                <div class="step-prerequisites-info">This {{ stepTerm }} requires the following prerequisites:</div>
+                <ul class="list-unstyled mb-0">
+                    <li v-for="prerequisite in stepType.prerequisites" :key="prerequisite.name ?? ''">
+                        <i v-if="prerequisite.isComplete" class="ti ti-check text-success"></i>
+                        <i v-else class="ti ti-x text-danger"></i>
+                        {{ prerequisite.name }}
+                    </li>
+                </ul>
+            </div>
+
+            <button v-if="stepType.isAddEnabled || isPrerequisiteListShown"
+                    type="button"
+                    class="btn btn-default btn-block flex-shrink-0"
+                    :disabled="!stepType.isAddEnabled"
+                    @click="emit('add', stepType.id)">
+                <i class="ti ti-plus"></i> Add a {{ stepTerm }}
+            </button>
+        </div>
     </div>
 </template>
 
@@ -33,7 +79,7 @@
     justify-content: center;
     gap: var(--spacing-small);
     height: 100%;
-    transition: transform 0.25s ease;
+    transition: transform 0.3s ease;
 }
 
 .step-type-card:hover .step-type-card-main {
@@ -55,6 +101,79 @@
 
 .step-type-card:hover .step-type-card-details {
     opacity: 0;
+}
+
+/* Hidden until hover; pointer events stay off so the invisible buttons cannot be clicked. */
+.step-type-card-actions {
+    position: absolute;
+    left: var(--spacing-large);
+    right: var(--spacing-large);
+    bottom: var(--spacing-large);
+    /* Caps the block at the card's midline; the record list shrinks and scrolls to fit. */
+    max-height: calc(50% - var(--spacing-large));
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+/* Delay only on the way in so the status has started fading before the actions appear. */
+.step-type-card:hover .step-type-card-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0.15s;
+}
+
+.step-record-list,
+.step-prerequisites {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.step-prerequisites {
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.step-prerequisites-info {
+    margin-bottom: var(--spacing-tiny);
+    color: var(--color-interface-stronger);
+}
+
+.step-record {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    border-radius: var(--rounded-small);
+}
+
+.step-record:nth-child(odd) {
+    background-color: var(--color-interface-softer);
+}
+
+.step-record-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.step-record-status {
+    color: var(--color-interface-stronger);
+}
+
+.step-record-date {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.step-record-action {
+    padding: var(--spacing-xsmall);
+    color: var(--color-interface-strong);
 }
 
 .step-type-icon {
@@ -133,6 +252,8 @@
 
     const isPrerequisiteListShown = computed((): boolean => props.isBlockEditable && !props.stepType.hasMetPrerequisites);
 
+    const isActionsShown = computed((): boolean => steps.value.length > 0 || props.stepType.isAddEnabled || isPrerequisiteListShown.value);
+
     const cardClasses = computed((): Record<string, boolean> => {
         return {
             "is-complete": props.stepType.isComplete,
@@ -173,6 +294,22 @@
         }
 
         return RockDateTime.parseISO(value)?.toASPString("d") ?? "";
+    }
+
+    /**
+     * Gets the date line for a step row: the completed date when complete,
+     * otherwise the start date prefixed with "Started".
+     *
+     * @param step The step.
+     */
+    function getStepDateText(step: PersonProgramStepBag): string {
+        if (step.completedDateTime) {
+            return formatDate(step.completedDateTime);
+        }
+
+        const startDate = formatDate(step.startDateTime);
+
+        return startDate ? `Started ${startDate}` : "";
     }
 
     // #endregion Functions

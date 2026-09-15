@@ -21,26 +21,14 @@
 // </copyright>
 //
 
-/** One existing step shown in the hover table of a step type card. */
-export type PersonProgramStepBag = {
-    /** Gets or sets a value indicating whether the current person can delete this step. */
-    canDelete: boolean;
+/** One prerequisite step type of a step type and whether the person has completed it. */
+export type PersonProgramPrerequisiteBag = {
+    /**
+     * Gets or sets a value indicating whether the person has a completed
+     * step of the prerequisite type.
+     */
+    isComplete: boolean;
 
-    /** Gets or sets a value indicating whether the current person can edit this step. */
-    canEdit: boolean;
-
-    /** Gets or sets the completed date in ISO 8601 format, or null. */
-    completedDateTime?: string | null;
-
-    /** Gets or sets the step identifier, used to build the Step Entry URL. */
-    id: number;
-
-    /** Gets or sets the step identifier key. */
-    idKey?: string | null;
-
-    /** Gets or sets the start date in ISO 8601 format, or null. */
-    startDateTime?: string | null;
-
-    /** Gets or sets the step status name. */
-    statusName?: string | null;
+    /** Gets or sets the prerequisite step type name. */
+    name?: string | null;
 };

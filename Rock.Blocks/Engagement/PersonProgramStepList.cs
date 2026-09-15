@@ -235,7 +235,13 @@ namespace Rock.Blocks.Engagement
                         IsComplete = isComplete,
                         HasMetPrerequisites = hasMetPrerequisites,
                         IsAddEnabled = isAddEnabled,
-                        PrerequisiteNames = prerequisites.Select( p => p.Name ).ToList(),
+                        Prerequisites = prerequisites
+                            .Select( p => new PersonProgramPrerequisiteBag
+                            {
+                                Name = p.Name,
+                                IsComplete = IsPrerequisiteComplete( p, personSteps )
+                            } )
+                            .ToList(),
                         Steps = steps.Select( GetStepBag ).ToList()
                     };
                 } )
@@ -277,8 +283,18 @@ namespace Rock.Blocks.Engagement
         /// <returns>True when there are no prerequisites or all are complete.</returns>
         private bool HasMetPrerequisites( List<StepType> prerequisites, Dictionary<int, List<Step>> personSteps )
         {
-            return prerequisites.All( prerequisite =>
-                personSteps.TryGetValue( prerequisite.Id, out var steps ) && steps.Any( s => s.IsComplete ) );
+            return prerequisites.All( prerequisite => IsPrerequisiteComplete( prerequisite, personSteps ) );
+        }
+
+        /// <summary>
+        /// Determines whether the person has a completed step of the prerequisite type.
+        /// </summary>
+        /// <param name="prerequisite">The prerequisite step type.</param>
+        /// <param name="personSteps">The person's steps keyed by step type identifier.</param>
+        /// <returns>True when a completed step of the type exists.</returns>
+        private bool IsPrerequisiteComplete( StepType prerequisite, Dictionary<int, List<Step>> personSteps )
+        {
+            return personSteps.TryGetValue( prerequisite.Id, out var steps ) && steps.Any( s => s.IsComplete );
         }
 
         /// <summary>
@@ -360,6 +376,7 @@ namespace Rock.Blocks.Engagement
                 Id = step.Id,
                 IdKey = step.IdKey,
                 StatusName = step.StepStatus?.Name,
+                StartDateTime = step.StartDateTime?.ToString( "s" ),
                 CompletedDateTime = step.CompletedDateTime?.ToString( "s" ),
                 CanEdit = canEdit,
                 CanDelete = canEdit
@@ -368,8 +385,8 @@ namespace Rock.Blocks.Engagement
 
         /// <summary>
         /// Gets the active step types of the program ordered for display. The
-        /// full model is loaded because the card Lava template receives it and
-        /// customized templates may reach navigation properties the cache lacks.
+        /// model is loaded with its program so it can be attached to each step
+        /// and satisfy the step's parent authority chain without lazy loads.
         /// </summary>
         /// <param name="program">The step program.</param>
         /// <returns>The ordered list of active step types.</returns>

@@ -74,9 +74,9 @@ namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
         public bool HasSteps { get; set; }
 
         /// <summary>
-        /// Gets or sets the names of the prerequisite step types.
+        /// Gets or sets the prerequisite step types with their completion state.
         /// </summary>
-        public List<string> PrerequisiteNames { get; set; }
+        public List<PersonProgramPrerequisiteBag> Prerequisites { get; set; }
 
         /// <summary>
         /// Gets or sets the person's existing steps of this type.
