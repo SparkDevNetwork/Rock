@@ -12,7 +12,10 @@
           :entityTypeGuid="EntityType.GroupMember"
           :rowClass="getRowClass"
           stickyHeader
+          :gridSettings="hasModalFilters"
+          :gridSettingsActive="hasSettingsFilters"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @gridSettingsClick="isGridSettingsVisible = true"
           @selectItem="onSelectItem">
 
         <template v-if="config.options?.warningMessage" #gridHeaderPrepend>
@@ -35,6 +38,9 @@
                       :isNoteColumnVisible="config.options?.isNoteColumnVisible ?? false"
                       enableHoverInfo
                       :excludeFromExport="true"
+                      :filter="textValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      :quickFilterValue="getPersonNameFilterValue"
                       visiblePriority="xs"
                       width="250px" />
 
@@ -54,6 +60,7 @@
                     title="Gender"
                     field="gender"
                     :excludeFromExport="true"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="lg" />
 
         <Column name="registrations"
@@ -63,9 +70,11 @@
                 :hideOnScreen="!isRegistrationColumnVisible"
                 :excludeFromExport="true"
                 :disableSort="true"
+                :filter="pickExistingValueFilter"
+                :filterValues="getRegistrationFilterValues"
                 visiblePriority="lg">
             <template #format="{ row }">
-                <div v-for="registration in ((row.registrations as ListItemBag[] | null) ?? [])" :key="registration.value ?? ''">
+                <div v-for="registration in getRegistrations(row)" :key="registration.value ?? ''">
                     <a v-if="registrationUrl" :href="registrationUrl?.replace('((Key))', registration.value ?? '')" @click.stop>{{ registration.text }}</a>
                     <template v-else>{{ registration.text }}</template>
                 </div>
@@ -75,12 +84,14 @@
         <TextColumn name="role"
                     title="Role"
                     field="role"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <DateColumn name="dateAdded"
                     title="Date Added"
                     field="dateAdded"
                     :hideOnScreen="!config.options?.isDateAddedColumnVisible"
+                    :filter="dateValueFilter"
                     visiblePriority="md" />
 
         <DateTimeColumn v-if="config.options?.isAttendanceColumnVisible"
@@ -108,6 +119,7 @@
         <TextColumn name="status"
                     title="Status"
                     field="status"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <Column name="nickName"
@@ -180,24 +192,36 @@
                 field="longitude"
                 :hideOnScreen="true" />
     </Grid>
+
+    <GridSettingsModal v-if="hasModalFilters"
+                       v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :isGenderFilterVisible="isGenderFilterVisible"
+                       :isCampusFilterVisible="isCampusFilterVisible"
+                       :isSignedDocumentFilterVisible="isSignedDocumentFilterVisible"
+                       :registrationInstances="config.options?.registrationInstances ?? []" />
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
+    import GridSettingsModal from "./GroupMemberList/gridSettingsModal.partial.obs";
     import PersonNameCell from "./GroupMemberList/personNameCell.partial.obs";
-    import { NavigationUrlKey } from "./GroupMemberList/types.partial";
-    import Grid, { AttributeColumns, BooleanColumn, Column, DateColumn, DateTimeColumn, PersonColumn, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./GroupMemberList/types.partial";
+    import Grid, { AttributeColumns, BooleanColumn, Column, DateColumn, DateTimeColumn, dateValueFilter, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { MultiValueFilterItem } from "@Obsidian/Types/Controls/grid";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GroupMemberListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberList/groupMemberListOptionsBag";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<ListBlockBox<GroupMemberListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // All blocks auto reload when changing block settings unless there is an
     // explicit reason not to (like using a custom reload function instead),
@@ -211,12 +235,60 @@
     /** Set from the loaded rows rather than the options bag, since the column shows only when a listed member has a registration. */
     const isRegistrationColumnVisible = ref(false);
 
+    const isGridSettingsVisible = ref(false);
+
+    /** The Family Campus filter is stored as the picker's own list item, so the modal reopens showing its name. */
+    const campusPreference = preferences.getValue(PreferenceKey.FilterCampus);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        campus: campusPreference ? JSON.parse(campusPreference) as ListItemBag : undefined,
+        genders: (preferences.getValue(PreferenceKey.FilterGender) || "").split("|").filter(g => g),
+        registrationInstance: preferences.getValue(PreferenceKey.FilterRegistrationInstance),
+        signedDocument: preferences.getValue(PreferenceKey.FilterSignedDocument)
+    });
+
     // #endregion Values
 
     // #region Computed Values
 
     const registrationUrl = computed((): string | undefined => {
         return config.navigationUrls?.[NavigationUrlKey.RegistrationPage] || undefined;
+    });
+
+    /** The Gender column's own filter does the job whenever that column is shown. */
+    const isGenderFilterVisible = computed((): boolean => {
+        return config.options?.isGenderColumnVisible !== true;
+    });
+
+    const isCampusFilterVisible = computed((): boolean => {
+        return config.options?.isCampusFilterVisible === true;
+    });
+
+    const isRegistrationFilterVisible = computed((): boolean => {
+        return (config.options?.registrationInstances?.length ?? 0) > 0;
+    });
+
+    const isSignedDocumentFilterVisible = computed((): boolean => {
+        return config.options?.isSignedDocumentFilterVisible === true;
+    });
+
+    /** Every filter in the modal is conditional, so on some groups there is nothing to open it for. */
+    const hasModalFilters = computed((): boolean => {
+        return isGenderFilterVisible.value
+            || isCampusFilterVisible.value
+            || isRegistrationFilterVisible.value
+            || isSignedDocumentFilterVisible.value;
+    });
+
+    /**
+     * Whether any of the modal's filters is narrowing the list. A filter whose control is hidden does not
+     * count, since the block action ignores it too.
+     */
+    const hasSettingsFilters = computed((): boolean => {
+        return (isGenderFilterVisible.value && (gridSettings.value.genders?.length ?? 0) > 0)
+            || (isCampusFilterVisible.value && !!gridSettings.value.campus?.value)
+            || (isRegistrationFilterVisible.value && !!gridSettings.value.registrationInstance)
+            || (isSignedDocumentFilterVisible.value && !!gridSettings.value.signedDocument);
     });
 
     // #endregion Computed Values
@@ -229,15 +301,62 @@
     async function loadGridData(): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
-        if (result.isSuccess && result.data) {
-            isRegistrationColumnVisible.value = (result.data.rows ?? [])
-                .some(row => ((row.registrations as ListItemBag[] | null) ?? []).length > 0);
-
-            return result.data;
-        }
-        else {
+        if (!result.isSuccess || !result.data) {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+
+        isRegistrationColumnVisible.value = (result.data.rows ?? [])
+            .some(row => getRegistrations(row).length > 0);
+
+        return result.data;
+    }
+
+    /**
+     * Gets the registrations a member was added through, which the server leaves off the row entirely when
+     * there are none.
+     *
+     * @param row The row to read.
+     *
+     * @returns The registrations, or an empty array.
+     */
+    function getRegistrations(row: Record<string, unknown>): ListItemBag[] {
+        return (row.registrations as ListItemBag[] | null) ?? [];
+    }
+
+    /**
+     * Splits a member's registrations into one filter value each, so the Registration column filter offers
+     * each registration on its own rather than every combination of them.
+     *
+     * @param row The row being filtered.
+     *
+     * @returns One item per registration the member was added through.
+     */
+    function getRegistrationFilterValues(row: Record<string, unknown>): MultiValueFilterItem[] {
+        return getRegistrations(row).map(registration => ({
+            value: registration.text ?? "",
+            rowData: { ...row, registrations: [registration] }
+        }));
+    }
+
+    /**
+     * Gets the text the Name column's filter and the quick search match against: the displayed name, plus the
+     * legal first name when it differs from the nick name, so "Theodore" finds Ted Decker the way legacy's
+     * First Name filter did.
+     *
+     * @param row The row being filtered.
+     *
+     * @returns The names to match against.
+     */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row.person as PersonFieldBag | null;
+        const firstName = (row.firstName as string | null) ?? "";
+        const names = [person?.nickName ?? "", person?.lastName ?? ""];
+
+        if (firstName && firstName !== person?.nickName) {
+            names.push(firstName);
+        }
+
+        return names.filter(n => n).join(" ");
     }
 
     /**
@@ -294,6 +413,21 @@
     }
 
     // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(gridSettings.value.campus ?? null));
+        preferences.setValue(PreferenceKey.FilterGender, (gridSettings.value.genders ?? []).join("|"));
+        preferences.setValue(PreferenceKey.FilterRegistrationInstance, gridSettings.value.registrationInstance ?? "");
+        preferences.setValue(PreferenceKey.FilterSignedDocument, gridSettings.value.signedDocument ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
 
     gridDataSource.value = loadGridData();
 </script>

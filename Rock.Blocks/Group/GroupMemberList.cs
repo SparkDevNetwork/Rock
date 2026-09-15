@@ -73,33 +73,40 @@ namespace Rock.Blocks.Group
         IsRequired = false,
         Order = 3 )]
 
+    [BooleanField( "Show Campus Filter",
+        Description = "Setting to show/hide campus filter.",
+        Key = AttributeKey.ShowCampusFilter,
+        DefaultBooleanValue = true,
+        IsRequired = false,
+        Order = 4 )]
+
     [BooleanField( "Show First/Last Attendance",
         Description = "If the group allows attendance, should the first and last attendance date be displayed for each group member?",
         Key = AttributeKey.ShowAttendance,
         DefaultBooleanValue = false,
         IsRequired = false,
-        Order = 4 )]
+        Order = 5 )]
 
     [BooleanField( "Show Date Added",
         Description = "Should the date that person was added to the group be displayed for each group member?",
         Key = AttributeKey.ShowDateAdded,
         DefaultBooleanValue = false,
         IsRequired = false,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField( "Show Note Column",
         Description = "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?",
         Key = AttributeKey.ShowNoteColumn,
         DefaultBooleanValue = false,
         IsRequired = false,
-        Order = 6 )]
+        Order = 7 )]
 
     [BooleanField( "Display Gender Column",
         Description = "Should the gender be displayed for each group member?",
         Key = AttributeKey.DisplayGenderColumn,
         DefaultBooleanValue = false,
         IsRequired = false,
-        Order = 7 )]
+        Order = 8 )]
 
     #endregion Block Attributes
 
@@ -117,6 +124,7 @@ namespace Rock.Blocks.Group
             public const string DetailPage = "DetailPage";
             public const string Group = "Group";
             public const string RegistrationPage = "RegistrationPage";
+            public const string ShowCampusFilter = "ShowCampusFilter";
             public const string ShowAttendance = "ShowAttendance";
             public const string ShowDateAdded = "ShowDateAdded";
             public const string ShowNoteColumn = "ShowNoteColumn";
@@ -136,6 +144,18 @@ namespace Rock.Blocks.Group
             public const string AddPage = "AddPage";
             public const string DetailPage = "DetailPage";
             public const string RegistrationPage = "RegistrationPage";
+        }
+
+        /// <summary>
+        /// The filter modal's preference keys. Every filter in the modal narrows the query; the filters that read
+        /// a column are column filters and never reach the server.
+        /// </summary>
+        private static class PersonPreferenceKey
+        {
+            public const string FilterCampus = "filter-campus";
+            public const string FilterGender = "filter-gender";
+            public const string FilterRegistrationInstance = "filter-registration-instance";
+            public const string FilterSignedDocument = "filter-signed-document";
         }
 
         #endregion Keys
@@ -260,6 +280,74 @@ namespace Rock.Blocks.Group
         /// </summary>
         private int? InactiveRecordStatusValueId => DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE )?.Id;
 
+        /// <summary>
+        /// Gets a value indicating whether the Family Campus filter is offered.
+        /// </summary>
+        private bool IsCampusFilterShown => GetAttributeValue( AttributeKey.ShowCampusFilter ).AsBoolean();
+
+        /// <summary>
+        /// Gets a value indicating whether the Gender column is shown, which is also what decides whether the
+        /// filter modal offers a Gender filter: with the column shown, its own filter does the job.
+        /// </summary>
+        private bool IsGenderColumnShown => GetAttributeValue( AttributeKey.DisplayGenderColumn ).AsBoolean();
+
+        /// <summary>
+        /// Gets the current person's block scoped preferences.
+        /// </summary>
+        private PersonPreferenceCollection BlockPersonPreferences => GetBlockPersonPreferences();
+
+        /// <summary>
+        /// Gets the identifier of the campus chosen in the filter modal. <c>null</c> when the filter is hidden or
+        /// no campus is chosen.
+        /// </summary>
+        private int? FilterCampusId
+        {
+            get
+            {
+                if ( !IsCampusFilterShown )
+                {
+                    return null;
+                }
+
+                var campusGuid = BlockPersonPreferences
+                    .GetValue( PersonPreferenceKey.FilterCampus )
+                    .FromJsonOrNull<ListItemBag>()
+                    ?.Value
+                    .AsGuidOrNull();
+
+                return campusGuid.HasValue ? CampusCache.GetId( campusGuid.Value ) : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the genders chosen in the filter modal. Empty when the filter is hidden or none are chosen.
+        /// </summary>
+        private List<Gender> FilterGenders => IsGenderColumnShown
+            ? new List<Gender>()
+            : BlockPersonPreferences
+                .GetValue( PersonPreferenceKey.FilterGender )
+                .SplitDelimitedValues()
+                .Select( v => v.ConvertToEnumOrNull<Gender>() )
+                .Where( g => g.HasValue )
+                .Select( g => g.Value )
+                .ToList();
+
+        /// <summary>
+        /// Gets the unique identifier of the registration instance chosen in the filter modal. <c>null</c> when
+        /// none is chosen.
+        /// </summary>
+        private Guid? FilterRegistrationInstanceGuid => BlockPersonPreferences
+            .GetValue( PersonPreferenceKey.FilterRegistrationInstance )
+            .AsGuidOrNull();
+
+        /// <summary>
+        /// Gets the Signed Document filter. <c>true</c> limits the list to people who have signed the group's
+        /// required document, <c>false</c> to people who have not, and <c>null</c> applies no filter.
+        /// </summary>
+        private bool? FilterSignedDocument => IsUnsignedShown
+            ? BlockPersonPreferences.GetValue( PersonPreferenceKey.FilterSignedDocument ).AsBooleanOrNull()
+            : null;
+
         #endregion Properties
 
         #region RockListBlockType Implementation
@@ -298,10 +386,62 @@ namespace Rock.Blocks.Group
 
             var groupId = Group.Id;
 
-            return new GroupMemberService( rockContext )
+            var queryable = new GroupMemberService( rockContext )
                 .Queryable( true )
                 .AsNoTracking()
-                .Where( gm => gm.GroupId == groupId )
+                .Where( gm => gm.GroupId == groupId );
+
+            var genders = FilterGenders;
+
+            if ( genders.Any() )
+            {
+                queryable = queryable.Where( gm => genders.Contains( gm.Person.Gender ) );
+            }
+
+            var campusId = FilterCampusId;
+
+            if ( campusId.HasValue )
+            {
+                var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+
+                // Matches the person through any family at the campus, not just their primary family.
+                var familyMemberQueryable = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( fm => fm.Group.GroupTypeId == familyGroupTypeId && fm.Group.CampusId == campusId.Value );
+
+                queryable = queryable.Where( gm => familyMemberQueryable.Any( fm => fm.PersonId == gm.PersonId ) );
+            }
+
+            var registrationInstanceGuid = FilterRegistrationInstanceGuid;
+
+            if ( registrationInstanceGuid.HasValue )
+            {
+                // Matches anyone who registered for the instance, which the Registration column's own filter
+                // cannot do: that one only sees the registration this membership came from.
+                var registrantPersonIdQueryable = new RegistrationRegistrantService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( r => r.Registration != null
+                        && r.Registration.RegistrationInstance.Guid == registrationInstanceGuid.Value
+                        && r.PersonAlias != null )
+                    .Select( r => r.PersonAlias.PersonId );
+
+                queryable = queryable.Where( gm => registrantPersonIdQueryable.Contains( gm.PersonId ) );
+            }
+
+            var isSignedDocument = FilterSignedDocument;
+
+            if ( isSignedDocument.HasValue )
+            {
+                var signedPersonIdQueryable = GetSignedPersonIdQueryable( rockContext );
+
+                queryable = isSignedDocument.Value
+                    ? queryable.Where( gm => signedPersonIdQueryable.Contains( gm.PersonId ) )
+                    : queryable.Where( gm => !signedPersonIdQueryable.Contains( gm.PersonId ) );
+            }
+
+            return queryable
                 .Select( gm => new GroupMemberRow
                 {
                     GroupMember = gm,
@@ -393,6 +533,9 @@ namespace Rock.Blocks.Group
                     PhotoUrl = r.Person.PhotoUrl,
                     ConnectionStatus = Group?.GroupType?.ShowConnectionStatus == true ? DefinedValueCache.GetValue( r.Person.ConnectionStatusValueId ) : null
                 } )
+                // Read by the Name column's filter and the quick search, which match the legal first name as
+                // well as the nick name. No column renders it; legacy's export has no First Name either.
+                .AddTextField( "firstName", r => r.Person.FirstName )
                 .AddTextField( "exportFullNameReversed", r => r.Person.FullNameReversed )
                 .AddTextField( "maritalStatus", r => DefinedValueCache.GetValue( r.Person.MaritalStatusValueId ) )
                 .AddTextField( "connectionStatus", r => DefinedValueCache.GetValue( r.Person.ConnectionStatusValueId ) )
@@ -463,11 +606,42 @@ namespace Rock.Blocks.Group
 
             options.IsDateAddedColumnVisible = GetAttributeValue( AttributeKey.ShowDateAdded ).AsBoolean();
             options.IsNoteColumnVisible = GetAttributeValue( AttributeKey.ShowNoteColumn ).AsBoolean();
-            options.IsGenderColumnVisible = GetAttributeValue( AttributeKey.DisplayGenderColumn ).AsBoolean();
+            options.IsGenderColumnVisible = IsGenderColumnShown;
             options.IsMaritalStatusColumnVisible = groupType.ShowMaritalStatus;
             options.IsAttendanceColumnVisible = IsAttendanceShown;
+            options.IsCampusFilterVisible = IsCampusFilterShown;
+            options.IsSignedDocumentFilterVisible = IsUnsignedShown;
+            options.RegistrationInstances = GetRegistrationInstances();
 
             return options;
+        }
+
+        /// <summary>
+        /// Gets the registration instances the group is linked to, which are what the filter modal's Registration
+        /// filter chooses from.
+        /// </summary>
+        /// <returns>The instances, most recently started first.</returns>
+        private List<ListItemBag> GetRegistrationInstances()
+        {
+            var groupId = Group.Id;
+
+            return new RegistrationInstanceService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( i => i.Linkages.Any( l => l.GroupId == groupId ) )
+                .OrderByDescending( i => i.StartDateTime )
+                .Select( i => new
+                {
+                    i.Guid,
+                    i.Name
+                } )
+                .ToList()
+                .Select( i => new ListItemBag
+                {
+                    Value = i.Guid.ToString(),
+                    Text = i.Name
+                } )
+                .ToList();
         }
 
         /// <summary>
@@ -581,6 +755,26 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Gets the people who have signed the group's required signature document. Only call this when
+        /// <see cref="IsUnsignedShown"/> is <c>true</c>.
+        /// </summary>
+        /// <param name="rockContext">The database context.</param>
+        /// <returns>An unexecuted query of the person identifiers.</returns>
+        private IQueryable<int> GetSignedPersonIdQueryable( RockContext rockContext )
+        {
+            var templateId = Group.RequiredSignatureDocumentTemplateId.Value;
+
+            return new SignatureDocumentService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( d => d.SignatureDocumentTemplateId == templateId
+                    && d.Status == SignatureDocumentStatus.Signed
+                    && d.BinaryFileId.HasValue
+                    && d.AppliesToPersonAlias != null )
+                .Select( d => d.AppliesToPersonAlias.PersonId );
+        }
+
+        /// <summary>
         /// Builds the lookups the member query cannot project: registrations, first and last attendance, signed
         /// documents, the people holding multiple active roles, phone numbers, and home addresses. Each takes a
         /// single query covering the whole list, never one per member, and the multiple-role set takes none.
@@ -644,17 +838,8 @@ namespace Rock.Blocks.Group
 
             if ( IsUnsignedShown )
             {
-                var templateId = Group.RequiredSignatureDocumentTemplateId.Value;
-
-                _signedPersonIds = new SignatureDocumentService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( d => d.SignatureDocumentTemplateId == templateId
-                        && d.Status == SignatureDocumentStatus.Signed
-                        && d.BinaryFileId.HasValue
-                        && d.AppliesToPersonAlias != null
-                        && personIdQuery.Contains( d.AppliesToPersonAlias.PersonId ) )
-                    .Select( d => d.AppliesToPersonAlias.PersonId )
+                _signedPersonIds = GetSignedPersonIdQueryable( rockContext )
+                    .Where( personId => personIdQuery.Contains( personId ) )
                     .Distinct()
                     .ToHashSet();
             }
