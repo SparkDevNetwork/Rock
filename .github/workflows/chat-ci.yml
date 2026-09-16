@@ -1,0 +1,86 @@
+# Everything the chat platform code has to pass. "Dev Tools/chat-ci/ci.mjs" runs the same gates
+# locally, in the same order, so a failure here can be reproduced before pushing.
+#
+# The build is the unit test project and what it needs, not the whole solution: this pipeline is
+# here to prove the chat code compiles and its own tests run, and Rock's own build already proves
+# the rest. The test filters are narrowed to the chat namespace for the same reason, so a failure
+# in this workflow is always a failure in this work.
+name: chat ci
+
+on:
+  pull_request:
+    # "labeled" is what lets the integration job below start when somebody adds the label; without
+    # it the label would only take effect on the next push.
+    types: [opened, synchronize, reopened, labeled]
+  push:
+    branches: [chat-platform]
+
+concurrency:
+  group: chat-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: gates, build, unit and client tests
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Install the chat gate tools
+        run: npm ci
+        working-directory: ./Dev Tools/chat-ci
+
+      - name: The chat files name nothing a reader here cannot open
+        run: npm run check:references
+        working-directory: ./Dev Tools/chat-ci
+
+      - name: The gates keep the shape these jobs assume
+        run: npm test
+        working-directory: ./Dev Tools/chat-ci
+
+      - name: Build the unit test project and what it depends on
+        run: msbuild Rock.Tests\Rock.Tests.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
+
+      - name: Unit tests
+        run: dotnet test Rock.Tests\Rock.Tests.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform"
+
+      - name: Install the client dependencies
+        run: npm ci
+        working-directory: ./Rock.JavaScript.Obsidian.Blocks
+
+      - name: Client tests
+        run: npx jest tests/Communication/Chat
+        working-directory: ./Rock.JavaScript.Obsidian.Blocks
+
+  integration:
+    name: integration tests, on the run-integration label
+    runs-on: windows-2022
+    # These need a database and take minutes, so they stay off until somebody asks for them by
+    # putting the label on the pull request.
+    if: contains(github.event.pull_request.labels.*.name, 'run-integration')
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Point the test harness at the runner's LocalDB
+        # The harness defaults to a Linux SQL Server container, which a Windows runner cannot start.
+        run: |
+          Copy-Item Rock.Tests.Integration\app.TestSettings.config.example Rock.Tests.Integration\app.TestSettings.config
+          Copy-Item Rock.Tests.Integration\app.ConnectionStrings.config.example Rock.Tests.Integration\app.ConnectionStrings.config
+          (Get-Content Rock.Tests.Integration\app.TestSettings.config) -replace '"DatabaseHost" value="docker"', '"DatabaseHost" value="localdb"' | Set-Content Rock.Tests.Integration\app.TestSettings.config
+
+      - name: Build the integration test project and what it depends on
+        run: msbuild Rock.Tests.Integration\Rock.Tests.Integration.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
+
+      - name: Integration tests
+        run: dotnet test Rock.Tests.Integration\Rock.Tests.Integration.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform"
