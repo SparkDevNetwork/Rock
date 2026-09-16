@@ -38,6 +38,11 @@ namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
         public string StatusName { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus name, or null when the step has no campus.
+        /// </summary>
+        public string CampusName { get; set; }
+
+        /// <summary>
         /// Gets or sets the start date in ISO 8601 format, or null.
         /// </summary>
         public string StartDateTime { get; set; }

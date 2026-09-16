@@ -384,6 +384,7 @@ namespace Rock.Blocks.Engagement
                 Id = step.Id,
                 IdKey = step.IdKey,
                 StatusName = step.StepStatus?.Name,
+                CampusName = step.Campus?.Name,
                 StartDateTime = step.StartDateTime?.ToString( "s" ),
                 CompletedDateTime = step.CompletedDateTime?.ToString( "s" ),
                 CanEdit = canEdit,

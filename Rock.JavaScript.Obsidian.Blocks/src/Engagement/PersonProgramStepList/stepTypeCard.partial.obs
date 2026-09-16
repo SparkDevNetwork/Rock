@@ -6,9 +6,13 @@
             <div class="step-type-name">{{ stepType.name }}</div>
         </div>
 
-        <div v-if="latestStep" class="step-type-card-details">
-            <span class="label step-status" :style="getStatusLabelStyle(latestStepStatusColor)">{{ latestStep.statusName }}</span>
-            <div class="step-date">{{ formatDate(latestStep.completedDateTime) }}</div>
+        <div class="step-type-card-details">
+            <div v-if="latestStep" class="step-labels">
+                <span class="label step-status" :style="getStatusLabelStyle(latestStepStatusColor)">{{ latestStep.statusName }}</span>
+                <span v-if="isCampusShown && latestStep.campusName" class="label label-default step-campus">{{ latestStep.campusName }}</span>
+                <span v-if="steps.length > 1" class="badge step-count" :title="`${steps.length} ${stepTerm} records`">{{ steps.length }}</span>
+            </div>
+            <div v-if="latestStep" class="step-date">{{ formatDate(latestStep.completedDateTime) }}</div>
         </div>
 
         <div v-if="isActionsShown" class="step-type-card-actions">
@@ -63,22 +67,26 @@
 .step-type-card {
     --step-type-color: var(--color-primary);
     position: relative;
+    display: flex;
+    flex-direction: column;
     aspect-ratio: 4 / 5;
     max-height: 500px;
-    padding: var(--spacing-small);
+    padding: var(--spacing-small) var(--spacing-small) var(--spacing-large);
     text-align: center;
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-medium);
     background: linear-gradient(to bottom, color-mix(in srgb, var(--step-type-color) 8%, transparent), transparent 40%);
 }
 
+/* Fills the space above the details so the icon and name center in what is left. */
 .step-type-card-main {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: var(--spacing-small);
-    height: 100%;
+    min-height: 0;
     transition: transform 0.3s ease;
 }
 
@@ -86,16 +94,15 @@
     transform: translateY(-20%);
 }
 
-/* Pinned to the bottom so it never shifts the centered icon and name. */
+/* In normal flow so it reserves its own height and can never overlap the name. */
 .step-type-card-details {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: var(--spacing-large);
     display: flex;
+    flex-shrink: 0;
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-small);
+    /* Always rendered and reserving one label row plus the date so icons align across cards. */
+    min-height: calc(3em + var(--spacing-small));
     transition: opacity 0.25s ease;
 }
 
@@ -109,7 +116,6 @@
     left: var(--spacing-small);
     right: var(--spacing-small);
     bottom: var(--spacing-large);
-    /* Caps the block at the card's midline; the record list shrinks and scrolls to fit. */
     max-height: calc(50% - var(--spacing-large));
     display: flex;
     flex-direction: column;
@@ -187,7 +193,20 @@
     color: var(--color-interface-stronger);
 }
 
-.step-status {
+.step-labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xsmall);
+}
+
+.step-count {
+    background-color: var(--step-type-color);
+}
+
+.step-status,
+.step-campus {
     border-radius: var(--rounded-full);
 }
 
@@ -218,6 +237,11 @@
         stepStatusColors: {
             type: Object as PropType<Record<string, string>>,
             default: () => ({})
+        },
+
+        isCampusShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

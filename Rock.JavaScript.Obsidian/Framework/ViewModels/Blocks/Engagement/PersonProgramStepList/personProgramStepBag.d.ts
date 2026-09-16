@@ -23,6 +23,9 @@
 
 /** One existing step shown in the hover table of a step type card. */
 export type PersonProgramStepBag = {
+    /** Gets or sets the campus name, or null when the step has no campus. */
+    campusName?: string | null;
+
     /** Gets or sets a value indicating whether the current person can delete this step. */
     canDelete: boolean;
 

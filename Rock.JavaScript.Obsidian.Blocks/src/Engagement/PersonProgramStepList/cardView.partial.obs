@@ -6,6 +6,7 @@
                       :stepType="stepType"
                       :stepTerm="options.stepTerm ?? 'Step'"
                       :stepStatusColors="stepStatusColors"
+                      :isCampusShown="options.isCampusColumnVisible"
                       @add="emit('add', $event)"
                       @edit="(stepTypeId, stepId) => emit('edit', stepTypeId, stepId)"
                       @delete="emit('delete', $event)" />
