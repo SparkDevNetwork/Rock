@@ -70,7 +70,6 @@
         stepsPerRowMobile: 1
     };
 
-
     /** Load-time failure from the server; replaces the whole block. */
     const errorMessage = ref(config.bag?.errorMessage ?? "");
 
@@ -163,7 +162,6 @@
      * @param stepId The identifier of the step, or 0 for a new step.
      */
     function navigateToStepEntry(stepTypeId: number, stepId: number): void {
-        // TODO: Revisit at the end of the conversion (hide affordances or warn editors).
         if (!options.stepEntryUrlTemplate) {
             return;
         }

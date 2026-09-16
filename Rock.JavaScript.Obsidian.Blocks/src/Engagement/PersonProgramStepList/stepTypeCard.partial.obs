@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="step-type-card" :class="cardClasses" :style="cardStyle">
+    <div class="step-type-card" :style="cardStyle">
         <div class="step-type-card-main">
             <i v-if="stepType.iconCssClass" :class="stepType.iconCssClass" class="step-type-icon"></i>
             <div class="step-type-name">{{ stepType.name }}</div>
@@ -54,7 +54,7 @@
 
             <button v-if="stepType.isAddEnabled || isPrerequisiteListShown"
                     type="button"
-                    class="btn btn-default btn-block flex-shrink-0"
+                    class="btn btn-default btn-xs btn-block flex-shrink-0"
                     :disabled="!stepType.isAddEnabled"
                     @click="emit('add', stepType.id)">
                 <i class="ti ti-plus"></i> Add a {{ stepTerm }}
@@ -65,7 +65,8 @@
 
 <style scoped>
 .step-type-card {
-    --step-type-color: var(--color-primary);
+    /* Legacy card icons inherited the body text color until complete, so incomplete cards stay gray. */
+    --step-type-color: var(--color-interface-strong);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -116,7 +117,7 @@
     left: var(--spacing-small);
     right: var(--spacing-small);
     bottom: var(--spacing-large);
-    max-height: calc(50% - var(--spacing-large));
+    max-height: calc(60% - var(--spacing-large));
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xsmall);
@@ -264,25 +265,17 @@
         return statusName ? props.stepStatusColors[statusName] : undefined;
     });
 
-    /** Overrides the card's accent color with the step type's highlight color when set. */
+    /** Overrides the card's accent color with the step type's highlight color once the step is complete, matching the default WebForms card. */
     const cardStyle = computed((): Record<string, string> | undefined => {
-        return props.stepType.highlightColor ? { "--step-type-color": props.stepType.highlightColor } : undefined;
+        const isHighlighted = props.stepType.isComplete && !!props.stepType.highlightColor;
+
+        return isHighlighted ? { "--step-type-color": props.stepType.highlightColor ?? "" } : undefined;
     });
 
     /** Shown to people who manage this step type so they can see why add is blocked. */
     const isPrerequisiteListShown = computed((): boolean => props.stepType.canEdit && !props.stepType.hasMetPrerequisites);
 
     const isActionsShown = computed((): boolean => steps.value.length > 0 || props.stepType.isAddEnabled || isPrerequisiteListShown.value);
-
-    const cardClasses = computed((): Record<string, boolean> => {
-        return {
-            "is-complete": props.stepType.isComplete,
-            "has-steps": props.stepType.hasSteps,
-            "no-steps": !props.stepType.hasSteps,
-            "has-add": props.stepType.isAddEnabled,
-            "has-prerequisite": isPrerequisiteListShown.value
-        };
-    });
 
     // #endregion Computed Values
 

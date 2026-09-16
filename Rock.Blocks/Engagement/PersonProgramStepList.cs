@@ -47,7 +47,7 @@ namespace Rock.Blocks.Engagement
 
     [StepProgramField(
         "Step Program",
-        Description = "The Step Program to display. This value can also be a page parameter: StepProgramId. Leave this attribute blank to use the page parameter.",
+        Description = "The Step Program to display. This value can also be a page parameter: StepProgramId or ProgramId. Leave this attribute blank to use the page parameter.",
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.StepProgram )]
@@ -232,7 +232,6 @@ namespace Rock.Blocks.Engagement
                         Name = stepType.Name,
                         IconCssClass = stepType.IconCssClass,
                         HighlightColor = stepType.HighlightColor,
-                        HasSteps = steps.Any(),
                         IsComplete = isComplete,
                         HasMetPrerequisites = hasMetPrerequisites,
                         IsAddEnabled = isAddEnabled,
@@ -548,8 +547,6 @@ namespace Rock.Blocks.Engagement
         {
             if ( person == null || GetAttributeValue( AttributeKey.StepPage ).IsNullOrWhiteSpace() )
             {
-                // TODO: Match WebForms for now (silent no-op when no Step Entry
-                // page is configured). Revisit at the end of the conversion.
                 return null;
             }
 
