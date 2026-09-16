@@ -23,5 +23,12 @@ individually.
 to prove the chat code compiles and its own tests run. It uses MSBuild when it is on the path and
 the .NET SDK otherwise.
 
+`assert-tests-ran.mjs` reads a test run's own results file and refuses a run that executed fewer
+tests than asked for. It exists because `dotnet test --filter` prints "No test matches the given
+testcase filter" and exits zero, so a renamed namespace or a moved folder would otherwise leave a
+pipeline green having run nothing. Neither `TreatNoTestsAsError` nor `VSTestTreatNoTestsAsError`
+changes that exit code here, and one of this folder's own tests measures it rather than trusting
+it.
+
 The integration suite is not part of either run. It needs a database and takes minutes, so it waits
 for the `run-integration` label on a pull request.

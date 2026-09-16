@@ -26,6 +26,8 @@ const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 // own path, so the rule never fires on somebody else's prose.
 export const CHAT_PATHS = [
   'Rock/Communication/Chat/Platform/',
+  // Shared with upstream, and named here because this work wrote a chat comment into it.
+  'Rock/Rock.csproj',
   'Rock/Jobs/ChatPlatform',
   'Rock.JavaScript.Obsidian.Blocks/tests/Communication/Chat/',
   'Rock.Tests/Communication/Chat/',

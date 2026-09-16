@@ -5,6 +5,10 @@
 # here to prove the chat code compiles and its own tests run, and Rock's own build already proves
 # the rest. The test filters are narrowed to the chat namespace for the same reason, so a failure
 # in this workflow is always a failure in this work.
+#
+# Every test run is followed by a check on its own results file. A filter that matches nothing
+# prints "No test matches the given testcase filter" and exits zero, so without that check a
+# renamed namespace or a moved folder would leave this workflow green having run nothing.
 name: chat ci
 
 on:
@@ -51,7 +55,10 @@ jobs:
         run: msbuild Rock.Tests\Rock.Tests.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
 
       - name: Unit tests
-        run: dotnet test Rock.Tests\Rock.Tests.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform"
+        run: dotnet test Rock.Tests\Rock.Tests.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform" --logger "trx;LogFileName=unit.trx" --results-directory TestResults
+
+      - name: The unit run ran something
+        run: node "Dev Tools/chat-ci/assert-tests-ran.mjs" TestResults/unit.trx --minimum 1
 
       - name: Install the client dependencies
         run: npm ci
@@ -65,12 +72,17 @@ jobs:
     name: integration tests, on the run-integration label
     runs-on: windows-2022
     # These need a database and take minutes, so they stay off until somebody asks for them by
-    # putting the label on the pull request.
+    # putting the label on a pull request. There are no chat integration tests yet, so asking for
+    # them today fails on the empty run rather than reporting a success that nothing earned.
     if: contains(github.event.pull_request.labels.*.name, 'run-integration')
     steps:
       - uses: actions/checkout@v5
 
       - uses: microsoft/setup-msbuild@v2
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
 
       - name: Point the test harness at the runner's LocalDB
         # The harness defaults to a Linux SQL Server container, which a Windows runner cannot start.
@@ -83,4 +95,7 @@ jobs:
         run: msbuild Rock.Tests.Integration\Rock.Tests.Integration.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
 
       - name: Integration tests
-        run: dotnet test Rock.Tests.Integration\Rock.Tests.Integration.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform"
+        run: dotnet test Rock.Tests.Integration\Rock.Tests.Integration.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform" --logger "trx;LogFileName=integration.trx" --results-directory TestResults
+
+      - name: The integration run ran something
+        run: node "Dev Tools/chat-ci/assert-tests-ran.mjs" TestResults/integration.trx --minimum 1

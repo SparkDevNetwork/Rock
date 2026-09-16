@@ -53,7 +53,24 @@ const gates = [
   {
     name: 'unit tests',
     cmd: 'dotnet',
-    args: ['test', testProject, '--no-build', '--filter', chatTests],
+    args: [
+      'test',
+      testProject,
+      '--no-build',
+      '--filter',
+      chatTests,
+      '--logger',
+      'trx;LogFileName=unit.trx',
+      '--results-directory',
+      'TestResults',
+    ],
+    cwd: repoRoot,
+  },
+  {
+    // A filter that matches nothing exits zero, so the run is accounted for from its own results.
+    name: 'the unit run ran something',
+    cmd: process.execPath,
+    args: [resolve(here, 'assert-tests-ran.mjs'), 'TestResults/unit.trx', '--minimum', '1'],
     cwd: repoRoot,
   },
   {
