@@ -68,7 +68,7 @@
             </template>
         </Column>
 
-        <DeleteColumn @click="onDeleteClick" />
+        <DeleteColumn :rowDisabled="row => !row.canDelete" @click="onDeleteClick" />
     </Grid>
 </template>
 

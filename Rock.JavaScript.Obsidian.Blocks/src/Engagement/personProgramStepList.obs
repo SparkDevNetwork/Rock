@@ -2,35 +2,44 @@
 <template>
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <Panel v-else-if="isCardView"
-           :title="options.programName ?? ''"
-           :style="stepsPerRowStyle">
-        <template #headerActions>
-            <button type="button"
-                    class="btn btn-panel-action"
-                    title="Grid View"
-                    @click="onViewModeClick(false)">
-                <i class="ti ti-list"></i>
-            </button>
-        </template>
+    <template v-else>
+        <NotificationBox v-if="actionErrorMessage"
+                         alertType="danger"
+                         :dismissible="true"
+                         @dismiss="actionErrorMessage = ''">
+            {{ actionErrorMessage }}
+        </NotificationBox>
 
-        <CardView :stepTypes="stepTypes"
+        <Panel v-if="isCardView"
+               :title="options.programName ?? ''"
+               :style="stepsPerRowStyle">
+            <template #headerActions>
+                <button type="button"
+                        class="btn btn-panel-action"
+                        title="Grid View"
+                        @click="onViewModeClick(false)">
+                    <i class="ti ti-list"></i>
+                </button>
+            </template>
+
+            <CardView :stepTypes="stepTypes"
+                      :stepStatusColors="stepStatusColors"
+                      :options="options"
+                      @add="onAddStep"
+                      @edit="onEditStep"
+                      @delete="onDeleteStep" />
+        </Panel>
+
+        <GridView v-else
+                  :stepTypes="stepTypes"
+                  :gridData="gridData"
                   :stepStatusColors="stepStatusColors"
                   :options="options"
                   @add="onAddStep"
                   @edit="onEditStep"
-                  @delete="onDeleteStep" />
-    </Panel>
-
-    <GridView v-else
-              :stepTypes="stepTypes"
-              :gridData="gridData"
-              :stepStatusColors="stepStatusColors"
-              :options="options"
-              @add="onAddStep"
-              @edit="onEditStep"
-              @delete="onDeleteStep"
-              @showCards="onViewModeClick(true)" />
+                  @delete="onDeleteStep"
+                  @showCards="onViewModeClick(true)" />
+    </template>
 </template>
 
 <script setup lang="ts">
@@ -38,7 +47,6 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
-    import { alert } from "@Obsidian/Utility/dialogs";
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
     import { PersonProgramStepListBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListBag";
     import { PersonProgramStepListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListOptionsBag";
@@ -64,7 +72,11 @@
     };
 
 
+    /** Load-time failure from the server; replaces the whole block. */
     const errorMessage = ref(config.bag?.errorMessage ?? "");
+
+    /** Failure from a block action; shown above the active view. */
+    const actionErrorMessage = ref("");
     const isCardView = ref(config.bag?.isCardView ?? false);
     const stepTypes = ref<PersonProgramStepTypeBag[]>(config.bag?.stepTypes ?? []);
     const gridData = ref<GridDataBag | undefined>(config.bag?.gridData ?? undefined);
@@ -126,6 +138,8 @@
      * @param stepIdKey The identifier key of the step to delete.
      */
     async function onDeleteStep(stepIdKey: string): Promise<void> {
+        actionErrorMessage.value = "";
+
         const result = await invokeBlockAction<PersonProgramStepListBag>("Delete", { key: stepIdKey });
 
         if (result.isSuccess && result.data) {
@@ -134,7 +148,7 @@
             stepStatusColors.value = result.data.stepStatusColors ?? {};
         }
         else {
-            await alert(result.errorMessage || "Unable to delete the step.");
+            actionErrorMessage.value = result.errorMessage || `Unable to delete the ${options.stepTerm ?? "step"}.`;
         }
     }
 

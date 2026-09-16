@@ -64,8 +64,8 @@
     --step-type-color: var(--color-primary);
     position: relative;
     aspect-ratio: 4 / 5;
-    max-height: 450px;
-    padding: var(--spacing-large);
+    max-height: 500px;
+    padding: var(--spacing-small);
     text-align: center;
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-medium);
@@ -135,7 +135,7 @@
 }
 
 .step-prerequisites {
-    padding: var(--spacing-xsmall) var(--spacing-small);
+    padding: var(--spacing-xsmall) 0;
     font-size: var(--font-size-small);
     color: var(--color-interface-medium);
 }
@@ -149,7 +149,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-xsmall);
-    padding: var(--spacing-xsmall) var(--spacing-small);
+    padding: var(--spacing-xsmall) 0;
     border-radius: var(--rounded-small);
 }
 
@@ -172,7 +172,7 @@
 }
 
 .step-record-action {
-    padding: var(--spacing-xsmall);
+    padding: var(--spacing-xsmall) 0;
     color: var(--color-interface-strong);
 }
 
