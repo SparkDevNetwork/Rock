@@ -91,8 +91,8 @@ namespace Rock.Blocks.Engagement
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "2A6E839D-B37D-43F1-9159-A386F7BF932E" )]
-    // was [Rock.SystemGuid.BlockTypeGuid( "5D5EB7BA-A9CE-4801-8168-6CA8ECD354D4" )]
-    [Rock.SystemGuid.BlockTypeGuid( "1774616D-2577-4A73-B330-D3EFCD6D8BCF" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "1774616D-2577-4A73-B330-D3EFCD6D8BCF" )]
+    [Rock.SystemGuid.BlockTypeGuid( "5D5EB7BA-A9CE-4801-8168-6CA8ECD354D4" )]
     public class PersonProgramStepList : RockBlockType
     {
         #region Keys
