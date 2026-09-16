@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="step-type-card" :style="cardStyle">
+    <div class="step-type-card" :class="{ 'has-actions': isActionsShown }" :style="cardStyle">
         <div class="step-type-card-main">
             <i v-if="stepType.iconCssClass" :class="stepType.iconCssClass" class="step-type-icon"></i>
             <div class="step-type-name">{{ stepType.name }}</div>
@@ -91,7 +91,8 @@
     transition: transform 0.3s ease;
 }
 
-.step-type-card:hover .step-type-card-main {
+/* Hover effects only run when there is an actions block to reveal. */
+.step-type-card.has-actions:hover .step-type-card-main {
     transform: translateY(-20%);
 }
 
@@ -107,7 +108,7 @@
     transition: opacity 0.25s ease;
 }
 
-.step-type-card:hover .step-type-card-details {
+.step-type-card.has-actions:hover .step-type-card-details {
     opacity: 0;
 }
 
@@ -128,7 +129,7 @@
 }
 
 /* Delay only on the way in so the status has started fading before the actions appear. */
-.step-type-card:hover .step-type-card-actions {
+.step-type-card.has-actions:hover .step-type-card-actions {
     opacity: 1;
     pointer-events: auto;
     transition-delay: 0.15s;
