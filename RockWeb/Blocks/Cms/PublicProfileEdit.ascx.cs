@@ -1012,6 +1012,24 @@ namespace RockWeb.Blocks.Cms
                 var person = personService.Get( personGuid );
                 if ( person != null )
                 {
+                    // Disabling a control does not stop its value from arriving on the post, so the account owner
+                    // restriction shown while editing is enforced here before any value is assigned.
+                    var isEmailLocked = person.Id != CurrentPerson.Id
+                        && ( person.AccountProtectionProfile == AccountProtectionProfile.High
+                            || person.AccountProtectionProfile == AccountProtectionProfile.Extreme );
+
+                    if ( isEmailLocked )
+                    {
+                        var isEmailChanged = ( person.Email?.Trim() ?? string.Empty ) != tbEmail.Text.Trim();
+                        var isEmailPreferenceChanged = person.EmailPreference != rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
+
+                        if ( isEmailChanged || isEmailPreferenceChanged )
+                        {
+                            nbAccountProtectionWarning.Visible = true;
+                            return false;
+                        }
+                    }
+
                     int? orphanedPhotoId = null;
                     if ( person.PhotoId != imgPhoto.BinaryFileId )
                     {
@@ -1761,6 +1779,7 @@ namespace RockWeb.Blocks.Cms
 
                 tbEmail.Enabled = false;
                 tbEmail.Required = false;
+                rblEmailPreference.Enabled = false;
                 nbAccountProtectionWarning.Visible = true;
                 nbAccountProtectionWarning.NotificationBoxType = NotificationBoxType.Warning;
                 nbAccountProtectionWarning.Text = accountProtectionWarningMessage;
@@ -1769,6 +1788,7 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 tbEmail.Enabled = true;
+                rblEmailPreference.Enabled = true;
                 nbAccountProtectionWarning.Visible = false;
             }
 
