@@ -191,6 +191,14 @@
       step in the release packaging process.
     -->
     <EmbeddedResource Include="Net\crawler-user-agents.json" />
+    <!--
+      The chat wire contract. The chat platform generates it from the catalog of the database its
+      migrations produce, and this is a copy of the same bytes: the two are compared byte for byte,
+      so the file is replaced by regenerating it, never edited here. ChatWireContract reads it and
+      hashes its column lists, and a submission carries that hash so the platform can refuse a
+      payload built from a contract it does not recognise.
+    -->
+    <EmbeddedResource Include="Communication\Chat\Platform\Contract\chat-wire-contract.json" />
   </ItemGroup>
 
   <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />

@@ -181,7 +181,7 @@ namespace Rock.Tests.Communication.Chat.Platform
             var first = tables[0];
             var columns = first.Value.ToList();
 
-            Assert.IsTrue( columns.Count >= 2, "the first table needs two columns for this mutation to mean anything" );
+            Assert.IsGreaterThanOrEqualTo( 2, columns.Count, "the first table needs two columns for this mutation to mean anything" );
 
             var swapped = columns.ToList();
             swapped[0] = columns[1];

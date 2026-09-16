@@ -1,0 +1,4 @@
+# The chat platform generates this file and Rock carries a copy of the same bytes, so the two are
+# compared byte for byte. Line endings are pinned here because a checkout that rewrote them would
+# make an identical file look changed.
+chat-wire-contract.json text eol=lf

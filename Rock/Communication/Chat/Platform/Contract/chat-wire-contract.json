@@ -1,0 +1,294 @@
+{
+  "artifact": "chat-wire-contract",
+  "purpose": "The wire between Rock and the chat platform. The column lists are the positional order of the sync payload rows, the enum value lists are what each side mirrors as a typed vocabulary, the headers are what a submission carries, the claim names are what a person token carries, and the error codes are the one vocabulary every layer branches on. Generated from the database the migrations produce; never edited by hand.",
+  "hash_recipe": "SHA-256, lowercase hex, over the UTF-8 bytes of one line per table in the order the tables array gives: the table name, a colon, the wire column names joined by commas, each line closed by a line feed. The JSON is deliberately not what is hashed, so no key order, whitespace or string escaping rule has to be agreed between the languages that compute it. The hash covers the column lists and nothing else: it is compared at ingest, so anything it covered would refuse every submission from every church still on the previous Rock build the moment it changed, and an added enum value is meant to ship to the platform first and leave those churches working.",
+  "wire_hash": "de1f06d0d8bc6d1cd3a1798d92e5a6a78be7774f952acae5ad3d02fea262d125",
+  "jwt_claims": {
+    "tenant": "tenant_id",
+    "person": "sub"
+  },
+  "submit_headers": [
+    {
+      "name": "x-sync-submission-id",
+      "required": true,
+      "carries": "A uuid generated in Rock, the idempotency key for this submission."
+    },
+    {
+      "name": "x-sync-read-at",
+      "required": true,
+      "carries": "The UTC time taken in Rock before the projection read, truncated to microseconds. It is the clock every row of this payload is judged by, and it is Rock's clock, never the platform's."
+    },
+    {
+      "name": "x-sync-counts",
+      "required": true,
+      "carries": "An object with exactly the four table names as keys and the expected row count of each, so a truncated read cannot pass as a small payload."
+    },
+    {
+      "name": "x-sync-rock-version",
+      "required": true,
+      "carries": "The version of Rock that produced this payload, recorded with the submission."
+    },
+    {
+      "name": "x-sync-contract",
+      "required": true,
+      "carries": "The wire hash below. Compared at ingest against the platform's own value, which is the only check that can see a same-width column reorder; the row width check cannot."
+    },
+    {
+      "name": "x-sync-urgent",
+      "required": false,
+      "carries": "Set for a manual sync and for a failed immediate write that needs draining sooner. Never set for a first load. Absent means ordinary priority, which is why this is the one optional header."
+    }
+  ],
+  "tables": [
+    {
+      "schema": "public",
+      "name": "chat_aliases",
+      "columns": [
+        "person_alias_guid",
+        "primary_person_alias_guid",
+        "nick_name",
+        "last_name",
+        "avatar_url",
+        "campus_id",
+        "badge_keys",
+        "show_profile_details",
+        "is_open_dm_allowed",
+        "is_globally_banned",
+        "is_inactive"
+      ],
+      "not_on_the_wire": [
+        {
+          "column": "tenant_id",
+          "reason": "The church comes from the credential the submission is made with. No function anywhere accepts a tenant from its caller, so a payload that could name its own tenant would be the one way one church could write another church's rows."
+        },
+        {
+          "column": "is_primary",
+          "reason": "Generated in Postgres from the two alias columns on the row, so there is nothing to send and an attempt to send it would be refused by the database."
+        },
+        {
+          "column": "points",
+          "reason": "Community points, written by the platform and never by the sync; a restatement must not touch it."
+        },
+        {
+          "column": "synced_at",
+          "reason": "One value for the whole submission, the read time taken in Rock before the projection ran, carried once in the read-time header rather than on every row."
+        }
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_channels",
+      "columns": [
+        "channel_id",
+        "name",
+        "icon_url",
+        "channel_type",
+        "is_public",
+        "always_shown",
+        "leave_allowed",
+        "can_view_members",
+        "campus_id",
+        "notify_mode_default",
+        "is_search_indexed"
+      ],
+      "not_on_the_wire": [
+        {
+          "column": "tenant_id",
+          "reason": "The church comes from the credential the submission is made with, never from a row."
+        },
+        {
+          "column": "last_message_id",
+          "reason": "Written by the send path and never by the sync; Rock never sees a message."
+        },
+        {
+          "column": "last_message_at",
+          "reason": "Written by the send path and never by the sync; Rock never sees a message."
+        },
+        {
+          "column": "absent_since",
+          "reason": "Absence is what a full restatement does not list. The drain stamps it by comparing the payload against what is stored, so no payload ever declares it."
+        },
+        {
+          "column": "synced_at",
+          "reason": "One value for the whole submission, carried once in the read-time header."
+        }
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_channel_members",
+      "columns": [
+        "channel_id",
+        "person_alias_guid",
+        "is_leader",
+        "is_banned",
+        "ban_expires_at"
+      ],
+      "not_on_the_wire": [
+        {
+          "column": "tenant_id",
+          "reason": "The church comes from the credential the submission is made with, never from a row."
+        },
+        {
+          "column": "can_mention_all",
+          "reason": "Not a Rock role field. Written by the platform, and a restatement must not overwrite it."
+        },
+        {
+          "column": "can_post_announcements",
+          "reason": "Not a Rock role field. Written by the platform, and a restatement must not overwrite it."
+        },
+        {
+          "column": "notify_mode",
+          "reason": "The person's own push override for this channel, written by the chat client and never by the sync; a restatement must not overwrite it."
+        },
+        {
+          "column": "is_favorite",
+          "reason": "The person's own sidebar star, written by the chat client and never by the sync; a restatement must not overwrite it."
+        },
+        {
+          "column": "hidden_at",
+          "reason": "The person's own sidebar hide, written by the chat client and never by the sync; a restatement must not overwrite it."
+        },
+        {
+          "column": "absent_since",
+          "reason": "Absence is what a full restatement does not list. The drain stamps it, so no payload ever declares it."
+        },
+        {
+          "column": "synced_at",
+          "reason": "One value for the whole submission, carried once in the read-time header."
+        }
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_badges",
+      "columns": [
+        "badge_key",
+        "name",
+        "icon_css",
+        "bg_color",
+        "fg_color",
+        "sort_order"
+      ],
+      "not_on_the_wire": [
+        {
+          "column": "tenant_id",
+          "reason": "The church comes from the credential the submission is made with, never from a row."
+        },
+        {
+          "column": "synced_at",
+          "reason": "One value for the whole submission, carried once in the read-time header."
+        }
+      ]
+    }
+  ],
+  "enum_types": [
+    {
+      "schema": "private",
+      "name": "chat_sync_submission_status",
+      "values": [
+        "accepted",
+        "refused",
+        "applied",
+        "failed"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_channel_type",
+      "values": [
+        "shared",
+        "dm",
+        "livestream"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_device_platform",
+      "values": [
+        "ios",
+        "android",
+        "web"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_flag_reason",
+      "values": [
+        "inappropriate",
+        "spam",
+        "harassment",
+        "hate",
+        "other"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_flag_status",
+      "values": [
+        "open",
+        "dismissed",
+        "actioned"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_flag_verdict",
+      "values": [
+        "false_positive",
+        "unclear",
+        "actionable"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_label_source",
+      "values": [
+        "regex",
+        "ai"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_message_label",
+      "values": [
+        "question",
+        "answer",
+        "encouragement"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_message_type",
+      "values": [
+        "text",
+        "announcement",
+        "system"
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "chat_notify_mode",
+      "values": [
+        "all",
+        "mentions",
+        "silent"
+      ]
+    }
+  ],
+  "error_codes": {
+    "families": [
+      "auth",
+      "authz",
+      "rpc",
+      "sync",
+      "rt",
+      "push",
+      "door"
+    ],
+    "pattern": "^(auth|authz|rpc|sync|rt|push|door)\\.[a-z][a-z0-9_]*$",
+    "codes": [
+      "rpc.unknown_error_code"
+    ]
+  }
+}
