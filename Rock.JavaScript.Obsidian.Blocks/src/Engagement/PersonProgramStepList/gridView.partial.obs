@@ -1,0 +1,201 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="options.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :itemTerm="stepTerm"
+          :title="options.programName ?? ''"
+          :customActions="customActions"
+          :isCountMessageVisible="false"
+          :showExport="false"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem">
+
+        <template #gridHeaderBadges>
+            <DropDownMenu :items="addStepMenuItems"
+                          :anchorButtonType="BtnType.Primary"
+                          :anchorButtonSize="BtnSize.Small"
+                          :isAnchorButtonOverflow="false"
+                          align="right"
+                          class="add-step-menu">
+                <i class="ti ti-plus"></i> Add {{ stepTerm }} <i class="ti ti-chevron-down"></i>
+            </DropDownMenu>
+        </template>
+
+        <Column name="stepType"
+                :title="`${stepTerm} Type`"
+                field="stepType"
+                :filter="textValueFilter"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <i v-if="row.stepTypeIconCssClass" :class="row.stepTypeIconCssClass" class="mr-1"></i>{{ row.stepType }}
+            </template>
+        </Column>
+
+        <TextColumn v-if="options.isCampusColumnVisible"
+                    name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn v-if="options.isStartDateColumnVisible"
+                    name="startDateTime"
+                    title="Start Date"
+                    field="startDateTime"
+                    :filter="dateValueFilter"
+                    visiblePriority="sm" />
+
+        <DateColumn name="completedDateTime"
+                    title="Completion Date"
+                    field="completedDateTime"
+                    :filter="dateValueFilter"
+                    visiblePriority="sm" />
+
+        <HtmlColumn name="summary"
+                    title="Summary"
+                    field="summary"
+                    visiblePriority="md" />
+
+        <Column name="status"
+                title="Status"
+                field="status"
+                :filter="pickExistingValueFilter"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-if="row.status" class="label" :style="getStatusLabelStyle(stepStatusColors[row.status])">{{ row.status }}</span>
+            </template>
+        </Column>
+
+        <DeleteColumn :rowDisabled="row => !row.canDelete" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<style scoped>
+.add-step-menu {
+    align-self: center;
+    margin-right: var(--spacing-xsmall);
+}
+
+.add-step-menu :deep(.dropdown-menu) {
+    min-width: 240px;
+    margin-top: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import Grid, { Column, DateColumn, dateValueFilter, DeleteColumn, HtmlColumn, pickExistingValueFilter, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { PersonProgramStepListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepListOptionsBag";
+    import { PersonProgramStepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepTypeBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { getStatusLabelStyle } from "./utils.partial";
+
+    const props = defineProps({
+        stepTypes: {
+            type: Array as PropType<PersonProgramStepTypeBag[]>,
+            required: true
+        },
+
+        gridData: {
+            type: Object as PropType<GridDataBag | undefined>,
+            required: false
+        },
+
+        stepStatusColors: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
+        options: {
+            type: Object as PropType<PersonProgramStepListOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "add", stepTypeId: number): void;
+        (e: "edit", stepTypeId: number, stepId: number): void;
+        (e: "delete", stepIdKey: string): void;
+        (e: "showCards"): void;
+    }>();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>(Promise.resolve(props.gridData ?? { rows: [] }));
+
+    /** The header action that switches the block to the card view. */
+    const customActions: GridAction[] = [
+        {
+            title: "Card View",
+            tooltip: "Switch to the card view.",
+            iconCssClass: "ti ti-grid-dots",
+            isPrimary: true,
+            handler: () => emit("showCards")
+        }
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const stepTerm = computed((): string => props.options.stepTerm ?? "Step");
+
+    /**
+     * The Add Step menu items, one per step type in program order with the
+     * step type's icon. Types that cannot be added are disabled.
+     */
+    const addStepMenuItems = computed((): MenuAction[] => {
+        return props.stepTypes.map((st): MenuAction => ({
+            title: st.name ?? "",
+            iconCssClass: st.iconCssClass || "",
+            type: "default",
+            disabled: !st.isAddEnabled,
+            handler: () => emit("add", st.id)
+        }));
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when a grid row is clicked. Emits edit for the row's step.
+     *
+     * @param key The identifier key of the selected step.
+     */
+    function onSelectItem(key: string): void {
+        const row = props.gridData?.rows?.find(r => r["idKey"] === key);
+
+        if (!row) {
+            return;
+        }
+
+        emit("edit", row["stepTypeId"] as number, row["id"] as number);
+    }
+
+    /**
+     * Called when a row's delete button is clicked and confirmed.
+     *
+     * @param key The identifier key of the step to delete.
+     */
+    function onDeleteClick(key: string): void {
+        emit("delete", key);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.gridData, () => {
+        gridDataSource.value = Promise.resolve(props.gridData ?? { rows: [] });
+    });
+
+    // #endregion Watchers
+</script>
